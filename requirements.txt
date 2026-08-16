@@ -1,0 +1,2 @@
+# Optional: install reportlab for prettier PDF output.
+reportlab>=4.0.0

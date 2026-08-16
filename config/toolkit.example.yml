@@ -1,0 +1,17 @@
+records_root: registros
+default_platform: hackerone
+rate_limit:
+  requests_per_second: 2
+  concurrency: 5
+tools:
+  subfinder: subfinder
+  amass: amass
+  httpx: httpx
+  nuclei: nuclei
+  ffuf: ffuf
+  paramspider: paramspider
+  arjun: arjun
+reporting:
+  formats:
+    - markdown
+    - pdf

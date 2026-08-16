@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bug-bounty-toolkit"
+version = "0.1.0"
+description = "Local Kali Linux toolkit for authorized bug bounty reconnaissance, vulnerability review, evidence tracking, and reporting."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Jenmar Rondon" }]
+dependencies = []
+
+[project.scripts]
+bbtk = "bugbounty_toolkit.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bugbounty_toolkit*"]
