@@ -1,2 +1,3 @@
+PyYAML>=6.0,<7
 # Optional: install reportlab for prettier PDF output.
 reportlab>=4.0.0

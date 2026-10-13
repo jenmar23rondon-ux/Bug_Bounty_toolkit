@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,6 +16,10 @@ def utc_now() -> str:
 class ProgramPaths:
     root: Path
     program: str
+
+    def __post_init__(self) -> None:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", self.program):
+            raise ValueError("Program must be a name with letters, digits, underscores or hyphens.")
 
     @property
     def program_dir(self) -> Path:
@@ -134,6 +139,25 @@ class RecordStore:
 
     def finding(self, finding_id: str) -> sqlite3.Row | None:
         return self.connection.execute("select * from findings where id = ?", (finding_id,)).fetchone()
+
+    def metadata(self) -> dict[str, str]:
+        return dict(self.connection.execute("select key, value from program").fetchall())
+
+    def require_authorization(self) -> None:
+        if not self.metadata().get("authorization", "").strip():
+            raise ValueError("Initialize this program with --authorization before sending requests.")
+
+    def runs(self) -> list[dict[str, object]]:
+        return [dict(row) for row in self.connection.execute("select * from runs order by id desc")]
+
+    def reviewed(self) -> list[dict[str, object]]:
+        return [dict(row) for row in self.connection.execute("select * from reviewed order by id desc")]
+
+    def findings(self) -> list[dict[str, object]]:
+        return [dict(row) for row in self.connection.execute("select * from findings order by created_at desc")]
+
+    def close(self) -> None:
+        self.connection.close()
 
     def counts(self) -> dict[str, int]:
         return {

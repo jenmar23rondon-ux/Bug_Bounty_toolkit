@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty Executor"
+  short_description: "Ejecuta pruebas con rutas y parametros autorizados"
+  default_prompt: "Usa $bugbounty-executor con mi programa autorizado, mis rutas y mis parametros para validar el plan y generar informes."
+policy:
+  allow_implicit_invocation: true
