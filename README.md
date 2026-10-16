@@ -25,7 +25,7 @@ python -m pip install -e ".[all]"
 bugbounty resources
 ```
 
-The base install stays small. Extras provide Beautiful Soup/lxml/html5lib/Playwright, sqlparse, PyJWT/python-jose/cryptography/jwcrypto, requests/aiohttp and optional database drivers. External scanners, payload repositories, Burp extensions and browser binaries remain separate. The [security tools reference](skills/bugbounty-executor/references/security-tools.md) explains actual integrations, limitations and official sources.
+The base install stays small. Extras provide Beautiful Soup/lxml/html5lib/Playwright, sqlparse, PyJWT/python-jose/cryptography/jwcrypto, requests/aiohttp/httpx and optional database drivers. External scanners, payload repositories, Burp extensions and browser binaries remain separate. The [security tools reference](skills/bugbounty-executor/references/security-tools.md) explains installation profiles and external-plan limitations. Each topic skill has its own focused tool references.
 
 ```bash
 bugbounty analyze html --input registros/my-program/page.html --marker BBTK_MARKER --parser html5lib
@@ -157,9 +157,31 @@ The original `recon`, `scan nuclei`, `params`, `checklist`, `mark-reviewed` and 
 
 ## AI Skill
 
-The repository includes `skills/bugbounty-executor/` with `SKILL.md`, agent metadata, command references and `scripts/run_plan.py`. Copy that folder to your agent's skill directory. For Codex, use `$CODEX_HOME/skills/bugbounty-executor` or `~/.codex/skills/bugbounty-executor` when `CODEX_HOME` is unset. Other agents can load the same SKILL.md and run the script through their terminal tools; no AI API is required.
+The repository includes one general router/executor and five separate topic skills. Install all six sibling folders together so shared references and the single plan adapter resolve. These are ordinary discoverable skills, not a nested-skill engine; the router instructs the AI to load only the requested topic and finish its evidence summary before moving to another.
 
-Invoke it with a request such as: `Use $bugbounty-executor with my authorized program, supplied routes and parameters, then generate JSON and HTML reports.`
+| Skill | Focus |
+| --- | --- |
+| [bugbounty-executor](skills/bugbounty-executor/SKILL.md) | Shared authorization, HTTP/Burp, ffuf, reporting and sequential topic routing |
+| [bugbounty-xss](skills/bugbounty-xss/SKILL.md) | Reflection checks, HTML contexts, payload references, XSStrike/Dalfox drafts |
+| [bugbounty-sqli](skills/bugbounty-sqli/SKILL.md) | Baseline/quote probes, SQL review, sqlmap drafts |
+| [bugbounty-jwt](skills/bugbounty-jwt/SKILL.md) | Offline token inspection/verification and manual JWT tools |
+| [bugbounty-authentication](skills/bugbounty-authentication/SKILL.md) | Login/session/reset/MFA/OAuth review with own test accounts |
+| [bugbounty-access-control](skills/bugbounty-access-control/SKILL.md) | Controlled IDOR/BOLA/role comparisons, Autorize/AuthMatrix/Authz references |
+
+Preview or install the entire family from the repository root:
+
+```bash
+python scripts/install_skills.py
+python scripts/install_skills.py --execute
+# After reviewing an existing installation's changes:
+python scripts/install_skills.py --execute --update
+```
+
+The installer uses `$CODEX_HOME/skills` or `~/.codex/skills`, performs no network actions and leaves unrelated files intact. Differing existing managed files need `--update`; it checks the full family for conflicts before copying anything. `--destination /path/to/agent/skills` supports another agent's skill directory. Other agents can also load the corresponding SKILL.md directly and use their terminal tools; no AI API is required. Installing a skill does not install Python extras, Burp extensions or scanner binaries. If the current agent session does not discover newly installed skills, start a new session.
+
+Invoke the router with: `Use $bugbounty-executor for XSS and SQLi on my authorized inputs, one topic at a time.` Or select a topic directly: `Use $bugbounty-access-control with my two authorized test accounts and one known private resource.` An error, rate limit, missing authorization or invalid control stops the sequence; no other scanner is started as a fallback.
+
+Access-control work uses the existing individual `request` action, not a new automatic matrix scanner. Its workflow checks normal owner/actor controls before the specified cross, with separate session files and explicit waits across CLI processes. HTTP 200, reflected emails and extension colors are not confirmation. Admin access by an admin is a control, not escalation. Burp extensions, forced browsing, identifier enumeration, hidden-parameter discovery and nuclei templates need their own reviewed scope/budget; no password-guessing adapter is included. ParamSpider mines archived URLs rather than simply parsing local HTML/JS.
 
 The script accepts a JSON plan for `request`, `fuzz`, `xss` or `sqli`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
 

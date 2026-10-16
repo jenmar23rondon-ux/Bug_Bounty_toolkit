@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty JWT"
+  short_description: "Inspecciona y verifica JWT localmente sin filtrarlos"
+  default_prompt: "Usa $bugbounty-jwt para inspeccionar mi archivo local y separar decodificacion de verificacion de firma y claims."
+policy:
+  allow_implicit_invocation: true

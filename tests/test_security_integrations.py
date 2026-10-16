@@ -25,6 +25,21 @@ class CatalogAndPlanTests(unittest.TestCase):
         self.assertIn("seclists-sqli", {item["name"] for item in data["resources"]})
         process.assert_not_called()
 
+    def test_access_resources_distinguish_catalog_from_adapters(self):
+        with patch("socket.create_connection", side_effect=AssertionError("offline catalog")), patch("subprocess.run") as process:
+            data = catalog()
+        resources = {item["name"]: item for item in data["resources"]}
+        for name in ("autorize", "authmatrix", "authz"):
+            self.assertEqual(resources[name]["mode"], "burp-extension")
+            self.assertIsNone(resources[name]["on_path"])
+        for name in ("feroxbuster", "gobuster", "arjun", "x8", "paramspider"):
+            self.assertTrue(resources[name]["mode"].startswith("manual-"))
+        self.assertEqual(resources["ffuf"]["mode"], "bounded-adapter")
+        self.assertEqual(resources["seclists-passwords"]["mode"], "reference-no-guessing-adapter")
+        self.assertIn("httpx", data["python_extras"]["http"])
+        self.assertEqual(data["network_requests_sent"], 0)
+        process.assert_not_called()
+
     def test_plans_are_literal_scoped_and_not_executed(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "scope.txt"

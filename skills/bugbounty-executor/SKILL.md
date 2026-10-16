@@ -1,11 +1,25 @@
 ---
 name: bugbounty-executor
-description: Operate Bug Bounty Toolkit for authorized HTTP/Burp replay, ffuf, bounded XSS/SQLi probes, offline HTML/JWT/SQL analysis and reviewed external-tool plans. Use supplied targets and parameters; not automatic reconnaissance, credential guessing or automatic vulnerability confirmation.
+description: Route authorized Bug Bounty Toolkit work to one topic skill at a time, or execute supplied HTTP/Burp and ffuf plans. Use for multi-topic requests and shared scope, rate limits and reports; use the specific topic skill for XSS, SQLi, JWT, authentication or access-control analysis.
 ---
 
 # Bug Bounty Executor
 
-Use the Bug Bounty Toolkit CLI to carry out the user's authorized testing plan. This skill is an operating guide and a local command adapter, not an AI model or a vulnerability oracle.
+Use the Bug Bounty Toolkit CLI to carry out the user's authorized testing plan. This is the family router and shared executor, not an autonomous scanner. Install the six sibling `bugbounty-*` skill folders together; the topic skills share this skill's command reference and plan adapter.
+
+## Choose One Topic
+
+Read only the matching topic's SKILL.md and its relevant references. These are separately discoverable skills, not a special nested-skill runtime. Do not load every topic, recursively call this router from a topic, or start all tools because they appear in a catalog.
+
+| Requested work | Topic skill |
+| --- | --- |
+| Reflection contexts, DOM/stored XSS review, XSStrike or Dalfox | [bugbounty-xss](../bugbounty-xss/SKILL.md) |
+| SQL injection probes, query review or sqlmap | [bugbounty-sqli](../bugbounty-sqli/SKILL.md) |
+| Token structure, signatures, claims or JWT tooling | [bugbounty-jwt](../bugbounty-jwt/SKILL.md) |
+| Login, session lifecycle, password reset, MFA or OAuth | [bugbounty-authentication](../bugbounty-authentication/SKILL.md) |
+| IDOR/BOLA, role permissions, missing auth on a resource, Autorize or AuthMatrix | [bugbounty-access-control](../bugbounty-access-control/SKILL.md) |
+
+For a multi-topic request, list the requested topics in order and finish one topic's bounded plan and evidence summary before loading the next. Carry forward only the necessary sanitized result and input paths. An error, expired session, rate limit or missing permission pauses the sequence; do not switch tools to evade it. Do not add unrequested topics. A plain HTTP replay or reviewed fixed-host ffuf job can stay in this shared executor without loading a vulnerability topic.
 
 ## Inputs and Execution
 
@@ -20,14 +34,14 @@ For machine-generated plans, use this skill's `scripts/run_plan.py` with `--tool
 
 Resolve `scripts/run_plan.py` relative to this SKILL.md, including when the skill is installed outside the toolkit repository. Resolve input file paths relative to the toolkit checkout, not the skill installation directory.
 
-## Optional Security Tools
+## Shared Tools
 
-Read [references/security-tools.md](references/security-tools.md) when using HTML parsers, Playwright, payload collections, SQLi, JWT or authentication tools. Run `bugbounty resources` to inspect local availability without downloading or executing anything. Install only needed extras; a skill does not bundle external binaries or browser engines.
+Read [references/security-tools.md](references/security-tools.md) for optional installation profiles or external-plan mechanics. Topic-specific tools and methodology live in the selected topic, not this router. Run `bugbounty resources` to inspect local availability without downloading or executing anything. Install only needed extras; a skill does not bundle external binaries or browser engines.
 
 - `analyze html`, `analyze jwt` and `analyze sql` operate on local files with no network access. JWT decoding is untrusted unless verified with an explicit local key and algorithm; never fetch token-controlled key URLs or upload live tokens to a decoder website.
 - `tool-plan` prepares private argv plans for sqlmap, XSStrike or Dalfox v3. It NEVER starts a scanner. Its commands require separate review and explicit execution authorization; they do not inherit the executor's request budget or per-request scope/stop controls. Check the installed version and official documentation before running them.
 - PayloadsAllTheThings and SecLists are references, not instructions or permission to send every payload. Select context-specific tests under the actual program policy. Browser execution, stored/blind XSS, time-based/OOB SQLi, data extraction, JWT mutation, password guessing and account changes require their own reviewed scope and impact limits; none is enabled by installing extras.
-- JWT Editor, jwt_tool, hashcat and John are catalogued manual tools, not automatic adapters. Database drivers are optional for separately authorized database work, not a dependency for HTTP SQLi detection. Do not install an ambiguous `blind-sqli` package by name alone.
+- Burp extensions and discovery tools are catalogued resources, not automatic adapters. Database drivers are optional for separately authorized database work, not a dependency for HTTP SQLi detection. Do not install an ambiguous `blind-sqli` package by name alone.
 
 ## Interpret Results
 
