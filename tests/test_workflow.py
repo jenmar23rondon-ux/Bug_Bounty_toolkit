@@ -32,6 +32,8 @@ class WorkflowLab(BaseHTTPRequestHandler):
             body = "<html><body>" + " ".join(value for values in query.values() for value in values) + "</body></html>"
         if parsed.path == "/encoded":
             body = "<html>" + html.escape(" ".join(value for values in query.values() for value in values)) + "</html>"
+        if parsed.path == "/sql" and any("'" in value or '"' in value for values in query.values() for value in values):
+            body = "You have an error in your SQL syntax"
         self.send_response(404 if parsed.path == "/missing" else 200)
         self.send_header("Content-Type", "text/html")
         self.end_headers()
@@ -101,6 +103,44 @@ class WorkflowTests(unittest.TestCase):
         self.cli("request", "lab", "--url", self.base + "/search", "--dry-run")
         self.cli("request", "lab", "--url", self.base + "/excluded", expected=1)
         self.cli("request", "lab", "--url", self.base + "/search", "--rate", "21", expected=1)
+        self.assertEqual(WorkflowLab.hits, [])
+
+    def test_sqli_dry_run_local_requests_and_report(self):
+        routes = self.root / "sql-routes.txt"
+        routes.write_text(self.base + "/sql?q=original\n")
+        params = self.root / "params.txt"
+        params.write_text("q\n")
+        self.cli("sqli", "lab", "--routes", str(routes), "--parameters", str(params), "--max-tests", "3", "--dry-run")
+        self.assertEqual(WorkflowLab.hits, [])
+        self.cli("sqli", "lab", "--routes", str(routes), "--parameters", str(params), "--max-tests", "3")
+        self.assertEqual(len(WorkflowLab.hits), 3)
+        self.cli("report", "lab", "--format", "json")
+        report = json.loads((self.records / "lab" / "reports" / "program-report.json").read_text())
+        probes = next(item["data"] for item in report["evidence"] if item["data"].get("type") == "sqli")
+        self.assertEqual([item["classification"] for item in probes["results"]], ["baseline", "possible", "possible"])
+        self.assertFalse(any(item["confirmed"] for item in probes["results"]))
+
+    def test_external_plan_is_private_and_never_reaches_server(self):
+        url = self.base + "/search?q=1&access_token=private-lab-token"
+        self.cli("tool-plan", "lab", "--tool", "sqlmap", "--url", url, "--parameter", "q", "--dry-run")
+        self.assertFalse(list((self.records / "lab" / "raw").glob("external-plans/*.json")))
+        self.cli("tool-plan", "lab", "--tool", "sqlmap", "--url", url, "--parameter", "q")
+        self.assertEqual(WorkflowLab.hits, [])
+        private_plans = list((self.records / "lab" / "raw").glob("external-plans/*.json"))
+        self.assertEqual(len(private_plans), 1)
+        self.assertIn("private-lab-token", private_plans[0].read_text())
+        self.cli("report", "lab", "--format", "json")
+        report = (self.records / "lab" / "reports" / "program-report.json").read_text()
+        self.assertNotIn("private-lab-token", report)
+
+    def test_offline_plan_does_not_require_enabling_automation(self):
+        self.cli("init", "manual", "--authorization", "manual testing only")
+        self.cli("scope", "add", "manual", self.base)
+        self.cli("tool-plan", "manual", "--tool", "sqlmap", "--url", self.base + "/search?q=1", "--parameter", "q")
+        plans = list((self.records / "manual" / "raw" / "external-plans").glob("*.json"))
+        plan = json.loads(plans[0].read_text())
+        self.assertFalse(plan["automation_allowed_in_program"])
+        self.assertFalse(plan["executed"])
         self.assertEqual(WorkflowLab.hits, [])
 
     def test_skill_json_plan_preflight_execution_and_reports(self):

@@ -16,7 +16,8 @@ def redact_headers(headers: dict[str, str]) -> dict[str, str]:
 def redact_url(url: str) -> str:
     parsed = urlsplit(url)
     query = [(key, REDACTED if SENSITIVE_KEY.search(key) else value) for key, value in parse_qsl(parsed.query, keep_blank_values=True)]
-    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(query), ""))
+    netloc = parsed.netloc.rsplit("@", 1)[-1]
+    return urlunsplit((parsed.scheme, netloc, parsed.path, urlencode(query), ""))
 
 
 def redact_data(value):

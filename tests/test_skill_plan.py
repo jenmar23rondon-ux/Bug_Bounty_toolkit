@@ -13,6 +13,14 @@ SPEC.loader.exec_module(runner)
 
 
 class SkillPlanTests(unittest.TestCase):
+    def test_sqli_uses_the_bounded_runner_not_an_external_scanner(self):
+        command = runner.build_command({"program": "lab", "action": "sqli", "routes": "routes.txt", "parameters": "parameters.txt", "max_tests": 6, "rate": 0.1})
+        self.assertIn("sqli", command)
+        self.assertIn("--max-tests=6", command)
+        self.assertIn("--rate=0.1", command)
+        with self.assertRaises(ValueError):
+            runner.build_command({"program": "lab", "action": "sqlmap", "url": "https://example.com"})
+
     def test_unsupported_actions_and_options_are_rejected(self):
         for plan in (
             {"program": "lab", "action": "recon", "url": "https://example.com"},

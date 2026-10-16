@@ -15,6 +15,7 @@ FIELDS = {
     "request": {"url", "raw_request", "method", "base_url", "headers", "cookies", "params", "data", "timeout", "rate"},
     "fuzz": {"url", "wordlist", "threads", "timeout", "rate", "match_codes", "filter_size"},
     "xss": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests"},
+    "sqli": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests"},
 }
 LIST_OPTIONS = {"headers": "header", "cookies": "cookie", "params": "param"}
 NUMERIC_OPTIONS = {"threads", "timeout", "rate", "max_tests"}
@@ -25,13 +26,13 @@ def build_command(plan: dict, python: str = sys.executable) -> list[str]:
         raise ValueError("Plan must be a JSON object.")
     action = plan.get("action")
     if not isinstance(action, str) or action not in FIELDS:
-        raise ValueError("Action must be request, fuzz or xss.")
+        raise ValueError("Action must be request, fuzz, xss or sqli.")
     program = plan.get("program")
     if not isinstance(program, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", program):
         raise ValueError("A valid program name is required.")
     if set(plan) - FIELDS[action] - {"program", "action"}:
         raise ValueError("Plan contains unsupported fields.")
-    required = {"fuzz": ("url", "wordlist"), "xss": ("routes", "parameters")}.get(action, ())
+    required = {"fuzz": ("url", "wordlist"), "xss": ("routes", "parameters"), "sqli": ("routes", "parameters")}.get(action, ())
     if any(not isinstance(plan.get(key), str) or not plan[key].strip() for key in required):
         raise ValueError("Required action inputs are missing.")
     if action == "request" and sum(key in plan for key in ("url", "raw_request")) != 1:

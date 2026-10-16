@@ -12,6 +12,21 @@ from bugbounty_toolkit.xss.result_validator import classify_reflection
 
 
 class XssTests(unittest.TestCase):
+    def test_auth_failure_stops_the_batch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scope = root / "scope.txt"
+            scope.write_text("example.com\n")
+            routes = root / "routes.txt"
+            routes.write_text("https://example.com/search\n")
+            params = root / "params.txt"
+            params.write_text("q\n")
+            client = Mock()
+            client.send.side_effect = lambda spec: ResponseRecord(spec, spec.url, 429, "rate limit", 1, {}, "", 0)
+            _, results = XssParameterTester(ScopeValidator(scope), client).run(XssOptions(routes, params), root / "evidence")
+            self.assertEqual(client.send.call_count, 1)
+            self.assertEqual(results[0]["classification"], "error")
+
     def test_reflection_never_automatically_confirms_xss(self):
         for body, content_type in (("<marker>", "text/html"), ("&lt;marker&gt;", "text/html"), ('{"value":"marker"}', "application/json")):
             result = classify_reflection(detect_reflection(body, "marker", "<marker>"), content_type)

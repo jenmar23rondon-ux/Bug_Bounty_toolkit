@@ -1,6 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+
+def with_parameter(url: str, name: str, value: str) -> str:
+    parsed = urlsplit(url)
+    query = [(key, current) for key, current in parse_qsl(parsed.query, keep_blank_values=True) if key != name]
+    query.append((name, value))
+    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path or "/", urlencode(query), parsed.fragment))
 
 
 def parse_parameter_items(items: list[str] | None) -> dict[str, str]:

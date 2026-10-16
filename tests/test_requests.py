@@ -10,6 +10,7 @@ from bugbounty_toolkit.core.http_client import HttpClient, RequestSpec
 from bugbounty_toolkit.core.request_builder import parse_raw_http_request
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.core.rate_limiter import RateLimiter
+from bugbounty_toolkit.core.redaction import redact_url, redact_text
 from bugbounty_toolkit.requests_engine.replay import RequestReplayer
 from bugbounty_toolkit.requests_engine.headers import parse_header_items, parse_cookie_items
 from bugbounty_toolkit.reporting.evidence import write_evidence_json
@@ -44,6 +45,12 @@ class LabHandler(BaseHTTPRequestHandler):
 
 
 class RequestTests(unittest.TestCase):
+    def test_url_userinfo_is_removed_from_redaction(self):
+        url = "https://private-user:private-password@example.com/search?access_token=private-query"
+        for value in (redact_url(url), redact_text(json.dumps({"link": url}))):
+            for secret in ("private-user", "private-password", "private-query"):
+                self.assertNotIn(secret, value)
+
     @classmethod
     def setUpClass(cls):
         cls.server = ThreadingHTTPServer(("127.0.0.1", 0), LabHandler)
@@ -121,8 +128,9 @@ class RequestTests(unittest.TestCase):
             parse_raw_http_request("GET / HTTP/1.1\nHost: one.example\nHOST: two.example\n\n")
 
     def test_unique_evidence_filenames(self):
-        first = write_evidence_json(self.root, {"run": 1})
-        second = write_evidence_json(self.root, {"run": 2})
+        with patch("bugbounty_toolkit.reporting.evidence.utc_stamp", return_value="same-clock-tick"):
+            first = write_evidence_json(self.root, {"run": 1})
+            second = write_evidence_json(self.root, {"run": 2})
         self.assertNotEqual(first, second)
         self.assertEqual(json.loads(first.read_text())["run"], 1)
 

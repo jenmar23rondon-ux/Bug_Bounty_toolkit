@@ -56,8 +56,17 @@ Required fields by action:
 | `request` | Exactly one of `url`, `raw_request` | `method`, `base_url`, `headers`, `cookies`, `params`, `data`, `timeout`, `rate` |
 | `fuzz` | `url`, `wordlist` | `threads`, `timeout`, `rate`, `match_codes`, `filter_size` |
 | `xss` | `routes`, `parameters` | `base_url`, `headers`, `cookies`, `timeout`, `rate`, `max_tests` |
+| `sqli` | `routes`, `parameters` | `base_url`, `headers`, `cookies`, `timeout`, `rate`, `max_tests` |
 
 `headers`, `cookies` and `params` are arrays of strings in the same format as their CLI flags. Other textual inputs are strings; numeric flags are positive finite numbers, with integer values for thread/test counts and fuzz timeout. Unknown fields and actions fail before a command starts. The adapter prints CLI results without displaying the plan or credentials.
+
+`sqli` accepts the same plan fields as `xss`: routes, parameters, base_url, headers, cookies, timeout, rate and max_tests. Routes and parameters are required. Each completed route/parameter group costs three requests (baseline, appended single quote, appended double quote); an incomplete group is not started. At least three requests must fit the program budget. No time-delay, UNION, OOB or extraction payloads are used. A new SQL error is only a possible indicator.
+
+```bash
+bugbounty sqli my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --rate 0.1 --max-tests 6 --dry-run
+```
+
+Network/action plans are restricted to `request`, `fuzz`, `xss` and `sqli`. Optional offline analysis and external command planning use the direct CLI described in [security-tools.md](security-tools.md); they are not scanner execution actions in run_plan.py.
 
 On execution, JSON and HTML reports are generated under `registros/<program>/reports/`. Read `program-report.json` and its evidence before writing the result to the user. If a command fails, report the failure and inspect existing evidence instead of automatically retrying.
 

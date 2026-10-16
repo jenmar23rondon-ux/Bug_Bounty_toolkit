@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from ..core.http_client import HttpClient, RequestSpec
 from ..core.scope_validator import ScopeValidator
@@ -10,7 +9,7 @@ from ..core.target import load_routes
 from ..core.redaction import redact_text, redact_url
 from ..utils.exceptions import ToolkitError
 from ..reporting.evidence import write_evidence_json
-from ..requests_engine.parameters import load_parameter_names
+from ..requests_engine.parameters import load_parameter_names, with_parameter
 from .reflection_detector import detect_reflection
 from .result_validator import classify_reflection
 from .test_cases import new_marker, payloads_for_marker
@@ -49,7 +48,8 @@ class XssParameterTester:
                     except ToolkitError as exc:
                         results.append({"route": redact_url(route), "method": "GET", "parameter": parameter,
                                         "payload": payload, "classification": "error", "confirmed": False, "reason": str(exc)})
-                        continue
+                        path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": "transport_error"}, prefix="xss")
+                        return path, results
                     reflection = detect_reflection(response.body_text, marker=marker, payload=payload)
                     validation = classify_reflection(reflection, response.headers.get("content-type", ""))
                     results.append(
@@ -70,6 +70,10 @@ class XssParameterTester:
                             "exchange": response.to_dict(),
                         }
                     )
+                    if response.status_code in {401, 403, 429}:
+                        results[-1].update(classification="error", confirmed=False, reason="Authentication/access failure or rate limit; batch stopped.")
+                        path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": "access_or_rate_limit"}, prefix="xss")
+                        return path, results
         path = write_evidence_json(evidence_dir, {"type": "xss", "results": results}, prefix="xss")
         return path, results
 
@@ -82,10 +86,3 @@ class XssParameterTester:
             raise ValueError("Routes and parameters must contain at least one usable entry.")
         self.scope.require_all(routes)
         return routes, parameters
-
-
-def with_parameter(url: str, name: str, value: str) -> str:
-    parsed = urlparse(url)
-    query = [(key, current) for key, current in parse_qsl(parsed.query, keep_blank_values=True) if key != name]
-    query.append((name, value))
-    return urlunparse((parsed.scheme, parsed.netloc, parsed.path or "/", "", urlencode(query), parsed.fragment))

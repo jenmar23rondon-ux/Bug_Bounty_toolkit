@@ -1,3 +1,4 @@
 PyYAML>=6.0,<7
+# Security integrations are optional: python -m pip install -e ".[all]".
 # Optional: install reportlab for prettier PDF output.
 reportlab>=4.0.0

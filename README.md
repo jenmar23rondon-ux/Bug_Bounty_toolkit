@@ -16,6 +16,27 @@ python -m pip install -e .
 
 On Windows, activate with `.venv\Scripts\Activate.ps1`. Install [ffuf](https://github.com/ffuf/ffuf#installation) separately and put its executable on `PATH`. HTTP requests, XSS reflection checks and JSON/HTML reports work without ffuf. `requirements.txt` also includes optional ReportLab support for individual PDF findings.
 
+### Optional Security Integrations
+
+```bash
+python -m pip install -e ".[xss,sqli,jwt]"
+# Or all Python profiles, including HTTP clients and database drivers:
+python -m pip install -e ".[all]"
+bugbounty resources
+```
+
+The base install stays small. Extras provide Beautiful Soup/lxml/html5lib/Playwright, sqlparse, PyJWT/python-jose/cryptography/jwcrypto, requests/aiohttp and optional database drivers. External scanners, payload repositories, Burp extensions and browser binaries remain separate. The [security tools reference](skills/bugbounty-executor/references/security-tools.md) explains actual integrations, limitations and official sources.
+
+```bash
+bugbounty analyze html --input registros/my-program/page.html --marker BBTK_MARKER --parser html5lib
+bugbounty analyze jwt --input registros/my-program/token.private.txt
+bugbounty analyze sql --input registros/my-program/own-query.sql
+bugbounty sqli my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --rate 0.1 --max-tests 6 --dry-run
+bugbounty tool-plan my-program --tool sqlmap --url "http://localhost:3000/search?q=1" --parameter q --dry-run
+```
+
+`analyze` is offline. JWT verification additionally requires `--key-file` and an explicit `--algorithm`, with optional expected issuer/audience; decoding is not authentication. SQLi probes are bounded baseline/quote comparisons, not exploitation or extraction, and require automation permission. `tool-plan` prepares commands for sqlmap, XSStrike and Dalfox v3 but **never executes them**, even without `--dry-run`. External tools need separately reviewed runs because they do not inherit the hard request budget/scope controls. jwt_tool, JWT Editor, hashcat and John are catalogued manual tools. No automatic JWT forgery, password brute force, WAF evasion, database dumping or browser XSS confirmation is added.
+
 ## Program Setup
 
 Review the program policy first. Replace the example values in `config/settings.yaml` and `config/scope.yaml` with its permitted assets, exclusions and limits. This tool does not fetch HackerOne policies or infer permission from a public domain.
@@ -140,7 +161,7 @@ The repository includes `skills/bugbounty-executor/` with `SKILL.md`, agent meta
 
 Invoke it with a request such as: `Use $bugbounty-executor with my authorized program, supplied routes and parameters, then generate JSON and HTML reports.`
 
-The script accepts a JSON plan for `request`, `fuzz` or `xss`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
+The script accepts a JSON plan for `request`, `fuzz`, `xss` or `sqli`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
 
 ```bash
 python skills/bugbounty-executor/scripts/run_plan.py --toolkit-root . --plan registros/my-program/plan.json
