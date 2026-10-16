@@ -14,6 +14,7 @@ from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.core.settings import ExecutorSettings
 from bugbounty_toolkit.integrations.catalog import catalog
 from bugbounty_toolkit.integrations.external_plan import build_external_plan
+from bugbounty_toolkit import cli
 
 
 class CatalogAndPlanTests(unittest.TestCase):
@@ -85,6 +86,24 @@ class CatalogAndPlanTests(unittest.TestCase):
             plan = build_external_plan("sqlmap", "example.com/search?q=1", "q", scope, ExecutorSettings())
             self.assertEqual(plan["target"], "https://example.com/search?q=1")
             self.assertIn(plan["target"], plan["command"])
+
+
+@unittest.skipUnless(importlib.util.find_spec("bs4") and importlib.util.find_spec("sqlparse"), "optional xss/sqli extras not installed")
+class OfflineWorkflowTests(unittest.TestCase):
+    def test_sequential_local_analysis_needs_no_program_or_network(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = root / "no-program-config"
+            parser = cli.build_parser()
+            with patch.object(cli, "store_for", side_effect=AssertionError("offline work needs no program")), patch("socket.create_connection", side_effect=AssertionError("offline work sends no traffic")):
+                for kind, content, options in (("html", "<p>MARKER</p>", ["--marker", "MARKER"]), ("sql", "SELECT 1;", [])):
+                    input_file = root / f"input.{kind}"
+                    input_file.write_text(content, encoding="utf-8")
+                    output = root / f"{kind}.json"
+                    args = parser.parse_args(["--records-root", str(records), "analyze", kind, "--input", str(input_file), "--output", str(output), *options])
+                    args.func(args)
+                    self.assertIsInstance(json.loads(output.read_text(encoding="utf-8")), dict)
+            self.assertFalse(records.exists())
 
 
 @unittest.skipUnless(importlib.util.find_spec("bs4"), "optional xss extra not installed")

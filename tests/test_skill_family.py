@@ -8,6 +8,8 @@ from unittest.mock import patch
 
 import yaml
 
+from bugbounty_toolkit.core.request_builder import parse_raw_http_request
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("bbtk_install_skills", ROOT / "scripts" / "install_skills.py")
@@ -16,6 +18,12 @@ SPEC.loader.exec_module(installer)
 
 
 class SkillFamilyTests(unittest.TestCase):
+    def test_explicit_captured_origin_preserves_http_without_sending(self):
+        raw = "GET /private/resource?id=own-test-id HTTP/1.1\r\nHost: localhost:3000\r\n\r\n"
+        with patch("socket.create_connection", side_effect=AssertionError("prepare only")):
+            request = parse_raw_http_request(raw, "http://localhost:3000")
+            self.assertEqual(request.prepared_url(), "http://localhost:3000/private/resource?id=own-test-id")
+
     def test_each_skill_is_discoverable_and_relative_links_resolve(self):
         for name in installer.SKILL_NAMES:
             folder = ROOT / "skills" / name

@@ -25,8 +25,10 @@ Change only the intended identity or resource reference, not multiple unrelated 
 Dry-run each selected request before execution:
 
 ```bash
-bugbounty request my-program --raw-request registros/my-program/private/owner-control.http --rate 0.1 --dry-run
+bugbounty request my-program --raw-request registros/my-program/private/owner-control.http --base-url "https://authorized.example" --rate 0.1 --dry-run
 ```
+
+Set `--base-url` to the capture's actual authorized scheme, host and port, not the example origin above. A relative raw request with only a Host header otherwise defaults to HTTPS; an HTTP lab needs its original `http://localhost:<port>` origin. Do not silently change protocol or redirect a captured session to another host.
 
 Execute the individual request only within the user's existing authorization, inspect its result, wait the required interval, and then prepare the next step. `--rate 0.1` limits a running client's cadence but does NOT insert a ten-second wait between fresh CLI processes. Use a wait tool or explicit sleep for the remaining interval between invocations; respect a stricter program rate. Count every live request, including controls and separately authorized repetitions. No automatic retries or automatic inverse cross are part of this workflow.
 
