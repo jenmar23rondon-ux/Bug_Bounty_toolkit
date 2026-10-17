@@ -55,8 +55,9 @@ Required fields by action:
 | --- | --- | --- |
 | `request` | Exactly one of `url`, `raw_request` | `method`, `base_url`, `headers`, `cookies`, `params`, `data`, `timeout`, `rate` |
 | `fuzz` | `url`, `wordlist` | `threads`, `timeout`, `rate`, `match_codes`, `filter_size` |
-| `xss` | `routes`, `parameters` | `base_url`, `headers`, `cookies`, `timeout`, `rate`, `max_tests` |
+| `xss` | `routes`, `parameters` | `base_url`, `headers`, `cookies`, `timeout`, `rate`, `max_tests`, `html_parser` |
 | `sqli` | `routes`, `parameters` | `base_url`, `headers`, `cookies`, `timeout`, `rate`, `max_tests` |
+| `access-check` | `case_file` | `timeout`, `rate`, `max_tests` (at least 3; only 3 are ever attempted) |
 
 `headers`, `cookies` and `params` are arrays of strings in the same format as their CLI flags. Other textual inputs are strings; numeric flags are positive finite numbers, with integer values for thread/test counts and fuzz timeout. Unknown fields and actions fail before a command starts. The adapter prints CLI results without displaying the plan or credentials.
 
@@ -66,7 +67,11 @@ Required fields by action:
 bugbounty sqli my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --rate 0.1 --max-tests 6 --dry-run
 ```
 
-Network/action plans are restricted to `request`, `fuzz`, `xss` and `sqli`. Optional offline analysis and external command planning use the direct CLI described in [security-tools.md](security-tools.md); they are not scanner execution actions in run_plan.py.
+Network/action plans are restricted to `request`, `fuzz`, `xss`, `sqli` and `access-check`. A native [access case](../../bugbounty-access-control/references/native-check.md) keeps the two session captures and proof values in private files, not inline CLI headers. It validates both controls before one crossed GET, with a single shared HttpClient/rate limiter and no external scanner. The case path is relative to the checkout; capture paths inside it are relative to the case file. Inverse/anonymous checks and other methods are not added.
+
+XSS now records HTML parser contexts from the actual captured response. `html_parser` accepts html.parser/lxml/html5lib; missing extras are explicitly unavailable and non-HTML is distinguished. Browser execution is never inferred from parsing.
+
+Offline `analyze evidence --input <one-native-evidence.json>` produces the minimized [agent review packet](agent-review.md), not a model API call or network action. Offline analyzers and external planning use the direct CLI, not run_plan.py; external plans still never execute scanners.
 
 On execution, JSON and HTML reports are generated under `registros/<program>/reports/`. Read `program-report.json` and its evidence before writing the result to the user. If a command fails, report the failure and inspect existing evidence instead of automatically retrying.
 

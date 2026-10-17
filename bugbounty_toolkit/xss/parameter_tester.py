@@ -10,6 +10,7 @@ from ..core.redaction import redact_text, redact_url
 from ..utils.exceptions import ToolkitError
 from ..reporting.evidence import write_evidence_json
 from ..requests_engine.parameters import load_parameter_names, with_parameter
+from ..analysis.html_context import analyze_html
 from .reflection_detector import detect_reflection
 from .result_validator import classify_reflection
 from .test_cases import new_marker, payloads_for_marker
@@ -22,6 +23,7 @@ class XssOptions:
     base_url: str | None = None
     max_tests: int = 100
     headers: dict[str, str] = field(default_factory=dict)
+    html_parser: str = "html.parser"
 
 
 class XssParameterTester:
@@ -47,11 +49,19 @@ class XssParameterTester:
                         response = self.client.send(spec)
                     except ToolkitError as exc:
                         results.append({"route": redact_url(route), "method": "GET", "parameter": parameter,
-                                        "payload": payload, "classification": "error", "confirmed": False, "reason": str(exc)})
+                                        "payload": payload, "classification": "error", "confirmed": False, "transport_error": True, "reason": str(exc)})
                         path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": "transport_error"}, prefix="xss")
                         return path, results
                     reflection = detect_reflection(response.body_text, marker=marker, payload=payload)
                     validation = classify_reflection(reflection, response.headers.get("content-type", ""))
+                    context = {"status": "not_html", "contexts": [], "confirmed": False}
+                    media_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+                    if media_type in {"text/html", "application/xhtml+xml"}:
+                        try:
+                            context = {"status": "analyzed", **analyze_html(response.body_text, marker, options.html_parser)}
+                        except ValueError:
+                            context = {"status": "unavailable", "contexts": [], "confirmed": False,
+                                       "note": "Install the xss extra and selected parser for HTML context analysis."}
                     results.append(
                         {
                             "route": redact_url(route),
@@ -67,6 +77,9 @@ class XssParameterTester:
                             "reflected_unescaped": reflection.reflected_unescaped,
                             "reflection_context": redact_text(reflection.context),
                             "body_truncated": response.body_truncated,
+                            "content_type": media_type,
+                            "context_analysis": context,
+                            "browser_execution_observed": False,
                             "exchange": response.to_dict(),
                         }
                     )
@@ -74,12 +87,18 @@ class XssParameterTester:
                         results[-1].update(classification="error", confirmed=False, reason="Authentication/access failure or rate limit; batch stopped.")
                         path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": "access_or_rate_limit"}, prefix="xss")
                         return path, results
+                    if response.body_truncated:
+                        results[-1].update(classification="error", confirmed=False, reason="Response truncated; context validation incomplete.")
+                        path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": "truncated_response"}, prefix="xss")
+                        return path, results
         path = write_evidence_json(evidence_dir, {"type": "xss", "results": results}, prefix="xss")
         return path, results
 
     def validate(self, options: XssOptions) -> tuple[list[str], list[str]]:
         if options.max_tests <= 0:
             raise ValueError("Max tests must be positive.")
+        if options.html_parser not in {"html.parser", "lxml", "html5lib"}:
+            raise ValueError("Unsupported HTML parser.")
         routes = load_routes(options.routes_file, base_url=options.base_url)
         parameters = load_parameter_names(options.parameters_file)
         if not routes or not parameters:

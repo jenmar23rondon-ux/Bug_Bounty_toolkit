@@ -33,4 +33,4 @@ Route/parameter discovery is a separate requested operation; these lists do not 
 
 ## Python Clients
 
-`python -m pip install -e ".[http]"` provides requests, aiohttp and [httpx](https://www.python-httpx.org/); httpx is the Python library, not the similarly named reconnaissance CLI. These are optional dependencies, not replacements for the scoped HttpClient. Direct async clients do not inherit rate/scope/stop/evidence controls. HTML parsers and PyJWT are in their separate extras and do not prove authorization. No live session matrix or admin-bypass adapter is implemented.
+`python -m pip install -e ".[http]"` provides requests, aiohttp and [httpx](https://www.python-httpx.org/); httpx is the Python library, not the similarly named reconnaissance CLI. These are optional dependencies, not replacements for the scoped HttpClient used by native `access-check`. Direct async clients do not inherit rate/scope/stop/evidence controls. HTML parsers and PyJWT do not prove authorization. The native check handles one known private resource comparison, not a live role matrix or admin-bypass scanner.

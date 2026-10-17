@@ -83,6 +83,21 @@ Use `request --dry-run` to validate the request against program scope without se
 
 Responses include status, duration, headers and a redacted body preview. Redirects are recorded without being followed, so a redirect cannot silently send a second request outside scope. Review a Location header and submit another authorized request explicitly.
 
+## Native A/B Access Checks
+
+`access-check` sends its own HTTP requests; it does not ask nuclei/ffuf to understand your account permissions. Given two authorized test-account captures and known private JSON resources, it validates both normal reads and constructs **one crossed GET** with the owner's resource URL and the actor's complete header context. It stops before the cross if either control fails. No ID guessing, write methods, inverse cross or anonymous check is added.
+
+Prepare the [private case schema](skills/bugbounty-access-control/references/native-check.md) using exact resource/success JSON pointers and distinct controlled private markers already present in your own test resources. Assertions in that case must reflect the actual user authorization and intended sharing; the tool cannot independently grant or prove them. Captured origin and session context are checked before traffic. Session-bearing queries, bodies and host overrides are unsupported.
+
+```bash
+bugbounty access-check my-program --case-file registros/my-program/private/case.json --rate 0.1 --max-tests 3 --dry-run
+bugbounty access-check my-program --case-file registros/my-program/private/case.json --rate 0.1 --max-tests 3
+```
+
+Live execution requires program automation permission. The whole group has a hard maximum of three attempted requests and shares one rate limiter; at 0.1 requests/second, starts are at least ten seconds apart. Response predicates use the complete bounded capture in memory, not its report preview. Saved evidence includes status/timing/truncation and match booleans, not session headers, resource IDs, proof values, URLs or raw bodies.
+
+Both private resource and marker matches produce `candidate`, even if exposed in an error response. Denial without configured private evidence is only `rejected_in_this_test`; partial evidence, invalid controls, unknown JSON, redirects, truncation and rate limits are inconclusive. No IDOR is automatically confirmed or platform report submitted. For unsupported captures, use the separately reviewed manual workflow, not a scanner fallback.
+
 ## Fuzzing With ffuf
 
 ```bash
@@ -104,6 +119,8 @@ bugbounty xss my-program --routes inputs/routes.txt --parameters inputs/paramete
 ```
 
 Use `--header` and `--cookie` for your authorized test session. The command sends four non-executing marker variants per route/parameter using GET, until its request budget is reached. It records the parameter, marker, status, duration, reflection context and request/response evidence.
+
+With the `xss` extra, the command also parses the actual HTML response and records text/attribute/URL/event/script/style contexts in `context_analysis`. Choose `--html-parser html.parser`, `lxml` or `html5lib`. Non-HTML and unavailable parsers are explicit states, not completed validation. Truncated captures stop the batch. Parsing is not JavaScript execution: `browser_execution_observed` and `confirmed` remain false.
 
 Results are `possible`, `not_reproducible` or `error`. A reflection **never automatically confirms XSS**. Escaped HTML, JSON and plain text can reflect markers without executing code. `not_reproducible` means this marker was not seen in the captured response, not that the endpoint is vulnerability-free. Truncated responses are flagged. Browser execution, stored XSS and DOM XSS need separate manual validation. Add a finding only after that validation.
 
@@ -181,14 +198,24 @@ The installer uses `$CODEX_HOME/skills` or `~/.codex/skills`, performs no networ
 
 Invoke the router with: `Use $bugbounty-executor for XSS and SQLi on my authorized inputs, one topic at a time.` Or select a topic directly: `Use $bugbounty-access-control with my two authorized test accounts and one known private resource.` An error, rate limit, missing authorization or invalid control stops live testing; no other scanner is started as a fallback. Requested offline HTML/SQL/JWT analysis and resource inspection can still proceed without live program configuration or a dry-run flag.
 
-Access-control work uses the existing individual `request` action, not a new automatic matrix scanner. Its workflow checks normal owner/actor controls before the specified cross, with separate session files and explicit waits across CLI processes. HTTP 200, reflected emails and extension colors are not confirmation. Admin access by an admin is a control, not escalation. Burp extensions, forced browsing, identifier enumeration, hidden-parameter discovery and nuclei templates need their own reviewed scope/budget; no password-guessing adapter is included. ParamSpider mines archived URLs rather than simply parsing local HTML/JS.
+Access-control work now has native `access-check` for one known private GET/JSON resource pair; other methods/flows retain the reviewed individual-request fallback. It is not a role-matrix scanner. HTTP 200, reflected emails and extension colors are not confirmation. Admin access by an admin is a control, not escalation. Burp extensions, forced browsing, identifier enumeration, hidden-parameter discovery and nuclei templates need their own reviewed scope/budget; no password-guessing adapter is included. ParamSpider mines archived URLs rather than simply parsing local HTML/JS.
 
-The script accepts a JSON plan for `request`, `fuzz`, `xss` or `sqli`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
+The script accepts a JSON plan for `request`, `fuzz`, `xss`, `sqli` or `access-check`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
 
 ```bash
 python skills/bugbounty-executor/scripts/run_plan.py --toolkit-root . --plan registros/my-program/plan.json
 python skills/bugbounty-executor/scripts/run_plan.py --toolkit-root . --plan registros/my-program/plan.json --execute
 ```
+
+### Agent Evidence Review
+
+The IA running the skill is the reasoning component. Export one native access-control/XSS/SQLi evidence file into a minimal local packet:
+
+```bash
+bugbounty analyze evidence --input registros/my-program/evidence/access-control/selected.json --output registros/my-program/review.json
+```
+
+The exporter drops arbitrary response text/instructions, URLs, headers and secrets; it includes allowlisted statuses, context counts and comparison booleans. It is offline and calls **no external model**. The [review workflow](skills/bugbounty-executor/references/agent-review.md) directs the calling IA to check provenance, controls, uncertainty and remaining validation before any new step. A formatted packet does not authenticate source claims or grant testing permission. No bundled LLM, API key or automatic AI vulnerability confirmation is implied.
 
 ## Tests
 

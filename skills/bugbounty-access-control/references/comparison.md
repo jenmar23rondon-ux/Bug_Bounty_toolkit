@@ -1,5 +1,7 @@
 # One Controlled Permission Comparison
 
+This is the manual fallback for requests that do not fit [native access-check](native-check.md). Prefer the native engine for a reviewed pair of GET/JSON controls with known private markers; it enforces the three-step comparison in one process. Do not silently adapt unsupported captures or automatically replay their write operations.
+
 ## Inputs
 
 Record the program/policy, exact in-scope read, allowed automation, interval, total request budget, own test accounts/roles, known resource owner and whether that resource is private or intentionally shared. Use a harmless unique test marker already placed in the owner's resource when available. IDs for a user, basket, complaint and list are different identifiers: do not substitute one ID across unrelated endpoint types.

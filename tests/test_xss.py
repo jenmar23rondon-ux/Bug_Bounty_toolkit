@@ -1,7 +1,9 @@
 import tempfile
+import importlib.util
+import json
 import unittest
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from urllib.parse import parse_qs, urlsplit
 
 from bugbounty_toolkit.core.http_client import ResponseRecord
@@ -12,6 +14,44 @@ from bugbounty_toolkit.xss.result_validator import classify_reflection
 
 
 class XssTests(unittest.TestCase):
+    def context_case(self, root, body, content_type="text/html", truncated=False):
+        scope = root / "scope.txt"
+        scope.write_text("example.com\n")
+        routes = root / "routes.txt"
+        routes.write_text("https://example.com/search\n")
+        params = root / "params.txt"
+        params.write_text("q\n")
+        client = Mock()
+        client.send.side_effect = lambda spec: ResponseRecord(spec, spec.url, 200, "OK", 1, {"content-type": content_type}, body, len(body), truncated)
+        with patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"):
+            path, results = XssParameterTester(ScopeValidator(scope), client).run(XssOptions(routes, params, max_tests=1), root / "evidence")
+        return client, path, results
+
+    @unittest.skipUnless(importlib.util.find_spec("bs4"), "optional xss extra not installed")
+    def test_live_response_contexts_without_browser_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            body = '<p>BBTK_MARKER</p><a href="/BBTK_MARKER" title="BBTK_MARKER">x</a><img onerror="BBTK_MARKER"><script>let q="BBTK_MARKER"</script>'
+            client, _, results = self.context_case(Path(directory), body)
+            result = results[0]
+            self.assertEqual(result["context_analysis"]["status"], "analyzed")
+            kinds = {entry["context"] for entry in result["context_analysis"]["contexts"]}
+            self.assertTrue({"html_text", "url_attribute", "attribute", "event_attribute", "script"}.issubset(kinds))
+            self.assertFalse(result["confirmed"])
+            self.assertFalse(result["browser_execution_observed"])
+            client.send.assert_called_once()
+
+    def test_context_unavailable_non_html_and_truncation_are_explicit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch("bugbounty_toolkit.xss.parameter_tester.analyze_html", side_effect=ValueError("missing parser")):
+                _, _, results = self.context_case(Path(directory), "<p>BBTK_MARKER</p>")
+                self.assertEqual(results[0]["context_analysis"]["status"], "unavailable")
+            _, _, results = self.context_case(Path(directory), '{"q":"BBTK_MARKER"}', "application/json")
+            self.assertEqual(results[0]["context_analysis"]["status"], "not_html")
+            client, path, results = self.context_case(Path(directory), "<p>BBTK_MARKER", truncated=True)
+            self.assertEqual(json.loads(path.read_text())["stop_reason"], "truncated_response")
+            self.assertEqual(results[0]["classification"], "error")
+            client.send.assert_called_once()
+
     def test_auth_failure_stops_the_batch(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

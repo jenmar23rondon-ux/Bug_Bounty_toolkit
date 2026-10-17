@@ -45,4 +45,4 @@ Plans use one worker and a policy-derived delay. XSStrike requires exactly one q
 
 ## Timing Across Invocations
 
-HttpClient's rate limiter belongs to one process. Multiple individual CLI invocations do not share a last-request timestamp. For a user-requested interval, explicitly wait between requests, including across topic transitions; do not assume `--rate 0.1` delays a newly created process for ten seconds. Count controls and repetitions in the overall budget.
+HttpClient's rate limiter belongs to one process. Native `access-check` shares one client across its two controls and crossed read, so `--rate 0.1` enforces ten-second start intervals within that group. Multiple individual CLI invocations do not share timestamps: explicitly wait between those invocations and topic transitions. Count controls and repetitions in the overall budget.

@@ -1,6 +1,6 @@
 ---
 name: bugbounty-access-control
-description: Review authorized IDOR/BOLA, missing authentication on resources and role-based access with controlled cross-session HTTP comparisons. Use for Autorize, AuthMatrix, Authz and permission matrices, not login bypass, password guessing or automatic identifier enumeration.
+description: Execute native authorized IDOR/BOLA comparisons with two valid account controls and one crossed GET, or review other resource/role permissions. Use known resources and separate sessions; no automatic identifier enumeration, password guessing or scanner-based confirmation.
 ---
 
 # Access Control
@@ -9,11 +9,13 @@ Handle only the requested resource/permission comparison. Confirm the actual pro
 
 ## Workflow
 
-1. Read [comparison workflow](references/comparison.md) and record the single intended matrix row, exact route/method/resource, owner and actor session paths, expected allow/deny and total request budget. Do not guess IDs or replay an entire Burp history.
-2. For request mechanics use the sibling [command reference](../bugbounty-executor/references/commands.md) and `scripts/run_plan.py` in that executor folder. This topic uses individual `request` actions; there is no automatic `access-check` command, matrix engine or external-extension adapter.
-3. Keep credentials in separate private raw-request files. Review each replay for side effects, correctly replace the complete session context and dry-run every destination against scope. Send valid normal reads for the owner and actor before the specified crossed read; stop if either control fails.
-4. Execute one request at a time under policy limits and any stricter user interval. The rate limiter resets for each new process, so explicitly wait between separate invocations. Do not send the inverse cross, unauthenticated comparison or next matrix row unless requested and budgeted. Never follow redirects automatically.
-5. Compare application success, ownership, actual private content and expected permissions, not just HTTP codes, lengths or reflected input. Record `candidate`, `rejected_in_this_test` or `inconclusive` with evidence. Do not automatically create a confirmed finding or submit a report.
+1. For supplied GET reads of known private JSON resources, read [native A/B check](references/native-check.md). Prepare its private case from the user's authorized test accounts, two exact raw requests and known non-reflected private proof markers. Do not guess IDs, fabricate ownership/permission assertions or replay a history.
+2. Use `access-check` directly or the shared [plan adapter](../bugbounty-executor/references/commands.md). Dry-run first. The native engine sends the owner control, actor control and then one cross with the owner's resource URL and the actor's ENTIRE header context; it compares complete bounded response bodies, not evidence previews. It does not invoke nuclei, ffuf or Burp extensions.
+3. Execute only when actual policy permits automation and three requests fit the budget. One HttpClient/limiter spans all three requests; `--rate 0.1` spaces their starts by at least ten seconds. Invalid controls stop before the cross. No inverse, anonymous check, write method, credential refresh or retry is added.
+4. Inspect predicate results and stop reasons. Both private resource identity and the known private marker are needed for `candidate`, even if the API reports failure; `confirmed` stays false pending intended-permission review. Partial evidence, unknown schema, redirects or truncation are inconclusive. A crossed denial is only `rejected_in_this_test`, never global protection.
+5. Use [agent evidence review](../bugbounty-executor/references/agent-review.md) to produce a minimal offline packet and explain the actual controls, outcome and limitations. The calling IA performs the reasoning; no external model receives tokens or raw bodies automatically. Finish this topic before another starts.
+
+For captures that do not fit native GET/JSON constraints, read [manual comparison workflow](references/comparison.md) and use only individually reviewed requests. Do not silently adapt POST, signed/session-bearing queries, missing proof markers or complex role matrices into a native case. Explicit waits are still required between separate CLI processes; the native limiter spans only its own three-step run.
 
 Read [tools and wordlists](references/tools.md) only when choosing Burp extensions or discovery resources. They are optional manual resources, not automatic launches. Never install a tool or start a scan just because it appears in the catalog. Admin access with an admin session is a valid control, not escalation; a low-privileged actor obtaining restricted admin data is the relevant crossed test.
 

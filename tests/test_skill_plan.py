@@ -13,6 +13,17 @@ SPEC.loader.exec_module(runner)
 
 
 class SkillPlanTests(unittest.TestCase):
+    def test_native_access_plan_keeps_credentials_in_a_case_file(self):
+        command = runner.build_command({"program": "lab", "action": "access-check", "case_file": "registros/lab/private/case.json", "rate": 0.1, "max_tests": 3})
+        self.assertIn("access-check", command)
+        self.assertIn("--case-file=registros/lab/private/case.json", command)
+        with self.assertRaises(ValueError):
+            runner.build_command({"program": "lab", "action": "access-check", "case_file": "case.json", "cookies": ["session=not-in-argv"]})
+        with self.assertRaises(ValueError):
+            runner.build_command({"program": "lab", "action": "access-check"})
+        command = runner.build_command({"program": "lab", "action": "xss", "routes": "routes", "parameters": "parameters", "html_parser": "html5lib"})
+        self.assertIn("--html-parser=html5lib", command)
+
     def test_sqli_uses_the_bounded_runner_not_an_external_scanner(self):
         command = runner.build_command({"program": "lab", "action": "sqli", "routes": "routes.txt", "parameters": "parameters.txt", "max_tests": 6, "rate": 0.1})
         self.assertIn("sqli", command)
