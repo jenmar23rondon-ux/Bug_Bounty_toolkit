@@ -1,0 +1,7 @@
+# Examples only. Replace with the assets and exclusions of your authorized program.
+allowed:
+  - https://target-autorizado.example
+# Explicit wildcard example: "*.target-autorizado.example"
+excluded:
+  - https://target-autorizado.example/logout
+  - https://target-autorizado.example/admin

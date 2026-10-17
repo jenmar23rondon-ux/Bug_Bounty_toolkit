@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty Access Control"
+  short_description: "Compara permisos e IDOR entre cuentas autorizadas"
+  default_prompt: "Usa $bugbounty-access-control con mis dos cuentas de prueba y un recurso conocido; valida controles y compara una lectura cruzada."
+policy:
+  allow_implicit_invocation: true

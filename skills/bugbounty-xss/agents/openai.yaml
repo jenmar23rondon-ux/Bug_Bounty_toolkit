@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty XSS"
+  short_description: "Analiza reflejos y contextos XSS autorizados"
+  default_prompt: "Usa $bugbounty-xss con mis rutas y parametros autorizados y distingue reflejos de ejecucion real."
+policy:
+  allow_implicit_invocation: true

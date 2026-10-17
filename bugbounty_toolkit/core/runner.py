@@ -16,7 +16,7 @@ def run_tool(store: RecordStore, command_name: str, target: str | None, command:
     if not tool_exists(command[0]):
         raise RuntimeError(f"Required tool not found in PATH: {command[0]}")
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     output_path = store.paths.raw_dir / f"{timestamp}-{command_name}.txt"
     with output_path.open("w", encoding="utf-8") as output:
         process = subprocess.run(command, stdout=output, stderr=subprocess.STDOUT, text=True, check=False)

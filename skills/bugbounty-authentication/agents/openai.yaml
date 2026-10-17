@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty Authentication"
+  short_description: "Revisa login y sesiones con cuentas de prueba"
+  default_prompt: "Usa $bugbounty-authentication para revisar solo el flujo autorizado de mis cuentas de prueba y sus efectos."
+policy:
+  allow_implicit_invocation: true
