@@ -332,11 +332,11 @@ def cmd_access_check(args: argparse.Namespace) -> None:
                                       allow_public_writes=args.allow_public_writes)
         tester.validate(args.case_file, budget)
         if args.dry_run:
-            print("[+] Local JSON write case validated: two controls and one crossed POST/PUT/PATCH; no requests sent.")
+            print("[+] JSON write case validated: two controls and one crossed POST/PUT/PATCH; no requests sent.")
             return
         path, result = tester.run(args.case_file, store.paths.evidence_dir / "access-control", budget)
         store.add_run("access-check-lab-write", None, ["access-check", "--lab-write"], 1 if result["classification"] == "inconclusive" else 0, path)
-        print(f"[+] Local write comparison: {result['classification']}; {result['requests_attempted']} requests attempted. No IDOR automatically confirmed. Evidence: {path}")
+        print(f"[+] JSON write comparison: {result['classification']}; {result['requests_attempted']} requests attempted. No IDOR automatically confirmed. Evidence: {path}")
         return
     tester = AccessControlTester(scope, client_for(args, settings, scope))
     tester.validate(args.case_file, budget)

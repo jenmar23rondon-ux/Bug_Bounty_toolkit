@@ -78,7 +78,9 @@ class AccessWriteRangeTester:
             max_concurrency = MAX_LOCAL_CONCURRENCY if options.allow_public_range else 1
             min_interval = 1.0 if options.allow_public_range else 10.0
             if options.max_range > max_range or options.concurrency > max_concurrency or options.min_interval < min_interval:
-                raise ValueError("Public write ranges require --allow-public-range to exceed 25 IDs, use concurrency, or go below ten seconds.")
+                if options.allow_public_range:
+                    raise ValueError("Relaxed public write ranges allow at most 100 IDs, four workers, and require at least one second between starts.")
+                raise ValueError("Public write ranges remain capped at 25 IDs, sequential, and at least ten seconds apart without --allow-public-range.")
             if options.max_tests > max_range + 2:
                 raise ValueError("Public write-range budget exceeds the configured range cap including two controls.")
         return case, requests
