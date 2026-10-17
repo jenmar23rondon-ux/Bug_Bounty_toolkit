@@ -42,7 +42,7 @@ def parse_raw_http_request(raw: str, base_url: str | None = None) -> RequestSpec
     headers: dict[str, str] = {}
     for line in lines[1:]:
         if ":" not in line:
-            raise RequestBuildError(f"Invalid header line: {line}")
+            raise RequestBuildError("Invalid raw header syntax; expected Name: value. Inspect the capture locally.")
         key, value = line.split(":", 1)
         key = key.strip()
         if not key or any(existing.lower() == key.lower() for existing in headers):

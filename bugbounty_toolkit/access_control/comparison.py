@@ -100,6 +100,9 @@ def load_case(path: Path, scope: ScopeValidator) -> AccessCase:
             raise ValueError("The raw capture is not a supported HTTP/1.x request; inspect it locally.") from exc
         if urlsplit(captured.prepared_url()).netloc != base.netloc:
             raise ValueError("The raw capture Host must match the declared origin; host overrides are not supported.")
+        captured_host = next((value for key, value in captured.headers.items() if key.lower() == "host"), None)
+        if captured_host is not None and captured_host.lower() != base.netloc.lower():
+            raise ValueError("The captured Host conflicts with the absolute target or declared origin.")
         if spec.method != "GET" or spec.body is not None:
             raise ValueError("Access-check supports reviewed GET reads without bodies only.")
         for key, value in spec.headers.items():

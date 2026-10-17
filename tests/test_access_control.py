@@ -218,6 +218,13 @@ class AccessControlTests(unittest.TestCase):
                 self.run_case()
         self.assertEqual(AccessLab.hits, [])
 
+    def test_absolute_target_does_not_hide_conflicting_host(self):
+        actor = self.root / "actor.http"
+        actor.write_text(f"GET {self.base}/objects/A HTTP/1.1\nHost: wrong-host.invalid\nAuthorization: {TOKENS['A']}\n\n")
+        with self.assertRaisesRegex(ValueError, "Host conflicts"):
+            self.run_case()
+        self.assertEqual(AccessLab.hits, [])
+
     def test_three_requests_share_the_same_limiter(self):
         self.client.rate_limiter = RateLimiter(20)
         self.run_case()

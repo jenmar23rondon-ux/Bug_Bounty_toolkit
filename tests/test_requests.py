@@ -126,6 +126,9 @@ class RequestTests(unittest.TestCase):
                 parse_header_items([value])
         with self.assertRaises(RequestBuildError):
             parse_raw_http_request("GET / HTTP/1.1\nHost: one.example\nHOST: two.example\n\n")
+        with self.assertRaises(RequestBuildError) as failure:
+            parse_raw_http_request("GET / HTTP/1.1\nHost: example.com\nAuthorization Bearer private-malformed-token\n\n")
+        self.assertNotIn("private-malformed-token", str(failure.exception))
 
     def test_unique_evidence_filenames(self):
         with patch("bugbounty_toolkit.reporting.evidence.utc_stamp", return_value="same-clock-tick"):

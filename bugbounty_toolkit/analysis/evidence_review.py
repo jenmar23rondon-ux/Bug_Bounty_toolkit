@@ -4,6 +4,7 @@ from collections import Counter
 
 
 CONTEXTS = {"html_text", "comment", "tag_name", "attribute_name", "attribute", "url_attribute", "event_attribute", "script", "style"}
+MEDIA_TYPES = {"text/html", "application/xhtml+xml", "application/json", "text/plain", "application/javascript", "text/javascript", "image/svg+xml"}
 CLASSIFICATIONS = {"candidate", "rejected_in_this_test", "inconclusive", "possible", "not_reproducible", "error", "baseline"}
 STOP_REASONS = {"transport_error", "invalid_owner_control", "invalid_actor_control", "rate_limited", "truncated_response",
                 "redirect_not_followed", "private_evidence_observed", "partial_private_evidence", "cross_read_rejected",
@@ -21,12 +22,20 @@ def review_evidence(data: dict) -> dict:
     codes = Counter(str(row["status_code"]) for row in rows if type(row.get("status_code")) is int and 100 <= row["status_code"] <= 599)
     labels = Counter(row["classification"] for row in rows if isinstance(row.get("classification"), str) and row["classification"] in CLASSIFICATIONS)
     contexts = Counter()
+    media_types = Counter()
+    context_states = Counter()
     unavailable = 0
     for row in rows:
+        media = row.get("content_type")
+        if isinstance(media, str):
+            media_types[media if media in MEDIA_TYPES else "other"] += 1
         analysis = row.get("context_analysis", {})
         if not isinstance(analysis, dict):
             continue
         unavailable += analysis.get("status") == "unavailable"
+        state = analysis.get("status")
+        if isinstance(state, str) and state in {"analyzed", "not_html", "unavailable"}:
+            context_states[state] += 1
         entries = analysis.get("contexts", [])
         if isinstance(entries, list):
             for entry in entries:
@@ -35,6 +44,7 @@ def review_evidence(data: dict) -> dict:
                     contexts[kind] += 1
     packet = {"type": "agent-review", "topic": topic, "rows_observed": len(rows),
               "status_codes": dict(codes), "classifications": dict(labels), "html_contexts": dict(contexts),
+              "content_types": dict(media_types), "context_analysis_states": dict(context_states),
               "context_analysis_unavailable": unavailable, "confirmed": False,
               "truncated_rows": sum(row.get("body_truncated") is True for row in rows),
               "transport_error_rows": sum(row.get("transport_error") is True for row in rows),
