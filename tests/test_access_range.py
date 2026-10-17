@@ -104,6 +104,46 @@ class AccessRangeTests(unittest.TestCase):
                 tester.validate(case_file, options)
         self.client.send.assert_not_called()
 
+    def test_public_range_opt_in_raises_limits_and_defaults_to_one_second(self):
+        remote = self.root / "public-relaxed"
+        remote.mkdir()
+        host = "authorized.example"
+        (remote / "scope.txt").write_text(host + "\n", encoding="utf-8")
+        for filename, resource_id, token in (("owner.http", "20", "owner-session"),
+                                              ("actor.http", "10", "actor-session")):
+            (remote / filename).write_text(
+                f"GET /api/items/{resource_id} HTTP/1.1\r\nHost: {host}\r\nAuthorization: Bearer {token}\r\n\r\n",
+                encoding="utf-8",
+            )
+        data = json.loads(self.case_file.read_text(encoding="utf-8"))
+        data["base_url"] = "https://authorized.example"
+        case_file = remote / "case.json"
+        case_file.write_text(json.dumps(data), encoding="utf-8")
+        tester = AccessRangeTester(ScopeValidator(remote / "scope.txt"), self.client)
+
+        _, default_requests = tester.validate(case_file, AccessRangeOptions("1-25", 27))
+        self.assertEqual(len(default_requests), 25)
+        for options in (AccessRangeOptions("1-26", 28),
+                        AccessRangeOptions("1-2", 4, concurrency=2),
+                        AccessRangeOptions("1-2", 4, min_interval=9.99)):
+            with self.subTest(options=options), self.assertRaises(ValueError):
+                tester.validate(case_file, options)
+
+        relaxed = AccessRangeOptions("1-100", 102, max_range=100, concurrency=4,
+                                     min_interval=1.0, allow_public_range=True)
+        _, requests = tester.validate(case_file, relaxed)
+        self.assertEqual(len(requests), 100)
+        for unsafe in (AccessRangeOptions("1-2", 4, max_range=2, min_interval=0.99, allow_public_range=True),
+                       AccessRangeOptions("1-2", 4, max_range=2, concurrency=5, min_interval=1, allow_public_range=True)):
+            with self.subTest(options=unsafe), self.assertRaises(ValueError):
+                tester.validate(case_file, unsafe)
+        self.client.send.assert_not_called()
+
+    def test_loopback_limits_remain_available_without_public_opt_in(self):
+        options = AccessRangeOptions("1-100", 102, max_range=100, concurrency=4, min_interval=0.01)
+        _, requests = self.tester.validate(self.case_file, options)
+        self.assertEqual(len(requests), 100)
+
     def test_concurrency_stops_new_windows_and_marks_in_flight_overrun(self):
         owner = {"success": True, "data": {"id": "20", "proof": "owner-proof-123456"}}
         actor = {"success": True, "data": {"id": "10", "proof": "actor-proof-654321"}}

@@ -121,6 +121,35 @@ class AccessWriteLabTests(unittest.TestCase):
             tester.validate(self.case_file)
         self.client.send.assert_not_called()
 
+    def test_public_write_opt_in_allows_scoped_crossed_write(self):
+        host = "authorized.example"
+        (self.root / "scope.txt").write_text(host + "\n", encoding="utf-8")
+        self.base = "https://authorized.example"
+        self.host = host
+        self._write_request("owner.http", "owner-session", "B")
+        self._write_request("actor.http", "actor-session", "A")
+        data = json.loads(self.case_file.read_text(encoding="utf-8"))
+        data["base_url"] = self.base
+        self.case_file.write_text(json.dumps(data), encoding="utf-8")
+        tester = AccessWriteLabTester(ScopeValidator(self.root / "scope.txt"), self.client,
+                                     allow_public_writes=True)
+
+        def send(request):
+            identifier = json.loads(request.body)["mutation"]["item"]["id"]
+            account = request.headers["Authorization"]
+            resource_id = "B" if account == "Bearer owner-session" or identifier == "B" else "A"
+            proof = "owner-proof-123456" if resource_id == "B" else "actor-proof-654321"
+            return self._response(request, resource_id, proof)
+
+        self.client.send.side_effect = send
+        case = tester.validate(self.case_file)
+        self.assertEqual(case.cross.prepared_url(), "https://authorized.example/api/items/update")
+        _, result = tester.run(self.case_file, self.root / "public-write-evidence")
+        self.assertEqual(result["requests_attempted"], 3)
+        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(self.client.send.call_args_list[2].args[0].headers["Authorization"],
+                         "Bearer actor-session")
+
     def test_write_requires_disposable_resources_and_only_changes_declared_pointer(self):
         data = json.loads(self.case_file.read_text(encoding="utf-8"))
         data["disposable_test_resources"] = False

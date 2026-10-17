@@ -32,6 +32,8 @@ from .analysis.evidence_review import review_evidence
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
+from .access_control.write_range import AccessWriteRangeTester
+from .access_control.guards import is_loopback_url
 from .analysis.ollama_review import review_with_ollama
 from .integrations.catalog import catalog
 from .integrations.external_plan import build_external_plan, TOOLS
@@ -256,14 +258,24 @@ def cmd_sqli(args: argparse.Namespace) -> None:
 
 
 def cmd_access_check(args: argparse.Namespace) -> None:
-    store, settings, scope = executor_context(args, automated=True)
-    range_options = (args.max_range, args.concurrency, args.min_interval)
-    if not args.id_range and any(value is not None for value in range_options):
-        raise ValueError("--max-range, --concurrency and --min-interval require --range.")
+    range_requested = bool(args.id_range or args.lab_write_range)
+    if args.allow_public_writes and not args.lab_write:
+        raise ValueError("--allow-public-writes requires --lab-write.")
+    if args.lab_write_range and not args.lab_write:
+        raise ValueError("--lab-write-range requires --lab-write.")
+    if args.id_range and args.lab_write_range:
+        raise ValueError("--range and --lab-write-range are mutually exclusive.")
     if args.lab_write and args.id_range:
-        raise ValueError("--lab-write and --range cannot be combined.")
+        raise ValueError("--lab-write cannot be combined with --range.")
+    range_options = (args.max_range, args.concurrency, args.min_interval)
+    if not range_requested and any(value is not None for value in range_options):
+        raise ValueError("--max-range, --concurrency and --min-interval require --range or --lab-write-range.")
+    if args.allow_public_range and not range_requested:
+        raise ValueError("--allow-public-range requires --range or --lab-write-range.")
+
+    store, settings, scope = executor_context(args, automated=True)
     range_cap = args.max_range or 25
-    budget = args.max_tests or (min(settings.max_tests, range_cap + 2) if args.id_range else 3)
+    budget = args.max_tests or (min(settings.max_tests, range_cap + 2) if range_requested else 3)
     if budget > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     if args.id_range:
@@ -271,9 +283,16 @@ def cmd_access_check(args: argparse.Namespace) -> None:
             raise ValueError(f"Range checks are capped at {MAX_RANGE_REQUESTS} requests including controls in loopback labs.")
         client = client_for(args, settings, scope)
         tester = AccessRangeTester(scope, client)
+        interval = args.min_interval if args.min_interval is not None else (1.0 if args.allow_public_range else 10.0)
         options = AccessRangeOptions(args.id_range, budget, range_cap, args.concurrency or 1,
-                                     args.min_interval or 10.0)
-        _, requests = tester.validate(args.case_file, options)
+                                     interval, args.allow_public_range)
+        case, requests = tester.validate(args.case_file, options)
+        local_lab = all(is_loopback_url(request.prepared_url()) for request in (case.owner, case.actor, *requests))
+        if local_lab and args.allow_public_range and args.min_interval is None:
+            options = AccessRangeOptions(args.id_range, budget, range_cap, args.concurrency or 1, 10.0, True)
+            case, requests = tester.validate(args.case_file, options)
+        elif not local_lab and args.allow_public_range:
+            print("[!] Public range relaxed: more requests than default")
         if args.dry_run:
             print(f"[+] Bounded range validated: two controls and {len(requests)} GETs; cap {range_cap}, concurrency {options.concurrency}, minimum interval {options.min_interval:g}s. No requests sent.")
             return
@@ -282,8 +301,35 @@ def cmd_access_check(args: argparse.Namespace) -> None:
         print(f"[+] Bounded access comparison: {result['classification']}; {result['requests_attempted']} requests attempted; candidate offset: {result['candidate_offset']}.")
         print(f"[+] Stop reason: {result['stop_reason']}. No IDOR automatically confirmed. Evidence: {path}")
         return
+    if args.lab_write_range:
+        if args.allow_public_writes:
+            print("[!] Public writes enabled: requests may modify remote state")
+        client = client_for(args, settings, scope)
+        tester = AccessWriteRangeTester(scope, client, allow_public_writes=args.allow_public_writes)
+        interval = args.min_interval if args.min_interval is not None else (1.0 if args.allow_public_range else 10.0)
+        options = AccessRangeOptions(args.lab_write_range, budget, range_cap, args.concurrency or 1,
+                                     interval, args.allow_public_range)
+        case, requests = tester.validate(args.case_file, options)
+        local_lab = all(is_loopback_url(request.prepared_url()) for request in (case.owner, case.actor, *requests))
+        if local_lab and args.allow_public_range and args.min_interval is None:
+            options = AccessRangeOptions(args.lab_write_range, budget, range_cap, args.concurrency or 1, 10.0, True)
+            case, requests = tester.validate(args.case_file, options)
+        elif not local_lab and args.allow_public_range:
+            print("[!] Public range relaxed: more requests than default")
+        if args.dry_run:
+            print(f"[+] JSON write range validated: two controls and {len(requests)} POST/PUT/PATCH probes; cap {range_cap}, concurrency {options.concurrency}, minimum interval {options.min_interval:g}s. No requests sent.")
+            return
+        path, result = tester.run(args.case_file, options, store.paths.evidence_dir / "access-control")
+        store.add_run("access-check-lab-write-range", None, ["access-check", "--lab-write-range"],
+                      1 if result["classification"] == "inconclusive" else 0, path)
+        print(f"[+] Bounded write comparison: {result['classification']}; {result['requests_attempted']} requests attempted; candidate offset: {result['candidate_offset']}.")
+        print(f"[+] Stop reason: {result['stop_reason']}. No IDOR automatically confirmed. Evidence: {path}")
+        return
     if args.lab_write:
-        tester = AccessWriteLabTester(scope, client_for(args, settings, scope))
+        if args.allow_public_writes:
+            print("[!] Public writes enabled: requests may modify remote state")
+        tester = AccessWriteLabTester(scope, client_for(args, settings, scope),
+                                      allow_public_writes=args.allow_public_writes)
         tester.validate(args.case_file, budget)
         if args.dry_run:
             print("[+] Local JSON write case validated: two controls and one crossed POST/PUT/PATCH; no requests sent.")
@@ -518,8 +564,11 @@ def build_parser() -> argparse.ArgumentParser:
     access.add_argument("--range", dest="id_range", help="One numeric interval; non-loopback targets remain sequential and capped")
     access.add_argument("--max-range", type=positive_int, help="Maximum IDs in --range (default 25; loopback hard cap 100)")
     access.add_argument("--concurrency", type=positive_int, help="Range workers (default 1; loopback hard cap 4)")
-    access.add_argument("--min-interval", type=positive_float, help="Minimum seconds between request starts (default 10; loopback minimum 0.01)")
-    access.add_argument("--lab-write", action="store_true", help="Run one JSON-body POST/PUT/PATCH A/B comparison on loopback only")
+    access.add_argument("--min-interval", type=positive_float, help="Minimum seconds between starts (public relaxed default 1; otherwise 10; loopback minimum 0.01)")
+    access.add_argument("--allow-public-range", action="store_true", help="Opt in to up to 100 public range probes, four workers and a one-second minimum interval")
+    access.add_argument("--lab-write", action="store_true", help="Run one JSON-body POST/PUT/PATCH A/B comparison; public targets require --allow-public-writes")
+    access.add_argument("--allow-public-writes", action="store_true", help="Opt in to state-changing write comparisons on in-scope non-loopback hosts")
+    access.add_argument("--lab-write-range", help="With --lab-write, sweep one numeric JSON-body ID interval")
     access.add_argument("--timeout", type=positive_float)
     access.add_argument("--rate", type=positive_float)
     access.add_argument("--max-tests", type=positive_int)

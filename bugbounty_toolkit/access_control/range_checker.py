@@ -48,6 +48,7 @@ class AccessRangeOptions:
     max_range: int = MAX_RANGE_IDS
     concurrency: int = 1
     min_interval: float = 10.0
+    allow_public_range: bool = False
 
 
 class _ThreadSafeIntervalLimiter:
@@ -81,14 +82,15 @@ class AccessRangeTester:
         self._request_lock = threading.Lock()
 
     def validate(self, case_file: Path, options: AccessRangeOptions) -> tuple[AccessCase, list[RequestSpec]]:
-        if (type(options.max_range) is not int or not 1 <= options.max_range <= MAX_LOCAL_RANGE_IDS or
+        if (type(options.allow_public_range) is not bool or
+                type(options.max_range) is not int or not 1 <= options.max_range <= MAX_LOCAL_RANGE_IDS or
                 type(options.concurrency) is not int or not 1 <= options.concurrency <= MAX_LOCAL_CONCURRENCY or
                 isinstance(options.min_interval, bool) or not isinstance(options.min_interval, (int, float)) or
                 not math.isfinite(options.min_interval) or options.min_interval <= 0):
             raise ValueError("Range cap, concurrency or minimum interval is invalid.")
         ids = parse_id_range(options.id_range, options.max_range)
         if type(options.max_tests) is not int or len(ids) + 2 > options.max_tests or options.max_tests > MAX_RANGE_REQUESTS:
-            raise ValueError(f"Budget must cover two controls and at most {MAX_LOCAL_RANGE_IDS} sequential GETs.")
+            raise ValueError(f"Budget must cover two controls and at most {MAX_LOCAL_RANGE_IDS} GET probes.")
         case = AccessControlTester(self.scope, self.client).validate(case_file, options.max_tests)
         data = parse_json(read_local(case_file, 131072))
         if data.get("identifier_enumeration_authorized") is not True:
@@ -101,10 +103,16 @@ class AccessRangeTester:
             if options.min_interval < MIN_LOCAL_INTERVAL_SECONDS:
                 raise ValueError(f"Loopback interval must be at least {MIN_LOCAL_INTERVAL_SECONDS} seconds.")
         else:
-            if options.max_range > MAX_RANGE_IDS or options.concurrency != 1 or options.min_interval < 10.0:
+            max_public_range = MAX_LOCAL_RANGE_IDS if options.allow_public_range else MAX_RANGE_IDS
+            min_public_interval = 1.0 if options.allow_public_range else 10.0
+            max_public_concurrency = MAX_LOCAL_CONCURRENCY if options.allow_public_range else 1
+            if (options.max_range > max_public_range or options.concurrency > max_public_concurrency or
+                    options.min_interval < min_public_interval):
+                if options.allow_public_range:
+                    raise ValueError("Relaxed public ranges allow at most 100 IDs, four workers, and require at least one second between starts.")
                 raise ValueError("Non-loopback ranges remain capped at 25 IDs, sequential, and at least ten seconds apart.")
-            if options.max_tests > MAX_RANGE_IDS + 2:
-                raise ValueError("Non-loopback range checks are capped at 27 total requests including controls.")
+            if options.max_tests > max_public_range + 2:
+                raise ValueError(f"Non-loopback range checks are capped at {max_public_range + 2} total requests including controls.")
         return case, requests
 
     @staticmethod

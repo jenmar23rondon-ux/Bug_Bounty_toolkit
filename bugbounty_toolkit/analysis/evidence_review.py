@@ -10,7 +10,7 @@ CLASSIFICATIONS = {"candidate", "rejected_in_this_test", "inconclusive", "possib
 STOP_REASONS = {"transport_error", "invalid_owner_control", "invalid_actor_control", "rate_limited", "truncated_response",
                 "redirect_not_followed", "private_evidence_observed", "partial_private_evidence", "cross_read_rejected",
                 "cross_read_not_proven", "cross_write_rejected", "cross_write_not_proven", "access_or_rate_limit",
-                "candidate_observed_stop_early", "authentication_failure"}
+                "candidate_observed_stop_early", "authentication_failure", "write_probe_rejected"}
 
 
 def review_evidence(data: dict) -> dict:
@@ -65,9 +65,9 @@ def review_evidence(data: dict) -> dict:
         packet["cross_read_observed"] = any(row.get("step") == "cross_read" and type(row.get("status_code")) is int and 100 <= row["status_code"] <= 599 for row in rows)
         packet["cross_write_attempted"] = any(row.get("step") == "cross_write" for row in rows)
         packet["cross_write_observed"] = any(row.get("step") == "cross_write" and type(row.get("status_code")) is int and 100 <= row["status_code"] <= 599 for row in rows)
-        packet["cross_action"] = "write" if data.get("mode") == "lab-write" else "read"
+        packet["cross_action"] = "write" if data.get("mode") in {"lab-write", "bounded-write-range"} else "read"
         packet["private_evidence_observed"] = any(row.get("step") in {"cross_read", "cross_write"} and row.get("owner_private_match") is True and row.get("owner_resource_match") is True for row in rows)
-        if data.get("mode") == "bounded-range":
+        if data.get("mode") in {"bounded-range", "bounded-write-range"}:
             probes = data.get("results", [])
             if not isinstance(probes, list) or len(probes) > 100 or any(not isinstance(row, dict) for row in probes):
                 raise ValueError("Range evidence is malformed or exceeds its hard review limit.")

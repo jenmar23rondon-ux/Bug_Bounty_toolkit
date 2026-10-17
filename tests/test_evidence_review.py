@@ -75,6 +75,17 @@ class EvidenceReviewTests(unittest.TestCase):
         self.assertEqual(range_review["concurrency"], 4)
         self.assertEqual(range_review["minimum_interval_seconds"], 0.01)
 
+        write_range_review = review_evidence({
+            "type": "access-control", "mode": "bounded-write-range", "classification": "candidate",
+            "steps": [{"step": "cross_write", "status_code": 200, "owner_private_match": True,
+                       "owner_resource_match": True}],
+            "results": [{"probe_offset": 2, "classification": "candidate", "id": "private-write-id"}],
+        })
+        self.assertTrue(write_range_review["cross_write_observed"])
+        self.assertEqual(write_range_review["cross_action"], "write")
+        self.assertEqual(write_range_review["range_candidate_offsets"], [2])
+        self.assertNotIn("private-write-id", json.dumps(write_range_review))
+
     def test_cli_local_ollama_is_explicit_and_counted(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -22,6 +22,8 @@ python -m bugbounty_toolkit.cli fuzz my-program --url "https://authorized.exampl
 python -m bugbounty_toolkit.cli xss my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --base-url "https://authorized.example" --rate 1 --max-tests 40 --dry-run
 python -m bugbounty_toolkit.cli access-check my-program --case-file registros/my-program/private/case.json --range 1-10 --max-range 10 --max-tests 12 --min-interval 10 --concurrency 1 --dry-run
 python -m bugbounty_toolkit.cli access-check lab --case-file registros/lab/private/write-case.json --lab-write --dry-run
+python -m bugbounty_toolkit.cli access-check lab --case-file registros/lab/private/write-case.json --lab-write --allow-public-writes --dry-run
+python -m bugbounty_toolkit.cli access-check lab --case-file registros/lab/private/write-case.json --lab-write --lab-write-range 1-10 --max-range 10 --max-tests 12 --min-interval 10 --dry-run
 python -m bugbounty_toolkit.cli report my-program --format json
 python -m bugbounty_toolkit.cli report my-program --format html
 ```
@@ -65,7 +67,7 @@ SQLi accepts the same plan fields as XSS. Each complete route/parameter group co
 
 ## Access Control
 
-The native [access case](../../bugbounty-access-control/references/native-check.md) keeps captures and proof values in private files, not inline plan headers. The default check validates both controls before one crossed GET. Optional `range` requires explicit program-policy authorization and is preflighted against scope. Defaults remain a 25-ID cap, one worker and a ten-second interval. Non-loopback targets retain those limits; localhost labs may configure up to 100 IDs, four workers and a 0.01-second interval. A direct `--lab-write` run is isolated to disposable loopback JSON POST/PUT/PATCH fixtures; writes never run on external targets and are not available through JSON plans.
+The native [access case](../../bugbounty-access-control/references/native-check.md) keeps captures and proof values in private files, not inline plan headers. The default check validates both controls before one crossed GET. Optional `range` requires explicit program-policy authorization and is preflighted against scope. Public defaults are 25 IDs, one worker and ten seconds; `--allow-public-range` opts in to up to 100 IDs, four workers and one second minimum. Localhost labs may configure up to 100 IDs, four workers and a 0.01-second interval without that flag. Direct `--lab-write` and `--lab-write-range` modes require disposable JSON POST/PUT/PATCH resources. Writes default to loopback; public targets require `--allow-public-writes`, and may mutate persistent remote state. These write modes and both public opt-ins are unavailable through JSON plans.
 
 ## Response Analysis
 
