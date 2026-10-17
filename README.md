@@ -85,16 +85,17 @@ Responses include status, duration, headers and a redacted body preview. Redirec
 
 ## Native A/B Access Checks
 
-`access-check` sends its own HTTP requests; it does not ask nuclei/ffuf to understand your account permissions. Given two authorized test-account captures and known private JSON resources, it validates both normal reads and constructs **one crossed GET** with the owner's resource URL and the actor's complete header context. It stops before the cross if either control fails. No ID guessing, write methods, inverse cross or anonymous check is added.
+`access-check` sends native HTTP requests; it does not ask nuclei/ffuf to understand your account permissions. By default, two authorized test-account captures validate normal reads before one crossed GET. An optional `--range` can test one explicitly supplied numeric interval only when the program policy permits identifier enumeration. It is GET-only, sequential, capped at 25 IDs, waits at least ten seconds between requests and stops at the first candidate. It never expands the range or stores response bodies/IDs in evidence. Write-method comparisons remain a reviewed manual workflow.
 
 Prepare the [private case schema](skills/bugbounty-access-control/references/native-check.md) using exact resource/success JSON pointers and distinct controlled private markers already present in your own test resources. Assertions in that case must reflect the actual user authorization and intended sharing; the tool cannot independently grant or prove them. Captured origin and session context are checked before traffic. Session-bearing queries, bodies and host overrides are unsupported.
 
 ```bash
 bugbounty access-check my-program --case-file registros/my-program/private/case.json --rate 0.1 --max-tests 3 --dry-run
 bugbounty access-check my-program --case-file registros/my-program/private/case.json --rate 0.1 --max-tests 3
+bugbounty access-check my-program --case-file registros/my-program/private/case.json --range 1-10 --max-tests 12 --dry-run
 ```
 
-Live execution requires program automation permission. The whole group has a hard maximum of three attempted requests and shares one rate limiter; at 0.1 requests/second, starts are at least ten seconds apart. Response predicates use the complete bounded capture in memory, not its report preview. Saved evidence includes status/timing/truncation and match booleans, not session headers, resource IDs, proof values, URLs or raw bodies.
+Live execution requires program automation permission. A standard check attempts at most three requests. Range mode includes the two account controls, is capped at 27 total requests, uses concurrency one and at most 0.1 requests/second. Every generated URL is checked against scope before traffic. Response predicates use the complete bounded capture in memory, not its report preview. Saved evidence includes status/timing/truncation and match booleans, not session headers, resource IDs, proof values, URLs or raw bodies.
 
 Both private resource and marker matches produce `candidate`, even if exposed in an error response. Denial without configured private evidence is only `rejected_in_this_test`; partial evidence, invalid controls, unknown JSON, redirects, truncation and rate limits are inconclusive. No IDOR is automatically confirmed or platform report submitted. For unsupported captures, use the separately reviewed manual workflow, not a scanner fallback.
 
@@ -126,7 +127,7 @@ Results are `possible`, `not_reproducible` or `error`. A reflection **never auto
 
 ## Limits and Reports
 
-`init --config` copies limits into `registros/<program>/settings.yaml`. The included defaults are 1 request/second, 5 ffuf threads, a 15-second timeout, at most 100 XSS requests and a 1 MB captured response. Per-command `--rate`, `--threads` and `--max-tests` cannot exceed program limits. Change the program configuration only to match its actual policy.
+`init --config` copies limits into `registros/<program>/settings.yaml`. The included defaults are 1 request/second, 5 ffuf threads, a 15-second timeout, at most 100 XSS requests and a 1 MB captured response. Raise `max_tests` in the program's `settings.yaml` only when its policy allows the additional requests; per-command `--max-tests` cannot exceed that configured limit. Range mode has its own hard cap of 25 IDs regardless of program settings.
 
 ```bash
 bugbounty report my-program --format html
@@ -198,7 +199,7 @@ The installer uses `$CODEX_HOME/skills` or `~/.codex/skills`, performs no networ
 
 Invoke the router with: `Use $bugbounty-executor for XSS and SQLi on my authorized inputs, one topic at a time.` Or select a topic directly: `Use $bugbounty-access-control with my two authorized test accounts and one known private resource.` An error, rate limit, missing authorization or invalid control stops live testing; no other scanner is started as a fallback. Requested offline HTML/SQL/JWT analysis and resource inspection can still proceed without live program configuration or a dry-run flag.
 
-Access-control work now has native `access-check` for one known private GET/JSON resource pair; other methods/flows retain the reviewed individual-request fallback. It is not a role-matrix scanner. HTTP 200, reflected emails and extension colors are not confirmation. Admin access by an admin is a control, not escalation. Burp extensions, forced browsing, identifier enumeration, hidden-parameter discovery and nuclei templates need their own reviewed scope/budget; no password-guessing adapter is included. ParamSpider mines archived URLs rather than simply parsing local HTML/JS.
+Access-control work has native A/B comparisons for known private GET/JSON resources and an opt-in, policy-authorized numeric range mode capped at 25 sequential reads. It is not a role-matrix scanner and does not automate writes. HTTP 200, reflected emails and extension colors are not confirmation. Admin access by an admin is a control, not escalation. Burp extensions, forced browsing, hidden-parameter discovery and nuclei templates need their own reviewed scope/budget; no password-guessing adapter is included. ParamSpider mines archived URLs rather than simply parsing local HTML/JS.
 
 The script accepts a JSON plan for `request`, `fuzz`, `xss`, `sqli` or `access-check`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
 
@@ -215,7 +216,7 @@ The IA running the skill is the reasoning component. Export one native access-co
 bugbounty analyze evidence --input registros/my-program/evidence/access-control/selected.json --output registros/my-program/review.json
 ```
 
-The exporter drops arbitrary response text/instructions, URLs, headers and secrets; it includes allowlisted statuses, context counts and comparison booleans. It is offline and calls **no external model**. The [review workflow](skills/bugbounty-executor/references/agent-review.md) directs the calling IA to check provenance, controls, uncertainty and remaining validation before any new step. A formatted packet does not authenticate source claims or grant testing permission. No bundled LLM, API key or automatic AI vulnerability confirmation is implied.
+The exporter drops arbitrary response text/instructions, URLs, headers and secrets; it includes allowlisted statuses, context counts and comparison booleans. It is offline by default. An explicit `--ai ollama --model <name>` sends only that minimized packet to the local Ollama service at `127.0.0.1:11434`; it has no remote fallback or tool calling. The [review workflow](skills/bugbounty-executor/references/agent-review.md) treats model output as untrusted and checks provenance, controls and uncertainty. A formatted packet does not authenticate source claims or grant testing permission, and no model automatically confirms a vulnerability.
 
 ## Tests
 

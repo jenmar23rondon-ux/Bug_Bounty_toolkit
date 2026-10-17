@@ -17,6 +17,8 @@ class SkillPlanTests(unittest.TestCase):
         command = runner.build_command({"program": "lab", "action": "access-check", "case_file": "registros/lab/private/case.json", "rate": 0.1, "max_tests": 3})
         self.assertIn("access-check", command)
         self.assertIn("--case-file=registros/lab/private/case.json", command)
+        range_command = runner.build_command({"program": "lab", "action": "access-check", "case_file": "case.json", "range": "1-10"})
+        self.assertIn("--range=1-10", range_command)
         with self.assertRaises(ValueError):
             runner.build_command({"program": "lab", "action": "access-check", "case_file": "case.json", "cookies": ["session=not-in-argv"]})
         with self.assertRaises(ValueError):

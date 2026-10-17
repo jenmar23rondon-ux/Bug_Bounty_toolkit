@@ -46,6 +46,30 @@ class EvidenceReviewTests(unittest.TestCase):
         self.assertFalse(failed["cross_read_observed"])
         self.assertEqual(failed["transport_error_rows"], 1)
 
+    def test_range_packet_keeps_candidate_offset_but_drops_identifiers(self):
+        packet = review_evidence({
+            "type": "access-control", "mode": "bounded-range", "classification": "candidate",
+            "controls_valid": True, "steps": [{"step": "cross_read", "status_code": 200}],
+            "results": [{"probe_offset": 4, "classification": "candidate", "id": "private-id-99"}],
+        })
+        self.assertEqual(packet["range_probes_observed"], 1)
+        self.assertEqual(packet["range_candidate_offsets"], [4])
+        self.assertNotIn("private-id-99", json.dumps(packet))
+
+    def test_cli_local_ollama_is_explicit_and_counted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, output = root / "evidence.json", root / "review.json"
+            source.write_text(json.dumps({"type": "sqli", "results": [{"classification": "baseline", "status_code": 200}]}))
+            args = cli.build_parser().parse_args(["analyze", "evidence", "--input", str(source), "--output", str(output),
+                                                  "--ai", "ollama", "--model", "llama3.2:3b"])
+            with patch.object(cli, "review_with_ollama", return_value={"provider": "ollama-local"}) as review:
+                args.func(args)
+            data = json.loads(output.read_text())
+            review.assert_called_once()
+            self.assertEqual(data["network_requests_sent_by_review"], 1)
+            self.assertEqual(data["ollama_review"]["provider"], "ollama-local")
+
     def test_cli_review_is_offline_without_program_initialization(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

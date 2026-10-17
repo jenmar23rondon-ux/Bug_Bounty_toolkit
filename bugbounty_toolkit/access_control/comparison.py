@@ -72,12 +72,17 @@ class AccessCase:
     actor: RequestSpec
     cross: RequestSpec
     checks: dict
+    resource: dict
+    identity_check: dict | None
 
 
 def load_case(path: Path, scope: ScopeValidator) -> AccessCase:
     data = parse_json(read_local(path, 131072))
-    if not isinstance(data, dict) or set(data) != CASE_FIELDS:
+    optional = {"identity_check", "identifier_enumeration_authorized"}
+    if not isinstance(data, dict) or not CASE_FIELDS <= set(data) or set(data) - CASE_FIELDS - optional:
         raise ValueError("Access case has missing or unsupported fields.")
+    if "identifier_enumeration_authorized" in data and type(data["identifier_enumeration_authorized"]) is not bool:
+        raise ValueError("Identifier enumeration authorization must be a boolean.")
     if data["accounts_authorized"] is not True or data["resource_private"] is not True or data["expected_cross_access"] != "deny":
         raise ValueError("An access case requires authorized test accounts and a known private resource with expected denial.")
     if not isinstance(data["base_url"], str):
@@ -180,10 +185,15 @@ def load_case(path: Path, scope: ScopeValidator) -> AccessCase:
             raise ValueError("Private proof markers must not be supplied by either request.")
     if checks["owner_marker"] in checks["actor_marker"] or checks["actor_marker"] in checks["owner_marker"]:
         raise ValueError("Private proof markers must be distinct.")
+    identity = data.get("identity_check")
+    if identity is not None:
+        if not isinstance(identity, dict) or set(identity) != {"pointer", "actor_value"} or not isinstance(identity["actor_value"], str) or not identity["actor_value"]:
+            raise ValueError("Identity differential requires a pointer and known actor string value.")
+        pointer_parts(identity["pointer"])
     # Keep the owner's destination but use the actor's ENTIRE header context, never a merged owner session.
     cross = RequestSpec("GET", owner.prepared_url(), dict(actor.headers))
     scope.require(cross.prepared_url())
-    return AccessCase(owner, actor, cross, checks)
+    return AccessCase(owner, actor, cross, checks, resource, identity)
 
 
 def observations(response: ResponseRecord, checks: dict) -> dict:

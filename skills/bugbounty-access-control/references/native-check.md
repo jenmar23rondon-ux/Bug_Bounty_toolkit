@@ -42,7 +42,22 @@ bugbounty access-check my-program --case-file registros/my-program/private/case.
 bugbounty access-check my-program --case-file registros/my-program/private/case.json --rate 0.1 --max-tests 3
 ```
 
-After the user's actual authorization covers the run, the non-dry invocation sends at most three requests, in this order: B's normal read, A's normal read, A's session reading B's resource. One client enforces the policy/user rate across the whole group. Failing a control stops after one or two requests; the cross is not sent. There are no retries, redirects, inverse cross, anonymous requests, ID enumeration or write operations. A budget below three is rejected before traffic.
+After the user's actual authorization covers the run, the non-dry invocation sends at most three requests, in this order: B's normal read, A's normal read, A's session reading B's resource. One client enforces the policy/user rate across the whole group. Failing a control stops after one or two requests; the cross is not sent. There are no retries, redirects, inverse cross, anonymous requests or write operations. A budget below three is rejected before traffic.
+
+## Optional Numeric Range
+
+Use range mode only if the actual program policy explicitly permits identifier enumeration and the interval contains known disposable/test-account resources. Add `"identifier_enumeration_authorized": true` to the private case only after checking that policy; the CLI refuses `--range` if the field is missing or not the boolean `true`. This is an explicit researcher attestation, not an independent policy lookup.
+
+When the response exposes a stable test-account identity field, the private case may include `identity_check` with a JSON pointer and A's known value, for example `{"identity_check":{"pointer":"/data/account_id","actor_value":"test-account-A"}}`. Keep that value in the ignored private case; evidence records only whether the returned identity differed.
+
+```bash
+bugbounty access-check my-program --case-file registros/my-program/private/case.json --range 1-10 --max-tests 12 --dry-run
+bugbounty access-check my-program --case-file registros/my-program/private/case.json --range 1-10 --max-tests 12
+```
+
+The range must be one ascending numeric interval of at most 25 IDs. The two normal controls run first; only then does the actor session issue sequential GET requests for the supplied interval. One limiter caps the whole run at 0.1 requests/second (at least ten seconds between starts). Concurrency is fixed at one. Every destination is preflighted against scope. The first candidate, authentication failure, 429, redirect or truncated response stops the batch; no value outside the supplied range is tried. Dry-run sends nothing.
+
+Evidence stores the candidate's zero-based offset, status and predicate booleans, but no probed ID, URL, response body or private value. Map the offset to the original local interval when needed. A range candidate is only a triage signal (for example, a returned resource or configured identity differs from the actor); it does not require the private proof marker used by the single crossed-read check and never confirms IDOR. Verify account ownership, intentional sharing and program rules manually before drawing a conclusion. A fully rejected interval is still only a result for that test. Write methods remain manual because generic replay cannot guarantee that a remote state change is reversible.
 
 The complete response is analyzed in memory up to the configured capture limit. Truncation, transport failure, redirects and 429 stop the test as inconclusive. A crossed 401/403 or application failure with no configured private evidence is `rejected_in_this_test`; undocumented error codes are not attributed to a cause. Both owner resource and private marker in the cross produce `candidate`, including a leak hidden behind an error status. Partial private evidence or unfamiliar success schema is inconclusive, not secure. A successful process is not necessarily a successful comparison; read the evidence.
 

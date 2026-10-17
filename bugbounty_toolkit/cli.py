@@ -30,6 +30,8 @@ from .analysis.jwt_inspector import inspect_jwt, ALGORITHMS
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
 from .access_control.comparison import AccessControlTester
+from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS, MAX_REQUESTS_PER_SECOND
+from .analysis.ollama_review import review_with_ollama
 from .integrations.catalog import catalog
 from .integrations.external_plan import build_external_plan, TOOLS
 from .reporting.evidence import write_evidence_json
@@ -251,9 +253,27 @@ def cmd_sqli(args: argparse.Namespace) -> None:
 
 def cmd_access_check(args: argparse.Namespace) -> None:
     store, settings, scope = executor_context(args, automated=True)
-    budget = args.max_tests or 3
+    budget = args.max_tests or (min(settings.max_tests, MAX_RANGE_REQUESTS) if args.id_range else 3)
     if budget > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
+    if args.id_range:
+        if budget > MAX_RANGE_REQUESTS:
+            raise ValueError(f"Range checks are capped at {MAX_RANGE_REQUESTS} requests including controls.")
+        if args.rate is not None and args.rate > MAX_REQUESTS_PER_SECOND:
+            raise ValueError("Range checks are sequential and limited to one request every ten seconds.")
+        client = client_for(args, settings, scope)
+        client.rate_limiter.requests_per_second = min(client.rate_limiter.requests_per_second, MAX_REQUESTS_PER_SECOND)
+        tester = AccessRangeTester(scope, client)
+        options = AccessRangeOptions(args.id_range, budget)
+        _, requests = tester.validate(args.case_file, options)
+        if args.dry_run:
+            print(f"[+] Bounded range validated: two controls and {len(requests)} sequential GETs, maximum 25 IDs, ten-second minimum interval. No requests sent.")
+            return
+        path, result = tester.run(args.case_file, options, store.paths.evidence_dir / "access-control")
+        store.add_run("access-check", None, ["access-check", "--range"], 1 if result["classification"] == "inconclusive" else 0, path)
+        print(f"[+] Bounded access comparison: {result['classification']}; {result['requests_attempted']} requests attempted; candidate offset: {result['candidate_offset']}.")
+        print(f"[+] Stop reason: {result['stop_reason']}. No IDOR automatically confirmed. Evidence: {path}")
+        return
     tester = AccessControlTester(scope, client_for(args, settings, scope))
     tester.validate(args.case_file, budget)
     if args.dry_run:
@@ -295,6 +315,13 @@ def cmd_analyze(args: argparse.Namespace) -> None:
         data = analyze_sql(text)
     elif args.analysis == "evidence":
         data = review_evidence(json.loads(text))
+        if args.ai == "ollama":
+            if not args.model:
+                raise ValueError("Select a local Ollama model with --model.")
+            data["ollama_review"] = review_with_ollama(data, args.model, args.ai_timeout)
+            data["network_requests_sent_by_review"] = 1
+        elif args.model:
+            raise ValueError("--model requires --ai ollama.")
     else:
         key = bounded_text(args.key_file, 65536).encode("utf-8") if args.key_file else None
         data = inspect_jwt(text.strip(), key, args.algorithm, args.issuer, args.audience)
@@ -467,9 +494,10 @@ def build_parser() -> argparse.ArgumentParser:
     sqli.add_argument("--dry-run", action="store_true")
     sqli.set_defaults(func=cmd_sqli)
 
-    access = sub.add_parser("access-check", help="Two valid account controls and one native crossed GET; no enumeration")
+    access = sub.add_parser("access-check", help="Known-resource A/B check; optional sequential range capped at 25 IDs")
     access.add_argument("program")
     access.add_argument("--case-file", required=True, type=Path, help="Private JSON case and separate raw owner/actor requests")
+    access.add_argument("--range", dest="id_range", help="One small numeric interval such as 1-10; GET only, sequential")
     access.add_argument("--timeout", type=positive_float)
     access.add_argument("--rate", type=positive_float)
     access.add_argument("--max-tests", type=positive_int)
@@ -480,7 +508,7 @@ def build_parser() -> argparse.ArgumentParser:
     resources.add_argument("--output", type=Path)
     resources.set_defaults(func=cmd_resources)
 
-    analyze = sub.add_parser("analyze", help="Offline HTML, SQL, JWT or agent evidence analysis; never sends traffic")
+    analyze = sub.add_parser("analyze", help="Analyze local HTML, SQL, JWT or native evidence")
     analyze_sub = analyze.add_subparsers(dest="analysis", required=True)
     html = analyze_sub.add_parser("html")
     html.add_argument("--input", required=True, type=Path)
@@ -500,9 +528,12 @@ def build_parser() -> argparse.ArgumentParser:
     jwt.add_argument("--audience")
     jwt.add_argument("--output", type=Path)
     jwt.set_defaults(func=cmd_analyze)
-    evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations for agent review, no model API calls")
+    evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations with optional local Ollama review")
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)
+    evidence.add_argument("--ai", choices=("ollama",))
+    evidence.add_argument("--model", help="Installed local Ollama model name")
+    evidence.add_argument("--ai-timeout", type=positive_float, default=120)
     evidence.set_defaults(func=cmd_analyze)
 
     tool_plan = sub.add_parser("tool-plan", help="Prepare a private scanner command; NEVER executes it")

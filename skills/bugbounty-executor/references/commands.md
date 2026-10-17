@@ -1,17 +1,17 @@
 # CLI and Plan Reference
 
-Run from the toolkit checkout with Python 3.10+. Install once using `python -m pip install -e .` in its environment. The commands `bbtk`, `bugbounty` and `python -m bugbounty_toolkit.cli` use the same implementation. ffuf is required only for live fuzzing, not input validation.
+Run from the toolkit checkout with Python 3.10+. Install with `python -m pip install -e .`. The `bbtk`, `bugbounty` and `python -m bugbounty_toolkit.cli` commands use the same implementation. ffuf is required only for live fuzzing.
 
 ## Authorized Program Setup
 
-Use policy values supplied for this program. Retain existing configuration when it already matches the request. Configure explicit domains or URL prefixes and exclusions; a bare domain authorizes only that exact host, while `*.domain` covers subdomains but not the apex.
+Use policy values supplied for the program. Retain existing configuration when it matches the request. Configure explicit domains or URL prefixes and exclusions; a bare domain authorizes only that host, while `*.domain` covers subdomains but not the apex.
 
 ```bash
 python -m bugbounty_toolkit.cli init my-program --authorization "USER-SUPPLIED-POLICY-REFERENCE" --automation-allowed --config config/settings.yaml
 python -m bugbounty_toolkit.cli scope import my-program config/scope.yaml
 ```
 
-Omit `--automation-allowed` for programs that do not permit automation. Do not derive permission from the placeholder example configuration. Limits are stored per program, and CLI rate/concurrency/test overrides cannot exceed them.
+Omit `--automation-allowed` when the program disallows automation. Placeholder configuration does not establish permission. Rate, concurrency and test budgets cannot exceed program settings.
 
 ## Command Examples
 
@@ -20,17 +20,18 @@ python -m bugbounty_toolkit.cli request my-program --url "https://authorized.exa
 python -m bugbounty_toolkit.cli request my-program --raw-request inputs/requests/captured.txt --base-url "https://authorized.example" --dry-run
 python -m bugbounty_toolkit.cli fuzz my-program --url "https://authorized.example/FUZZ" --wordlist wordlists/api-endpoints.txt --rate 1 --threads 2 --dry-run
 python -m bugbounty_toolkit.cli xss my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --base-url "https://authorized.example" --rate 1 --max-tests 40 --dry-run
+python -m bugbounty_toolkit.cli access-check my-program --case-file registros/my-program/private/case.json --range 1-10 --max-tests 12 --dry-run
 python -m bugbounty_toolkit.cli report my-program --format json
 python -m bugbounty_toolkit.cli report my-program --format html
 ```
 
-Remove `--dry-run` only for an action covered by the user's authorization. Request and XSS accept repeatable `--header`, `--cookie` and timeout/rate flags. Requests also accept `--method`, `--param` and `--data`. Use `--base-url` for relative route inputs or to override a captured request's original host.
+Remove `--dry-run` only for an action covered by the user's authorization. Request and XSS accept repeatable `--header`, `--cookie`, timeout and rate flags. Requests also accept `--method`, `--param` and `--data`. Use `--base-url` for relative routes or a reviewed captured-host override.
 
-XSS inputs are newline-separated files. The parameter file contains names, not an instruction to discover extra parameters. Existing values of other query parameters are retained. Four non-executing marker variants are attempted per route/parameter until the configured budget is reached. Results are `possible`, `not_reproducible` or `error`, with `confirmed` always false.
+XSS inputs are newline-separated files. The parameter file contains supplied names; it does not trigger parameter discovery. Four non-executing marker variants are attempted per route/parameter until the configured budget is reached. The default `max_tests` is 100 and can be raised in the program's `settings.yaml` only to a policy-approved value. Results are `possible`, `not_reproducible` or `error`; `confirmed` remains false.
 
 ## JSON Plan Adapter
 
-Keep private plans inside the ignored `registros/` directory. Paths inside the plan are relative to the toolkit checkout. The adapter uses the selected Python interpreter, constructs literal argument arrays without a shell and never retries failed commands.
+Keep private plans under ignored `registros/`; plan paths are relative to the toolkit checkout. The adapter builds literal argument arrays without a shell and never retries failed commands.
 
 ```json
 {
@@ -49,30 +50,28 @@ python /path/to/bugbounty-executor/scripts/run_plan.py --toolkit-root /path/to/B
 python /path/to/bugbounty-executor/scripts/run_plan.py --toolkit-root /path/to/Bug_Bounty_toolkit --plan /path/to/plan.json --execute
 ```
 
-Required fields by action:
-
 | Action | Required inputs | Optional inputs |
 | --- | --- | --- |
 | `request` | Exactly one of `url`, `raw_request` | `method`, `base_url`, `headers`, `cookies`, `params`, `data`, `timeout`, `rate` |
 | `fuzz` | `url`, `wordlist` | `threads`, `timeout`, `rate`, `match_codes`, `filter_size` |
 | `xss` | `routes`, `parameters` | `base_url`, `headers`, `cookies`, `timeout`, `rate`, `max_tests`, `html_parser` |
 | `sqli` | `routes`, `parameters` | `base_url`, `headers`, `cookies`, `timeout`, `rate`, `max_tests` |
-| `access-check` | `case_file` | `timeout`, `rate`, `max_tests` (at least 3; only 3 are ever attempted) |
+| `access-check` | `case_file` | `timeout`, `rate`, `max_tests`, `range` (one supplied interval, at most 25 IDs) |
 
-`headers`, `cookies` and `params` are arrays of strings in the same format as their CLI flags. Other textual inputs are strings; numeric flags are positive finite numbers, with integer values for thread/test counts and fuzz timeout. Unknown fields and actions fail before a command starts. The adapter prints CLI results without displaying the plan or credentials.
+`headers`, `cookies` and `params` are arrays of strings. Other text options are strings; numeric options are positive finite numbers. Unknown fields and actions fail before execution. CLI output does not display private plans or credentials.
 
-`sqli` accepts the same plan fields as `xss`: routes, parameters, base_url, headers, cookies, timeout, rate and max_tests. Routes and parameters are required. Each completed route/parameter group costs three requests (baseline, appended single quote, appended double quote); an incomplete group is not started. At least three requests must fit the program budget. No time-delay, UNION, OOB or extraction payloads are used. A new SQL error is only a possible indicator.
+SQLi accepts the same plan fields as XSS. Each complete route/parameter group costs three requests: baseline, single quote and double quote. Incomplete groups do not start. There are no time-delay, UNION, OOB or extraction payloads. A changed SQL error is only a possible indicator.
 
-```bash
-bugbounty sqli my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --rate 0.1 --max-tests 6 --dry-run
-```
+## Access Control
 
-Network/action plans are restricted to `request`, `fuzz`, `xss`, `sqli` and `access-check`. A native [access case](../../bugbounty-access-control/references/native-check.md) keeps the two session captures and proof values in private files, not inline CLI headers. It validates both controls before one crossed GET, with a single shared HttpClient/rate limiter and no external scanner. The case path is relative to the checkout; capture paths inside it are relative to the case file. Inverse/anonymous checks and other methods are not added.
+The native [access case](../../bugbounty-access-control/references/native-check.md) keeps captures and proof values in private files, not inline plan headers. The default check validates both controls before one crossed GET. Optional `range` requires explicit program-policy authorization, validates every destination against scope before traffic, then sends sequential GETs no faster than one per ten seconds. It is capped at 25 IDs and stops at the first candidate or safety stop. No writes, inverse checks, anonymous requests or external scanner are added.
 
-XSS now records HTML parser contexts from the actual captured response. `html_parser` accepts html.parser/lxml/html5lib; missing extras are explicitly unavailable and non-HTML is distinguished. Browser execution is never inferred from parsing.
+## Response Analysis
 
-Offline `analyze evidence --input <one-native-evidence.json>` produces the minimized [agent review packet](agent-review.md), not a model API call or network action. Offline analyzers and external planning use the direct CLI, not run_plan.py; external plans still never execute scanners.
+XSS records HTML parser contexts from the actual response. `html_parser` accepts `html.parser`, `lxml` or `html5lib`; unavailable parsers and non-HTML responses are explicit. Parsing never confirms JavaScript execution.
 
-On execution, JSON and HTML reports are generated under `registros/<program>/reports/`. Read `program-report.json` and its evidence before writing the result to the user. If a command fails, report the failure and inspect existing evidence instead of automatically retrying.
+`analyze evidence --input <one-native-evidence.json>` creates the minimized [agent review packet](agent-review.md) without network traffic by default. With `--ai ollama --model <local-model>`, only that packet is sent to the local service at `127.0.0.1:11434`; proxies, redirects and remote fallback are disabled. The model result is untrusted. Offline analyzers and external-tool planning use the direct CLI, not `run_plan.py`; external plans never execute scanners.
 
-Use the adapter option `--records-root /path/to/existing/records` when the program data is stored outside the checkout's default `registros/` directory.
+On execution, JSON and HTML reports go to `registros/<program>/reports/`. Inspect `program-report.json` and its evidence before summarizing. If a command fails, report the failure and inspect existing evidence instead of retrying automatically.
+
+Use `--records-root /path/to/existing/records` when program data is outside the checkout's default `registros/` directory.

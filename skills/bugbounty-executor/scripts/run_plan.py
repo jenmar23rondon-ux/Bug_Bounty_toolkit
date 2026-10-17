@@ -16,7 +16,7 @@ FIELDS = {
     "fuzz": {"url", "wordlist", "threads", "timeout", "rate", "match_codes", "filter_size"},
     "xss": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "html_parser"},
     "sqli": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests"},
-    "access-check": {"case_file", "timeout", "rate", "max_tests"},
+    "access-check": {"case_file", "timeout", "rate", "max_tests", "range"},
 }
 LIST_OPTIONS = {"headers": "header", "cookies": "cookie", "params": "param"}
 NUMERIC_OPTIONS = {"threads", "timeout", "rate", "max_tests"}
