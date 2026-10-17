@@ -56,6 +56,25 @@ class EvidenceReviewTests(unittest.TestCase):
         self.assertEqual(packet["range_candidate_offsets"], [4])
         self.assertNotIn("private-id-99", json.dumps(packet))
 
+    def test_access_review_supports_loopback_write_and_full_local_range_evidence(self):
+        write_review = review_evidence({
+            "type": "access-control", "mode": "lab-write", "classification": "candidate",
+            "steps": [{"step": "cross_write", "status_code": 200, "owner_private_match": True,
+                       "owner_resource_match": True}],
+        })
+        self.assertTrue(write_review["cross_write_observed"])
+        self.assertEqual(write_review["cross_action"], "write")
+        self.assertTrue(write_review["private_evidence_observed"])
+
+        range_review = review_evidence({
+            "type": "access-control", "mode": "bounded-range", "classification": "candidate",
+            "concurrency": 4, "minimum_interval_seconds": 0.01,
+            "results": [{"probe_offset": 99, "classification": "candidate"}],
+        })
+        self.assertEqual(range_review["range_candidate_offsets"], [99])
+        self.assertEqual(range_review["concurrency"], 4)
+        self.assertEqual(range_review["minimum_interval_seconds"], 0.01)
+
     def test_cli_local_ollama_is_explicit_and_counted(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

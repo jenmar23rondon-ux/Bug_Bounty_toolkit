@@ -20,7 +20,8 @@ python -m bugbounty_toolkit.cli request my-program --url "https://authorized.exa
 python -m bugbounty_toolkit.cli request my-program --raw-request inputs/requests/captured.txt --base-url "https://authorized.example" --dry-run
 python -m bugbounty_toolkit.cli fuzz my-program --url "https://authorized.example/FUZZ" --wordlist wordlists/api-endpoints.txt --rate 1 --threads 2 --dry-run
 python -m bugbounty_toolkit.cli xss my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --base-url "https://authorized.example" --rate 1 --max-tests 40 --dry-run
-python -m bugbounty_toolkit.cli access-check my-program --case-file registros/my-program/private/case.json --range 1-10 --max-tests 12 --dry-run
+python -m bugbounty_toolkit.cli access-check my-program --case-file registros/my-program/private/case.json --range 1-10 --max-range 10 --max-tests 12 --min-interval 10 --concurrency 1 --dry-run
+python -m bugbounty_toolkit.cli access-check lab --case-file registros/lab/private/write-case.json --lab-write --dry-run
 python -m bugbounty_toolkit.cli report my-program --format json
 python -m bugbounty_toolkit.cli report my-program --format html
 ```
@@ -56,7 +57,7 @@ python /path/to/bugbounty-executor/scripts/run_plan.py --toolkit-root /path/to/B
 | `fuzz` | `url`, `wordlist` | `threads`, `timeout`, `rate`, `match_codes`, `filter_size` |
 | `xss` | `routes`, `parameters` | `base_url`, `headers`, `cookies`, `timeout`, `rate`, `max_tests`, `html_parser` |
 | `sqli` | `routes`, `parameters` | `base_url`, `headers`, `cookies`, `timeout`, `rate`, `max_tests` |
-| `access-check` | `case_file` | `timeout`, `rate`, `max_tests`, `range` (one supplied interval, at most 25 IDs) |
+| `access-check` | `case_file` | `timeout`, `rate`, `max_tests`, `range`, `max_range`, `concurrency`, `min_interval` |
 
 `headers`, `cookies` and `params` are arrays of strings. Other text options are strings; numeric options are positive finite numbers. Unknown fields and actions fail before execution. CLI output does not display private plans or credentials.
 
@@ -64,7 +65,7 @@ SQLi accepts the same plan fields as XSS. Each complete route/parameter group co
 
 ## Access Control
 
-The native [access case](../../bugbounty-access-control/references/native-check.md) keeps captures and proof values in private files, not inline plan headers. The default check validates both controls before one crossed GET. Optional `range` requires explicit program-policy authorization, validates every destination against scope before traffic, then sends sequential GETs no faster than one per ten seconds. It is capped at 25 IDs and stops at the first candidate or safety stop. No writes, inverse checks, anonymous requests or external scanner are added.
+The native [access case](../../bugbounty-access-control/references/native-check.md) keeps captures and proof values in private files, not inline plan headers. The default check validates both controls before one crossed GET. Optional `range` requires explicit program-policy authorization and is preflighted against scope. Defaults remain a 25-ID cap, one worker and a ten-second interval. Non-loopback targets retain those limits; localhost labs may configure up to 100 IDs, four workers and a 0.01-second interval. A direct `--lab-write` run is isolated to disposable loopback JSON POST/PUT/PATCH fixtures; writes never run on external targets and are not available through JSON plans.
 
 ## Response Analysis
 

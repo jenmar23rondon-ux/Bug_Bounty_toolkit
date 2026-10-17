@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass
 import json
 from pathlib import Path
@@ -62,6 +63,27 @@ def lookup(document, pointer: str):
     return value
 
 
+def replace_pointer(document, pointer: str, replacement):
+    parts = pointer_parts(pointer)
+    result = copy.deepcopy(document)
+    parent = result
+    for part in parts[:-1]:
+        if isinstance(parent, dict) and part in parent:
+            parent = parent[part]
+        elif isinstance(parent, list) and re.fullmatch(r"0|[1-9][0-9]*", part) and int(part) < len(parent):
+            parent = parent[int(part)]
+        else:
+            raise ValueError("The declared JSON body pointer does not exist.")
+    final = parts[-1]
+    if isinstance(parent, dict) and final in parent:
+        parent[final] = replacement
+    elif isinstance(parent, list) and re.fullmatch(r"0|[1-9][0-9]*", final) and int(final) < len(parent):
+        parent[int(final)] = replacement
+    else:
+        raise ValueError("The declared JSON body pointer does not exist.")
+    return result
+
+
 def exact(value, expected) -> bool:
     return type(value) is type(expected) and value == expected
 
@@ -74,15 +96,17 @@ class AccessCase:
     checks: dict
     resource: dict
     identity_check: dict | None
+    mode: str = "read"
 
 
-def load_case(path: Path, scope: ScopeValidator) -> AccessCase:
+def load_case(path: Path, scope: ScopeValidator, allow_lab_writes: bool = False) -> AccessCase:
     data = parse_json(read_local(path, 131072))
-    optional = {"identity_check", "identifier_enumeration_authorized"}
+    optional = {"identity_check", "identifier_enumeration_authorized", "disposable_test_resources"}
     if not isinstance(data, dict) or not CASE_FIELDS <= set(data) or set(data) - CASE_FIELDS - optional:
         raise ValueError("Access case has missing or unsupported fields.")
-    if "identifier_enumeration_authorized" in data and type(data["identifier_enumeration_authorized"]) is not bool:
-        raise ValueError("Identifier enumeration authorization must be a boolean.")
+    for key in ("identifier_enumeration_authorized", "disposable_test_resources"):
+        if key in data and type(data[key]) is not bool:
+            raise ValueError(f"{key} must be a boolean.")
     if data["accounts_authorized"] is not True or data["resource_private"] is not True or data["expected_cross_access"] != "deny":
         raise ValueError("An access case requires authorized test accounts and a known private resource with expected denial.")
     if not isinstance(data["base_url"], str):
@@ -93,7 +117,7 @@ def load_case(path: Path, scope: ScopeValidator) -> AccessCase:
         raise ValueError("A valid captured HTTP(S) origin is required.") from exc
     if base.path not in {"", "/"} or base.query:
         raise ValueError("Base URL must be the captured origin without a path or query.")
-    requests = []
+    requests, body_documents = [], []
     for field in ("owner_request", "actor_request"):
         if not isinstance(data[field], str) or not data[field]:
             raise ValueError("Provide two local raw-request file paths.")
@@ -109,7 +133,17 @@ def load_case(path: Path, scope: ScopeValidator) -> AccessCase:
         if captured_host is not None and captured_host.lower() != base.netloc.lower():
             raise ValueError("The captured Host conflicts with the absolute target or declared origin.")
         if spec.method != "GET" or spec.body is not None:
-            raise ValueError("Access-check supports reviewed GET reads without bodies only.")
+            content_type = next((value for key, value in spec.headers.items() if key.lower() == "content-type"), "")
+            if (not allow_lab_writes or spec.method not in {"POST", "PUT", "PATCH"} or spec.body is None or
+                    content_type.split(";", 1)[0].strip().lower() != "application/json"):
+                raise ValueError("Access-check supports GET reads; JSON writes are available only in local lab mode.")
+            try:
+                body_text = spec.body.decode("utf-8") if isinstance(spec.body, bytes) else spec.body
+                body_documents.append(parse_json(body_text))
+            except (UnicodeDecodeError, ValueError) as exc:
+                raise ValueError("Local write checks require valid UTF-8 JSON request bodies.") from exc
+        else:
+            body_documents.append(None)
         for key, value in spec.headers.items():
             if not re.fullmatch(r"[!#$%&'*+.^_`|~0-9A-Za-z-]+", key) or any((ord(char) < 32 and char != "\t") or ord(char) > 255 for char in value):
                 raise ValueError("A captured HTTP header cannot be safely encoded.")
@@ -134,7 +168,19 @@ def load_case(path: Path, scope: ScopeValidator) -> AccessCase:
     resource = data["resource"]
     if not isinstance(resource, dict) or len(resource) != 1:
         raise ValueError("Declare exactly one resource query parameter or path segment.")
-    if set(resource) == {"query_parameter"}:
+    body_pointer = None
+    if set(resource) == {"json_body_pointer"}:
+        body_pointer = resource["json_body_pointer"]
+        if (not allow_lab_writes or data.get("disposable_test_resources") is not True or
+                owner.method not in {"POST", "PUT", "PATCH"} or actor.method != owner.method or
+                owner.body is None or actor.body is None or owner.prepared_url() != actor.prepared_url()):
+            raise ValueError("JSON body ID checks require matching POST/PUT/PATCH captures and declared disposable lab resources.")
+        pointer_parts(body_pointer)
+        owner_body, actor_body = body_documents
+        sentinel = object()
+        if replace_pointer(owner_body, body_pointer, sentinel) != replace_pointer(actor_body, body_pointer, sentinel):
+            raise ValueError("Controls must differ only at the declared JSON body resource pointer.")
+    elif set(resource) == {"query_parameter"}:
         key = resource["query_parameter"]
         if not isinstance(key, str) or key not in dict(owner_query) or key not in dict(actor_query):
             raise ValueError("The declared resource query parameter must exist in both controls.")
@@ -177,11 +223,19 @@ def load_case(path: Path, scope: ScopeValidator) -> AccessCase:
             raise ValueError("Expected resources must be nonempty strings or integers.")
     if exact(checks["owner_resource"], checks["actor_resource"]):
         raise ValueError("Known owner and actor resources must be distinct.")
+    if body_pointer is not None:
+        owner_value = lookup(body_documents[0], body_pointer)
+        actor_value = lookup(body_documents[1], body_pointer)
+        if (not exact(owner_value, checks["owner_resource"]) or
+                not exact(actor_value, checks["actor_resource"])):
+            raise ValueError("Captured JSON body resource values must match the declared owner and actor resources.")
     for key in ("owner_marker", "actor_marker"):
         marker = checks[key]
         if not isinstance(marker, str) or not re.fullmatch(r"[A-Za-z0-9_-]{12,128}", marker):
             raise ValueError("Use distinct controlled private markers of 12-128 ASCII identifier characters.")
-        if any(marker in unquote(spec.prepared_url()) or any(marker in unquote(value) for value in spec.headers.values()) for spec in requests):
+        if any(marker in unquote(spec.prepared_url()) or any(marker in unquote(value) for value in spec.headers.values()) or
+               (spec.body is not None and marker in (spec.body.decode("utf-8", errors="replace") if isinstance(spec.body, bytes) else spec.body))
+               for spec in requests):
             raise ValueError("Private proof markers must not be supplied by either request.")
     if checks["owner_marker"] in checks["actor_marker"] or checks["actor_marker"] in checks["owner_marker"]:
         raise ValueError("Private proof markers must be distinct.")
@@ -190,10 +244,16 @@ def load_case(path: Path, scope: ScopeValidator) -> AccessCase:
         if not isinstance(identity, dict) or set(identity) != {"pointer", "actor_value"} or not isinstance(identity["actor_value"], str) or not identity["actor_value"]:
             raise ValueError("Identity differential requires a pointer and known actor string value.")
         pointer_parts(identity["pointer"])
-    # Keep the owner's destination but use the actor's ENTIRE header context, never a merged owner session.
-    cross = RequestSpec("GET", owner.prepared_url(), dict(actor.headers))
+    # Keep the owner's resource and use the actor's complete captured context.
+    if body_pointer is None:
+        cross = RequestSpec("GET", owner.prepared_url(), dict(actor.headers))
+    else:
+        crossed_body = replace_pointer(body_documents[1], body_pointer, checks["owner_resource"])
+        cross = RequestSpec(owner.method, owner.prepared_url(), dict(actor.headers),
+                            body=json.dumps(crossed_body, ensure_ascii=False, separators=(",", ":")))
     scope.require(cross.prepared_url())
-    return AccessCase(owner, actor, cross, checks, resource, identity)
+    return AccessCase(owner, actor, cross, checks, resource, identity,
+                      "lab-write" if body_pointer is not None else "read")
 
 
 def observations(response: ResponseRecord, checks: dict) -> dict:
@@ -224,10 +284,12 @@ class AccessControlTester:
 
     def run(self, case_file: Path, evidence_dir: Path, max_tests: int = 3) -> tuple[Path, dict]:
         case = self.validate(case_file, max_tests)
-        result = {"type": "access-control", "classification": "inconclusive", "confirmed": False,
+        result = {"type": "access-control", "mode": case.mode, "classification": "inconclusive", "confirmed": False,
                   "controls_valid": False, "requests_attempted": 0, "request_budget": 3, "steps": [],
                   "stop_reason": None, "inverse_sent": False, "anonymous_sent": False}
-        for label, spec in (("owner_control", case.owner), ("actor_control", case.actor), ("cross_read", case.cross)):
+        cross_action = "cross_write" if case.mode == "lab-write" else "cross_read"
+        cross_verb = "write" if case.mode == "lab-write" else "read"
+        for label, spec in (("owner_control", case.owner), ("actor_control", case.actor), (cross_action, case.cross)):
             result["requests_attempted"] += 1
             try:
                 response = self.client.send(spec)
@@ -240,10 +302,12 @@ class AccessControlTester:
             if response.status_code == 429 or response.body_truncated or 300 <= response.status_code < 400:
                 result["stop_reason"] = "rate_limited" if response.status_code == 429 else "truncated_response" if response.body_truncated else "redirect_not_followed"
                 break
-            if label != "cross_read":
+            if label != cross_action:
                 account = "owner" if label == "owner_control" else "actor"
                 other = "actor" if account == "owner" else "owner"
-                valid = (response.status_code == 200 and observed["application_success"] is True and
+                expected_status = (200 <= response.status_code < 300 if case.mode == "lab-write"
+                                   else response.status_code == 200)
+                valid = (expected_status and observed["application_success"] is True and
                          observed[f"{account}_resource_match"] and observed[f"{account}_private_match"] and not observed[f"{other}_marker_seen"])
                 if not valid:
                     result["stop_reason"] = "invalid_" + label
@@ -257,8 +321,8 @@ class AccessControlTester:
                 result["stop_reason"] = "partial_private_evidence"
             elif response.status_code in {401, 403} or observed["application_success"] is False:
                 result["classification"] = "rejected_in_this_test"
-                result["stop_reason"] = "cross_read_rejected"
+                result["stop_reason"] = f"cross_{cross_verb}_rejected"
             else:
-                result["stop_reason"] = "cross_read_not_proven"
+                result["stop_reason"] = f"cross_{cross_verb}_not_proven"
         path = write_evidence_json(evidence_dir, result, prefix="access-control")
         return path, result

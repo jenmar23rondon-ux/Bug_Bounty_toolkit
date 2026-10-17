@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+import math
 
 
 CONTEXTS = {"html_text", "comment", "tag_name", "attribute_name", "attribute", "url_attribute", "event_attribute", "script", "style"}
@@ -8,7 +9,8 @@ MEDIA_TYPES = {"text/html", "application/xhtml+xml", "application/json", "text/p
 CLASSIFICATIONS = {"candidate", "rejected_in_this_test", "inconclusive", "possible", "not_reproducible", "error", "baseline"}
 STOP_REASONS = {"transport_error", "invalid_owner_control", "invalid_actor_control", "rate_limited", "truncated_response",
                 "redirect_not_followed", "private_evidence_observed", "partial_private_evidence", "cross_read_rejected",
-                "cross_read_not_proven", "access_or_rate_limit", "candidate_observed_stop_early", "authentication_failure"}
+                "cross_read_not_proven", "cross_write_rejected", "cross_write_not_proven", "access_or_rate_limit",
+                "candidate_observed_stop_early", "authentication_failure"}
 
 
 def review_evidence(data: dict) -> dict:
@@ -61,19 +63,25 @@ def review_evidence(data: dict) -> dict:
         packet["controls_valid"] = data.get("controls_valid") is True
         packet["cross_read_attempted"] = any(row.get("step") == "cross_read" for row in rows)
         packet["cross_read_observed"] = any(row.get("step") == "cross_read" and type(row.get("status_code")) is int and 100 <= row["status_code"] <= 599 for row in rows)
-        packet["private_evidence_observed"] = any(row.get("step") == "cross_read" and row.get("owner_private_match") is True and row.get("owner_resource_match") is True for row in rows)
+        packet["cross_write_attempted"] = any(row.get("step") == "cross_write" for row in rows)
+        packet["cross_write_observed"] = any(row.get("step") == "cross_write" and type(row.get("status_code")) is int and 100 <= row["status_code"] <= 599 for row in rows)
+        packet["cross_action"] = "write" if data.get("mode") == "lab-write" else "read"
+        packet["private_evidence_observed"] = any(row.get("step") in {"cross_read", "cross_write"} and row.get("owner_private_match") is True and row.get("owner_resource_match") is True for row in rows)
         if data.get("mode") == "bounded-range":
             probes = data.get("results", [])
-            if not isinstance(probes, list) or len(probes) > 25 or any(not isinstance(row, dict) for row in probes):
+            if not isinstance(probes, list) or len(probes) > 100 or any(not isinstance(row, dict) for row in probes):
                 raise ValueError("Range evidence is malformed or exceeds its hard review limit.")
             packet["range_probes_observed"] = len(probes)
             packet["range_candidate_offsets"] = [
                 row["probe_offset"] for row in probes
-                if row.get("classification") == "candidate" and type(row.get("probe_offset")) is int and 0 <= row["probe_offset"] < 25
+                if row.get("classification") == "candidate" and type(row.get("probe_offset")) is int and 0 <= row["probe_offset"] < 100
             ]
             packet["range_result_counts"] = dict(Counter(
                 row["classification"] for row in probes
                 if isinstance(row.get("classification"), str) and row["classification"] in CLASSIFICATIONS
             ))
-            packet["concurrency"] = 1
+            concurrency = data.get("concurrency", 1)
+            packet["concurrency"] = concurrency if type(concurrency) is int and 1 <= concurrency <= 4 else None
+            interval = data.get("minimum_interval_seconds")
+            packet["minimum_interval_seconds"] = interval if isinstance(interval, (int, float)) and not isinstance(interval, bool) and math.isfinite(interval) and interval > 0 else None
     return packet

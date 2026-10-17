@@ -30,7 +30,8 @@ from .analysis.jwt_inspector import inspect_jwt, ALGORITHMS
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
 from .access_control.comparison import AccessControlTester
-from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS, MAX_REQUESTS_PER_SECOND
+from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
+from .access_control.write_lab import AccessWriteLabTester
 from .analysis.ollama_review import review_with_ollama
 from .integrations.catalog import catalog
 from .integrations.external_plan import build_external_plan, TOOLS
@@ -61,6 +62,9 @@ def executor_context(args: argparse.Namespace, automated: bool = False):
     threads = getattr(args, "threads", None)
     if threads is not None and threads > settings.max_concurrency:
         raise ValueError("Requested threads exceed the configured program limit.")
+    concurrency = getattr(args, "concurrency", None)
+    if concurrency is not None and concurrency > settings.max_concurrency:
+        raise ValueError("Requested concurrency exceeds the configured program limit.")
     return store, settings, ScopeValidator(store.paths.scope_file)
 
 
@@ -253,26 +257,40 @@ def cmd_sqli(args: argparse.Namespace) -> None:
 
 def cmd_access_check(args: argparse.Namespace) -> None:
     store, settings, scope = executor_context(args, automated=True)
-    budget = args.max_tests or (min(settings.max_tests, MAX_RANGE_REQUESTS) if args.id_range else 3)
+    range_options = (args.max_range, args.concurrency, args.min_interval)
+    if not args.id_range and any(value is not None for value in range_options):
+        raise ValueError("--max-range, --concurrency and --min-interval require --range.")
+    if args.lab_write and args.id_range:
+        raise ValueError("--lab-write and --range cannot be combined.")
+    range_cap = args.max_range or 25
+    budget = args.max_tests or (min(settings.max_tests, range_cap + 2) if args.id_range else 3)
     if budget > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     if args.id_range:
         if budget > MAX_RANGE_REQUESTS:
-            raise ValueError(f"Range checks are capped at {MAX_RANGE_REQUESTS} requests including controls.")
-        if args.rate is not None and args.rate > MAX_REQUESTS_PER_SECOND:
-            raise ValueError("Range checks are sequential and limited to one request every ten seconds.")
+            raise ValueError(f"Range checks are capped at {MAX_RANGE_REQUESTS} requests including controls in loopback labs.")
         client = client_for(args, settings, scope)
-        client.rate_limiter.requests_per_second = min(client.rate_limiter.requests_per_second, MAX_REQUESTS_PER_SECOND)
         tester = AccessRangeTester(scope, client)
-        options = AccessRangeOptions(args.id_range, budget)
+        options = AccessRangeOptions(args.id_range, budget, range_cap, args.concurrency or 1,
+                                     args.min_interval or 10.0)
         _, requests = tester.validate(args.case_file, options)
         if args.dry_run:
-            print(f"[+] Bounded range validated: two controls and {len(requests)} sequential GETs, maximum 25 IDs, ten-second minimum interval. No requests sent.")
+            print(f"[+] Bounded range validated: two controls and {len(requests)} GETs; cap {range_cap}, concurrency {options.concurrency}, minimum interval {options.min_interval:g}s. No requests sent.")
             return
         path, result = tester.run(args.case_file, options, store.paths.evidence_dir / "access-control")
         store.add_run("access-check", None, ["access-check", "--range"], 1 if result["classification"] == "inconclusive" else 0, path)
         print(f"[+] Bounded access comparison: {result['classification']}; {result['requests_attempted']} requests attempted; candidate offset: {result['candidate_offset']}.")
         print(f"[+] Stop reason: {result['stop_reason']}. No IDOR automatically confirmed. Evidence: {path}")
+        return
+    if args.lab_write:
+        tester = AccessWriteLabTester(scope, client_for(args, settings, scope))
+        tester.validate(args.case_file, budget)
+        if args.dry_run:
+            print("[+] Local JSON write case validated: two controls and one crossed POST/PUT/PATCH; no requests sent.")
+            return
+        path, result = tester.run(args.case_file, store.paths.evidence_dir / "access-control", budget)
+        store.add_run("access-check-lab-write", None, ["access-check", "--lab-write"], 1 if result["classification"] == "inconclusive" else 0, path)
+        print(f"[+] Local write comparison: {result['classification']}; {result['requests_attempted']} requests attempted. No IDOR automatically confirmed. Evidence: {path}")
         return
     tester = AccessControlTester(scope, client_for(args, settings, scope))
     tester.validate(args.case_file, budget)
@@ -494,10 +512,14 @@ def build_parser() -> argparse.ArgumentParser:
     sqli.add_argument("--dry-run", action="store_true")
     sqli.set_defaults(func=cmd_sqli)
 
-    access = sub.add_parser("access-check", help="Known-resource A/B check; optional sequential range capped at 25 IDs")
+    access = sub.add_parser("access-check", help="Known-resource A/B check; bounded GET range or loopback-only JSON write lab")
     access.add_argument("program")
     access.add_argument("--case-file", required=True, type=Path, help="Private JSON case and separate raw owner/actor requests")
-    access.add_argument("--range", dest="id_range", help="One small numeric interval such as 1-10; GET only, sequential")
+    access.add_argument("--range", dest="id_range", help="One numeric interval; non-loopback targets remain sequential and capped")
+    access.add_argument("--max-range", type=positive_int, help="Maximum IDs in --range (default 25; loopback hard cap 100)")
+    access.add_argument("--concurrency", type=positive_int, help="Range workers (default 1; loopback hard cap 4)")
+    access.add_argument("--min-interval", type=positive_float, help="Minimum seconds between request starts (default 10; loopback minimum 0.01)")
+    access.add_argument("--lab-write", action="store_true", help="Run one JSON-body POST/PUT/PATCH A/B comparison on loopback only")
     access.add_argument("--timeout", type=positive_float)
     access.add_argument("--rate", type=positive_float)
     access.add_argument("--max-tests", type=positive_int)

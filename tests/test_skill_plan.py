@@ -19,6 +19,12 @@ class SkillPlanTests(unittest.TestCase):
         self.assertIn("--case-file=registros/lab/private/case.json", command)
         range_command = runner.build_command({"program": "lab", "action": "access-check", "case_file": "case.json", "range": "1-10"})
         self.assertIn("--range=1-10", range_command)
+        bounded_command = runner.build_command({"program": "lab", "action": "access-check", "case_file": "case.json",
+                                                "range": "1-10", "max_range": 10, "concurrency": 2,
+                                                "min_interval": 0.02})
+        self.assertIn("--max-range=10", bounded_command)
+        self.assertIn("--concurrency=2", bounded_command)
+        self.assertIn("--min-interval=0.02", bounded_command)
         with self.assertRaises(ValueError):
             runner.build_command({"program": "lab", "action": "access-check", "case_file": "case.json", "cookies": ["session=not-in-argv"]})
         with self.assertRaises(ValueError):

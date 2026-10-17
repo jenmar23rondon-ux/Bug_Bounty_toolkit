@@ -16,10 +16,10 @@ FIELDS = {
     "fuzz": {"url", "wordlist", "threads", "timeout", "rate", "match_codes", "filter_size"},
     "xss": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "html_parser"},
     "sqli": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests"},
-    "access-check": {"case_file", "timeout", "rate", "max_tests", "range"},
+    "access-check": {"case_file", "timeout", "rate", "max_tests", "range", "max_range", "concurrency", "min_interval"},
 }
 LIST_OPTIONS = {"headers": "header", "cookies": "cookie", "params": "param"}
-NUMERIC_OPTIONS = {"threads", "timeout", "rate", "max_tests"}
+NUMERIC_OPTIONS = {"threads", "timeout", "rate", "max_tests", "max_range", "concurrency", "min_interval"}
 
 
 def build_command(plan: dict, python: str = sys.executable) -> list[str]:
@@ -49,7 +49,7 @@ def build_command(plan: dict, python: str = sys.executable) -> list[str]:
         elif key in NUMERIC_OPTIONS:
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
                 raise ValueError(f"{key} must be a positive finite number.")
-            integer = key in {"threads", "max_tests"} or (action == "fuzz" and key == "timeout")
+            integer = key in {"threads", "max_tests", "max_range", "concurrency"} or (action == "fuzz" and key == "timeout")
             if integer and value != int(value):
                 raise ValueError(f"{key} must be a whole number.")
             command.append(f"--{key.replace('_', '-')}={int(value) if integer else value}")

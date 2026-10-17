@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 import tempfile
+import threading
+import time
 import unittest
 from unittest.mock import Mock, patch
 
@@ -67,6 +69,76 @@ class AccessRangeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tester.validate(self.case_file, AccessRangeOptions("1-26", 27))
         self.client.send.assert_not_called()
+
+    def test_local_lab_can_configure_cap_concurrency_and_interval(self):
+        _, requests = self.tester.validate(
+            self.case_file, AccessRangeOptions("40-69", 32, max_range=30, concurrency=3, min_interval=0.01)
+        )
+        self.assertEqual(len(requests), 30)
+
+    def test_non_loopback_keeps_range_sequential_and_slow(self):
+        remote = self.root / "remote"
+        remote.mkdir()
+        host = "authorized.example"
+        (remote / "scope.txt").write_text(host + "\n", encoding="utf-8")
+        (remote / "owner.http").write_text(
+            f"GET /api/items/20 HTTP/1.1\r\nHost: {host}\r\nAuthorization: Bearer owner-session\r\n\r\n",
+            encoding="utf-8",
+        )
+        (remote / "actor.http").write_text(
+            f"GET /api/items/10 HTTP/1.1\r\nHost: {host}\r\nAuthorization: Bearer actor-session\r\n\r\n",
+            encoding="utf-8",
+        )
+        data = json.loads(self.case_file.read_text(encoding="utf-8"))
+        data["base_url"] = "https://authorized.example"
+        case_file = remote / "case.json"
+        case_file.write_text(json.dumps(data), encoding="utf-8")
+        tester = AccessRangeTester(ScopeValidator(remote / "scope.txt"), self.client)
+        unsafe_options = (
+            AccessRangeOptions("1-2", 4, max_range=26),
+            AccessRangeOptions("1-2", 4, max_range=2, concurrency=2),
+            AccessRangeOptions("1-2", 4, max_range=2, min_interval=9.99),
+        )
+        for options in unsafe_options:
+            with self.subTest(options=options), self.assertRaises(ValueError):
+                tester.validate(case_file, options)
+        self.client.send.assert_not_called()
+
+    def test_concurrency_stops_new_windows_and_marks_in_flight_overrun(self):
+        owner = {"success": True, "data": {"id": "20", "proof": "owner-proof-123456"}}
+        actor = {"success": True, "data": {"id": "10", "proof": "actor-proof-654321"}}
+        crossed = {"success": True, "data": {"id": "20", "proof": "owner-proof-123456"}}
+        denied = {"success": False}
+        active_lock = threading.Lock()
+        active = 0
+        peak_active = 0
+
+        def send(request):
+            nonlocal active, peak_active
+            path = request.prepared_url()
+            probe = not (path.endswith("/20") or path.endswith("/10"))
+            with active_lock:
+                active += 1
+                peak_active = max(peak_active, active)
+            try:
+                time.sleep(0.04 if probe else 0.005)
+                value = owner if path.endswith("/20") else actor if path.endswith("/10") else crossed if path.endswith("/1") else denied
+                return self.response(request, 200 if value is not denied else 403, value)
+            finally:
+                with active_lock:
+                    active -= 1
+
+        self.client.send.side_effect = send
+        _, result = self.tester.run(
+            self.case_file, AccessRangeOptions("1-5", 7, max_range=5, concurrency=3, min_interval=0.01),
+            self.root / "concurrent-evidence",
+        )
+        self.assertGreaterEqual(peak_active, 2)
+        self.assertEqual(result["candidate_offset"], 0)
+        self.assertEqual(result["requests_attempted"], 5)
+        self.assertEqual(result["concurrent_requests_not_evaluated"], 2)
+        self.assertEqual(result["not_completed"], 2)
+        self.assertEqual(result["minimum_interval_seconds"], 0.01)
 
     def test_range_requires_explicit_enumeration_authorization(self):
         case = json.loads(self.case_file.read_text(encoding="utf-8"))
