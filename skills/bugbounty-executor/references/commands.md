@@ -2,6 +2,8 @@
 
 Run from the toolkit checkout with Python 3.10+. Install with `python -m pip install -e .`. The `bbtk`, `bugbounty` and `python -m bugbounty_toolkit.cli` commands use the same implementation. ffuf is required only for live fuzzing.
 
+Check local setup with `bbtk --version` and `bbtk doctor`; `bbtk doctor --program <name>` also checks that program's saved scope, authorization reference and settings. Diagnostics are offline. Use `--json` for machine-readable output. Missing optional extras are reported as warnings, not installed automatically.
+
 ## Authorized Program Setup
 
 Use policy values supplied for the program. Retain existing configuration when it matches the request. Configure explicit domains or URL prefixes and exclusions; a bare domain authorizes only that host, while `*.domain` covers subdomains but not the apex.
@@ -24,17 +26,23 @@ python -m bugbounty_toolkit.cli xss my-program --routes inputs/routes.txt --para
 python -m bugbounty_toolkit.cli sqli my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --deep --max-tests 8 --dry-run
 python -m bugbounty_toolkit.cli cors-check my-program --url "https://authorized.example/account" --dry-run
 python -m bugbounty_toolkit.cli open-redirect my-program --url "https://authorized.example/login?next=%2Fhome" --param next --dry-run
+python -m bugbounty_toolkit.cli request my-program --url "https://authorized.example/health" --run-max-requests 1 --run-max-seconds 30 --run-max-concurrency 1 --dry-run
 python -m bugbounty_toolkit.cli access-check my-program --case-file registros/my-program/private/case.json --range 1-10 --max-range 10 --max-tests 12 --min-interval 10 --concurrency 1 --dry-run
 python -m bugbounty_toolkit.cli access-check lab --case-file registros/lab/private/write-case.json --lab-write --dry-run
 python -m bugbounty_toolkit.cli access-check lab --case-file registros/lab/private/write-case.json --lab-write --allow-public-writes --dry-run
 python -m bugbounty_toolkit.cli access-check lab --case-file registros/lab/private/write-case.json --lab-write --lab-write-range 1-10 --max-range 10 --max-tests 12 --min-interval 10 --dry-run
 python -m bugbounty_toolkit.cli report my-program --format json
 python -m bugbounty_toolkit.cli report my-program --format html
+python -m bugbounty_toolkit.cli report my-program --evidence-file registros/my-program/evidence/access-control/selected.json --format markdown
 ```
+
+Native HTTP commands accept `--run-max-requests`, `--run-max-seconds` and `--run-max-concurrency`. One shared budget is enforced across that command's native HTTP requests, including workers and same-origin Playwright requests/subresources used by `xss --confirm-exec`; every destination also passes the program's scope validator. The summary reports request counts, errors, elapsed time, concurrency peak and hostnames. Ctrl+C cancels queued work and reports the partial run. Per-request timeout, configured rate and per-command `--max-tests` remain in force. External tools such as ffuf, nuclei and tool plans do not inherit this shared request budget; review their own limits separately. No new limits are imposed unless one of the `--run-*` flags is supplied.
+
+`report --evidence-file ... --format markdown` creates a redacted local review draft with A/B observations when present. It deliberately omits raw response bodies and never submits a report.
 
 Remove `--dry-run` only for an action covered by the user's authorization. Request and XSS accept repeatable `--header`, `--cookie`, timeout and rate flags. Requests also accept `--method`, `--param` and `--data`. Use `--base-url` for relative routes or a reviewed captured-host override.
 
-XSS inputs are newline-separated files. The parameter file contains supplied names; it does not trigger parameter discovery. Four non-executing marker variants are attempted by default. Opt-in `--confirm-exec` adds three context-breaking harmless marker/alert variants and invokes Playwright only for `possible` HTTP reflections; install the optional `xss` extra and Chromium binary. Browser requests are restricted to the exact URL origin. `--max-tests` counts HTTP probes and stays subject to the program limit.
+XSS inputs are newline-separated files. The parameter file contains supplied names; it does not trigger parameter discovery. Four non-executing marker variants are attempted by default. Opt-in `--confirm-exec` adds three context-breaking harmless marker/alert variants and invokes Playwright only for `possible` HTTP reflections; install the optional `xss` extra and Chromium binary. Browser requests are restricted to the exact URL origin and use the same scope, rate and run budget as HTTP probes. `--max-tests` counts the command's payload probes and stays subject to the program limit.
 
 SQLi defaults to the same complete three-request baseline/quote group. Opt-in `--deep` adds three 3-second delay probes and a boolean true/false pair, for eight requests per complete route/parameter group. It requires an eight-request minimum, compares delay probes to the measured baseline (candidate threshold 2500ms), and compares boolean response size/hash. These are noisy indicators, not proof; honor configured timeout, rate and test budget.
 

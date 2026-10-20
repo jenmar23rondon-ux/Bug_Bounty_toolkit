@@ -12,7 +12,7 @@ from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 
 from bugbounty_toolkit.core.settings import load_settings
-from bugbounty_toolkit.core.records import RecordStore, ProgramPaths
+from bugbounty_toolkit.core.records import ProgramPaths
 
 
 class WorkflowLab(BaseHTTPRequestHandler):
@@ -75,7 +75,15 @@ class WorkflowTests(unittest.TestCase):
         self.records = self.root / "records"
         config = self.root / "settings.yaml"
         config.write_text("requests_per_second: 20\nmax_concurrency: 2\nmax_tests: 8\n")
-        self.cli("init", "lab", "--authorization", "local laboratory owned for tests", "--automation-allowed", "--config", str(config))
+        self.cli(
+            "init",
+            "lab",
+            "--authorization",
+            "local laboratory owned for tests",
+            "--automation-allowed",
+            "--config",
+            str(config),
+        )
         self.cli("scope", "add", "lab", self.base)
         self.cli("scope", "add", "lab", self.base + "/excluded", "--exclude")
         WorkflowLab.hits.clear()
@@ -95,7 +103,9 @@ class WorkflowTests(unittest.TestCase):
         routes.write_text("/search\n/quiet\n")
         parameters = self.root / "parameters.txt"
         parameters.write_text("q\n")
-        self.cli("xss", "lab", "--routes", str(routes), "--parameters", str(parameters), "--base-url", self.base, "--dry-run")
+        self.cli(
+            "xss", "lab", "--routes", str(routes), "--parameters", str(parameters), "--base-url", self.base, "--dry-run"
+        )
         self.assertEqual(len(WorkflowLab.hits), 1)
         self.cli("xss", "lab", "--routes", str(routes), "--parameters", str(parameters), "--base-url", self.base)
         self.cli("report", "lab", "--format", "json")
@@ -110,6 +120,33 @@ class WorkflowTests(unittest.TestCase):
         document = (path / "program-report.html").read_text()
         self.assertIn("&lt;bbtkxss", document)
         self.assertNotIn("<bbtkxss", document)
+
+    def test_shared_request_budget_stops_native_batch_and_prints_partial_summary(self):
+        routes = self.root / "budget-routes.txt"
+        routes.write_text(self.base + "/quiet\n")
+        parameters = self.root / "budget-parameters.txt"
+        parameters.write_text("q\n")
+        result = self.cli(
+            "xss",
+            "lab",
+            "--routes",
+            str(routes),
+            "--parameters",
+            str(parameters),
+            "--run-max-requests",
+            "2",
+            "--run-max-seconds",
+            "10",
+            "--run-max-concurrency",
+            "1",
+        )
+        self.assertEqual(len(WorkflowLab.hits), 2)
+        self.assertIn("2/2 requests sent", result.stdout)
+        self.assertIn("destinations: 127.0.0.1", result.stdout)
+        evidence = next((self.records / "lab" / "evidence" / "xss").glob("*.json"))
+        data = json.loads(evidence.read_text(encoding="utf-8"))
+        self.assertEqual(data["stop_reason"], "transport_error")
+        self.assertEqual(len(data["results"]), 3)
 
     def test_scope_and_rate_fail_before_network(self):
         self.cli("request", "lab", "--url", self.base + "/search", "--dry-run")
@@ -134,7 +171,9 @@ class WorkflowTests(unittest.TestCase):
 
     def test_cors_and_open_redirect_cli_dry_run_and_local_execution(self):
         self.cli("cors-check", "lab", "--url", self.base + "/cors", "--dry-run")
-        self.cli("open-redirect", "lab", "--url", self.base + "/redirect-test?next=%2Fhome", "--param", "next", "--dry-run")
+        self.cli(
+            "open-redirect", "lab", "--url", self.base + "/redirect-test?next=%2Fhome", "--param", "next", "--dry-run"
+        )
         self.assertEqual(WorkflowLab.hits, [])
 
         cors = self.cli("cors-check", "lab", "--url", self.base + "/cors")
@@ -142,7 +181,9 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(len(WorkflowLab.hits), 4)
         WorkflowLab.hits.clear()
 
-        redirect = self.cli("open-redirect", "lab", "--url", self.base + "/redirect-test?next=%2Fhome", "--param", "next")
+        redirect = self.cli(
+            "open-redirect", "lab", "--url", self.base + "/redirect-test?next=%2Fhome", "--param", "next"
+        )
         self.assertIn("vulnerable of 5 probes", redirect.stdout)
         self.assertEqual(len(WorkflowLab.hits), 5)
         self.assertTrue(all(path.startswith("/redirect-test?") for path in WorkflowLab.hits))
@@ -160,6 +201,36 @@ class WorkflowTests(unittest.TestCase):
         report = (self.records / "lab" / "reports" / "program-report.json").read_text()
         self.assertNotIn("private-lab-token", report)
 
+    def test_evidence_markdown_draft_redacts_tokens_and_never_submits(self):
+        evidence = self.records / "lab" / "evidence" / "access-control" / "review.json"
+        evidence.parent.mkdir(parents=True)
+        evidence.write_text(
+            json.dumps(
+                {
+                    "type": "access-control",
+                    "mode": "known-resource",
+                    "url": "https://example.test/item?access_token=private-lab-token",
+                    "classification": "candidate",
+                    "confirmed": False,
+                    "requests_attempted": 3,
+                    "steps": [
+                        {"step": "owner_control", "status_code": 200, "owner_private_match": True},
+                        {"step": "actor_control", "status_code": 200, "actor_private_match": True},
+                        {"step": "cross_read", "status_code": 200, "owner_private_match": True},
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        result = self.cli("report", "lab", "--evidence-file", str(evidence), "--format", "markdown")
+        self.assertIn("Nothing was submitted", result.stdout)
+        drafts = list((self.records / "lab" / "reports").glob("evidence-review-review.md"))
+        self.assertEqual(len(drafts), 1)
+        markdown = drafts[0].read_text(encoding="utf-8")
+        self.assertIn("owner_control", markdown)
+        self.assertIn("cross_read", markdown)
+        self.assertNotIn("private-lab-token", markdown)
+
     def test_offline_plan_does_not_require_enabling_automation(self):
         self.cli("init", "manual", "--authorization", "manual testing only")
         self.cli("scope", "add", "manual", self.base)
@@ -174,8 +245,19 @@ class WorkflowTests(unittest.TestCase):
         checkout = Path(__file__).resolve().parents[1]
         script = checkout / "skills" / "bugbounty-executor" / "scripts" / "run_plan.py"
         plan = self.root / "plan.json"
-        plan.write_text(json.dumps({"program": "lab", "action": "request", "url": self.base + "/quiet", "params": ["page=2"]}))
-        command = [sys.executable, str(script), "--toolkit-root", str(checkout), "--records-root", str(self.records), "--plan", str(plan)]
+        plan.write_text(
+            json.dumps({"program": "lab", "action": "request", "url": self.base + "/quiet", "params": ["page=2"]})
+        )
+        command = [
+            sys.executable,
+            str(script),
+            "--toolkit-root",
+            str(checkout),
+            "--records-root",
+            str(self.records),
+            "--plan",
+            str(plan),
+        ]
         preview = subprocess.run(command, capture_output=True, text=True, timeout=30)
         self.assertEqual(preview.returncode, 0, preview.stderr)
         self.assertEqual(WorkflowLab.hits, [])

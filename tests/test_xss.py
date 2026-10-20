@@ -13,6 +13,7 @@ from bugbounty_toolkit.xss.reflection_detector import detect_reflection
 from bugbounty_toolkit.xss.result_validator import classify_reflection
 from bugbounty_toolkit.xss.test_cases import payloads_for_marker
 from bugbounty_toolkit.xss.playwright_confirm import classify_execution, require_playwright_installed
+from bugbounty_toolkit.utils.exceptions import ToolkitError
 
 
 class XssTests(unittest.TestCase):
@@ -24,9 +25,13 @@ class XssTests(unittest.TestCase):
         params = root / "params.txt"
         params.write_text("q\n")
         client = Mock()
-        client.send.side_effect = lambda spec: ResponseRecord(spec, spec.url, 200, "OK", 1, {"content-type": content_type}, body, len(body), truncated)
+        client.send.side_effect = lambda spec: ResponseRecord(
+            spec, spec.url, 200, "OK", 1, {"content-type": content_type}, body, len(body), truncated
+        )
         with patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"):
-            path, results = XssParameterTester(ScopeValidator(scope), client).run(XssOptions(routes, params, max_tests=1), root / "evidence")
+            path, results = XssParameterTester(ScopeValidator(scope), client).run(
+                XssOptions(routes, params, max_tests=1), root / "evidence"
+            )
         return client, path, results
 
     @unittest.skipUnless(importlib.util.find_spec("bs4"), "optional xss extra not installed")
@@ -65,12 +70,18 @@ class XssTests(unittest.TestCase):
             params.write_text("q\n")
             client = Mock()
             client.send.side_effect = lambda spec: ResponseRecord(spec, spec.url, 429, "rate limit", 1, {}, "", 0)
-            _, results = XssParameterTester(ScopeValidator(scope), client).run(XssOptions(routes, params), root / "evidence")
+            _, results = XssParameterTester(ScopeValidator(scope), client).run(
+                XssOptions(routes, params), root / "evidence"
+            )
             self.assertEqual(client.send.call_count, 1)
             self.assertEqual(results[0]["classification"], "error")
 
     def test_reflection_never_automatically_confirms_xss(self):
-        for body, content_type in (("<marker>", "text/html"), ("&lt;marker&gt;", "text/html"), ('{"value":"marker"}', "application/json")):
+        for body, content_type in (
+            ("<marker>", "text/html"),
+            ("&lt;marker&gt;", "text/html"),
+            ('{"value":"marker"}', "application/json"),
+        ):
             result = classify_reflection(detect_reflection(body, "marker", "<marker>"), content_type)
             self.assertEqual(result["classification"], "possible")
             self.assertFalse(result["confirmed"])
@@ -113,11 +124,19 @@ class XssTests(unittest.TestCase):
             client.send.side_effect = lambda spec: ResponseRecord(
                 spec, spec.url, 200, "OK", 1, {"content-type": "text/html"}, "<p>BBTK_MARKER</p>", 22
             )
-            execution = {"classification": "confirmed", "marker_observed": True, "alert_observed": True,
-                         "dialogs": [{"type": "alert", "text": "BBTK_MARKER"}], "console_errors": [], "page_errors": []}
-            with patch("bugbounty_toolkit.xss.parameter_tester.require_playwright_installed"), \
-                 patch("bugbounty_toolkit.xss.parameter_tester.PlaywrightExecutionChecker") as checker_type, \
-                 patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"):
+            execution = {
+                "classification": "confirmed",
+                "marker_observed": True,
+                "alert_observed": True,
+                "dialogs": [{"type": "alert", "text": "BBTK_MARKER"}],
+                "console_errors": [],
+                "page_errors": [],
+            }
+            with (
+                patch("bugbounty_toolkit.xss.parameter_tester.require_playwright_installed"),
+                patch("bugbounty_toolkit.xss.parameter_tester.PlaywrightExecutionChecker") as checker_type,
+                patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"),
+            ):
                 checker_type.return_value.confirm.return_value = execution
                 _, results = XssParameterTester(ScopeValidator(scope_file), client).run(
                     XssOptions(routes, params, max_tests=1, confirm_exec=True), root / "evidence"
@@ -127,16 +146,49 @@ class XssTests(unittest.TestCase):
             self.assertTrue(results[0]["confirmed"])
 
             client.reset_mock()
-            client.send.side_effect = lambda spec: ResponseRecord(spec, spec.url, 200, "OK", 1,
-                                                                   {"content-type": "text/html"}, "nothing", 7)
-            with patch("bugbounty_toolkit.xss.parameter_tester.require_playwright_installed"), \
-                 patch("bugbounty_toolkit.xss.parameter_tester.PlaywrightExecutionChecker") as checker_type, \
-                 patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"):
+            client.send.side_effect = lambda spec: ResponseRecord(
+                spec, spec.url, 200, "OK", 1, {"content-type": "text/html"}, "nothing", 7
+            )
+            with (
+                patch("bugbounty_toolkit.xss.parameter_tester.require_playwright_installed"),
+                patch("bugbounty_toolkit.xss.parameter_tester.PlaywrightExecutionChecker") as checker_type,
+                patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"),
+            ):
                 _, results = XssParameterTester(ScopeValidator(scope_file), client).run(
                     XssOptions(routes, params, max_tests=1, confirm_exec=True), root / "evidence"
                 )
             checker_type.return_value.confirm.assert_not_called()
             self.assertEqual(results[0]["classification"], "not_reflected")
+
+    def test_browser_budget_error_writes_partial_evidence_and_stops(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scope_file = root / "scope.txt"
+            scope_file.write_text("example.com\n")
+            routes = root / "routes.txt"
+            routes.write_text("https://example.com/search\n")
+            params = root / "params.txt"
+            params.write_text("q\n")
+            client = Mock()
+            client.timeout = 15.0
+            client.rate_limiter = Mock()
+            client.send.side_effect = lambda spec: ResponseRecord(
+                spec, spec.url, 200, "OK", 1, {"content-type": "text/html"}, "<p>BBTK_MARKER</p>", 22
+            )
+            with (
+                patch("bugbounty_toolkit.xss.parameter_tester.require_playwright_installed"),
+                patch("bugbounty_toolkit.xss.parameter_tester.PlaywrightExecutionChecker") as checker_type,
+                patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"),
+            ):
+                checker_type.return_value.confirm.side_effect = ToolkitError("Run request budget exhausted")
+                path, results = XssParameterTester(ScopeValidator(scope_file), client).run(
+                    XssOptions(routes, params, max_tests=1, confirm_exec=True), root / "evidence"
+                )
+
+            evidence = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(results[0]["classification"], "error")
+            self.assertEqual(evidence["stop_reason"], "run_budget_or_browser_error")
+            self.assertEqual(len(evidence["results"]), 1)
 
     def test_replaces_only_the_supplied_parameter(self):
         result = with_parameter("https://example.com/search?q=old&q=duplicate&page=2", "q", '<marker>"')
@@ -152,9 +204,13 @@ class XssTests(unittest.TestCase):
             params = root / "params.txt"
             params.write_text("q\nq\npage\n")
             client = Mock()
+
             def reflect(spec):
                 payload = next(iter(parse_qs(urlsplit(spec.url).query).values()))[0]
-                return ResponseRecord(spec, spec.url, 200, "OK", 1, {"content-type": "text/html"}, payload, len(payload))
+                return ResponseRecord(
+                    spec, spec.url, 200, "OK", 1, {"content-type": "text/html"}, payload, len(payload)
+                )
+
             client.send.side_effect = reflect
             tester = XssParameterTester(ScopeValidator(scope_file), client)
             path, results = tester.run(XssOptions(routes, params, max_tests=3), root / "evidence")

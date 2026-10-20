@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import math
 from dataclasses import asdict
 from pathlib import Path
 import re
 
-import yaml
-
+from . import __version__
 from .core.checks import render_checklist
+from .core.execution_budget import ExecutionBudget
 from .core.records import ProgramPaths, RecordStore
 from .core.reporting import render_markdown, render_pdf
 from .core.runner import run_tool
@@ -42,8 +43,17 @@ from .integrations.external_plan import build_external_plan, TOOLS
 from .reporting.evidence import write_evidence_json
 from .reporting.html_report import render_html_report
 from .reporting.json_report import render_json_report
+from .reporting.review_markdown import render_evidence_review
+from .diagnostics import diagnose
 from .utils.exceptions import ToolkitError
 from .utils.logger import setup_logger
+
+try:
+    yaml = importlib.import_module("yaml")
+except ModuleNotFoundError:  # Keep bbtk doctor usable when a required dependency is missing.
+    yaml = None
+
+_YAML_ERROR = yaml.YAMLError if yaml is not None else type("_YAML_ERROR", (Exception,), {})
 
 
 RECORDS_ROOT = Path("registros")
@@ -69,6 +79,15 @@ def executor_context(args: argparse.Namespace, automated: bool = False):
     concurrency = getattr(args, "concurrency", None)
     if concurrency is not None and concurrency > settings.max_concurrency:
         raise ValueError("Requested concurrency exceeds the configured program limit.")
+    run_concurrency = getattr(args, "run_max_concurrency", None)
+    if run_concurrency is not None and run_concurrency > settings.max_concurrency:
+        raise ValueError("Run concurrency exceeds the configured program limit.")
+    if not hasattr(args, "_execution_budget"):
+        args._execution_budget = ExecutionBudget(
+            max_requests=getattr(args, "run_max_requests", None),
+            max_seconds=getattr(args, "run_max_seconds", None),
+            max_concurrency=run_concurrency or settings.max_concurrency,
+        )
     return store, settings, ScopeValidator(store.paths.scope_file)
 
 
@@ -78,6 +97,7 @@ def client_for(args: argparse.Namespace, settings: ExecutorSettings, scope: Scop
         timeout=args.timeout or settings.timeout,
         rate_limiter=RateLimiter(args.rate or settings.requests_per_second),
         max_response_bytes=settings.max_response_bytes,
+        execution_budget=getattr(args, "_execution_budget", None),
     )
 
 
@@ -85,6 +105,8 @@ def cmd_init(args: argparse.Namespace) -> None:
     store = store_for(args.program)
     if not args.authorization.strip():
         raise ValueError("Authorization reference cannot be empty.")
+    if yaml is None:
+        raise RuntimeError("PyYAML is required for program initialization. Install the base package dependencies.")
     settings_path = store.paths.program_dir / "settings.yaml"
     settings = load_settings(args.config or (settings_path if settings_path.exists() else None))
     settings_path.write_text(yaml.safe_dump(asdict(settings)), encoding="utf-8")
@@ -110,6 +132,8 @@ def cmd_scope_add(args: argparse.Namespace) -> None:
 
 
 def cmd_scope_import(args: argparse.Namespace) -> None:
+    if yaml is None:
+        raise RuntimeError("PyYAML is required to import scope YAML. Install the base package dependencies.")
     data = yaml.safe_load(args.file.read_text(encoding="utf-8"))
     if not isinstance(data, dict) or set(data) - {"allowed", "excluded"}:
         raise ValueError("Scope YAML must contain allowed and excluded lists.")
@@ -649,6 +673,23 @@ def cmd_add_finding(args: argparse.Namespace) -> None:
 
 def cmd_report(args: argparse.Namespace) -> None:
     store = store_for(args.program)
+    if args.evidence_file:
+        if args.finding_id:
+            raise ValueError("--evidence-file cannot be combined with --finding-id.")
+        if args.format not in {None, "markdown"}:
+            raise ValueError("Evidence review drafts use --format markdown.")
+        try:
+            data = json.loads(bounded_text(args.evidence_file, 2_000_000))
+        except json.JSONDecodeError as exc:
+            raise ValueError("Evidence file must contain valid JSON.") from exc
+        if not isinstance(data, dict):
+            raise ValueError("Evidence file must contain a JSON object.")
+        destination = args.output or store.paths.reports_dir / f"evidence-review-{args.evidence_file.stem}.md"
+        output = render_evidence_review(data, destination)
+        print(f"[+] Review draft created: {output}. Nothing was submitted.")
+        return
+    if args.output:
+        raise ValueError("--output requires --evidence-file.")
     if not args.finding_id:
         report_format = args.format or "html"
         if report_format not in {"html", "json"}:
@@ -688,8 +729,43 @@ def cmd_status(args: argparse.Namespace) -> None:
     print(f"Records path: {store.paths.program_dir}")
 
 
+def cmd_doctor(args: argparse.Namespace) -> None:
+    result = diagnose(
+        args.records_root,
+        args.program,
+        installed_skills=args.skills_dir,
+    )
+    if args.json_output:
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return
+    print(f"Bug Bounty Toolkit {result['toolkit_version']} | offline diagnostics | no HTTP requests")
+    for check in result["checks"]:
+        marker = {"ok": "+", "warning": "!", "error": "x"}.get(check["status"], "?")
+        print(f"[{marker}] {check['name']}: {check['detail']}")
+    print("[+] Diagnostics passed." if result["ok"] else "[!] Required checks need attention.")
+
+
+def add_run_budget_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument(
+        "--run-max-requests",
+        type=positive_int,
+        help="Shared cap across this command's HTTP/browser requests; program scope gates every destination",
+    )
+    command.add_argument(
+        "--run-max-seconds",
+        type=positive_float,
+        help="Shared wall-clock budget across HTTP/browser requests in this command",
+    )
+    command.add_argument(
+        "--run-max-concurrency",
+        type=positive_int,
+        help="Shared HTTP/browser concurrency cap, never above the program configuration",
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="bbtk", description="Authorized bug bounty automation toolkit")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("--records-root", type=Path, default=RECORDS_ROOT)
     parser.add_argument("--log-file", type=Path, help="Optional local execution log; request secrets are not logged")
     sub = parser.add_subparsers(required=True)
@@ -730,6 +806,7 @@ def build_parser() -> argparse.ArgumentParser:
     request.add_argument("--timeout", type=positive_float)
     request.add_argument("--rate", type=positive_float)
     request.add_argument("--dry-run", action="store_true")
+    add_run_budget_arguments(request)
     request.set_defaults(func=cmd_request)
 
     recon = sub.add_parser("recon")
@@ -773,6 +850,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Opt in to headless Playwright confirmation for possible reflected payloads",
     )
     xss.add_argument("--dry-run", action="store_true")
+    add_run_budget_arguments(xss)
     xss.set_defaults(func=cmd_xss)
 
     sqli = sub.add_parser("sqli", help="Bounded baseline/quote probes; --deep opts into timing and boolean probes")
@@ -789,6 +867,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--deep", action="store_true", help="Add three delay and two boolean probes per complete parameter group"
     )
     sqli.add_argument("--dry-run", action="store_true")
+    add_run_budget_arguments(sqli)
     sqli.set_defaults(func=cmd_sqli)
 
     cors = sub.add_parser("cors-check", help="Check CORS response headers for a supplied in-scope URL")
@@ -799,6 +878,7 @@ def build_parser() -> argparse.ArgumentParser:
     cors.add_argument("--timeout", type=positive_float)
     cors.add_argument("--rate", type=positive_float)
     cors.add_argument("--dry-run", action="store_true")
+    add_run_budget_arguments(cors)
     cors.set_defaults(func=cmd_cors_check)
 
     redirect = sub.add_parser("open-redirect", help="Check a supplied in-scope URL parameter for external redirects")
@@ -810,6 +890,7 @@ def build_parser() -> argparse.ArgumentParser:
     redirect.add_argument("--timeout", type=positive_float)
     redirect.add_argument("--rate", type=positive_float)
     redirect.add_argument("--dry-run", action="store_true")
+    add_run_budget_arguments(redirect)
     redirect.set_defaults(func=cmd_open_redirect)
 
     access = sub.add_parser(
@@ -871,6 +952,7 @@ def build_parser() -> argparse.ArgumentParser:
     access.add_argument("--rate", type=positive_float)
     access.add_argument("--max-tests", type=positive_int)
     access.add_argument("--dry-run", action="store_true")
+    add_run_budget_arguments(access)
     access.set_defaults(func=cmd_access_check)
 
     resources = sub.add_parser("resources", help="Offline tool/library availability and official resource catalog")
@@ -949,7 +1031,17 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("program")
     report.add_argument("--finding-id")
     report.add_argument("--format", choices=["html", "json", "markdown", "pdf"])
+    report.add_argument(
+        "--evidence-file", type=Path, help="Create a redacted Markdown review draft from native JSON evidence"
+    )
+    report.add_argument("--output", type=Path, help="Optional destination for an evidence review draft")
     report.set_defaults(func=cmd_report)
+
+    doctor = sub.add_parser("doctor", help="Offline checks for dependencies, skills and local configuration")
+    doctor.add_argument("--program", help="Optionally validate one initialized program")
+    doctor.add_argument("--skills-dir", type=Path, help="Installed skill root (defaults to CODEX_HOME/skills)")
+    doctor.add_argument("--json", dest="json_output", action="store_true", help="Print machine-readable diagnostics")
+    doctor.set_defaults(func=cmd_doctor)
 
     status = sub.add_parser("status")
     status.add_argument("program")
@@ -980,6 +1072,27 @@ def positive_int(value: str) -> int:
     return number
 
 
+def print_execution_summary(args: argparse.Namespace) -> None:
+    if not any(
+        getattr(args, name, None) is not None for name in ("run_max_requests", "run_max_seconds", "run_max_concurrency")
+    ):
+        return
+    budget = getattr(args, "_execution_budget", None)
+    if budget is None:
+        return
+    result = budget.summary()
+    request_cap = str(result.max_requests) if result.max_requests is not None else "unlimited"
+    time_cap = f"{result.max_seconds:g}s" if result.max_seconds is not None else "unlimited"
+    destinations = ", ".join(result.destinations) or "none"
+    reason = result.stop_reason or "completed"
+    print(
+        f"[i] Run summary: {result.requests_started}/{request_cap} requests sent, "
+        f"{result.responses_received} responses, {result.transport_errors} transport errors; "
+        f"{result.elapsed_seconds:.2f}/{time_cap}; peak concurrency "
+        f"{result.peak_concurrency}/{result.max_concurrency}; destinations: {destinations}; stop: {reason}."
+    )
+
+
 def main() -> None:
     global RECORDS_ROOT
     parser = build_parser()
@@ -992,11 +1105,17 @@ def main() -> None:
         args.func(args)
         if logger:
             logger.info("Completed %s", args.func.__name__)
-    except (ToolkitError, ValueError, OSError, RuntimeError, yaml.YAMLError) as exc:
+        print_execution_summary(args)
+    except (ToolkitError, ValueError, OSError, RuntimeError, _YAML_ERROR) as exc:
         if logger:
             logger.error("Failed %s (%s)", args.func.__name__, type(exc).__name__)
+        print_execution_summary(args)
         parser.exit(1, f"Error: {exc}\n")
     except KeyboardInterrupt:
+        budget = getattr(args, "_execution_budget", None)
+        if budget is not None:
+            budget.cancel("cancelled_by_user")
+        print_execution_summary(args)
         parser.exit(130, "Interrupted.\n")
 
 

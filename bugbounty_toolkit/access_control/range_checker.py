@@ -59,12 +59,19 @@ class _ThreadSafeIntervalLimiter:
         self._last_request_at = 0.0
         self._lock = threading.Lock()
 
-    def wait(self) -> None:
+    def wait(self, max_wait: float | None = None) -> None:
         with self._lock:
             if self.cancel_event is not None and self.cancel_event.is_set():
                 raise ToolkitError("Request schedule cancelled.")
             delay = self._interval - (time.monotonic() - self._last_request_at)
             if delay > 0:
+                if max_wait is not None and delay > max_wait:
+                    if self.cancel_event is not None:
+                        if self.cancel_event.wait(max_wait):
+                            raise ToolkitError("Request schedule cancelled.")
+                    else:
+                        time.sleep(max_wait)
+                    raise ToolkitError("Run time budget would expire before the next request slot.")
                 if self.cancel_event is not None:
                     if self.cancel_event.wait(delay):
                         raise ToolkitError("Request schedule cancelled.")
@@ -82,14 +89,24 @@ class AccessRangeTester:
         self._request_lock = threading.Lock()
 
     def validate(self, case_file: Path, options: AccessRangeOptions) -> tuple[AccessCase, list[RequestSpec]]:
-        if (type(options.allow_public_range) is not bool or
-                type(options.max_range) is not int or not 1 <= options.max_range <= MAX_LOCAL_RANGE_IDS or
-                type(options.concurrency) is not int or not 1 <= options.concurrency <= MAX_LOCAL_CONCURRENCY or
-                isinstance(options.min_interval, bool) or not isinstance(options.min_interval, (int, float)) or
-                not math.isfinite(options.min_interval) or options.min_interval <= 0):
+        if (
+            type(options.allow_public_range) is not bool
+            or type(options.max_range) is not int
+            or not 1 <= options.max_range <= MAX_LOCAL_RANGE_IDS
+            or type(options.concurrency) is not int
+            or not 1 <= options.concurrency <= MAX_LOCAL_CONCURRENCY
+            or isinstance(options.min_interval, bool)
+            or not isinstance(options.min_interval, (int, float))
+            or not math.isfinite(options.min_interval)
+            or options.min_interval <= 0
+        ):
             raise ValueError("Range cap, concurrency or minimum interval is invalid.")
         ids = parse_id_range(options.id_range, options.max_range)
-        if type(options.max_tests) is not int or len(ids) + 2 > options.max_tests or options.max_tests > MAX_RANGE_REQUESTS:
+        if (
+            type(options.max_tests) is not int
+            or len(ids) + 2 > options.max_tests
+            or options.max_tests > MAX_RANGE_REQUESTS
+        ):
             raise ValueError(f"Budget must cover two controls and at most {MAX_LOCAL_RANGE_IDS} GET probes.")
         case = AccessControlTester(self.scope, self.client).validate(case_file, options.max_tests)
         data = parse_json(read_local(case_file, 131072))
@@ -106,13 +123,22 @@ class AccessRangeTester:
             max_public_range = MAX_LOCAL_RANGE_IDS if options.allow_public_range else MAX_RANGE_IDS
             min_public_interval = 1.0 if options.allow_public_range else 10.0
             max_public_concurrency = MAX_LOCAL_CONCURRENCY if options.allow_public_range else 1
-            if (options.max_range > max_public_range or options.concurrency > max_public_concurrency or
-                    options.min_interval < min_public_interval):
+            if (
+                options.max_range > max_public_range
+                or options.concurrency > max_public_concurrency
+                or options.min_interval < min_public_interval
+            ):
                 if options.allow_public_range:
-                    raise ValueError("Relaxed public ranges allow at most 100 IDs, four workers, and require at least one second between starts.")
-                raise ValueError("Non-loopback ranges remain capped at 25 IDs, sequential, and at least ten seconds apart.")
+                    raise ValueError(
+                        "Relaxed public ranges allow at most 100 IDs, four workers, and require at least one second between starts."
+                    )
+                raise ValueError(
+                    "Non-loopback ranges remain capped at 25 IDs, sequential, and at least ten seconds apart."
+                )
             if options.max_tests > max_public_range + 2:
-                raise ValueError(f"Non-loopback range checks are capped at {max_public_range + 2} total requests including controls.")
+                raise ValueError(
+                    f"Non-loopback range checks are capped at {max_public_range + 2} total requests including controls."
+                )
         return case, requests
 
     @staticmethod
@@ -145,14 +171,27 @@ class AccessRangeTester:
         else:
             cancel_event = getattr(self.client.rate_limiter, "cancel_event", None)
             self.client.rate_limiter = _ThreadSafeIntervalLimiter(effective_interval, cancel_event)
-        result = {"type": "access-control", "mode": "bounded-range", "classification": "inconclusive",
-                  "confirmed": False, "controls_valid": False, "steps": [], "results": [],
-                  "requests_attempted": 0, "request_budget": len(requests) + 2,
-                  "planned_probes": len(requests), "candidate_offset": None,
-                  "stop_reason": None, "inverse_sent": False, "anonymous_sent": False,
-                  "concurrency": options.concurrency, "minimum_interval_seconds": effective_interval,
-                  "max_range": options.max_range, "local_lab": local_lab,
-                  "concurrent_requests_not_evaluated": 0}
+        result = {
+            "type": "access-control",
+            "mode": "bounded-range",
+            "classification": "inconclusive",
+            "confirmed": False,
+            "controls_valid": False,
+            "steps": [],
+            "results": [],
+            "requests_attempted": 0,
+            "request_budget": len(requests) + 2,
+            "planned_probes": len(requests),
+            "candidate_offset": None,
+            "stop_reason": None,
+            "inverse_sent": False,
+            "anonymous_sent": False,
+            "concurrency": options.concurrency,
+            "minimum_interval_seconds": effective_interval,
+            "max_range": options.max_range,
+            "local_lab": local_lab,
+            "concurrent_requests_not_evaluated": 0,
+        }
 
         for account, request in (("owner", case.owner), ("actor", case.actor)):
             response = self._send(request, result)
@@ -161,9 +200,14 @@ class AccessRangeTester:
             facts = observations(response, case.checks)
             result["steps"].append({"step": account + "_control", **facts})
             other = "actor" if account == "owner" else "owner"
-            valid = (response.status_code == 200 and not response.body_truncated and
-                     facts["application_success"] is True and facts[f"{account}_resource_match"] and
-                     facts[f"{account}_private_match"] and not facts[f"{other}_marker_seen"])
+            valid = (
+                response.status_code == 200
+                and not response.body_truncated
+                and facts["application_success"] is True
+                and facts[f"{account}_resource_match"]
+                and facts[f"{account}_private_match"]
+                and not facts[f"{other}_marker_seen"]
+            )
             if not valid:
                 result["stop_reason"] = "invalid_" + account + "_control"
                 return self._save(evidence_dir, result)
@@ -173,16 +217,20 @@ class AccessRangeTester:
         stop = False
         with ThreadPoolExecutor(max_workers=options.concurrency) as executor:
             for start in range(0, len(requests), options.concurrency):
-                window = list(enumerate(requests[start:start + options.concurrency], start))
+                window = list(enumerate(requests[start : start + options.concurrency], start))
                 futures = [(offset, executor.submit(self._send, request, result)) for offset, request in window]
                 for offset, future in futures:
                     response = future.result()
                     if stop:
-                        result["results"].append({"probe_offset": offset,
-                                                  "status_code": response.status_code if response else None,
-                                                  "duration_ms": response.duration_ms if response else None,
-                                                  "classification": "sent_concurrently_not_evaluated",
-                                                  "confirmed": False})
+                        result["results"].append(
+                            {
+                                "probe_offset": offset,
+                                "status_code": response.status_code if response else None,
+                                "duration_ms": response.duration_ms if response else None,
+                                "classification": "sent_concurrently_not_evaluated",
+                                "confirmed": False,
+                            }
+                        )
                         result["concurrent_requests_not_evaluated"] += 1
                         continue
                     if response is None:
@@ -194,24 +242,37 @@ class AccessRangeTester:
                     identity_differs = self._identity_differs(case, response.body_text)
                     owner_proof = facts["owner_resource_match"] and facts["owner_private_match"]
                     returned_resource = self._resource_value(case, response.body_text)
-                    resource_is_not_actor = (type(returned_resource) in {str, int} and returned_resource != "" and
-                                             not exact(returned_resource, case.checks["actor_resource"]) and
-                                             facts["application_success"] is True)
-                    candidate = (not response.body_truncated and
-                                 (owner_proof or identity_differs or
-                                  (response.status_code == 200 and resource_is_not_actor)))
+                    resource_is_not_actor = (
+                        type(returned_resource) in {str, int}
+                        and returned_resource != ""
+                        and not exact(returned_resource, case.checks["actor_resource"])
+                        and facts["application_success"] is True
+                    )
+                    candidate = not response.body_truncated and (
+                        owner_proof or identity_differs or (response.status_code == 200 and resource_is_not_actor)
+                    )
                     denied = response.status_code in {401, 403} or facts["application_success"] is False
-                    row = {"probe_offset": offset, "status_code": response.status_code,
-                           "duration_ms": response.duration_ms, "body_size": response.body_size,
-                           "body_truncated": response.body_truncated, "application_success": facts["application_success"],
-                           "owner_resource_match": facts["owner_resource_match"],
-                           "owner_private_match": facts["owner_private_match"],
-                           "identity_differs_from_actor": identity_differs,
-                           "resource_differs_from_actor": resource_is_not_actor,
-                           "classification": "candidate" if candidate else "rejected_in_this_test" if denied else "inconclusive",
-                           "confirmed": False}
-                    result["steps"].append({"step": "cross_read", **facts,
-                                            "identity_differs_from_actor": identity_differs})
+                    row = {
+                        "probe_offset": offset,
+                        "status_code": response.status_code,
+                        "duration_ms": response.duration_ms,
+                        "body_size": response.body_size,
+                        "body_truncated": response.body_truncated,
+                        "application_success": facts["application_success"],
+                        "owner_resource_match": facts["owner_resource_match"],
+                        "owner_private_match": facts["owner_private_match"],
+                        "identity_differs_from_actor": identity_differs,
+                        "resource_differs_from_actor": resource_is_not_actor,
+                        "classification": "candidate"
+                        if candidate
+                        else "rejected_in_this_test"
+                        if denied
+                        else "inconclusive",
+                        "confirmed": False,
+                    }
+                    result["steps"].append(
+                        {"step": "cross_read", **facts, "identity_differs_from_actor": identity_differs}
+                    )
                     result["results"].append(row)
                     if candidate:
                         result["candidate_offset"] = offset
@@ -219,7 +280,13 @@ class AccessRangeTester:
                         result["stop_reason"] = "candidate_observed_stop_early"
                         stop = True
                     elif response.status_code == 429 or response.body_truncated or 300 <= response.status_code < 400:
-                        result["stop_reason"] = "rate_limited" if response.status_code == 429 else "truncated_response" if response.body_truncated else "redirect_not_followed"
+                        result["stop_reason"] = (
+                            "rate_limited"
+                            if response.status_code == 429
+                            else "truncated_response"
+                            if response.body_truncated
+                            else "redirect_not_followed"
+                        )
                         stop = True
                     elif response.status_code == 401:
                         result["stop_reason"] = "authentication_failure"

@@ -8,6 +8,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .rate_limiter import RateLimiter
+from .execution_budget import ExecutionBudget
 from .redaction import redact_headers, redact_text, redact_url
 from .scope_validator import ScopeValidator
 from .target import normalize_url
@@ -76,13 +77,23 @@ class NoRedirects(HTTPRedirectHandler):
 
 
 class HttpClient:
-    def __init__(self, scope: ScopeValidator, timeout: float = 15.0, rate_limiter: RateLimiter | None = None, max_response_bytes: int = 1_000_000):
+    def __init__(
+        self,
+        scope: ScopeValidator,
+        timeout: float = 15.0,
+        rate_limiter: RateLimiter | None = None,
+        max_response_bytes: int = 1_000_000,
+        execution_budget: ExecutionBudget | None = None,
+    ):
         if timeout <= 0 or max_response_bytes <= 0:
             raise ValueError("Timeout and response size limit must be positive.")
         self.scope = scope
         self.timeout = timeout
         self.max_response_bytes = max_response_bytes
         self.rate_limiter = rate_limiter or RateLimiter()
+        self.execution_budget = execution_budget
+        if execution_budget is not None:
+            self.rate_limiter.cancel_event = execution_budget.cancel_event
         self.opener = build_opener(NoRedirects())
 
     def send(self, request: RequestSpec) -> ResponseRecord:
@@ -97,32 +108,88 @@ class HttpClient:
             elif key.lower() in {"content-length", "transfer-encoding"}:
                 del headers[key]
         headers.setdefault("User-Agent", "BugBountyToolkit/0.2 authorized-testing")
-        self.rate_limiter.wait()
-        req = Request(url=url, data=request.body_bytes(), headers=headers, method=request.method.upper())
-        started = time.perf_counter()
+        lease = self.execution_budget.acquire(url) if self.execution_budget is not None else None
+        request_started = False
         try:
-            response = self.opener.open(req, timeout=self.timeout)
-        except HTTPError as exc:
-            response = exc
-        except (URLError, OSError, HTTPException) as exc:
-            raise ToolkitError(f"HTTP request failed: {type(exc).__name__}") from exc
-        try:
-            with response:
-                body = response.read(self.max_response_bytes + 1)
-                truncated = len(body) > self.max_response_bytes
-                return self._record(request, response.url, response.code, response.reason, response.headers, body[:self.max_response_bytes], started, truncated)
-        except (OSError, HTTPException) as exc:
-            raise ToolkitError(f"HTTP response could not be read: {type(exc).__name__}") from exc
+            remaining = self.execution_budget.remaining_seconds() if self.execution_budget is not None else None
+            if remaining is None:
+                self.rate_limiter.wait()
+            else:
+                try:
+                    self.rate_limiter.wait(max_wait=remaining)
+                except ToolkitError as exc:
+                    if "time budget" in str(exc).lower() and self.execution_budget is not None:
+                        self.execution_budget.cancel("time_budget_exhausted")
+                    raise
+            if lease is not None:
+                lease.start()
+                request_started = True
+                remaining = self.execution_budget.remaining_seconds()
+            request_timeout = min(self.timeout, remaining) if remaining is not None else self.timeout
+            req = Request(url=url, data=request.body_bytes(), headers=headers, method=request.method.upper())
+            started = time.perf_counter()
+            try:
+                response = self.opener.open(req, timeout=request_timeout)
+            except HTTPError as exc:
+                response = exc
+            except (URLError, OSError, HTTPException) as exc:
+                raise ToolkitError(f"HTTP request failed: {type(exc).__name__}") from exc
+            try:
+                with response:
+                    body = response.read(self.max_response_bytes + 1)
+                    truncated = len(body) > self.max_response_bytes
+                    record = self._record(
+                        request,
+                        response.url,
+                        response.code,
+                        response.reason,
+                        response.headers,
+                        body[: self.max_response_bytes],
+                        started,
+                        truncated,
+                    )
+            except (OSError, HTTPException) as exc:
+                raise ToolkitError(f"HTTP response could not be read: {type(exc).__name__}") from exc
+            if lease is not None:
+                lease.finish(True)
+                request_started = False
+                self.execution_budget.observe_completion()
+            return record
+        except BaseException:
+            if self.execution_budget is not None:
+                self.execution_budget.observe_completion()
+            if lease is not None and request_started:
+                lease.finish(False)
+                request_started = False
+            raise
+        finally:
+            if lease is not None:
+                lease.release()
 
-    def _record(self, request: RequestSpec, final_url: str, status_code: int, reason: str, headers: HTTPMessage, body: bytes, started: float, truncated: bool) -> ResponseRecord:
+    def _record(
+        self,
+        request: RequestSpec,
+        final_url: str,
+        status_code: int,
+        reason: str,
+        headers: HTTPMessage,
+        body: bytes,
+        started: float,
+        truncated: bool,
+    ) -> ResponseRecord:
         charset = headers.get_content_charset() or "utf-8"
         try:
             body_text = body.decode(charset, errors="replace")
         except LookupError:
             body_text = body.decode("utf-8", errors="replace")
         return ResponseRecord(
-            request=request, final_url=final_url, status_code=status_code, reason=str(reason),
+            request=request,
+            final_url=final_url,
+            status_code=status_code,
+            reason=str(reason),
             duration_ms=int((time.perf_counter() - started) * 1000),
             headers={key.lower(): value for key, value in headers.items()},
-            body_text=body_text, body_size=len(body), body_truncated=truncated,
+            body_text=body_text,
+            body_size=len(body),
+            body_truncated=truncated,
         )
