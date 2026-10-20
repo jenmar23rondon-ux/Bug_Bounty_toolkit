@@ -2,6 +2,10 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+.coverage
+coverage.xml
+.test-deps/
+.test-tmp/
 .venv/
 venv/
 dist/
@@ -10,3 +14,8 @@ build/
 # Runtime records are intentionally local. Keep the folder, not private scan data.
 registros/*
 !registros/.gitkeep
+.env
+reports/*
+!reports/.gitkeep
+logs/*
+!logs/.gitkeep

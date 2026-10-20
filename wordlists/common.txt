@@ -1,0 +1,5 @@
+search
+help
+status
+robots.txt
+sitemap.xml

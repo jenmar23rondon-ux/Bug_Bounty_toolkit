@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty SQLi"
+  short_description: "Compara indicadores SQLi con controles acotados"
+  default_prompt: "Usa $bugbounty-sqli con mis parametros autorizados, compara contra el baseline y no extraigas datos."
+policy:
+  allow_implicit_invocation: true

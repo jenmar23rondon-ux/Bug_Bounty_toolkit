@@ -1,0 +1,5 @@
+api
+help
+docs
+search
+status
