@@ -73,9 +73,12 @@ def executor_context(args: argparse.Namespace, automated: bool = False):
 
 
 def client_for(args: argparse.Namespace, settings: ExecutorSettings, scope: ScopeValidator) -> HttpClient:
-    return HttpClient(scope, timeout=args.timeout or settings.timeout,
-                      rate_limiter=RateLimiter(args.rate or settings.requests_per_second),
-                      max_response_bytes=settings.max_response_bytes)
+    return HttpClient(
+        scope,
+        timeout=args.timeout or settings.timeout,
+        rate_limiter=RateLimiter(args.rate or settings.requests_per_second),
+        max_response_bytes=settings.max_response_bytes,
+    )
 
 
 def cmd_init(args: argparse.Namespace) -> None:
@@ -85,8 +88,11 @@ def cmd_init(args: argparse.Namespace) -> None:
     settings_path = store.paths.program_dir / "settings.yaml"
     settings = load_settings(args.config or (settings_path if settings_path.exists() else None))
     settings_path.write_text(yaml.safe_dump(asdict(settings)), encoding="utf-8")
-    store.set_program_meta(platform=args.platform, authorization=args.authorization,
-                           automation_allowed="true" if args.automation_allowed else "false")
+    store.set_program_meta(
+        platform=args.platform,
+        authorization=args.authorization,
+        automation_allowed="true" if args.automation_allowed else "false",
+    )
     print(f"[+] Program initialized: {store.paths.program_dir}")
 
 
@@ -158,7 +164,9 @@ def cmd_recon(args: argparse.Namespace) -> None:
     merged = store.paths.raw_dir / "subdomains.txt"
     values = set()
     for path in [subfinder, amass]:
-        values.update(line.strip() for line in path.read_text(encoding="utf-8", errors="ignore").splitlines() if line.strip())
+        values.update(
+            line.strip() for line in path.read_text(encoding="utf-8", errors="ignore").splitlines() if line.strip()
+        )
     authorized = []
     for host in sorted(values):
         try:
@@ -180,7 +188,23 @@ def cmd_scan_nuclei(args: argparse.Namespace) -> None:
     if not hosts.exists():
         raise SystemExit("Run recon first; missing registros/<program>/raw/subdomains.txt")
     scope.require_all([line.strip() for line in hosts.read_text(encoding="utf-8").splitlines() if line.strip()])
-    output = run_tool(store, "nuclei", None, ["nuclei", "-l", str(hosts), "-severity", args.severity, "-dr", "-rl", str(rate), "-c", str(settings.max_concurrency)])
+    output = run_tool(
+        store,
+        "nuclei",
+        None,
+        [
+            "nuclei",
+            "-l",
+            str(hosts),
+            "-severity",
+            args.severity,
+            "-dr",
+            "-rl",
+            str(rate),
+            "-c",
+            str(settings.max_concurrency),
+        ],
+    )
     print(f"[+] Nuclei scan complete: {output}")
 
 
@@ -189,9 +213,15 @@ def cmd_fuzz(args: argparse.Namespace) -> None:
     rate = args.rate or settings.requests_per_second
     if rate < 1 or rate != int(rate):
         raise ValueError("ffuf requires a whole-number rate of at least 1 request/second.")
-    options = FfufOptions(url=args.url, wordlist=args.wordlist,
-                          threads=args.threads or settings.max_concurrency, timeout=args.timeout or math.ceil(settings.timeout),
-                          rate=int(rate), match_codes=args.match_codes, filter_size=args.filter_size)
+    options = FfufOptions(
+        url=args.url,
+        wordlist=args.wordlist,
+        threads=args.threads or settings.max_concurrency,
+        timeout=args.timeout or math.ceil(settings.timeout),
+        rate=int(rate),
+        match_codes=args.match_codes,
+        filter_size=args.filter_size,
+    )
     runner = FfufRunner(store, scope)
     if args.dry_run:
         runner.validate(options)
@@ -209,15 +239,24 @@ def cmd_xss(args: argparse.Namespace) -> None:
     if cookies:
         headers["Cookie"] = cookies
     tester = XssParameterTester(scope, client_for(args, settings, scope))
-    options = XssOptions(args.routes, args.parameters, args.base_url,
-                         args.max_tests or settings.max_tests, headers, args.html_parser, args.confirm_exec)
+    options = XssOptions(
+        args.routes,
+        args.parameters,
+        args.base_url,
+        args.max_tests or settings.max_tests,
+        headers,
+        args.html_parser,
+        args.confirm_exec,
+    )
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     routes, parameters = tester.validate(options)
     variants = 7 if options.confirm_exec else 4
     total = len(routes) * len(parameters) * variants
     if args.dry_run:
-        print(f"[+] {len(routes)} routes, {len(parameters)} parameters, up to {min(total, options.max_tests)} HTTP requests. Browser confirmation {'enabled' if options.confirm_exec else 'disabled'}. No requests sent.")
+        print(
+            f"[+] {len(routes)} routes, {len(parameters)} parameters, up to {min(total, options.max_tests)} HTTP requests. Browser confirmation {'enabled' if options.confirm_exec else 'disabled'}. No requests sent."
+        )
         return
     path, results = tester.run(options, store.paths.evidence_dir / "xss")
     failures = sum(item["classification"] == "error" for item in results)
@@ -234,7 +273,11 @@ def cmd_xss(args: argparse.Namespace) -> None:
     print(f"[+] Evidence: {path}")
     if len(results) < total:
         stop = json.loads(path.read_text(encoding="utf-8")).get("stop_reason")
-        print(f"[!] Batch stopped: {stop}; remaining inputs were not tested." if stop else "[!] Test budget reached; remaining inputs were not tested.")
+        print(
+            f"[!] Batch stopped: {stop}; remaining inputs were not tested."
+            if stop
+            else "[!] Test budget reached; remaining inputs were not tested."
+        )
 
 
 def cmd_params(args: argparse.Namespace) -> None:
@@ -251,8 +294,9 @@ def cmd_sqli(args: argparse.Namespace) -> None:
     headers = parse_header_items(args.header)
     if args.cookie:
         headers["Cookie"] = parse_cookie_items(args.cookie)
-    options = SqliOptions(args.routes, args.parameters, args.base_url,
-                          args.max_tests or settings.max_tests, headers, args.deep)
+    options = SqliOptions(
+        args.routes, args.parameters, args.base_url, args.max_tests or settings.max_tests, headers, args.deep
+    )
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     tester = SqliParameterTester(scope, client_for(args, settings, scope))
@@ -266,9 +310,13 @@ def cmd_sqli(args: argparse.Namespace) -> None:
     path, results = tester.run(options, store.paths.evidence_dir / "sqli")
     failures = sum(item["classification"] == "error" for item in results)
     possible = sum(item["classification"] == "possible" for item in results)
-    store.add_run("sqli", str(args.routes), ["sqli", str(args.routes), str(args.parameters)], 1 if failures else 0, path)
+    store.add_run(
+        "sqli", str(args.routes), ["sqli", str(args.routes), str(args.parameters)], 1 if failures else 0, path
+    )
     mode = "deep" if options.deep else "error-based"
-    print(f"[+] {len(results)} {mode} SQLi responses, {possible} possible indicators, {failures} errors. No SQLi automatically confirmed.")
+    print(
+        f"[+] {len(results)} {mode} SQLi responses, {possible} possible indicators, {failures} errors. No SQLi automatically confirmed."
+    )
     print(f"[+] Evidence: {path}")
 
 
@@ -285,15 +333,21 @@ def cmd_cors_check(args: argparse.Namespace) -> None:
         print(f"[+] CORS target in scope; {len(origins)} Origin values validated. No requests sent.")
         return
     path, results = checker.run(options, store.paths.evidence_dir / "cors")
-    counts = {label: sum(row.get("classification") == label for row in results)
-              for label in ("VULNERABLE", "DÉBIL", "SEGURO")}
+    counts = {
+        label: sum(row.get("classification") == label for row in results) for label in ("VULNERABLE", "DÉBIL", "SEGURO")
+    }
     for row in results:
-        print(f"{row.get('origin', '-'):<40} ACAO={row.get('access_control_allow_origin', '-')} "
-              f"ACAC={row.get('access_control_allow_credentials', '-')} verdict={row['classification']} "
-              f"status={row.get('status_code', '-')}")
-    store.add_run("cors-check", redact_url(args.url), ["cors-check", redact_url(args.url)],
-                  1 if counts["VULNERABLE"] else 0, path)
-    print(f"[+] CORS summary: {counts['VULNERABLE']} vulnerable, {counts['DÉBIL']} weak, {counts['SEGURO']} safe. Evidence: {path}")
+        print(
+            f"{row.get('origin', '-'):<40} ACAO={row.get('access_control_allow_origin', '-')} "
+            f"ACAC={row.get('access_control_allow_credentials', '-')} verdict={row['classification']} "
+            f"status={row.get('status_code', '-')}"
+        )
+    store.add_run(
+        "cors-check", redact_url(args.url), ["cors-check", redact_url(args.url)], 1 if counts["VULNERABLE"] else 0, path
+    )
+    print(
+        f"[+] CORS summary: {counts['VULNERABLE']} vulnerable, {counts['DÉBIL']} weak, {counts['SEGURO']} safe. Evidence: {path}"
+    )
 
 
 def cmd_open_redirect(args: argparse.Namespace) -> None:
@@ -306,20 +360,27 @@ def cmd_open_redirect(args: argparse.Namespace) -> None:
     options = OpenRedirectOptions(args.url, args.param, headers)
     request_urls = tester.validate(options)
     if args.dry_run:
-        print(f"[+] Open-redirect target in scope; parameter exists and {len(request_urls)} payloads validated. No requests sent.")
+        print(
+            f"[+] Open-redirect target in scope; parameter exists and {len(request_urls)} payloads validated. No requests sent."
+        )
         return
     path, results = tester.run(options, store.paths.evidence_dir / "open-redirect")
     for row in results:
-        print(f"{row.get('payload', '-'):<28} status={row.get('status_code', '-')} "
-              f"Location={row.get('location') or '-'} verdict={row['classification']}")
+        print(
+            f"{row.get('payload', '-'):<28} status={row.get('status_code', '-')} "
+            f"Location={row.get('location') or '-'} verdict={row['classification']}"
+        )
     vulnerable = sum(row.get("classification") == "VULNERABLE" for row in results)
-    store.add_run("open-redirect", redact_url(args.url), ["open-redirect", redact_url(args.url)],
-                  1 if vulnerable else 0, path)
+    store.add_run(
+        "open-redirect", redact_url(args.url), ["open-redirect", redact_url(args.url)], 1 if vulnerable else 0, path
+    )
     print(f"[+] Open redirect summary: {vulnerable} vulnerable of {len(results)} probes. Evidence: {path}")
 
 
 def cmd_access_check(args: argparse.Namespace) -> None:
     range_requested = bool(args.id_range or args.lab_write_range)
+    read_options = args.anonymous_check or args.inverse_cross or args.multi_account
+    write_options = args.verify_persistence or args.inverse_write or args.cleanup
     if args.allow_public_writes and not args.lab_write:
         raise ValueError("--allow-public-writes requires --lab-write.")
     if args.lab_write_range and not args.lab_write:
@@ -328,6 +389,12 @@ def cmd_access_check(args: argparse.Namespace) -> None:
         raise ValueError("--range and --lab-write-range are mutually exclusive.")
     if args.lab_write and args.id_range:
         raise ValueError("--lab-write cannot be combined with --range.")
+    if read_options and (args.lab_write or range_requested):
+        raise ValueError(
+            "--anonymous-check, --inverse-cross and --multi-account apply only to single read-mode checks."
+        )
+    if write_options and not args.lab_write:
+        raise ValueError("--verify-persistence, --inverse-write and --cleanup require --lab-write.")
     range_options = (args.max_range, args.concurrency, args.min_interval)
     if not range_requested and any(value is not None for value in range_options):
         raise ValueError("--max-range, --concurrency and --min-interval require --range or --lab-write-range.")
@@ -336,17 +403,30 @@ def cmd_access_check(args: argparse.Namespace) -> None:
 
     store, settings, scope = executor_context(args, automated=True)
     range_cap = args.max_range or 25
-    budget = args.max_tests or (min(settings.max_tests, range_cap + 2) if range_requested else 3)
+    if range_requested:
+        default_budget = min(settings.max_tests, range_cap + 2)
+    elif args.lab_write:
+        default_budget = AccessWriteLabTester.write_request_count(
+            args.verify_persistence, args.inverse_write, args.cleanup
+        )
+    elif args.multi_account:
+        default_budget = settings.max_tests
+    else:
+        default_budget = 3 + int(args.anonymous_check) + int(args.inverse_cross)
+    budget = args.max_tests or default_budget
     if budget > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     if args.id_range:
         if budget > MAX_RANGE_REQUESTS:
-            raise ValueError(f"Range checks are capped at {MAX_RANGE_REQUESTS} requests including controls in loopback labs.")
+            raise ValueError(
+                f"Range checks are capped at {MAX_RANGE_REQUESTS} requests including controls in loopback labs."
+            )
         client = client_for(args, settings, scope)
         tester = AccessRangeTester(scope, client)
         interval = args.min_interval if args.min_interval is not None else (1.0 if args.allow_public_range else 10.0)
-        options = AccessRangeOptions(args.id_range, budget, range_cap, args.concurrency or 1,
-                                     interval, args.allow_public_range)
+        options = AccessRangeOptions(
+            args.id_range, budget, range_cap, args.concurrency or 1, interval, args.allow_public_range
+        )
         case, requests = tester.validate(args.case_file, options)
         local_lab = all(is_loopback_url(request.prepared_url()) for request in (case.owner, case.actor, *requests))
         if local_lab and args.allow_public_range and args.min_interval is None:
@@ -355,11 +435,21 @@ def cmd_access_check(args: argparse.Namespace) -> None:
         elif not local_lab and args.allow_public_range:
             print("[!] Public range relaxed: more requests than default")
         if args.dry_run:
-            print(f"[+] Bounded range validated: two controls and {len(requests)} GETs; cap {range_cap}, concurrency {options.concurrency}, minimum interval {options.min_interval:g}s. No requests sent.")
+            print(
+                f"[+] Bounded range validated: two controls and {len(requests)} GETs; cap {range_cap}, concurrency {options.concurrency}, minimum interval {options.min_interval:g}s. No requests sent."
+            )
             return
         path, result = tester.run(args.case_file, options, store.paths.evidence_dir / "access-control")
-        store.add_run("access-check", None, ["access-check", "--range"], 1 if result["classification"] == "inconclusive" else 0, path)
-        print(f"[+] Bounded access comparison: {result['classification']}; {result['requests_attempted']} requests attempted; candidate offset: {result['candidate_offset']}.")
+        store.add_run(
+            "access-check",
+            None,
+            ["access-check", "--range"],
+            1 if result["classification"] == "inconclusive" else 0,
+            path,
+        )
+        print(
+            f"[+] Bounded access comparison: {result['classification']}; {result['requests_attempted']} requests attempted; candidate offset: {result['candidate_offset']}."
+        )
         print(f"[+] Stop reason: {result['stop_reason']}. No IDOR automatically confirmed. Evidence: {path}")
         return
     if args.lab_write_range:
@@ -368,8 +458,9 @@ def cmd_access_check(args: argparse.Namespace) -> None:
         client = client_for(args, settings, scope)
         tester = AccessWriteRangeTester(scope, client, allow_public_writes=args.allow_public_writes)
         interval = args.min_interval if args.min_interval is not None else (1.0 if args.allow_public_range else 10.0)
-        options = AccessRangeOptions(args.lab_write_range, budget, range_cap, args.concurrency or 1,
-                                     interval, args.allow_public_range)
+        options = AccessRangeOptions(
+            args.lab_write_range, budget, range_cap, args.concurrency or 1, interval, args.allow_public_range
+        )
         case, requests = tester.validate(args.case_file, options)
         local_lab = all(is_loopback_url(request.prepared_url()) for request in (case.owner, case.actor, *requests))
         if local_lab and args.allow_public_range and args.min_interval is None:
@@ -378,35 +469,85 @@ def cmd_access_check(args: argparse.Namespace) -> None:
         elif not local_lab and args.allow_public_range:
             print("[!] Public range relaxed: more requests than default")
         if args.dry_run:
-            print(f"[+] JSON write range validated: two controls and {len(requests)} POST/PUT/PATCH probes; cap {range_cap}, concurrency {options.concurrency}, minimum interval {options.min_interval:g}s. No requests sent.")
+            print(
+                f"[+] JSON write range validated: two controls and {len(requests)} POST/PUT/PATCH probes; cap {range_cap}, concurrency {options.concurrency}, minimum interval {options.min_interval:g}s. No requests sent."
+            )
             return
         path, result = tester.run(args.case_file, options, store.paths.evidence_dir / "access-control")
-        store.add_run("access-check-lab-write-range", None, ["access-check", "--lab-write-range"],
-                      1 if result["classification"] == "inconclusive" else 0, path)
-        print(f"[+] Bounded write comparison: {result['classification']}; {result['requests_attempted']} requests attempted; candidate offset: {result['candidate_offset']}.")
+        store.add_run(
+            "access-check-lab-write-range",
+            None,
+            ["access-check", "--lab-write-range"],
+            1 if result["classification"] == "inconclusive" else 0,
+            path,
+        )
+        print(
+            f"[+] Bounded write comparison: {result['classification']}; {result['requests_attempted']} requests attempted; candidate offset: {result['candidate_offset']}."
+        )
         print(f"[+] Stop reason: {result['stop_reason']}. No IDOR automatically confirmed. Evidence: {path}")
         return
     if args.lab_write:
         if args.allow_public_writes:
             print("[!] Public writes enabled: requests may modify remote state")
-        tester = AccessWriteLabTester(scope, client_for(args, settings, scope),
-                                      allow_public_writes=args.allow_public_writes)
-        tester.validate(args.case_file, budget)
+        tester = AccessWriteLabTester(
+            scope, client_for(args, settings, scope), allow_public_writes=args.allow_public_writes
+        )
+        request_count = tester.write_request_count(args.verify_persistence, args.inverse_write, args.cleanup)
+        tester.validate(args.case_file, budget, args.verify_persistence, args.inverse_write, args.cleanup)
         if args.dry_run:
-            print("[+] JSON write case validated: two controls and one crossed POST/PUT/PATCH; no requests sent.")
+            print(f"[+] JSON write case validated: {request_count} requests budgeted; no requests sent.")
             return
-        path, result = tester.run(args.case_file, store.paths.evidence_dir / "access-control", budget)
-        store.add_run("access-check-lab-write", None, ["access-check", "--lab-write"], 1 if result["classification"] == "inconclusive" else 0, path)
-        print(f"[+] JSON write comparison: {result['classification']}; {result['requests_attempted']} requests attempted. No IDOR automatically confirmed. Evidence: {path}")
+        path, result = tester.run(
+            args.case_file,
+            store.paths.evidence_dir / "access-control",
+            budget,
+            args.verify_persistence,
+            args.inverse_write,
+            args.cleanup,
+        )
+        store.add_run(
+            "access-check-lab-write",
+            None,
+            ["access-check", "--lab-write"],
+            1 if result["classification"] == "inconclusive" else 0,
+            path,
+        )
+        print(
+            f"[+] JSON write comparison: {result['classification']}; {result['requests_attempted']} requests attempted. No IDOR automatically confirmed. Evidence: {path}"
+        )
+        if args.cleanup:
+            print(f"[+] Cleanup status: {result['cleanup_status']}; verified: {result['cleanup_verified']}.")
         return
     tester = AccessControlTester(scope, client_for(args, settings, scope))
-    tester.validate(args.case_file, budget)
+    case = tester.validate(args.case_file, budget, args.anonymous_check, args.inverse_cross, args.multi_account)
+    request_count = tester.request_count(case, args.anonymous_check, args.inverse_cross, args.multi_account)
     if args.dry_run:
-        print("[+] Known-resource access case validated: two controls and one crossed GET, at most 3 requests. No requests sent.")
+        print(f"[+] Known-resource access case validated: {request_count} requests planned; no requests sent.")
         return
-    path, result = tester.run(args.case_file, store.paths.evidence_dir / "access-control", budget)
+    path, result = tester.run(
+        args.case_file,
+        store.paths.evidence_dir / "access-control",
+        budget,
+        args.anonymous_check,
+        args.inverse_cross,
+        args.multi_account,
+    )
     store.add_run("access-check", None, ["access-check"], 0 if result["classification"] != "inconclusive" else 1, path)
-    print(f"[+] Access comparison: {result['classification']}; {result['requests_attempted']} requests attempted; controls valid: {result['controls_valid']}.")
+    print(
+        f"[+] Access comparison: {result['classification']}; {result['requests_attempted']} requests attempted; controls valid: {result['controls_valid']}."
+    )
+    if result.get("matrix") is not None:
+        print(
+            f"[+] Account matrix: {result['matrix_crosses']} crossed pairs plus {len(result['matrix']) - result['matrix_crosses']} account controls."
+        )
+    if result.get("anonymous_classification") == "anonymous_access":
+        print("[!] Anonymous request returned the configured private-resource proof.")
+    elif result.get("anonymous_classification") == "public_endpoint":
+        print("[i] Anonymous check was informational: the case does not declare this resource private.")
+    if result.get("anonymous_expectation_mismatch"):
+        print("[!] Anonymous access differed from expected_anonymous in the case.")
+    if result.get("bidirectional_access"):
+        print("[!] Both directed account crossings returned their configured private-resource proof.")
     print(f"[+] Stop reason: {result['stop_reason']}. No IDOR automatically confirmed. Evidence: {path}")
 
 
@@ -458,16 +599,27 @@ def cmd_tool_plan(args: argparse.Namespace) -> None:
     plan = build_external_plan(args.tool, args.url, args.parameter, scope, settings, args.script)
     plan["automation_allowed_in_program"] = store.metadata().get("automation_allowed") == "true"
     if not plan["automation_allowed_in_program"]:
-        plan["warnings"].append("This program does not record automation permission. Planning is offline; executing an automated scan is not authorized by this plan.")
+        plan["warnings"].append(
+            "This program does not record automation permission. Planning is offline; executing an automated scan is not authorized by this plan."
+        )
     if args.dry_run:
         print("[+] External plan validated. No scanner executed and no requests sent.")
         return
     # Command plans may contain private URL values; only their redacted summary enters reports.
     path = write_evidence_json(store.paths.raw_dir / "external-plans", plan, prefix=args.tool)
-    summary = write_evidence_json(store.paths.evidence_dir / "external-plans",
-                                  {"type": "external-tool-plan", "tool": args.tool, "target": redact_url(args.url),
-                                   "executed": False, "confirmed": False, "requires_manual_review": True,
-                                   "automatic_request_budget_enforced": False}, prefix=args.tool)
+    summary = write_evidence_json(
+        store.paths.evidence_dir / "external-plans",
+        {
+            "type": "external-tool-plan",
+            "tool": args.tool,
+            "target": redact_url(args.url),
+            "executed": False,
+            "confirmed": False,
+            "requires_manual_review": True,
+            "automatic_request_budget_enforced": False,
+        },
+        prefix=args.tool,
+    )
     store.add_run("tool-plan", redact_url(args.url), ["tool-plan", args.tool], 0, summary)
     print(f"[+] Private {args.tool} command plan: {path}")
     print("[!] Review required. No scanner executed. External tools do not inherit the bounded executor controls.")
@@ -489,7 +641,9 @@ def cmd_mark_reviewed(args: argparse.Namespace) -> None:
 def cmd_add_finding(args: argparse.Namespace) -> None:
     store = store_for(args.program)
     ensure_in_scope(args.target, store.paths.scope_file)
-    store.add_finding(args.finding_id, args.title, args.category, args.severity, args.target, args.summary, args.evidence)
+    store.add_finding(
+        args.finding_id, args.title, args.category, args.severity, args.target, args.summary, args.evidence
+    )
     print(f"[+] Finding saved: {args.finding_id}")
 
 
@@ -500,7 +654,11 @@ def cmd_report(args: argparse.Namespace) -> None:
         if report_format not in {"html", "json"}:
             raise ValueError("Program reports support html/json. Use --finding-id for markdown/pdf.")
         destination = store.paths.reports_dir / f"program-report.{report_format}"
-        output = render_html_report(store, destination) if report_format == "html" else render_json_report(store, destination)
+        output = (
+            render_html_report(store, destination)
+            if report_format == "html"
+            else render_json_report(store, destination)
+        )
         print(f"[+] Report created: {output}")
         return
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", args.finding_id):
@@ -511,7 +669,11 @@ def cmd_report(args: argparse.Namespace) -> None:
     if not finding:
         raise SystemExit(f"Finding not found: {args.finding_id}")
     markdown = render_markdown(finding, store.paths.reports_dir / f"{args.finding_id}.md")
-    output = markdown if args.format == "markdown" else render_pdf(markdown, store.paths.reports_dir / f"{args.finding_id}.pdf")
+    output = (
+        markdown
+        if args.format == "markdown"
+        else render_pdf(markdown, store.paths.reports_dir / f"{args.finding_id}.pdf")
+    )
     store.mark_reviewed("report", args.finding_id, str(output))
     print(f"[+] Report created: {output}")
 
@@ -536,7 +698,9 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("program")
     init.add_argument("--platform", default="hackerone")
     init.add_argument("--authorization", required=True)
-    init.add_argument("--automation-allowed", action="store_true", help="Record that the program permits automated testing")
+    init.add_argument(
+        "--automation-allowed", action="store_true", help="Record that the program permits automated testing"
+    )
     init.add_argument("--config", type=Path, help="YAML limits copied into the program records")
     init.set_defaults(func=cmd_init)
 
@@ -603,7 +767,11 @@ def build_parser() -> argparse.ArgumentParser:
     xss.add_argument("--rate", type=positive_float)
     xss.add_argument("--max-tests", type=positive_int)
     xss.add_argument("--html-parser", choices=("html.parser", "lxml", "html5lib"), default="html.parser")
-    xss.add_argument("--confirm-exec", action="store_true", help="Opt in to headless Playwright confirmation for possible reflected payloads")
+    xss.add_argument(
+        "--confirm-exec",
+        action="store_true",
+        help="Opt in to headless Playwright confirmation for possible reflected payloads",
+    )
     xss.add_argument("--dry-run", action="store_true")
     xss.set_defaults(func=cmd_xss)
 
@@ -617,7 +785,9 @@ def build_parser() -> argparse.ArgumentParser:
     sqli.add_argument("--timeout", type=positive_float)
     sqli.add_argument("--rate", type=positive_float)
     sqli.add_argument("--max-tests", type=positive_int)
-    sqli.add_argument("--deep", action="store_true", help="Add three delay and two boolean probes per complete parameter group")
+    sqli.add_argument(
+        "--deep", action="store_true", help="Add three delay and two boolean probes per complete parameter group"
+    )
     sqli.add_argument("--dry-run", action="store_true")
     sqli.set_defaults(func=cmd_sqli)
 
@@ -642,17 +812,61 @@ def build_parser() -> argparse.ArgumentParser:
     redirect.add_argument("--dry-run", action="store_true")
     redirect.set_defaults(func=cmd_open_redirect)
 
-    access = sub.add_parser("access-check", help="Known-resource A/B check; bounded GET range or loopback-only JSON write lab")
+    access = sub.add_parser(
+        "access-check", help="Known-resource authorization comparison; bounded read and disposable JSON write modes"
+    )
     access.add_argument("program")
-    access.add_argument("--case-file", required=True, type=Path, help="Private JSON case and separate raw owner/actor requests")
-    access.add_argument("--range", dest="id_range", help="One numeric interval; non-loopback targets remain sequential and capped")
-    access.add_argument("--max-range", type=positive_int, help="Maximum IDs in --range (default 25; loopback hard cap 100)")
+    access.add_argument(
+        "--case-file", required=True, type=Path, help="Private JSON case and separate raw owner/actor requests"
+    )
+    access.add_argument(
+        "--range", dest="id_range", help="One numeric interval; non-loopback targets remain sequential and capped"
+    )
+    access.add_argument(
+        "--max-range", type=positive_int, help="Maximum IDs in --range (default 25; loopback hard cap 100)"
+    )
     access.add_argument("--concurrency", type=positive_int, help="Range workers (default 1; loopback hard cap 4)")
-    access.add_argument("--min-interval", type=positive_float, help="Minimum seconds between starts (public relaxed default 1; otherwise 10; loopback minimum 0.01)")
-    access.add_argument("--allow-public-range", action="store_true", help="Opt in to up to 100 public range probes, four workers and a one-second minimum interval")
-    access.add_argument("--lab-write", action="store_true", help="Run one JSON-body POST/PUT/PATCH A/B comparison; public targets require --allow-public-writes")
-    access.add_argument("--allow-public-writes", action="store_true", help="Opt in to state-changing write comparisons on in-scope non-loopback hosts")
+    access.add_argument(
+        "--min-interval",
+        type=positive_float,
+        help="Minimum seconds between starts (public relaxed default 1; otherwise 10; loopback minimum 0.01)",
+    )
+    access.add_argument(
+        "--allow-public-range",
+        action="store_true",
+        help="Opt in to up to 100 public range probes, four workers and a one-second minimum interval",
+    )
+    access.add_argument(
+        "--lab-write",
+        action="store_true",
+        help="Run one JSON-body POST/PUT/PATCH A/B comparison; public targets require --allow-public-writes",
+    )
+    access.add_argument(
+        "--allow-public-writes",
+        action="store_true",
+        help="Opt in to state-changing write comparisons on in-scope non-loopback hosts",
+    )
     access.add_argument("--lab-write-range", help="With --lab-write, sweep one numeric JSON-body ID interval")
+    access.add_argument(
+        "--anonymous-check", action="store_true", help="After the normal crossed GET, repeat it without session headers"
+    )
+    access.add_argument(
+        "--inverse-cross", action="store_true", help="Also check the owner session against the actor's private resource"
+    )
+    access.add_argument(
+        "--multi-account",
+        action="store_true",
+        help="Build the complete read-access matrix for owner, actor and additional_accounts",
+    )
+    access.add_argument(
+        "--verify-persistence", action="store_true", help="After the crossed write, read back a declared changed field"
+    )
+    access.add_argument(
+        "--inverse-write", action="store_true", help="Also write the actor resource using the owner's session"
+    )
+    access.add_argument(
+        "--cleanup", action="store_true", help="Restore original write bodies and verify each with a final GET"
+    )
     access.add_argument("--timeout", type=positive_float)
     access.add_argument("--rate", type=positive_float)
     access.add_argument("--max-tests", type=positive_int)
@@ -676,7 +890,9 @@ def build_parser() -> argparse.ArgumentParser:
     sql.add_argument("--output", type=Path)
     sql.set_defaults(func=cmd_analyze)
     jwt = analyze_sub.add_parser("jwt")
-    jwt.add_argument("--input", required=True, type=Path, help="Local compact JWS token; never pass a token on the command line")
+    jwt.add_argument(
+        "--input", required=True, type=Path, help="Local compact JWS token; never pass a token on the command line"
+    )
     jwt.add_argument("--key-file", type=Path)
     jwt.add_argument("--algorithm", choices=ALGORITHMS)
     jwt.add_argument("--issuer")
@@ -696,7 +912,9 @@ def build_parser() -> argparse.ArgumentParser:
     tool_plan.add_argument("--tool", choices=TOOLS, required=True)
     tool_plan.add_argument("--url", required=True)
     tool_plan.add_argument("--parameter", required=True)
-    tool_plan.add_argument("--script", type=Path, help="Reviewed sqlmap.py or xsstrike.py; Dalfox plans target version 3")
+    tool_plan.add_argument(
+        "--script", type=Path, help="Reviewed sqlmap.py or xsstrike.py; Dalfox plans target version 3"
+    )
     tool_plan.add_argument("--dry-run", action="store_true")
     tool_plan.set_defaults(func=cmd_tool_plan)
 
@@ -749,7 +967,9 @@ def positive_float(value: str) -> float:
 def external_rate(settings: ExecutorSettings) -> int:
     rate = settings.requests_per_second
     if rate < 1 or rate != int(rate):
-        raise ValueError("This external tool requires a whole-number rate of at least 1. Use request/xss for fractional rates.")
+        raise ValueError(
+            "This external tool requires a whole-number rate of at least 1. Use request/xss for fractional rates."
+        )
     return int(rate)
 
 

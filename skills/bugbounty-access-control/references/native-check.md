@@ -16,6 +16,7 @@ Keep the case and separate account captures under ignored `registros/<program>/p
   "accounts_authorized": true,
   "resource_private": true,
   "expected_cross_access": "deny",
+  "expected_anonymous": "deny",
   "checks": {
     "success_pointer": "/success",
     "success_value": true,
@@ -40,9 +41,32 @@ Check locations use [JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901), incl
 ```bash
 bugbounty access-check my-program --case-file registros/my-program/private/case.json --rate 0.1 --max-tests 3 --dry-run
 bugbounty access-check my-program --case-file registros/my-program/private/case.json --rate 0.1 --max-tests 3
+bugbounty access-check my-program --case-file registros/my-program/private/case.json --anonymous-check --max-tests 4 --dry-run
+bugbounty access-check my-program --case-file registros/my-program/private/case.json --inverse-cross --max-tests 4 --dry-run
+bugbounty access-check my-program --case-file registros/my-program/private/case.json --multi-account --max-tests 9 --dry-run
 ```
 
-After the user's actual authorization covers the run, the non-dry invocation sends at most three requests, in this order: B's normal read, A's normal read, A's session reading B's resource. One client enforces the policy/user rate across the whole group. Failing a control stops after one or two requests; the cross is not sent. There are no retries, redirects, inverse cross, anonymous requests or write operations. A budget below three is rejected before traffic.
+After the user's actual authorization covers the run, the non-dry invocation sends exactly three requests by default, in this order: B's normal read, A's normal read, A's session reading B's resource. One client enforces the policy/user rate across the whole group. Failing a control stops after one or two requests; the cross is not sent. There are no retries and redirects are not followed. A budget below the selected mode's planned requests is rejected before traffic.
+
+## Optional Read Comparisons
+
+`--anonymous-check` adds one request after the normal A-to-B cross: the same GET without any header named in `session_headers`. For a private resource, it records `anonymous_access` only if both B's configured resource ID and private proof marker match and the behavior is not declared expected. The optional `expected_anonymous` is `deny` or `allow`; omitted defaults to `deny` for private resources. If `resource_private: false`, the case is accepted only with `--anonymous-check` and the result is `public_endpoint` (informational), not an IDOR finding. Explicit expectation contradictions are flagged as `anonymous_expectation_mismatch`. It does not strip unrelated non-session headers. `--inverse-cross` adds one request using B's session against A's captured resource and records its outcome separately; `bidirectional_access` is true only if both directions match their respective private proofs. Either flag is opt-in and adds exactly one request. Each request is scope-checked, rate-limited and included in `--max-tests`.
+
+For a fixed three-or-more-account matrix, retain the normal owner/actor fields and add one or more `additional_accounts` entries to the case:
+
+```json
+{
+  "additional_accounts": {
+    "actor2": {
+      "request": "actor2.http",
+      "resource": "C",
+      "marker": "owned-C-proof-1f470a"
+    }
+  }
+}
+```
+
+Every capture must be an exact GET on the same origin and differ only at the declared path segment or query parameter. Each account needs a distinct session context, resource ID and controlled private marker. `--multi-account` sends one control per account, then each off-diagonal pair once; a three-account case therefore sends three controls plus six cross requests (nine total). The evidence matrix shows diagonal cells as `control_valid` and lists all six cross outcomes separately. It is serial and capped at ten total accounts; the full square request count must fit `--max-tests` and the program's configured budget. If combined with `--inverse-cross`, the explicit inverse is an additional labeled request even though the matrix already contains that direction. Anonymous checking adds one more request after the matrix. A candidate remains a triage result, not automatic confirmation.
 
 ## Optional Numeric Range
 
@@ -65,9 +89,41 @@ Writes are disabled in the default access-check. `--lab-write` accepts only matc
 
 Public writes are an explicit opt-in: add `--allow-public-writes` to `--lab-write`. The flag has no effect on read or range modes and is rejected without `--lab-write`. The CLI prints `[!] Public writes enabled: requests may modify remote state`. It relaxes only the loopback guard; scope, same-origin, same-method, valid JSON, disposable-resource and control checks remain enforced. A public write can persistently change remote state, including during the two control writes, so only use resources that are genuinely disposable and only if the user's authorization and the program's automation rules explicitly permit state-changing tests. The case's `disposable_test_resources: true` is an attestation, not authorization verification.
 
+The default write flow remains two successful controls plus one actor-to-owner cross write. `--inverse-write` adds one owner-session write to the actor resource. Results stay separate, and `bidirectional_write_candidate` is true only when both responses match the configured private resource proofs. Both directions can mutate state.
+
+`--verify-persistence` adds exactly one GET after the first crossed write. It requires this extra private-case fragment and a separately captured owner-session GET in `readback-owner.http`:
+
+```json
+{
+  "persistence_check": {
+    "request": "readback-owner.http",
+    "body_pointer": "/mutation/item/title",
+    "response_pointer": "/data/title",
+    "value": "bbtk-test-value-7ac21f"
+  }
+}
+```
+
+The selected body field must exist in the owner capture, be a short scalar, differ from the declared test value, and not be the resource-ID pointer. The cross body changes that one field to `value`; the readback must show the known owner resource, its private marker and the exact new value. Only then is `write_confirmed_persisted` recorded. This confirms persistence of that test value, not an overall vulnerability; evidence does not include the value. The GET must be in scope, same-origin, and use the owner's complete declared session context.
+
+`--cleanup` requires this private-case readback contract and a GET capture for each resource that will be restored:
+
+```json
+{
+  "cleanup_check": {
+    "owner_request": "cleanup-owner.http",
+    "actor_request": "cleanup-actor.http",
+    "body_pointer": "/mutation/item/title",
+    "response_pointer": "/data/title"
+  }
+}
+```
+
+The body pointer selects each account's original value from its captured JSON body. The owner GET must use the owner's session; the actor GET is required when combining cleanup with `--inverse-write` and must use the actor's session. Each GET is scoped, same-origin and checked against that resource's configured identity/private marker. Cleanup sends the original captured write and then a final GET; `cleanup_confirmed` means that GET proves the original value, `cleanup_unconfirmed` means it could not prove the value, and `cleanup_failed` means the restore response failed or the GET proves a different value. The result includes `cleanup_status` and boolean `cleanup_verified`, separately from the access-test classification. Cleanup adds two requests per restored resource (two normally, four with inverse write). A 429 can prevent later cleanup steps and is recorded; manually inspect disposable resources after every state-changing run. All option combinations must fit `--max-tests`; the no-flag case remains three requests.
+
 `--lab-write-range START-END` is an advanced mode requiring `--lab-write`, `identifier_enumeration_authorized: true`, matching JSON POST/PUT/PATCH captures and disposable resources. It validates the owner and actor write controls, then submits actor-session writes with each ID inserted at the declared JSON pointer. It stops after a candidate or error; already-started requests in the current concurrency window may still complete. Request budgets include the two controls. Public write ranges require `--allow-public-writes`; relaxing public sweep limits additionally requires `--allow-public-range`. Without that second flag, public ranges remain capped at 25 IDs, sequential and at least ten seconds apart. With it, the maximum is 100 IDs, four workers and a one-second minimum, with a warning. Each successful control or probe may mutate state; plan cleanup and inspect the disposable resources afterward. No inverse request or retry is sent.
 
-Example case fragment: `"resource": {"json_body_pointer": "/mutation/item/id"}` and `"disposable_test_resources": true`. Keep the captured JSON bodies in the ignored private case files; do not place credentials inline in a plan or command.
+Example case fragment: `"resource": {"json_body_pointer": "/mutation/item/id"}` and `"disposable_test_resources": true`. Keep the captured JSON bodies in the ignored private case files; do not place credentials inline in a plan or command. Write-only flags are rejected unless `--lab-write` is active; read-only flags are incompatible with write and range modes.
 
 The complete response is analyzed in memory up to the configured capture limit. Truncation, transport failure, redirects and 429 stop the test as inconclusive. A crossed 401/403 or application failure with no configured private evidence is `rejected_in_this_test`; undocumented error codes are not attributed to a cause. Both owner resource and private marker in the cross produce `candidate`, including a leak hidden behind an error status. Partial private evidence or unfamiliar success schema is inconclusive, not secure. A successful process is not necessarily a successful comparison; read the evidence.
 

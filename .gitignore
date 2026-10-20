@@ -2,6 +2,10 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+.coverage
+coverage.xml
+.test-deps/
+.test-tmp/
 .venv/
 venv/
 dist/
