@@ -14,6 +14,7 @@ from ..analysis.html_context import analyze_html
 from .reflection_detector import detect_reflection
 from .result_validator import classify_reflection
 from .test_cases import new_marker, payloads_for_marker
+from .playwright_confirm import PlaywrightExecutionChecker, require_playwright_installed
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,7 @@ class XssOptions:
     max_tests: int = 100
     headers: dict[str, str] = field(default_factory=dict)
     html_parser: str = "html.parser"
+    confirm_exec: bool = False
 
 
 class XssParameterTester:
@@ -33,37 +35,42 @@ class XssParameterTester:
 
     def run(self, options: XssOptions, evidence_dir: Path) -> tuple[Path, list[dict[str, object]]]:
         routes, parameters = self.validate(options)
+        if options.confirm_exec:
+            require_playwright_installed()
+        checker = (PlaywrightExecutionChecker(self.scope, timeout_ms=int(self.client.timeout * 1000),
+                                              rate_limiter=self.client.rate_limiter)
+                   if options.confirm_exec else None)
 
         results: list[dict[str, object]] = []
         test_count = 0
-        for route in routes:
-            for parameter in parameters:
-                marker = new_marker()
-                for payload in payloads_for_marker(marker):
-                    if test_count >= options.max_tests:
-                        path = write_evidence_json(evidence_dir, {"type": "xss", "results": results}, prefix="xss")
-                        return path, results
-                    test_count += 1
-                    spec = RequestSpec(method="GET", url=with_parameter(route, parameter, payload), headers=options.headers)
-                    try:
-                        response = self.client.send(spec)
-                    except ToolkitError as exc:
-                        results.append({"route": redact_url(route), "method": "GET", "parameter": parameter,
-                                        "payload": payload, "classification": "error", "confirmed": False, "transport_error": True, "reason": str(exc)})
-                        path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": "transport_error"}, prefix="xss")
-                        return path, results
-                    reflection = detect_reflection(response.body_text, marker=marker, payload=payload)
-                    validation = classify_reflection(reflection, response.headers.get("content-type", ""))
-                    context = {"status": "not_html", "contexts": [], "confirmed": False}
-                    media_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
-                    if media_type in {"text/html", "application/xhtml+xml"}:
+        try:
+            for route in routes:
+                for parameter in parameters:
+                    marker = new_marker()
+                    for payload in payloads_for_marker(marker, include_context=options.confirm_exec):
+                        if test_count >= options.max_tests:
+                            path = write_evidence_json(evidence_dir, {"type": "xss", "results": results}, prefix="xss")
+                            return path, results
+                        test_count += 1
+                        spec = RequestSpec(method="GET", url=with_parameter(route, parameter, payload), headers=options.headers)
                         try:
-                            context = {"status": "analyzed", **analyze_html(response.body_text, marker, options.html_parser)}
-                        except ValueError:
-                            context = {"status": "unavailable", "contexts": [], "confirmed": False,
-                                       "note": "Install the xss extra and selected parser for HTML context analysis."}
-                    results.append(
-                        {
+                            response = self.client.send(spec)
+                        except ToolkitError as exc:
+                            results.append({"route": redact_url(route), "method": "GET", "parameter": parameter,
+                                            "payload": payload, "classification": "error", "confirmed": False, "transport_error": True, "reason": str(exc)})
+                            path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": "transport_error"}, prefix="xss")
+                            return path, results
+                        reflection = detect_reflection(response.body_text, marker=marker, payload=payload)
+                        validation = classify_reflection(reflection, response.headers.get("content-type", ""))
+                        context = {"status": "not_html", "contexts": [], "confirmed": False}
+                        media_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+                        if media_type in {"text/html", "application/xhtml+xml"}:
+                            try:
+                                context = {"status": "analyzed", **analyze_html(response.body_text, marker, options.html_parser)}
+                            except ValueError:
+                                context = {"status": "unavailable", "contexts": [], "confirmed": False,
+                                           "note": "Install the xss extra and selected parser for HTML context analysis."}
+                        result = {
                             "route": redact_url(route),
                             "method": "GET",
                             "parameter": parameter,
@@ -82,17 +89,35 @@ class XssParameterTester:
                             "browser_execution_observed": False,
                             "exchange": response.to_dict(),
                         }
-                    )
-                    if response.status_code in {401, 403, 429}:
-                        results[-1].update(classification="error", confirmed=False, reason="Authentication/access failure or rate limit; batch stopped.")
-                        path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": "access_or_rate_limit"}, prefix="xss")
-                        return path, results
-                    if response.body_truncated:
-                        results[-1].update(classification="error", confirmed=False, reason="Response truncated; context validation incomplete.")
-                        path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": "truncated_response"}, prefix="xss")
-                        return path, results
-        path = write_evidence_json(evidence_dir, {"type": "xss", "results": results}, prefix="xss")
-        return path, results
+                        stop_reason = None
+                        if response.status_code in {401, 403, 429}:
+                            result.update(classification="error", confirmed=False,
+                                          reason="Authentication/access failure or rate limit; batch stopped.")
+                            stop_reason = "access_or_rate_limit"
+                        elif response.body_truncated:
+                            result.update(classification="error", confirmed=False,
+                                          reason="Response truncated; context validation incomplete.")
+                            stop_reason = "truncated_response"
+                        elif options.confirm_exec:
+                            if not reflection.reflected:
+                                result.update(classification="not_reflected", confirmed=False,
+                                              reason="The unique marker was not reflected in the response.")
+                            elif validation["classification"] == "possible":
+                                execution = checker.confirm(spec.prepared_url(), marker, options.headers)
+                                result["browser_execution_observed"] = execution["classification"] == "confirmed"
+                                result["execution"] = execution
+                                result["classification"] = execution["classification"]
+                                result["confirmed"] = execution["classification"] == "confirmed"
+                                result["reason"] = "Harmless marker execution was observed in a headless browser." if result["confirmed"] else "The marker was reflected but did not execute in the headless browser."
+                        results.append(result)
+                        if stop_reason:
+                            path = write_evidence_json(evidence_dir, {"type": "xss", "results": results, "stop_reason": stop_reason}, prefix="xss")
+                            return path, results
+            path = write_evidence_json(evidence_dir, {"type": "xss", "results": results}, prefix="xss")
+            return path, results
+        finally:
+            if checker:
+                checker.close()
 
     def validate(self, options: XssOptions) -> tuple[list[str], list[str]]:
         if options.max_tests <= 0:

@@ -7,7 +7,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from bugbounty_toolkit.core.http_client import ResponseRecord
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
-from bugbounty_toolkit.sqli.parameter_tester import SqliOptions, SqliParameterTester
+from bugbounty_toolkit.sqli.parameter_tester import SqliOptions, SqliParameterTester, error_families
 from bugbounty_toolkit.utils.exceptions import ToolkitError
 
 
@@ -47,6 +47,19 @@ class SqliTests(unittest.TestCase):
         _, results = self.tester.run(SqliOptions(self.routes, self.params, max_tests=3), self.root / "evidence")
         self.assertFalse(any(item["classification"] == "possible" for item in results))
 
+    def test_database_error_signatures_cover_the_requested_engines(self):
+        cases = {
+            "MySQL SQL syntax error": "mysql",
+            "PostgreSQL syntax error at or near SELECT": "postgresql",
+            "pg_catalog query failed": "postgresql",
+            "Unclosed quotation mark after the character string": "mssql",
+            "ORA-20001: invalid SQL": "oracle",
+            "sqlite3.OperationalError: near token": "sqlite",
+        }
+        for body, family in cases.items():
+            with self.subTest(body=body):
+                self.assertIn(family, error_families(body))
+
     def test_access_rate_transport_and_truncation_stop_without_retry(self):
         for status, truncated in ((401, False), (403, False), (429, False), (200, True)):
             with self.subTest(status=status, truncated=truncated):
@@ -67,3 +80,32 @@ class SqliTests(unittest.TestCase):
         self.client.send.assert_not_called()
         with self.assertRaises(ValueError):
             self.tester.validate(SqliOptions(self.routes, self.params, max_tests=2))
+
+    def test_deep_mode_uses_baseline_time_and_boolean_pair_with_eight_request_budget(self):
+        durations = [10, 15, 15, 2700, 20, 20, 10, 10]
+        def send(spec):
+            value = parse_qs(urlsplit(spec.url).query)["q"][0]
+            body = "true-result" if "1=1" in value else "false-result" if "1=2" in value else "normal"
+            return self.respond(spec, body, status=200, truncated=False) if durations.pop(0) < 2500 else ResponseRecord(
+                spec, spec.url, 200, "test", 2700, {}, body, len(body), False
+            )
+        self.client.send.side_effect = send
+        path, results = self.tester.run(SqliOptions(self.routes, self.params, max_tests=8, deep=True), self.root / "deep")
+        self.assertEqual(self.client.send.call_count, 8)
+        self.assertEqual(results[0]["stage"], "baseline")
+        self.assertEqual(results[3]["stage"], "time_mysql")
+        self.assertTrue(results[3]["time_candidate"])
+        self.assertTrue(results[6]["boolean_pair_differs"])
+        self.assertEqual(results[6]["classification"], "possible")
+        self.assertEqual(results[7]["classification"], "possible")
+        evidence = json.loads(path.read_text())
+        self.assertEqual(evidence["requests_attempted"], 8)
+
+    def test_deep_requires_full_group_and_stops_at_budget_boundary(self):
+        with self.assertRaisesRegex(ValueError, "at least 8"):
+            self.tester.validate(SqliOptions(self.routes, self.params, max_tests=7, deep=True))
+        self.routes.write_text("https://example.com/search?q=one\nhttps://example.com/search?q=two\n")
+        self.client.send.side_effect = lambda spec: self.respond(spec)
+        path, _ = self.tester.run(SqliOptions(self.routes, self.params, max_tests=8, deep=True), self.root / "deep-budget")
+        self.assertEqual(self.client.send.call_count, 8)
+        self.assertEqual(json.loads(path.read_text())["stop_reason"], "request_budget")

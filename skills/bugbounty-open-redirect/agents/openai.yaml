@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty Open Redirect"
+  short_description: "Comprueba redirecciones externas sin seguirlas"
+  default_prompt: "Usa $bugbounty-open-redirect con la URL y parámetro autorizados y no sigas la cabecera Location."
+policy:
+  allow_implicit_invocation: true

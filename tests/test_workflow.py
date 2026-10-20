@@ -21,12 +21,24 @@ class WorkflowLab(BaseHTTPRequestHandler):
     def do_GET(self):
         self.hits.append(self.path)
         parsed = urlsplit(self.path)
+        query = parse_qs(parsed.query)
+        if parsed.path == "/cors":
+            self.send_response(200)
+            self.send_header("Access-Control-Allow-Origin", self.headers.get("Origin", ""))
+            self.send_header("Access-Control-Allow-Credentials", "true")
+            self.end_headers()
+            return
+        if parsed.path == "/redirect-test":
+            destination = query.get("next", [""])[0]
+            self.send_response(302)
+            self.send_header("Location", destination if "evil.com" in destination else "/dashboard")
+            self.end_headers()
+            return
         if parsed.path == "/redirect":
             self.send_response(302)
             self.send_header("Location", "/excluded")
             self.end_headers()
             return
-        query = parse_qs(parsed.query)
         body = "no reflection"
         if parsed.path == "/search":
             body = "<html><body>" + " ".join(value for values in query.values() for value in values) + "</body></html>"
@@ -119,6 +131,21 @@ class WorkflowTests(unittest.TestCase):
         probes = next(item["data"] for item in report["evidence"] if item["data"].get("type") == "sqli")
         self.assertEqual([item["classification"] for item in probes["results"]], ["baseline", "possible", "possible"])
         self.assertFalse(any(item["confirmed"] for item in probes["results"]))
+
+    def test_cors_and_open_redirect_cli_dry_run_and_local_execution(self):
+        self.cli("cors-check", "lab", "--url", self.base + "/cors", "--dry-run")
+        self.cli("open-redirect", "lab", "--url", self.base + "/redirect-test?next=%2Fhome", "--param", "next", "--dry-run")
+        self.assertEqual(WorkflowLab.hits, [])
+
+        cors = self.cli("cors-check", "lab", "--url", self.base + "/cors")
+        self.assertIn("4 vulnerable", cors.stdout)
+        self.assertEqual(len(WorkflowLab.hits), 4)
+        WorkflowLab.hits.clear()
+
+        redirect = self.cli("open-redirect", "lab", "--url", self.base + "/redirect-test?next=%2Fhome", "--param", "next")
+        self.assertIn("vulnerable of 5 probes", redirect.stdout)
+        self.assertEqual(len(WorkflowLab.hits), 5)
+        self.assertTrue(all(path.startswith("/redirect-test?") for path in WorkflowLab.hits))
 
     def test_external_plan_is_private_and_never_reaches_server(self):
         url = self.base + "/search?q=1&access_token=private-lab-token"

@@ -40,6 +40,20 @@ class SkillPlanTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             runner.build_command({"program": "lab", "action": "sqlmap", "url": "https://example.com"})
 
+    def test_topic_plans_support_opt_in_flags_for_all_new_workflows(self):
+        xss = runner.build_command({"program": "lab", "action": "xss", "routes": "routes", "parameters": "params", "confirm_exec": True})
+        self.assertIn("--confirm-exec", xss)
+        sqli = runner.build_command({"program": "lab", "action": "sqli", "routes": "routes", "parameters": "params", "deep": True})
+        self.assertIn("--deep", sqli)
+        cors = runner.build_command({"program": "lab", "action": "cors-check", "url": "https://example.com/a", "rate": 0.5})
+        self.assertIn("cors-check", cors)
+        self.assertIn("--url=https://example.com/a", cors)
+        redirect = runner.build_command({"program": "lab", "action": "open-redirect", "url": "https://example.com/login?next=%2F", "param": "next"})
+        self.assertIn("open-redirect", redirect)
+        self.assertIn("--param=next", redirect)
+        with self.assertRaisesRegex(ValueError, "boolean"):
+            runner.build_command({"program": "lab", "action": "xss", "routes": "r", "parameters": "p", "confirm_exec": "yes"})
+
     def test_unsupported_actions_and_options_are_rejected(self):
         for plan in (
             {"program": "lab", "action": "recon", "url": "https://example.com"},

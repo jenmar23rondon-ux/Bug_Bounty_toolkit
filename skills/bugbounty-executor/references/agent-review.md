@@ -9,7 +9,7 @@ bugbounty analyze evidence --input registros/my-program/evidence/access-control/
 bugbounty analyze evidence --input registros/my-program/evidence/access-control/selected-evidence.json --ai ollama --model llama3.2:3b --output registros/my-program/review-with-ollama.json
 ```
 
-Without `--ai`, this offline command needs no program initialization or dry-run. It accepts one native evidence object, not a whole program report. It copies only allowlisted counts, statuses, context categories and access-check booleans; it drops URLs, headers, body snippets, arbitrary reasons, tool messages and embedded instructions. With `--ai ollama`, only that minimized packet is sent to `127.0.0.1:11434`; redirects, proxies and remote fallback are disabled. The model output is untrusted, and `source_claims_unverified` remains true: a user-supplied/modified JSON file is not independently authenticated by formatting it.
+Without `--ai`, this offline command needs no program initialization or dry-run. It accepts one native access-control, XSS, SQLi, CORS or open-redirect evidence object, not a whole program report. It copies only allowlisted counts, statuses, context categories, verdicts and access-check booleans; it drops URLs, headers, body snippets, arbitrary reasons, tool messages and embedded instructions. With `--ai ollama`, only that minimized packet is sent to `127.0.0.1:11434`; redirects, proxies and remote fallback are disabled. The model output is untrusted, and `source_claims_unverified` remains true: a user-supplied/modified JSON file is not independently authenticated by formatting it.
 
 ## Reasoning Gate
 

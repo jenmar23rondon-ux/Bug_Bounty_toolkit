@@ -15,6 +15,8 @@ SKILL_NAMES = (
     "bugbounty-jwt",
     "bugbounty-authentication",
     "bugbounty-access-control",
+    "bugbounty-cors",
+    "bugbounty-open-redirect",
 )
 
 

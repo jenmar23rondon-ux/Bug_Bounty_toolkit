@@ -1,6 +1,6 @@
 # Bug Bounty Toolkit
 
-An authorized testing CLI that executes the targets, routes and parameters **you supply**. Version 0.2 adds HTTP requests, Burp request replay, a controlled ffuf adapter, parameter reflection checks and JSON/HTML evidence reports to the existing toolkit.
+An authorized testing CLI that executes the targets, routes and parameters **you supply**. The toolkit supports bounded HTTP/Burp replay, ffuf, XSS and SQLi checks, CORS and open-redirect checks, access-control comparisons, and JSON/HTML evidence reports.
 
 Both `bbtk` and `bugbounty` run the same CLI. No AI API or API key is required. Reconnaissance is optional; your existing route discovery workflow can feed `inputs/routes.txt` and `inputs/parameters.txt` directly.
 
@@ -14,7 +14,7 @@ source .venv/bin/activate
 python -m pip install -e .
 ```
 
-On Windows, activate with `.venv\Scripts\Activate.ps1`. Install [ffuf](https://github.com/ffuf/ffuf#installation) separately and put its executable on `PATH`. HTTP requests, XSS reflection checks and JSON/HTML reports work without ffuf. `requirements.txt` also includes optional ReportLab support for individual PDF findings.
+On Windows, activate with `.venv\Scripts\Activate.ps1`. Install [ffuf](https://github.com/ffuf/ffuf#installation) separately and put its executable on `PATH`. Native HTTP checks and JSON/HTML reports work without ffuf. `requirements.txt` also includes optional ReportLab support for individual PDF findings.
 
 ### Optional Security Integrations
 
@@ -25,17 +25,20 @@ python -m pip install -e ".[all]"
 bugbounty resources
 ```
 
-The base install stays small. Extras provide Beautiful Soup/lxml/html5lib/Playwright, sqlparse, PyJWT/python-jose/cryptography/jwcrypto, requests/aiohttp/httpx and optional database drivers. External scanners, payload repositories, Burp extensions and browser binaries remain separate. The [security tools reference](skills/bugbounty-executor/references/security-tools.md) explains installation profiles and external-plan limitations. Each topic skill has its own focused tool references.
+The base install stays small. Extras provide Beautiful Soup/lxml/html5lib/Playwright, sqlparse, PyJWT/python-jose/cryptography/jwcrypto, requests/aiohttp/httpx and optional database drivers. `--confirm-exec` needs the optional `xss` extra plus `python -m playwright install chromium`; browser confirmation remains off by default. External scanners, payload repositories and Burp extensions remain separate. The [security tools reference](skills/bugbounty-executor/references/security-tools.md) explains installation profiles and external-plan limitations. Each topic skill has its own focused tool references.
 
 ```bash
 bugbounty analyze html --input registros/my-program/page.html --marker BBTK_MARKER --parser html5lib
 bugbounty analyze jwt --input registros/my-program/token.private.txt
 bugbounty analyze sql --input registros/my-program/own-query.sql
 bugbounty sqli my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --rate 0.1 --max-tests 6 --dry-run
+bugbounty sqli my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --deep --max-tests 8 --dry-run
+bugbounty cors-check my-program --url "https://target-autorizado.example/account" --dry-run
+bugbounty open-redirect my-program --url "https://target-autorizado.example/login?next=%2Fhome" --param next --dry-run
 bugbounty tool-plan my-program --tool sqlmap --url "http://localhost:3000/search?q=1" --parameter q --dry-run
 ```
 
-`analyze` is offline. JWT verification additionally requires `--key-file` and an explicit `--algorithm`, with optional expected issuer/audience; decoding is not authentication. SQLi probes are bounded baseline/quote comparisons, not exploitation or extraction, and require automation permission. `tool-plan` prepares commands for sqlmap, XSStrike and Dalfox v3 but **never executes them**, even without `--dry-run`. External tools need separately reviewed runs because they do not inherit the hard request budget/scope controls. jwt_tool, JWT Editor, hashcat and John are catalogued manual tools. No automatic JWT forgery, password brute force, WAF evasion, database dumping or browser XSS confirmation is added.
+`analyze` is offline. JWT verification additionally requires `--key-file` and an explicit `--algorithm`, with optional expected issuer/audience; decoding is not authentication. SQLi defaults to baseline/quote comparisons; `--deep` explicitly adds time and boolean probes. `cors-check` sends four Origin variants; `open-redirect` sends five query values and never follows `Location`. These commands require automation permission, scope and program rate limits. `tool-plan` prepares commands for sqlmap, XSStrike and Dalfox v3 but **never executes them**, even without `--dry-run`. External tools need separately reviewed runs because they do not inherit the hard request budget/scope controls. jwt_tool, JWT Editor, hashcat and John are catalogued manual tools. No automatic JWT forgery, password brute force, WAF evasion or database dumping is performed.
 
 ## Program Setup
 
@@ -129,13 +132,17 @@ bugbounty xss my-program --routes inputs/routes.txt --parameters inputs/paramete
 
 Use `--header` and `--cookie` for your authorized test session. The command sends four non-executing marker variants per route/parameter using GET, until its request budget is reached. It records the parameter, marker, status, duration, reflection context and request/response evidence.
 
-With the `xss` extra, the command also parses the actual HTML response and records text/attribute/URL/event/script/style contexts in `context_analysis`. Choose `--html-parser html.parser`, `lxml` or `html5lib`. Non-HTML and unavailable parsers are explicit states, not completed validation. Truncated captures stop the batch. Parsing is not JavaScript execution: `browser_execution_observed` and `confirmed` remain false.
+With the `xss` extra, the command also parses the actual HTML response and records text/attribute/URL/event/script/style contexts in `context_analysis`. Choose `--html-parser html.parser`, `lxml` or `html5lib`. Non-HTML and unavailable parsers are explicit states, not completed validation. Truncated captures stop the batch. By default, reflection is not JavaScript execution. Opt-in `--confirm-exec` adds three harmless marker/alert payloads adapted to attribute, script and URL contexts, then launches headless Playwright only for responses classified `possible`. It confirms execution only when the unique marker appears on the page or an alert fires; escaped reflection becomes `reflected_not_executed`. Browser requests are restricted to the target origin and share the configured rate limiter. Playwright and Chromium are optional; the regular four-marker behavior is unchanged.
 
-Results are `possible`, `not_reproducible` or `error`. A reflection **never automatically confirms XSS**. Escaped HTML, JSON and plain text can reflect markers without executing code. `not_reproducible` means this marker was not seen in the captured response, not that the endpoint is vulnerability-free. Truncated responses are flagged. Browser execution, stored XSS and DOM XSS need separate manual validation. Add a finding only after that validation.
+Without `--confirm-exec`, results are `possible`, `not_reproducible` or `error`, and a reflection never confirms XSS. In browser mode they can also be `confirmed`, `reflected_not_executed` or `not_reflected`. A missing marker is not proof that the endpoint is vulnerability-free. Stored and DOM XSS still need separate validation. Add a finding only after reviewing evidence and impact.
+
+## CORS And Redirects
+
+`cors-check <program> --url <URL>` tests the four configured Origin variants and classifies ACAO reflection with ACAC. `open-redirect <program> --url <URL> --param <name>` requires the query parameter to appear exactly once, tests five redirect values and records Location without following it. Both support `--dry-run`, scope/rate/timeout validation, and secret-free evidence. A CORS header result is not proof of sensitive-data access; an external Location is never visited by the toolkit.
 
 ## Limits and Reports
 
-`init --config` copies limits into `registros/<program>/settings.yaml`. The included defaults are 1 request/second, 5 ffuf threads, a 15-second timeout, at most 100 XSS requests and a 1 MB captured response. Raise `max_tests` in the program's `settings.yaml` only when its policy allows the additional requests; per-command `--max-tests` cannot exceed that configured limit. Range mode has its own hard cap of 25 IDs regardless of program settings.
+`init --config` copies limits into `registros/<program>/settings.yaml`. The included defaults are 1 request/second, 5 ffuf threads, a 15-second timeout, at most 100 XSS HTTP probes and a 1 MB captured response. Raise `max_tests` in the program's `settings.yaml` only when its policy allows the additional requests; per-command `--max-tests` cannot exceed that configured limit. Range mode defaults to 25 IDs in public scope; the separate reviewed public opt-in raises its hard cap to 100, while loopback tests can configure up to 100.
 
 ```bash
 bugbounty report my-program --format html
@@ -183,13 +190,15 @@ The original `recon`, `scan nuclei`, `params`, `checklist`, `mark-reviewed` and 
 
 ## AI Skill
 
-The repository includes one general router/executor and five separate topic skills. Install all six sibling folders together so shared references and the single plan adapter resolve. These are ordinary discoverable skills, not a nested-skill engine; the router instructs the AI to load only the requested topic and finish its evidence summary before moving to another.
+The repository includes one general router/executor and seven separate topic skills. Install all eight sibling folders together so shared references and the single plan adapter resolve. These are ordinary discoverable skills, not a nested-skill engine; the router instructs the AI to load only the requested topic and finish its evidence summary before moving to another.
 
 | Skill | Focus |
 | --- | --- |
 | [bugbounty-executor](skills/bugbounty-executor/SKILL.md) | Shared authorization, HTTP/Burp, ffuf, reporting and sequential topic routing |
 | [bugbounty-xss](skills/bugbounty-xss/SKILL.md) | Reflection checks, HTML contexts, payload references, XSStrike/Dalfox drafts |
 | [bugbounty-sqli](skills/bugbounty-sqli/SKILL.md) | Baseline/quote probes, SQL review, sqlmap drafts |
+| [bugbounty-cors](skills/bugbounty-cors/SKILL.md) | CORS Origin/ACAO/ACAC comparisons |
+| [bugbounty-open-redirect](skills/bugbounty-open-redirect/SKILL.md) | Supplied redirect parameter checks without following Location |
 | [bugbounty-jwt](skills/bugbounty-jwt/SKILL.md) | Offline token inspection/verification and manual JWT tools |
 | [bugbounty-authentication](skills/bugbounty-authentication/SKILL.md) | Login/session/reset/MFA/OAuth review with own test accounts |
 | [bugbounty-access-control](skills/bugbounty-access-control/SKILL.md) | Controlled IDOR/BOLA/role comparisons, Autorize/AuthMatrix/Authz references |
@@ -209,7 +218,7 @@ Invoke the router with: `Use $bugbounty-executor for XSS and SQLi on my authoriz
 
 Access-control work has native A/B comparisons for known private GET/JSON resources, an opt-in policy-authorized range mode, and JSON POST/PUT/PATCH write checks. External ranges default to 25 sequential IDs and ten seconds; `--allow-public-range` explicitly permits up to 100 IDs, four workers and a one-second minimum. Local labs can use up to 100 IDs, four workers and 0.01 seconds without that flag. Writes default to loopback; `--allow-public-writes` is a separate opt-in required for public writes, including write ranges, and remote state may change. Disposable resources and explicit program authorization remain mandatory. It is not a role-matrix scanner. HTTP 200, reflected emails and extension colors are not confirmation. Admin access by an admin is a control, not escalation. Burp extensions, forced browsing, hidden-parameter discovery and nuclei templates need their own reviewed scope/budget; no password-guessing adapter is included. ParamSpider mines archived URLs rather than simply parsing local HTML/JS.
 
-The script accepts a JSON plan for `request`, `fuzz`, `xss`, `sqli` or `access-check`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
+The script accepts a JSON plan for `request`, `fuzz`, `xss`, `sqli`, `cors-check`, `open-redirect` or `access-check`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
 
 ```bash
 python skills/bugbounty-executor/scripts/run_plan.py --toolkit-root . --plan registros/my-program/plan.json
@@ -218,7 +227,7 @@ python skills/bugbounty-executor/scripts/run_plan.py --toolkit-root . --plan reg
 
 ### Agent Evidence Review
 
-The IA running the skill is the reasoning component. Export one native access-control/XSS/SQLi evidence file into a minimal local packet:
+The IA running the skill is the reasoning component. Export one native access-control/XSS/SQLi/CORS/open-redirect evidence file into a minimal local packet:
 
 ```bash
 bugbounty analyze evidence --input registros/my-program/evidence/access-control/selected.json --output registros/my-program/review.json

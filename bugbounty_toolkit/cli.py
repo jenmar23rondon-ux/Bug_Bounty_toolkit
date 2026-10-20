@@ -25,6 +25,8 @@ from .requests_engine.headers import parse_header_items, parse_cookie_items
 from .requests_engine.parameters import parse_parameter_items
 from .xss.parameter_tester import XssOptions, XssParameterTester
 from .sqli.parameter_tester import SqliOptions, SqliParameterTester
+from .cors_check import CorsChecker, CorsOptions
+from .open_redirect import OpenRedirectOptions, OpenRedirectTester
 from .analysis.html_context import analyze_html
 from .analysis.jwt_inspector import inspect_jwt, ALGORITHMS
 from .analysis.sql_query import analyze_sql
@@ -207,19 +209,28 @@ def cmd_xss(args: argparse.Namespace) -> None:
     if cookies:
         headers["Cookie"] = cookies
     tester = XssParameterTester(scope, client_for(args, settings, scope))
-    options = XssOptions(args.routes, args.parameters, args.base_url, args.max_tests or settings.max_tests, headers, args.html_parser)
+    options = XssOptions(args.routes, args.parameters, args.base_url,
+                         args.max_tests or settings.max_tests, headers, args.html_parser, args.confirm_exec)
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     routes, parameters = tester.validate(options)
-    total = len(routes) * len(parameters) * 4
+    variants = 7 if options.confirm_exec else 4
+    total = len(routes) * len(parameters) * variants
     if args.dry_run:
-        print(f"[+] {len(routes)} routes, {len(parameters)} parameters, up to {min(total, options.max_tests)} requests. No requests sent.")
+        print(f"[+] {len(routes)} routes, {len(parameters)} parameters, up to {min(total, options.max_tests)} HTTP requests. Browser confirmation {'enabled' if options.confirm_exec else 'disabled'}. No requests sent.")
         return
     path, results = tester.run(options, store.paths.evidence_dir / "xss")
     failures = sum(item["classification"] == "error" for item in results)
     possible = sum(item["classification"] == "possible" for item in results)
+    confirmed = sum(item["classification"] == "confirmed" for item in results)
+    not_executed = sum(item["classification"] == "reflected_not_executed" for item in results)
     store.add_run("xss", str(args.routes), ["xss", str(args.routes), str(args.parameters)], 1 if failures else 0, path)
-    print(f"[+] {len(results)} tests, {possible} possible reflections, {failures} errors. No XSS automatically confirmed.")
+    summary = f"{len(results)} tests, {possible} possible reflections, {failures} errors"
+    if options.confirm_exec:
+        summary += f", {confirmed} confirmed executions, {not_executed} reflected but not executed"
+    else:
+        summary += ". No XSS automatically confirmed"
+    print(f"[+] {summary}.")
     print(f"[+] Evidence: {path}")
     if len(results) < total:
         stop = json.loads(path.read_text(encoding="utf-8")).get("stop_reason")
@@ -240,21 +251,71 @@ def cmd_sqli(args: argparse.Namespace) -> None:
     headers = parse_header_items(args.header)
     if args.cookie:
         headers["Cookie"] = parse_cookie_items(args.cookie)
-    options = SqliOptions(args.routes, args.parameters, args.base_url, args.max_tests or settings.max_tests, headers)
+    options = SqliOptions(args.routes, args.parameters, args.base_url,
+                          args.max_tests or settings.max_tests, headers, args.deep)
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     tester = SqliParameterTester(scope, client_for(args, settings, scope))
     routes, parameters = tester.validate(options)
     if args.dry_run:
-        budget = min(len(routes) * len(parameters) * 3, options.max_tests // 3 * 3)
-        print(f"[+] SQLi error probes validated, up to {budget} requests. No requests sent.")
+        group_size = 8 if options.deep else 3
+        budget = min(len(routes) * len(parameters) * group_size, options.max_tests // group_size * group_size)
+        mode = "error, timing and boolean probes" if options.deep else "SQLi error probes"
+        print(f"[+] {mode} validated, up to {budget} requests. No requests sent.")
         return
     path, results = tester.run(options, store.paths.evidence_dir / "sqli")
     failures = sum(item["classification"] == "error" for item in results)
     possible = sum(item["classification"] == "possible" for item in results)
     store.add_run("sqli", str(args.routes), ["sqli", str(args.routes), str(args.parameters)], 1 if failures else 0, path)
-    print(f"[+] {len(results)} SQLi responses, {possible} possible indicators, {failures} errors. No SQLi automatically confirmed.")
+    mode = "deep" if options.deep else "error-based"
+    print(f"[+] {len(results)} {mode} SQLi responses, {possible} possible indicators, {failures} errors. No SQLi automatically confirmed.")
     print(f"[+] Evidence: {path}")
+
+
+def cmd_cors_check(args: argparse.Namespace) -> None:
+    store, settings, scope = executor_context(args, automated=True)
+    headers = parse_header_items(args.header)
+    cookies = parse_cookie_items(args.cookie)
+    if cookies:
+        headers["Cookie"] = cookies
+    checker = CorsChecker(scope, client_for(args, settings, scope))
+    options = CorsOptions(args.url, headers)
+    origins = checker.validate(options)
+    if args.dry_run:
+        print(f"[+] CORS target in scope; {len(origins)} Origin values validated. No requests sent.")
+        return
+    path, results = checker.run(options, store.paths.evidence_dir / "cors")
+    counts = {label: sum(row.get("classification") == label for row in results)
+              for label in ("VULNERABLE", "DÉBIL", "SEGURO")}
+    for row in results:
+        print(f"{row.get('origin', '-'):<40} ACAO={row.get('access_control_allow_origin', '-')} "
+              f"ACAC={row.get('access_control_allow_credentials', '-')} verdict={row['classification']} "
+              f"status={row.get('status_code', '-')}")
+    store.add_run("cors-check", redact_url(args.url), ["cors-check", redact_url(args.url)],
+                  1 if counts["VULNERABLE"] else 0, path)
+    print(f"[+] CORS summary: {counts['VULNERABLE']} vulnerable, {counts['DÉBIL']} weak, {counts['SEGURO']} safe. Evidence: {path}")
+
+
+def cmd_open_redirect(args: argparse.Namespace) -> None:
+    store, settings, scope = executor_context(args, automated=True)
+    headers = parse_header_items(args.header)
+    cookies = parse_cookie_items(args.cookie)
+    if cookies:
+        headers["Cookie"] = cookies
+    tester = OpenRedirectTester(scope, client_for(args, settings, scope))
+    options = OpenRedirectOptions(args.url, args.param, headers)
+    request_urls = tester.validate(options)
+    if args.dry_run:
+        print(f"[+] Open-redirect target in scope; parameter exists and {len(request_urls)} payloads validated. No requests sent.")
+        return
+    path, results = tester.run(options, store.paths.evidence_dir / "open-redirect")
+    for row in results:
+        print(f"{row.get('payload', '-'):<28} status={row.get('status_code', '-')} "
+              f"Location={row.get('location') or '-'} verdict={row['classification']}")
+    vulnerable = sum(row.get("classification") == "VULNERABLE" for row in results)
+    store.add_run("open-redirect", redact_url(args.url), ["open-redirect", redact_url(args.url)],
+                  1 if vulnerable else 0, path)
+    print(f"[+] Open redirect summary: {vulnerable} vulnerable of {len(results)} probes. Evidence: {path}")
 
 
 def cmd_access_check(args: argparse.Namespace) -> None:
@@ -542,10 +603,11 @@ def build_parser() -> argparse.ArgumentParser:
     xss.add_argument("--rate", type=positive_float)
     xss.add_argument("--max-tests", type=positive_int)
     xss.add_argument("--html-parser", choices=("html.parser", "lxml", "html5lib"), default="html.parser")
+    xss.add_argument("--confirm-exec", action="store_true", help="Opt in to headless Playwright confirmation for possible reflected payloads")
     xss.add_argument("--dry-run", action="store_true")
     xss.set_defaults(func=cmd_xss)
 
-    sqli = sub.add_parser("sqli", help="Bounded baseline/quote error probes; no extraction or time delays")
+    sqli = sub.add_parser("sqli", help="Bounded baseline/quote probes; --deep opts into timing and boolean probes")
     sqli.add_argument("program")
     sqli.add_argument("--routes", required=True, type=Path)
     sqli.add_argument("--parameters", required=True, type=Path)
@@ -555,8 +617,30 @@ def build_parser() -> argparse.ArgumentParser:
     sqli.add_argument("--timeout", type=positive_float)
     sqli.add_argument("--rate", type=positive_float)
     sqli.add_argument("--max-tests", type=positive_int)
+    sqli.add_argument("--deep", action="store_true", help="Add three delay and two boolean probes per complete parameter group")
     sqli.add_argument("--dry-run", action="store_true")
     sqli.set_defaults(func=cmd_sqli)
+
+    cors = sub.add_parser("cors-check", help="Check CORS response headers for a supplied in-scope URL")
+    cors.add_argument("program")
+    cors.add_argument("--url", required=True)
+    cors.add_argument("--header", action="append")
+    cors.add_argument("--cookie", action="append")
+    cors.add_argument("--timeout", type=positive_float)
+    cors.add_argument("--rate", type=positive_float)
+    cors.add_argument("--dry-run", action="store_true")
+    cors.set_defaults(func=cmd_cors_check)
+
+    redirect = sub.add_parser("open-redirect", help="Check a supplied in-scope URL parameter for external redirects")
+    redirect.add_argument("program")
+    redirect.add_argument("--url", required=True)
+    redirect.add_argument("--param", required=True)
+    redirect.add_argument("--header", action="append")
+    redirect.add_argument("--cookie", action="append")
+    redirect.add_argument("--timeout", type=positive_float)
+    redirect.add_argument("--rate", type=positive_float)
+    redirect.add_argument("--dry-run", action="store_true")
+    redirect.set_defaults(func=cmd_open_redirect)
 
     access = sub.add_parser("access-check", help="Known-resource A/B check; bounded GET range or loopback-only JSON write lab")
     access.add_argument("program")

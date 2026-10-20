@@ -46,6 +46,18 @@ class EvidenceReviewTests(unittest.TestCase):
         self.assertFalse(failed["cross_read_observed"])
         self.assertEqual(failed["transport_error_rows"], 1)
 
+    def test_cors_and_redirect_review_exports_verdict_counts_not_raw_headers_or_locations(self):
+        for topic, secret in (("cors", "https://private.example/session-secret"),
+                              ("open-redirect", "https://evil.com/?token=session-secret")):
+            packet = review_evidence({"type": topic, "results": [
+                {"classification": "VULNERABLE", "access_control_allow_origin": secret, "location": secret,
+                 "status_code": 302},
+                {"classification": "SEGURO", "status_code": 200},
+            ]})
+            self.assertEqual(packet["tool_verdict_counts"], {"VULNERABLE": 1, "SEGURO": 1})
+            self.assertNotIn(secret, json.dumps(packet))
+            self.assertFalse(packet["confirmed"])
+
     def test_range_packet_keeps_candidate_offset_but_drops_identifiers(self):
         packet = review_evidence({
             "type": "access-control", "mode": "bounded-range", "classification": "candidate",

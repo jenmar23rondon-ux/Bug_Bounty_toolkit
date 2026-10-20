@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty CORS"
+  short_description: "Compara Origins y cabeceras CORS en una URL autorizada"
+  default_prompt: "Usa $bugbounty-cors con la URL autorizada que te proporcioné y resume ACAO, ACAC y el alcance de los resultados."
+policy:
+  allow_implicit_invocation: true

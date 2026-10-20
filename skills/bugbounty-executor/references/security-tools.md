@@ -24,6 +24,8 @@ bugbounty resources
 Read only the selected topic, not every linked file:
 
 - [XSS parsers, context, payloads and scanners](../../bugbounty-xss/references/tools.md).
+- [CORS policy checks](../../bugbounty-cors/SKILL.md).
+- [Open redirect checks](../../bugbounty-open-redirect/SKILL.md).
 - [SQLi controls, sqlmap and database tools](../../bugbounty-sqli/references/tools.md).
 - [JWT libraries and manual tools](../../bugbounty-jwt/references/tools.md).
 - [Authentication flows and credential-list boundaries](../../bugbounty-authentication/references/flows.md).

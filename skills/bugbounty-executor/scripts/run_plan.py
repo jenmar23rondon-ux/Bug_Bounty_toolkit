@@ -14,12 +14,15 @@ import sys
 FIELDS = {
     "request": {"url", "raw_request", "method", "base_url", "headers", "cookies", "params", "data", "timeout", "rate"},
     "fuzz": {"url", "wordlist", "threads", "timeout", "rate", "match_codes", "filter_size"},
-    "xss": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "html_parser"},
-    "sqli": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests"},
+    "xss": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "html_parser", "confirm_exec"},
+    "sqli": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "deep"},
+    "cors-check": {"url", "headers", "cookies", "timeout", "rate"},
+    "open-redirect": {"url", "param", "headers", "cookies", "timeout", "rate"},
     "access-check": {"case_file", "timeout", "rate", "max_tests", "range", "max_range", "concurrency", "min_interval"},
 }
 LIST_OPTIONS = {"headers": "header", "cookies": "cookie", "params": "param"}
 NUMERIC_OPTIONS = {"threads", "timeout", "rate", "max_tests", "max_range", "concurrency", "min_interval"}
+BOOLEAN_OPTIONS = {"confirm_exec": "confirm-exec", "deep": "deep"}
 
 
 def build_command(plan: dict, python: str = sys.executable) -> list[str]:
@@ -27,13 +30,14 @@ def build_command(plan: dict, python: str = sys.executable) -> list[str]:
         raise ValueError("Plan must be a JSON object.")
     action = plan.get("action")
     if not isinstance(action, str) or action not in FIELDS:
-        raise ValueError("Action must be request, fuzz, xss, sqli or access-check.")
+        raise ValueError("Action must be request, fuzz, xss, sqli, cors-check, open-redirect or access-check.")
     program = plan.get("program")
     if not isinstance(program, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", program):
         raise ValueError("A valid program name is required.")
     if set(plan) - FIELDS[action] - {"program", "action"}:
         raise ValueError("Plan contains unsupported fields.")
-    required = {"fuzz": ("url", "wordlist"), "xss": ("routes", "parameters"), "sqli": ("routes", "parameters"), "access-check": ("case_file",)}.get(action, ())
+    required = {"fuzz": ("url", "wordlist"), "xss": ("routes", "parameters"), "sqli": ("routes", "parameters"),
+                "cors-check": ("url",), "open-redirect": ("url", "param"), "access-check": ("case_file",)}.get(action, ())
     if any(not isinstance(plan.get(key), str) or not plan[key].strip() for key in required):
         raise ValueError("Required action inputs are missing.")
     if action == "request" and sum(key in plan for key in ("url", "raw_request")) != 1:
@@ -42,7 +46,12 @@ def build_command(plan: dict, python: str = sys.executable) -> list[str]:
     for key, value in plan.items():
         if key in {"program", "action"}:
             continue
-        if key in LIST_OPTIONS:
+        if key in BOOLEAN_OPTIONS:
+            if not isinstance(value, bool):
+                raise ValueError(f"{key} must be a boolean.")
+            if value:
+                command.append("--" + BOOLEAN_OPTIONS[key])
+        elif key in LIST_OPTIONS:
             if not isinstance(value, list) or not all(isinstance(item, str) and item for item in value):
                 raise ValueError(f"{key} must be an array of nonempty strings.")
             command.extend(f"--{LIST_OPTIONS[key]}={item}" for item in value)

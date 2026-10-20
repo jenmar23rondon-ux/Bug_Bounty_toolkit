@@ -11,6 +11,8 @@ from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.xss.parameter_tester import XssOptions, XssParameterTester, with_parameter
 from bugbounty_toolkit.xss.reflection_detector import detect_reflection
 from bugbounty_toolkit.xss.result_validator import classify_reflection
+from bugbounty_toolkit.xss.test_cases import payloads_for_marker
+from bugbounty_toolkit.xss.playwright_confirm import classify_execution, require_playwright_installed
 
 
 class XssTests(unittest.TestCase):
@@ -74,6 +76,67 @@ class XssTests(unittest.TestCase):
             self.assertFalse(result["confirmed"])
         result = classify_reflection(detect_reflection("nothing here", "marker", "marker"), "text/html")
         self.assertEqual(result["classification"], "not_reproducible")
+
+    def test_context_payloads_are_opt_in_and_use_a_harmless_execution_marker(self):
+        default = payloads_for_marker("m123")
+        expanded = payloads_for_marker("m123", include_context=True)
+        self.assertEqual(len(default), 4)
+        self.assertEqual(len(expanded), 7)
+        self.assertTrue(any("<svg" in item for item in expanded))
+        self.assertTrue(any("</script>" in item for item in expanded))
+        self.assertTrue(any(item.startswith("javascript:") for item in expanded))
+        self.assertTrue(all("window.__bbtk_xss_marker" in item and "alert(" in item for item in expanded[4:]))
+
+    def test_execution_classification_includes_alert_and_escaped_reflection(self):
+        self.assertEqual(classify_execution(True, True, False), "confirmed")
+        self.assertEqual(classify_execution(True, False, True), "confirmed")
+        self.assertEqual(classify_execution(True, False, False), "reflected_not_executed")
+        self.assertEqual(classify_execution(False, False, False), "not_reflected")
+
+    def test_confirm_exec_reports_clear_optional_dependency_error(self):
+        with patch("bugbounty_toolkit.xss.playwright_confirm.importlib.util.find_spec", return_value=None):
+            with self.assertRaisesRegex(RuntimeError, "Playwright.*install"):
+                require_playwright_installed()
+
+    def test_confirm_mode_only_opens_browser_for_possible_reflections(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scope_file = root / "scope.txt"
+            scope_file.write_text("example.com\n")
+            routes = root / "routes.txt"
+            routes.write_text("https://example.com/search\n")
+            params = root / "params.txt"
+            params.write_text("q\n")
+            client = Mock()
+            client.timeout = 15.0
+            client.rate_limiter = Mock()
+            client.send.side_effect = lambda spec: ResponseRecord(
+                spec, spec.url, 200, "OK", 1, {"content-type": "text/html"}, "<p>BBTK_MARKER</p>", 22
+            )
+            execution = {"classification": "confirmed", "marker_observed": True, "alert_observed": True,
+                         "dialogs": [{"type": "alert", "text": "BBTK_MARKER"}], "console_errors": [], "page_errors": []}
+            with patch("bugbounty_toolkit.xss.parameter_tester.require_playwright_installed"), \
+                 patch("bugbounty_toolkit.xss.parameter_tester.PlaywrightExecutionChecker") as checker_type, \
+                 patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"):
+                checker_type.return_value.confirm.return_value = execution
+                _, results = XssParameterTester(ScopeValidator(scope_file), client).run(
+                    XssOptions(routes, params, max_tests=1, confirm_exec=True), root / "evidence"
+                )
+            checker_type.return_value.confirm.assert_called_once()
+            self.assertEqual(results[0]["classification"], "confirmed")
+            self.assertTrue(results[0]["confirmed"])
+
+            client.reset_mock()
+            client.send.side_effect = lambda spec: ResponseRecord(spec, spec.url, 200, "OK", 1,
+                                                                   {"content-type": "text/html"}, "nothing", 7)
+            with patch("bugbounty_toolkit.xss.parameter_tester.require_playwright_installed"), \
+                 patch("bugbounty_toolkit.xss.parameter_tester.PlaywrightExecutionChecker") as checker_type, \
+                 patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"):
+                _, results = XssParameterTester(ScopeValidator(scope_file), client).run(
+                    XssOptions(routes, params, max_tests=1, confirm_exec=True), root / "evidence"
+                )
+            checker_type.return_value.confirm.assert_not_called()
+            self.assertEqual(results[0]["classification"], "not_reflected")
 
     def test_replaces_only_the_supplied_parameter(self):
         result = with_parameter("https://example.com/search?q=old&q=duplicate&page=2", "q", '<marker>"')
