@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import importlib.util
+import threading
 from urllib.parse import urlsplit
+from typing import Any
 
 from ..core.redaction import redact_text
 from ..core.rate_limiter import RateLimiter
 from ..core.scope_validator import ScopeValidator
+from ..core.execution_budget import ExecutionBudget
+from ..utils.exceptions import ToolkitError
 
 
 def require_playwright_installed() -> None:
@@ -30,16 +34,113 @@ def _origin(url: str) -> tuple[str, str, int | None]:
     return scheme, (parsed.hostname or "").lower(), port
 
 
+class _BrowserRequestBudget:
+    """Apply scope, cadence, and shared execution leases to browser requests."""
+
+    def __init__(
+        self,
+        scope: ScopeValidator,
+        expected_origin: tuple[str, str, int | None],
+        budget: ExecutionBudget | None,
+        rate_limiter: RateLimiter | None,
+    ) -> None:
+        self.scope = scope
+        self.expected_origin = expected_origin
+        self.budget = budget
+        self.rate_limiter = rate_limiter
+        self.error: Exception | None = None
+        self._pending: dict[tuple[str, str, str], list[Any]] = {}
+        self._lock = threading.Lock()
+
+    @staticmethod
+    def _key(request: Any) -> tuple[str, str, str]:
+        return request.url, request.method, request.resource_type
+
+    def handle(self, route: Any) -> None:
+        request = route.request
+        lease = None
+        started = False
+        try:
+            if _origin(request.url) != self.expected_origin:
+                route.abort()
+                return
+            try:
+                self.scope.require(request.url)
+            except ValueError:
+                route.abort()
+                return
+            lease = self.budget.acquire(request.url) if self.budget is not None else None
+            remaining = self.budget.remaining_seconds() if self.budget is not None else None
+            if self.rate_limiter is not None:
+                self.rate_limiter.wait(max_wait=remaining)
+            if lease is not None:
+                lease.start()
+                started = True
+                with self._lock:
+                    self._pending.setdefault(self._key(request), []).append(lease)
+            try:
+                route.continue_()
+            except Exception:
+                if lease is not None and started:
+                    self._forget(request, lease)
+                    lease.finish(False)
+                    lease.release()
+                raise
+        except Exception as exc:
+            if lease is not None and not started:
+                lease.release()
+            self.error = exc
+            try:
+                route.abort()
+            except Exception:
+                pass
+
+    def finish(self, request: Any, successful: bool) -> None:
+        with self._lock:
+            leases = self._pending.get(self._key(request))
+            lease = leases.pop(0) if leases else None
+            if leases == []:
+                self._pending.pop(self._key(request), None)
+        if lease is not None:
+            lease.finish(successful)
+            if self.budget is not None:
+                self.budget.observe_completion()
+            lease.release()
+
+    def _forget(self, request: Any, lease: Any) -> None:
+        with self._lock:
+            key = self._key(request)
+            leases = self._pending.get(key, [])
+            if lease in leases:
+                leases.remove(lease)
+            if not leases:
+                self._pending.pop(key, None)
+
+    def close(self) -> None:
+        with self._lock:
+            pending = [lease for leases in self._pending.values() for lease in leases]
+            self._pending.clear()
+        for lease in pending:
+            lease.finish(False)
+            lease.release()
+
+
 class PlaywrightExecutionChecker:
     """Run the harmless marker payload in a headless, same-origin-only page."""
 
-    def __init__(self, scope: ScopeValidator, timeout_ms: int = 10000,
-                 rate_limiter: RateLimiter | None = None):
+    def __init__(
+        self,
+        scope: ScopeValidator,
+        timeout_ms: int = 10000,
+        rate_limiter: RateLimiter | None = None,
+        execution_budget: ExecutionBudget | None = None,
+    ):
         if timeout_ms <= 0:
             raise ValueError("Browser timeout must be positive.")
         self.scope = scope
         self.timeout_ms = timeout_ms
         self.rate_limiter = rate_limiter
+        self.execution_budget = execution_budget
         self._manager = None
         self._playwright = None
         self._browser = None
@@ -48,6 +149,7 @@ class PlaywrightExecutionChecker:
         require_playwright_installed()
         try:
             from playwright.sync_api import sync_playwright
+
             self._manager = sync_playwright()
             self._playwright = self._manager.start()
             self._browser = self._playwright.chromium.launch(headless=True)
@@ -64,26 +166,18 @@ class PlaywrightExecutionChecker:
         if self._browser is None:
             self._start()
 
-        browser_headers = {key: value for key, value in (headers or {}).items()
-                           if key.lower() not in {"host", "content-length", "transfer-encoding"}}
+        browser_headers = {
+            key: value
+            for key, value in (headers or {}).items()
+            if key.lower() not in {"host", "content-length", "transfer-encoding"}
+        }
         context = self._browser.new_context(extra_http_headers=browser_headers)
         expected_origin = _origin(url)
-
-        def same_origin_only(route) -> None:
-            if _origin(route.request.url) == expected_origin:
-                try:
-                    self.scope.require(route.request.url)
-                except ValueError:
-                    route.abort()
-                    return
-                if self.rate_limiter:
-                    self.rate_limiter.wait()
-                route.continue_()
-            else:
-                route.abort()
-
-        context.route("**/*", same_origin_only)
+        request_budget = _BrowserRequestBudget(self.scope, expected_origin, self.execution_budget, self.rate_limiter)
+        context.route("**/*", request_budget.handle)
         page = context.new_page()
+        page.on("requestfinished", lambda request: request_budget.finish(request, True))
+        page.on("requestfailed", lambda request: request_budget.finish(request, False))
         dialogs: list[dict[str, str]] = []
         console_errors: list[str] = []
         page_errors: list[str] = []
@@ -93,18 +187,40 @@ class PlaywrightExecutionChecker:
             dialog.accept()
 
         page.on("dialog", on_dialog)
-        page.on("console", lambda message: console_errors.append(redact_text(message.text)[:300])
-                 if message.type == "error" else None)
+        page.on(
+            "console",
+            lambda message: console_errors.append(redact_text(message.text)[:300]) if message.type == "error" else None,
+        )
         page.on("pageerror", lambda error: page_errors.append(redact_text(str(error))[:300]))
         try:
-            page.goto(url, wait_until="domcontentloaded", timeout=self.timeout_ms)
+            remaining = self.execution_budget.remaining_seconds() if self.execution_budget is not None else None
+            timeout_ms = (
+                min(self.timeout_ms, max(1, int(remaining * 1000))) if remaining is not None else self.timeout_ms
+            )
+            try:
+                page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+            except Exception as exc:
+                if request_budget.error is not None:
+                    raise request_budget.error
+                if self.execution_budget is not None:
+                    self.execution_budget.remaining_seconds()
+                raise ToolkitError(f"Headless browser navigation failed: {type(exc).__name__}") from None
+            if request_budget.error is not None:
+                raise request_budget.error
             # A javascript: payload is exercised only when the page reflected our exact marker.
-            page.evaluate("""marker => {
+            page.evaluate(
+                """marker => {
                 const link = [...document.querySelectorAll('a[href^="javascript:"]')]
                     .find(item => item.href.includes(marker));
                 if (link) link.click();
-            }""", marker)
+            }""",
+                marker,
+            )
             marker_observed = page.evaluate("marker => window.__bbtk_xss_marker === marker", marker)
+            if request_budget.error is not None:
+                raise request_budget.error
+            if self.execution_budget is not None:
+                self.execution_budget.remaining_seconds()
             alert_observed = any(item["type"] == "alert" for item in dialogs)
             return {
                 "classification": classify_execution(True, bool(marker_observed), alert_observed),
@@ -116,6 +232,7 @@ class PlaywrightExecutionChecker:
             }
         finally:
             context.close()
+            request_budget.close()
 
     def close(self) -> None:
         if self._browser is not None:

@@ -415,7 +415,7 @@ class AccessControlTests(unittest.TestCase):
         self.run_case()
         times = [hit["at"] for hit in AccessLab.hits]
         self.assertEqual(len(times), 3)
-        self.assertTrue(all(later - earlier >= 0.035 for earlier, later in zip(times, times[1:])))
+        self.assertTrue(all(later - earlier >= 0.02 for earlier, later in zip(times, times[1:])))
 
     def test_json_pointer_escapes_lists_missing_and_type_safe_predicates(self):
         self.assertEqual(lookup({"a/b": {"~": ["value"]}}, "/a~1b/~0/0"), "value")

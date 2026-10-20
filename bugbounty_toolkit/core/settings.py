@@ -4,7 +4,10 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
-import yaml
+try:
+    import yaml
+except ModuleNotFoundError:  # Allows the offline doctor to report a missing base dependency.
+    yaml = None
 
 
 @dataclass(frozen=True)
@@ -29,6 +32,8 @@ class ExecutorSettings:
 def load_settings(path: Path | None) -> ExecutorSettings:
     if path is None:
         return ExecutorSettings()
+    if yaml is None:
+        raise ValueError("PyYAML is required to read a settings file. Install the base package dependencies.")
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     if not isinstance(data, dict):
         raise ValueError("Settings must be a YAML mapping.")

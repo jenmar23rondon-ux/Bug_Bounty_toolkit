@@ -12,16 +12,16 @@ import sys
 
 
 FIELDS = {
-    "request": {"url", "raw_request", "method", "base_url", "headers", "cookies", "params", "data", "timeout", "rate"},
+    "request": {"url", "raw_request", "method", "base_url", "headers", "cookies", "params", "data", "timeout", "rate", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
     "fuzz": {"url", "wordlist", "threads", "timeout", "rate", "match_codes", "filter_size"},
-    "xss": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "html_parser", "confirm_exec"},
-    "sqli": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "deep"},
-    "cors-check": {"url", "headers", "cookies", "timeout", "rate"},
-    "open-redirect": {"url", "param", "headers", "cookies", "timeout", "rate"},
-    "access-check": {"case_file", "timeout", "rate", "max_tests", "range", "max_range", "concurrency", "min_interval"},
+    "xss": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "html_parser", "confirm_exec", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
+    "sqli": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "deep", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
+    "cors-check": {"url", "headers", "cookies", "timeout", "rate", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
+    "open-redirect": {"url", "param", "headers", "cookies", "timeout", "rate", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
+    "access-check": {"case_file", "timeout", "rate", "max_tests", "range", "max_range", "concurrency", "min_interval", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
 }
 LIST_OPTIONS = {"headers": "header", "cookies": "cookie", "params": "param"}
-NUMERIC_OPTIONS = {"threads", "timeout", "rate", "max_tests", "max_range", "concurrency", "min_interval"}
+NUMERIC_OPTIONS = {"threads", "timeout", "rate", "max_tests", "max_range", "concurrency", "min_interval", "run_max_requests", "run_max_seconds", "run_max_concurrency"}
 BOOLEAN_OPTIONS = {"confirm_exec": "confirm-exec", "deep": "deep"}
 
 
@@ -58,7 +58,7 @@ def build_command(plan: dict, python: str = sys.executable) -> list[str]:
         elif key in NUMERIC_OPTIONS:
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
                 raise ValueError(f"{key} must be a positive finite number.")
-            integer = key in {"threads", "max_tests", "max_range", "concurrency"} or (action == "fuzz" and key == "timeout")
+            integer = key in {"threads", "max_tests", "max_range", "concurrency", "run_max_requests", "run_max_concurrency"} or (action == "fuzz" and key == "timeout")
             if integer and value != int(value):
                 raise ValueError(f"{key} must be a whole number.")
             command.append(f"--{key.replace('_', '-')}={int(value) if integer else value}")

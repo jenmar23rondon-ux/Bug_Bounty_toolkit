@@ -12,6 +12,8 @@ Python 3.10 or later:
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
+bbtk --version
+bbtk doctor
 ```
 
 On Windows, activate with `.venv\Scripts\Activate.ps1`. Install [ffuf](https://github.com/ffuf/ffuf#installation) separately and put its executable on `PATH`. Native HTTP checks and JSON/HTML reports work without ffuf. `requirements.txt` also includes optional ReportLab support for individual PDF findings.
@@ -25,7 +27,9 @@ python -m pip install -e ".[all]"
 bugbounty resources
 ```
 
-The base install stays small. Extras provide Beautiful Soup/lxml/html5lib/Playwright, sqlparse, PyJWT/python-jose/cryptography/jwcrypto, requests/aiohttp/httpx and optional database drivers. The `dev` extra adds Ruff, mypy, coverage.py and Hypothesis for CI. `--confirm-exec` needs the optional `xss` extra plus `python -m playwright install chromium`; browser confirmation remains off by default. External scanners, payload repositories and Burp extensions remain separate. The [security tools reference](skills/bugbounty-executor/references/security-tools.md) explains installation profiles and external-plan limitations. Each topic skill has its own focused tool references.
+The base install stays small. Extras provide Beautiful Soup/lxml/html5lib/Playwright, sqlparse, PyJWT/python-jose/cryptography/jwcrypto, requests/aiohttp/httpx and optional database drivers. The `dev` extra adds Ruff, mypy, coverage.py, Hypothesis and the package builder for CI. `--confirm-exec` needs the optional `xss` extra plus `python -m playwright install chromium`; browser confirmation remains off by default. External scanners, payload repositories and Burp extensions remain separate. The [security tools reference](skills/bugbounty-executor/references/security-tools.md) explains installation profiles and external-plan limitations. Each topic skill has its own focused tool references.
+
+`bbtk doctor` checks Python, required/optional dependencies, the repository and installed skill family, local settings, and (with `--program`) saved scope/authorization metadata. It is read-only and sends no HTTP. Use `bbtk doctor --json` for automation. Optional modules and ffuf are reported as warnings when absent; the command never installs anything.
 
 ```bash
 bugbounty analyze html --input registros/my-program/page.html --marker BBTK_MARKER --parser html5lib
@@ -37,6 +41,18 @@ bugbounty cors-check my-program --url "https://target-autorizado.example/account
 bugbounty open-redirect my-program --url "https://target-autorizado.example/login?next=%2Fhome" --param next --dry-run
 bugbounty tool-plan my-program --tool sqlmap --url "http://localhost:3000/search?q=1" --parameter q --dry-run
 ```
+
+## Shared Run Budget
+
+Native HTTP commands (`request`, `xss`, `sqli`, `cors-check`, `open-redirect`, and `access-check`) accept a shared per-invocation budget:
+
+```bash
+bbtk request my-program --url "https://target-autorizado.example/health" --run-max-requests 1 --run-max-seconds 30 --run-max-concurrency 1 --dry-run
+```
+
+`--run-max-requests` caps total requests across all clients/workers in that command; for `xss --confirm-exec`, same-origin Playwright requests and subresources use the same budget. `--run-max-seconds` sets a cooperative deadline and clamps each new socket/browser navigation timeout to the remaining time; `--run-max-concurrency` caps simultaneous native/browser requests and cannot exceed the program's `max_concurrency`. Program scope is checked for every URL before a request is counted or sent, and configured rate limits and per-command budgets remain active. No new request/time cap is imposed unless a `--run-*` option is supplied. After opted-in runs, the CLI prints requests actually started, responses, transport errors, elapsed time, peak concurrency, stop reason and destination hostnames. Ctrl+C cancels queued requests and prints the partial summary. An already active socket read is not forcibly terminated mid-operation; its socket timeout still applies. External tools such as ffuf, nuclei and prepared scanner plans do not inherit this budget and must use their own reviewed limits.
+
+The shared guard covers native HTTP requests and same-origin Playwright traffic. `ffuf`, `nuclei`, recon tools and external scanner plans are separate processes and do not inherit its exact request counter; use their separately reviewed tool limits. A successful run summary is not a vulnerability verdict.
 
 `analyze` is offline. JWT verification additionally requires `--key-file` and an explicit `--algorithm`, with optional expected issuer/audience; decoding is not authentication. SQLi defaults to baseline/quote comparisons; `--deep` explicitly adds time and boolean probes. `cors-check` sends four Origin variants; `open-redirect` sends five query values and never follows `Location`. These commands require automation permission, scope and program rate limits. `tool-plan` prepares commands for sqlmap, XSStrike and Dalfox v3 but **never executes them**, even without `--dry-run`. External tools need separately reviewed runs because they do not inherit the hard request budget/scope controls. jwt_tool, JWT Editor, hashcat and John are catalogued manual tools. No automatic JWT forgery, password brute force, WAF evasion or database dumping is performed.
 
@@ -143,7 +159,7 @@ bugbounty xss my-program --routes inputs/routes.txt --parameters inputs/paramete
 
 Use `--header` and `--cookie` for your authorized test session. The command sends four non-executing marker variants per route/parameter using GET, until its request budget is reached. It records the parameter, marker, status, duration, reflection context and request/response evidence.
 
-With the `xss` extra, the command also parses the actual HTML response and records text/attribute/URL/event/script/style contexts in `context_analysis`. Choose `--html-parser html.parser`, `lxml` or `html5lib`. Non-HTML and unavailable parsers are explicit states, not completed validation. Truncated captures stop the batch. By default, reflection is not JavaScript execution. Opt-in `--confirm-exec` adds three harmless marker/alert payloads adapted to attribute, script and URL contexts, then launches headless Playwright only for responses classified `possible`. It confirms execution only when the unique marker appears on the page or an alert fires; escaped reflection becomes `reflected_not_executed`. Browser requests are restricted to the target origin and share the configured rate limiter. Playwright and Chromium are optional; the regular four-marker behavior is unchanged.
+With the `xss` extra, the command also parses the actual HTML response and records text/attribute/URL/event/script/style contexts in `context_analysis`. Choose `--html-parser html.parser`, `lxml` or `html5lib`. Non-HTML and unavailable parsers are explicit states, not completed validation. Truncated captures stop the batch. By default, reflection is not JavaScript execution. Opt-in `--confirm-exec` adds three harmless marker/alert payloads adapted to attribute, script and URL contexts, then launches headless Playwright only for responses classified `possible`. It confirms execution only when the unique marker appears on the page or an alert fires; escaped reflection becomes `reflected_not_executed`. Browser requests are restricted to the target origin and share the configured rate limiter and run budget. Playwright and Chromium are optional; the regular four-marker behavior is unchanged.
 
 Without `--confirm-exec`, results are `possible`, `not_reproducible` or `error`, and a reflection never confirms XSS. In browser mode they can also be `confirmed`, `reflected_not_executed` or `not_reflected`. A missing marker is not proof that the endpoint is vulnerability-free. Stored and DOM XSS still need separate validation. Add a finding only after reviewing evidence and impact.
 
@@ -164,13 +180,17 @@ bugbounty --log-file logs/toolkit.log status my-program
 
 Program reports include scope, run history, findings and embedded JSON evidence. HTML escapes all response content and payloads. Files are written under `registros/<program>/reports/`.
 
+Create a reviewer-ready, redacted Markdown draft from one native JSON evidence file with `bbtk report my-program --evidence-file registros/my-program/evidence/access-control/selected.json --format markdown`. It presents structured A/B observations without raw response bodies and is never submitted automatically. Existing HTML/JSON program reports and individual finding Markdown/PDF exports remain available.
+
 Authorization headers, cookies and common password/token fields are redacted from structured evidence. Redaction is best effort: unusual secret formats, user-written findings and third-party raw logs can contain private data. Keep `registros/` local and inspect evidence before sharing it. Raw ffuf output and its isolated history remain in `raw/` for debugging. They are not embedded into reports.
 
 ### Known Limitations
 
 The case file's scope, account ownership, expected access and disposable-resource declarations are researcher attestations; the toolkit cannot independently verify program policy or account identity. `anonymous_access`, matrix candidates and write-response predicates are test evidence, not automatic vulnerability confirmation. `public_endpoint` is informational; an explicit `expected_anonymous` mismatch is separately flagged. The matrix contains only supplied accounts and known resources (at most ten accounts), and its diagonal cells are ordinary controls. Persistence verification checks only the explicitly selected scalar through the supplied owner GET. Cleanup compares a final scoped GET against each captured original value; a failed or unavailable readback is reported separately from the access-test outcome. Always inspect disposable test data after writes, including public opt-in runs.
 
-CI runs Hypothesis properties plus Ruff formatting/lint, strict mypy for the access-comparison and write-lab modules, and a 90% coverage gate for those two critical modules. Run the same checks locally with `pip install -e ".[dev]"`.
+CI runs Hypothesis properties plus Ruff formatting/lint, strict mypy for the access-comparison and write-lab modules, at least 90% combined coverage for those two critical modules, and a 75% starting gate across `bugbounty_toolkit`, the skill installer and plan runner. The broader gate exercises CLI, reporting, diagnostics, installation and network failures; the 75% threshold is intended to rise as coverage grows. Run the same checks locally with `pip install -e ".[dev]"`.
+
+The installed version is synchronized in `pyproject.toml` and `bugbounty_toolkit/__init__.py`; `bbtk --version` prints it. Pushing a matching `v<version>` tag runs the release workflow, rechecks tests/coverage, builds wheel and source archives, and publishes a GitHub Release with generated notes. The workflow rejects tags that do not match package metadata.
 
 Individual validated findings keep the original Markdown/PDF workflow:
 
@@ -186,7 +206,7 @@ bbtk report my-program --finding-id FINDING-001 --format pdf
 Bug_Bounty_toolkit/
 |-- bugbounty_toolkit/
 |   |-- cli.py
-|   |-- core/               # Scope, HTTP, limits, settings, records
+|   |-- core/               # Scope, HTTP, shared run budget, settings, records
 |   |-- requests_engine/    # CLI inputs and Burp replay
 |   |-- fuzzing/            # ffuf adapter and parsed results
 |   |-- xss/                # Controlled reflection probes

@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from html import escape
 from pathlib import Path
+
+from .redaction import redact_data
 
 REPORT_TEMPLATE = """# {id} - {title}
 
 ## Summary
 {summary}
+
+> Draft for researcher review. This file is not submitted to HackerOne or any other platform.
 
 ## Severity
 {severity}
@@ -32,7 +37,7 @@ Describe the expected authorization, validation, configuration, or business-rule
 
 def render_markdown(finding, destination: Path) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    data = dict(finding)
+    data = redact_data(dict(finding))
     if not data.get("evidence_path"):
         data["evidence_path"] = "Evidence path not attached yet."
     destination.write_text(REPORT_TEMPLATE.format(**data), encoding="utf-8")
@@ -56,11 +61,11 @@ def render_pdf(markdown_path: Path, pdf_path: Path) -> Path:
         if not line:
             story.append(Spacer(1, 8))
         elif line.startswith("# "):
-            story.append(Paragraph(line[2:], styles["Title"]))
+            story.append(Paragraph(escape(line[2:]), styles["Title"]))
         elif line.startswith("## "):
-            story.append(Paragraph(line[3:], styles["Heading2"]))
+            story.append(Paragraph(escape(line[3:]), styles["Heading2"]))
         else:
-            story.append(Paragraph(line, styles["BodyText"]))
+            story.append(Paragraph(escape(line), styles["BodyText"]))
     document.build(story)
     return pdf_path
 
