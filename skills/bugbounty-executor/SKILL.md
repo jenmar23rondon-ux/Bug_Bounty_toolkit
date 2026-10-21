@@ -49,7 +49,7 @@ Read [references/security-tools.md](references/security-tools.md) for optional i
 
 ## Interpret Results
 
-For native access-check/XSS/SQLi/CORS/open-redirect evidence, use [agent-review.md](references/agent-review.md) to export allowlisted observations and let the calling IA reason about controls, context, uncertainty and a bounded conclusion. `analyze evidence` is offline by default; `--ai ollama` optionally sends only the minimized packet to the fixed local Ollama service. No external model provider is called automatically.
+For native access-check/XSS/SQLi/CORS/open-redirect evidence, use [agent-review.md](references/agent-review.md) to export allowlisted observations and let the calling IA reason about controls, context, uncertainty and a bounded conclusion. `analyze evidence` is offline by default; `--ai ollama` explicitly sends only the minimized packet to the fixed local Ollama service, using `qwen2.5-coder:7b` by default. Ollama is a second-opinion reviewer, not an executor; no external model provider is called automatically.
 
 - Read the JSON evidence and report, including HTTP status codes, error classifications, skipped inputs and truncated response flags. Successful process completion does not mean every test succeeded.
 - Without `--confirm-exec`, report reflected markers as possible XSS. With it, a browser-observed marker or alert confirms only that test; escaped reflection is `reflected_not_executed`. A missing reflection is not proof of absence.

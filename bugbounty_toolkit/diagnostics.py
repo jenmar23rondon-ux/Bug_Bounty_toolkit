@@ -69,6 +69,12 @@ def diagnose(
         "ok" if shutil.which("ffuf") else "warning",
         "available on PATH" if shutil.which("ffuf") else "not installed; ffuf adapter unavailable",
     )
+    ollama_path = shutil.which("ollama")
+    add(
+        "tool:ollama",
+        "ok" if ollama_path else "warning",
+        f"available on PATH at {ollama_path}" if ollama_path else "not installed; local model review unavailable",
+    )
     add("toolkit-version", "ok", __version__)
 
     root = skills_root or Path(__file__).resolve().parents[1] / "skills"

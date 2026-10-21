@@ -37,7 +37,7 @@ from .access_control.range_checker import AccessRangeOptions, AccessRangeTester,
 from .access_control.write_lab import AccessWriteLabTester
 from .access_control.write_range import AccessWriteRangeTester
 from .access_control.guards import is_loopback_url
-from .analysis.ollama_review import review_with_ollama
+from .analysis.ollama_review import DEFAULT_OLLAMA_MODEL, review_with_ollama
 from .integrations.catalog import catalog
 from .integrations.external_plan import build_external_plan, TOOLS
 from .reporting.evidence import write_evidence_json
@@ -606,9 +606,8 @@ def cmd_analyze(args: argparse.Namespace) -> None:
     elif args.analysis == "evidence":
         data = review_evidence(json.loads(text))
         if args.ai == "ollama":
-            if not args.model:
-                raise ValueError("Select a local Ollama model with --model.")
-            data["ollama_review"] = review_with_ollama(data, args.model, args.ai_timeout)
+            model = args.model or DEFAULT_OLLAMA_MODEL
+            data["ollama_review"] = review_with_ollama(data, model, args.ai_timeout)
             data["network_requests_sent_by_review"] = 1
         elif args.model:
             raise ValueError("--model requires --ai ollama.")
@@ -985,7 +984,10 @@ def build_parser() -> argparse.ArgumentParser:
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)
     evidence.add_argument("--ai", choices=("ollama",))
-    evidence.add_argument("--model", help="Installed local Ollama model name")
+    evidence.add_argument(
+        "--model",
+        help=f"Installed local Ollama model name (default: {DEFAULT_OLLAMA_MODEL})",
+    )
     evidence.add_argument("--ai-timeout", type=positive_float, default=120)
     evidence.set_defaults(func=cmd_analyze)
 

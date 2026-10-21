@@ -91,7 +91,7 @@ The native [access case](../../bugbounty-access-control/references/native-check.
 
 XSS records HTML parser contexts from the actual response. `html_parser` accepts `html.parser`, `lxml` or `html5lib`; unavailable parsers and non-HTML responses are explicit. Parsing never confirms JavaScript execution.
 
-`analyze evidence --input <one-native-evidence.json>` creates the minimized [agent review packet](agent-review.md) without network traffic by default. With `--ai ollama --model <local-model>`, only that packet is sent to the local service at `127.0.0.1:11434`; proxies, redirects and remote fallback are disabled. The model result is untrusted. Offline analyzers and external-tool planning use the direct CLI, not `run_plan.py`; external plans never execute scanners.
+`analyze evidence --input <one-native-evidence.json>` creates the minimized [agent review packet](agent-review.md) without network traffic by default. With `--ai ollama`, only that packet is sent to the local service at `127.0.0.1:11434`, using `qwen2.5-coder:7b` by default; `--model <installed-model>` overrides it. Proxies, redirects and remote fallback are disabled. The model result is untrusted and never executes tools or tests. Offline analyzers and external-tool planning use the direct CLI, not `run_plan.py`; external plans never execute scanners.
 
 On execution, JSON and HTML reports go to `registros/<program>/reports/`. Inspect `program-report.json` and its evidence before summarizing. If a command fails, report the failure and inspect existing evidence instead of retrying automatically.
 

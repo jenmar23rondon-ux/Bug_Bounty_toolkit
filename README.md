@@ -270,7 +270,7 @@ The IA running the skill is the reasoning component. Export one native access-co
 bugbounty analyze evidence --input registros/my-program/evidence/access-control/selected.json --output registros/my-program/review.json
 ```
 
-The exporter drops arbitrary response text/instructions, URLs, headers and secrets; it includes allowlisted statuses, context counts and comparison booleans. It is offline by default. An explicit `--ai ollama --model <name>` sends only that minimized packet to the local Ollama service at `127.0.0.1:11434`; it has no remote fallback or tool calling. The [review workflow](skills/bugbounty-executor/references/agent-review.md) treats model output as untrusted and checks provenance, controls and uncertainty. A formatted packet does not authenticate source claims or grant testing permission, and no model automatically confirms a vulnerability.
+The exporter drops arbitrary response text/instructions, URLs, headers and secrets; it includes allowlisted statuses, context counts and comparison booleans. It is offline by default. An explicit `--ai ollama` sends only that minimized packet to the local Ollama service at `127.0.0.1:11434`, using `qwen2.5-coder:7b` by default; `--model <name>` overrides the model. There is no remote fallback or tool calling. `bbtk doctor` checks for the local Ollama executable without contacting the service. The [review workflow](skills/bugbounty-executor/references/agent-review.md) treats model output as untrusted and checks provenance, controls and uncertainty. A formatted packet does not authenticate source claims or grant testing permission, and no model automatically confirms a vulnerability.
 
 ## Tests
 
