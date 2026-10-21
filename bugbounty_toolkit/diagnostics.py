@@ -14,11 +14,13 @@ from .core.scope_validator import ScopeValidator
 
 
 OPTIONAL_MODULES = {
+    "csrf": ("bs4",),
     "xss": ("bs4", "lxml", "html5lib", "playwright"),
     "sqli": ("sqlparse",),
     "jwt": ("jwt", "jose", "cryptography", "jwcrypto"),
     "http": ("requests", "aiohttp", "httpx"),
     "databases": ("pymysql", "psycopg2"),
+    "takeover": ("dns.resolver",),
 }
 
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty Takeover"
+  short_description: "Busca candidatos pasivos de takeover mediante CNAME"
+  default_prompt: "Usa $bugbounty-takeover para analizar CNAMEs en scope; DNS solo con solicitud explícita y nunca intentes reclamar recursos."
+policy:
+  allow_implicit_invocation: true

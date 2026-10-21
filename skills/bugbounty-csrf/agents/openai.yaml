@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty CSRF Audit"
+  short_description: "Revisa formularios y SameSite con una comprobación heurística autorizada"
+  default_prompt: "Usa $bugbounty-csrf con la URL autorizada que te proporcioné; haz dry-run, ejecuta una sola lectura y explica que el resultado es heurístico, sin enviar formularios."
+policy:
+  allow_implicit_invocation: true

@@ -115,10 +115,79 @@ class SkillPlanTests(unittest.TestCase):
         )
         self.assertIn("open-redirect", redirect)
         self.assertIn("--param=next", redirect)
+        ssrf = runner.build_command(
+            {"program": "lab", "action": "ssrf-check", "url": "https://example.com/fetch?url=ordinary", "param": "url"}
+        )
+        self.assertIn("ssrf-check", ssrf)
+        self.assertIn("--param=url", ssrf)
+        csrf = runner.build_command(
+            {
+                "program": "lab",
+                "action": "csrf-audit",
+                "url": "https://example.com/account",
+                "headers": ["Accept: text/html"],
+            }
+        )
+        self.assertIn("csrf-audit", csrf)
+        self.assertIn("--url=https://example.com/account", csrf)
         with self.assertRaisesRegex(ValueError, "boolean"):
             runner.build_command(
                 {"program": "lab", "action": "xss", "routes": "r", "parameters": "p", "confirm_exec": "yes"}
             )
+
+    def test_topic_plans_support_opt_in_local_ai_review(self):
+        plans = (
+            {"action": "xss", "routes": "r", "parameters": "p"},
+            {"action": "sqli", "routes": "r", "parameters": "p"},
+            {"action": "cors-check", "url": "https://example.com/"},
+            {"action": "open-redirect", "url": "https://example.com/?next=%2F", "param": "next"},
+            {"action": "access-check", "case_file": "case.json"},
+        )
+        for values in plans:
+            with self.subTest(action=values["action"]):
+                command = runner.build_command(
+                    {
+                        "program": "lab",
+                        **values,
+                        "ai_review": True,
+                        "ai_model": "qwen2.5-coder:7b",
+                        "ai_timeout": 90,
+                    }
+                )
+                self.assertIn("--ai-review", command)
+                self.assertIn("--ai-model=qwen2.5-coder:7b", command)
+                self.assertIn("--ai-timeout=90", command)
+
+        with self.assertRaisesRegex(ValueError, "require ai_review"):
+            runner.build_command(
+                {"program": "lab", "action": "sqli", "routes": "r", "parameters": "p", "ai_model": "qwen2.5-coder:7b"}
+            )
+        with self.assertRaisesRegex(ValueError, "between 1 and 300"):
+            runner.build_command(
+                {
+                    "program": "lab",
+                    "action": "sqli",
+                    "routes": "r",
+                    "parameters": "p",
+                    "ai_review": True,
+                    "ai_timeout": 301,
+                }
+            )
+
+        apk = runner.build_command(
+            {
+                "program": "lab",
+                "action": "apk-scan",
+                "apk": "inputs/test app.apk",
+                "decompile": True,
+                "ai_review": True,
+                "ai_model": "qwen2.5-coder:7b",
+            }
+        )
+        self.assertIn("--apk=inputs/test app.apk", apk)
+        self.assertIn("--decompile", apk)
+        self.assertIn("--ai-review", apk)
+        self.assertIn("--ai-model=qwen2.5-coder:7b", apk)
 
     def test_unsupported_actions_and_options_are_rejected(self):
         for plan in (

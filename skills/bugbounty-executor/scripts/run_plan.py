@@ -12,17 +12,138 @@ import sys
 
 
 FIELDS = {
-    "request": {"url", "raw_request", "method", "base_url", "headers", "cookies", "params", "data", "timeout", "rate", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
+    "request": {
+        "url",
+        "raw_request",
+        "method",
+        "base_url",
+        "headers",
+        "cookies",
+        "params",
+        "data",
+        "timeout",
+        "rate",
+        "run_max_requests",
+        "run_max_seconds",
+        "run_max_concurrency",
+    },
     "fuzz": {"url", "wordlist", "threads", "timeout", "rate", "match_codes", "filter_size"},
-    "xss": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "html_parser", "confirm_exec", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
-    "sqli": {"routes", "parameters", "base_url", "headers", "cookies", "timeout", "rate", "max_tests", "deep", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
-    "cors-check": {"url", "headers", "cookies", "timeout", "rate", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
-    "open-redirect": {"url", "param", "headers", "cookies", "timeout", "rate", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
-    "access-check": {"case_file", "timeout", "rate", "max_tests", "range", "max_range", "concurrency", "min_interval", "run_max_requests", "run_max_seconds", "run_max_concurrency"},
+    "xss": {
+        "routes",
+        "parameters",
+        "base_url",
+        "headers",
+        "cookies",
+        "timeout",
+        "rate",
+        "max_tests",
+        "html_parser",
+        "confirm_exec",
+        "ai_review",
+        "ai_model",
+        "ai_timeout",
+        "run_max_requests",
+        "run_max_seconds",
+        "run_max_concurrency",
+    },
+    "sqli": {
+        "routes",
+        "parameters",
+        "base_url",
+        "headers",
+        "cookies",
+        "timeout",
+        "rate",
+        "max_tests",
+        "deep",
+        "ai_review",
+        "ai_model",
+        "ai_timeout",
+        "run_max_requests",
+        "run_max_seconds",
+        "run_max_concurrency",
+    },
+    "cors-check": {
+        "url",
+        "headers",
+        "cookies",
+        "timeout",
+        "rate",
+        "ai_review",
+        "ai_model",
+        "ai_timeout",
+        "run_max_requests",
+        "run_max_seconds",
+        "run_max_concurrency",
+    },
+    "ssrf-check": {
+        "url",
+        "param",
+        "headers",
+        "cookies",
+        "timeout",
+        "rate",
+        "run_max_requests",
+        "run_max_seconds",
+        "run_max_concurrency",
+    },
+    "csrf-audit": {
+        "url",
+        "headers",
+        "cookies",
+        "timeout",
+        "rate",
+        "run_max_requests",
+        "run_max_seconds",
+        "run_max_concurrency",
+    },
+    "open-redirect": {
+        "url",
+        "param",
+        "headers",
+        "cookies",
+        "timeout",
+        "rate",
+        "ai_review",
+        "ai_model",
+        "ai_timeout",
+        "run_max_requests",
+        "run_max_seconds",
+        "run_max_concurrency",
+    },
+    "access-check": {
+        "case_file",
+        "timeout",
+        "rate",
+        "max_tests",
+        "range",
+        "max_range",
+        "concurrency",
+        "min_interval",
+        "ai_review",
+        "ai_model",
+        "ai_timeout",
+        "run_max_requests",
+        "run_max_seconds",
+        "run_max_concurrency",
+    },
+    "apk-scan": {"apk", "decompile", "ai_review", "ai_model", "ai_timeout"},
 }
 LIST_OPTIONS = {"headers": "header", "cookies": "cookie", "params": "param"}
-NUMERIC_OPTIONS = {"threads", "timeout", "rate", "max_tests", "max_range", "concurrency", "min_interval", "run_max_requests", "run_max_seconds", "run_max_concurrency"}
-BOOLEAN_OPTIONS = {"confirm_exec": "confirm-exec", "deep": "deep"}
+NUMERIC_OPTIONS = {
+    "threads",
+    "timeout",
+    "rate",
+    "max_tests",
+    "max_range",
+    "concurrency",
+    "min_interval",
+    "ai_timeout",
+    "run_max_requests",
+    "run_max_seconds",
+    "run_max_concurrency",
+}
+BOOLEAN_OPTIONS = {"confirm_exec": "confirm-exec", "deep": "deep", "ai_review": "ai-review", "decompile": "decompile"}
 
 
 def build_command(plan: dict, python: str = sys.executable) -> list[str]:
@@ -30,14 +151,27 @@ def build_command(plan: dict, python: str = sys.executable) -> list[str]:
         raise ValueError("Plan must be a JSON object.")
     action = plan.get("action")
     if not isinstance(action, str) or action not in FIELDS:
-        raise ValueError("Action must be request, fuzz, xss, sqli, cors-check, open-redirect or access-check.")
+        raise ValueError(
+            "Action must be request, fuzz, xss, sqli, cors-check, ssrf-check, csrf-audit, open-redirect, access-check or apk-scan."
+        )
     program = plan.get("program")
     if not isinstance(program, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", program):
         raise ValueError("A valid program name is required.")
     if set(plan) - FIELDS[action] - {"program", "action"}:
         raise ValueError("Plan contains unsupported fields.")
-    required = {"fuzz": ("url", "wordlist"), "xss": ("routes", "parameters"), "sqli": ("routes", "parameters"),
-                "cors-check": ("url",), "open-redirect": ("url", "param"), "access-check": ("case_file",)}.get(action, ())
+    if ("ai_model" in plan or "ai_timeout" in plan) and plan.get("ai_review") is not True:
+        raise ValueError("ai_model and ai_timeout require ai_review: true.")
+    required = {
+        "fuzz": ("url", "wordlist"),
+        "xss": ("routes", "parameters"),
+        "sqli": ("routes", "parameters"),
+        "cors-check": ("url",),
+        "ssrf-check": ("url", "param"),
+        "csrf-audit": ("url",),
+        "open-redirect": ("url", "param"),
+        "access-check": ("case_file",),
+        "apk-scan": ("apk",),
+    }.get(action, ())
     if any(not isinstance(plan.get(key), str) or not plan[key].strip() for key in required):
         raise ValueError("Required action inputs are missing.")
     if action == "request" and sum(key in plan for key in ("url", "raw_request")) != 1:
@@ -58,7 +192,16 @@ def build_command(plan: dict, python: str = sys.executable) -> list[str]:
         elif key in NUMERIC_OPTIONS:
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
                 raise ValueError(f"{key} must be a positive finite number.")
-            integer = key in {"threads", "max_tests", "max_range", "concurrency", "run_max_requests", "run_max_concurrency"} or (action == "fuzz" and key == "timeout")
+            if key == "ai_timeout" and not 1 <= value <= 300:
+                raise ValueError("ai_timeout must be between 1 and 300 seconds.")
+            integer = key in {
+                "threads",
+                "max_tests",
+                "max_range",
+                "concurrency",
+                "run_max_requests",
+                "run_max_concurrency",
+            } or (action == "fuzz" and key == "timeout")
             if integer and value != int(value):
                 raise ValueError(f"{key} must be a whole number.")
             command.append(f"--{key.replace('_', '-')}={int(value) if integer else value}")
@@ -87,7 +230,8 @@ def run_plan(plan: dict, toolkit_root: Path, execute: bool = False, records_root
     for report_format in ("json", "html"):
         result = subprocess.run(
             prefix + ["report", plan["program"], f"--format={report_format}"],
-            cwd=root, check=False,
+            cwd=root,
+            check=False,
         )
         if result.returncode:
             return result.returncode
@@ -98,7 +242,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Validate or execute a supplied Bug Bounty Toolkit JSON plan")
     parser.add_argument("--toolkit-root", type=Path, required=True)
     parser.add_argument("--plan", type=Path, required=True)
-    parser.add_argument("--records-root", type=Path, help="Optional existing records directory; defaults to the checkout's registros/")
+    parser.add_argument(
+        "--records-root", type=Path, help="Optional existing records directory; defaults to the checkout's registros/"
+    )
     parser.add_argument("--execute", action="store_true", help="After validation, execute once and generate reports")
     args = parser.parse_args()
     try:

@@ -5,10 +5,13 @@ import shutil
 
 
 PYTHON_MODULES = {
+    "csrf": ("bs4",),
     "xss": ("bs4", "lxml", "html5lib", "playwright"),
-    "http": ("requests", "aiohttp", "httpx"), "sqli": ("sqlparse",),
+    "http": ("requests", "aiohttp", "httpx"),
+    "sqli": ("sqlparse",),
     "jwt": ("jwt", "jose", "cryptography", "jwcrypto"),
     "databases": ("pymysql", "psycopg2"),
+    "takeover": ("dns.resolver",),
 }
 RESOURCES = (
     ("payloadsallthethings", "reference", "https://github.com/swisskyrepo/PayloadsAllTheThings", None),
@@ -34,18 +37,45 @@ RESOURCES = (
     ("paramspider", "manual-archive-mining", "https://github.com/devanshbatham/ParamSpider", "paramspider"),
     ("nuclei", "separately-reviewed-legacy-wrapper", "https://github.com/projectdiscovery/nuclei", "nuclei"),
     ("curl", "manual-http", "https://curl.se/docs/manpage.html", "curl"),
-    ("seclists-web-content", "wordlists", "https://github.com/danielmiessler/SecLists/tree/master/Discovery/Web-Content", None),
-    ("seclists-passwords", "reference-no-guessing-adapter", "https://github.com/danielmiessler/SecLists/tree/master/Passwords/Common-Credentials", None),
+    (
+        "seclists-web-content",
+        "wordlists",
+        "https://github.com/danielmiessler/SecLists/tree/master/Discovery/Web-Content",
+        None,
+    ),
+    (
+        "seclists-passwords",
+        "reference-no-guessing-adapter",
+        "https://github.com/danielmiessler/SecLists/tree/master/Passwords/Common-Credentials",
+        None,
+    ),
     ("sqlite3", "python-stdlib", "https://docs.python.org/3/library/sqlite3.html", None),
     ("blind-sqli", "unverified-package-not-installed", "https://github.com/sqlmapproject/sqlmap/wiki/Techniques", None),
 )
 
 
+def _module_available(module: str) -> bool:
+    try:
+        return importlib.util.find_spec(module) is not None
+    except (ImportError, ValueError):
+        return False
+
+
 def catalog() -> dict:
-    return {"python_extras": {extra: {module: importlib.util.find_spec(module) is not None for module in modules}
-                              for extra, modules in PYTHON_MODULES.items()},
-            "resources": [{"name": name, "mode": mode, "source": source,
-                           "on_path": shutil.which(binary) is not None if binary else None}
-                          for name, mode, source, binary in RESOURCES],
-            "network_requests_sent": 0,
-            "note": "Availability is not a version/security check. No downloads, installs or scanner execution are performed."}
+    return {
+        "python_extras": {
+            extra: {module: _module_available(module) for module in modules}
+            for extra, modules in PYTHON_MODULES.items()
+        },
+        "resources": [
+            {
+                "name": name,
+                "mode": mode,
+                "source": source,
+                "on_path": shutil.which(binary) is not None if binary else None,
+            }
+            for name, mode, source, binary in RESOURCES
+        ],
+        "network_requests_sent": 0,
+        "note": "Availability is not a version/security check. No downloads, installs or scanner execution are performed.",
+    }
