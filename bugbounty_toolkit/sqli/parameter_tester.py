@@ -55,7 +55,7 @@ class SqliParameterTester:
         self.scope.require_all(routes)
         return routes, parameters
 
-    def run(self, options: SqliOptions, evidence_dir: Path) -> tuple[Path, list[dict]]:
+    def run(self, options: SqliOptions, evidence_dir: Path) -> tuple[Path, list[dict[str, object]]]:
         routes, parameters = self.validate(options)
         results: list[dict[str, object]] = []
         stop_reason = None
