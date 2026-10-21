@@ -188,7 +188,7 @@ Authorization headers, cookies and common password/token fields are redacted fro
 
 The case file's scope, account ownership, expected access and disposable-resource declarations are researcher attestations; the toolkit cannot independently verify program policy or account identity. `anonymous_access`, matrix candidates and write-response predicates are test evidence, not automatic vulnerability confirmation. `public_endpoint` is informational; an explicit `expected_anonymous` mismatch is separately flagged. The matrix contains only supplied accounts and known resources (at most ten accounts), and its diagonal cells are ordinary controls. Persistence verification checks only the explicitly selected scalar through the supplied owner GET. Cleanup compares a final scoped GET against each captured original value; a failed or unavailable readback is reported separately from the access-test outcome. Always inspect disposable test data after writes, including public opt-in runs.
 
-CI runs Hypothesis properties plus Ruff formatting/lint, strict mypy for the access-comparison and write-lab modules, at least 90% combined coverage for those two critical modules, and a 75% starting gate across `bugbounty_toolkit`, the skill installer and plan runner. The broader gate exercises CLI, reporting, diagnostics, installation and network failures; the 75% threshold is intended to rise as coverage grows. Run the same checks locally with `pip install -e ".[dev]"`.
+CI runs Hypothesis properties plus Ruff formatting/lint, strict mypy on the access comparison, write lab, shared execution budget, diagnostics, CORS, redirect, SQLi and selected XSS modules, at least 90% combined coverage for the two critical access-control modules, and a 77% gate across `bugbounty_toolkit`, the skill installer and plan runner. The package-wide strict-mypy migration is incremental; the CLI and several older modules are not yet in that strict set. The coverage gate includes CLI, reporting, diagnostics, installation and network-failure paths. Run the same checks locally with `pip install -e ".[dev]"`.
 
 The installed version is synchronized in `pyproject.toml` and `bugbounty_toolkit/__init__.py`; `bbtk --version` prints it. Pushing a matching `v<version>` tag runs the release workflow, rechecks tests/coverage, builds wheel and source archives, and publishes a GitHub Release with generated notes. The workflow rejects tags that do not match package metadata.
 
@@ -206,14 +206,23 @@ bbtk report my-program --finding-id FINDING-001 --format pdf
 Bug_Bounty_toolkit/
 |-- bugbounty_toolkit/
 |   |-- cli.py
-|   |-- core/               # Scope, HTTP, shared run budget, settings, records
-|   |-- requests_engine/    # CLI inputs and Burp replay
-|   |-- fuzzing/            # ffuf adapter and parsed results
-|   |-- xss/                # Controlled reflection probes
-|   |-- reporting/          # JSON, HTML and evidence
-|   `-- utils/
+|   |-- access_control/     # Read/write comparisons, ranges and guards
+|   |-- analysis/           # Offline HTML, SQL, JWT and evidence review
+|   |-- core/               # Scope, HTTP, budgets, settings and records
+|   |-- fuzzing/            # ffuf adapter, wordlists and result parsing
+|   |-- integrations/       # External plan/catalog adapters
+|   |-- reporting/          # JSON, HTML, Markdown and evidence
+|   |-- requests_engine/    # Request replay and response analysis
+|   |-- sqli/               # Bounded SQLi probes
+|   |-- xss/                # Reflection and optional browser confirmation
+|   |-- cors_check.py       # CORS response checks
+|   |-- diagnostics.py      # Read-only environment diagnostics
+|   `-- open_redirect.py    # Supplied-parameter redirect checks
 |-- config/                 # Program configuration examples
+|-- docs/                   # Checklists and project documentation
 |-- inputs/                 # Supplied targets, routes, parameters, requests
+|-- scripts/                # Skill installer and maintenance utilities
+|-- skills/                 # General router and topic-specific skills
 |-- wordlists/              # Small replaceable examples
 |-- tests/                  # Unit and local integration tests
 |-- registros/              # Private per-program runtime data (ignored)
@@ -222,6 +231,8 @@ Bug_Bounty_toolkit/
 ```
 
 The existing package location is retained so imports and the original `bbtk` command continue to work. No artificial `src/` migration is needed.
+
+Project practices and change history: [Contributing](CONTRIBUTING.md), [Security](SECURITY.md), and [Changelog](CHANGELOG.md).
 
 The original `recon`, `scan nuclei`, `params`, `checklist`, `mark-reviewed` and `add-finding` commands remain available. Their third-party scanner behavior requires separate review against the program policy; the strict request executor covers `request`, `fuzz` and `xss`. No discovery tool is invoked by those three commands.
 
@@ -270,7 +281,7 @@ The IA running the skill is the reasoning component. Export one native access-co
 bugbounty analyze evidence --input registros/my-program/evidence/access-control/selected.json --output registros/my-program/review.json
 ```
 
-The exporter drops arbitrary response text/instructions, URLs, headers and secrets; it includes allowlisted statuses, context counts and comparison booleans. It is offline by default. An explicit `--ai ollama --model <name>` sends only that minimized packet to the local Ollama service at `127.0.0.1:11434`; it has no remote fallback or tool calling. The [review workflow](skills/bugbounty-executor/references/agent-review.md) treats model output as untrusted and checks provenance, controls and uncertainty. A formatted packet does not authenticate source claims or grant testing permission, and no model automatically confirms a vulnerability.
+The exporter drops arbitrary response text/instructions, URLs, headers and secrets; it includes allowlisted statuses, context counts and comparison booleans. It is offline by default. An explicit `--ai ollama` sends only that minimized packet to the local Ollama service at `127.0.0.1:11434`, using `qwen2.5-coder:7b` by default; `--model <name>` overrides the model. There is no remote fallback or tool calling. `bbtk doctor` checks for the local Ollama executable without contacting the service. The [review workflow](skills/bugbounty-executor/references/agent-review.md) treats model output as untrusted and checks provenance, controls and uncertainty. A formatted packet does not authenticate source claims or grant testing permission, and no model automatically confirms a vulnerability.
 
 ## Tests
 

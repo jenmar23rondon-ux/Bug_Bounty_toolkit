@@ -46,6 +46,14 @@ follow_imports = "silent"
 files = [
     "bugbounty_toolkit/access_control/comparison.py",
     "bugbounty_toolkit/access_control/write_lab.py",
+    "bugbounty_toolkit/core/execution_budget.py",
+    "bugbounty_toolkit/core/runner.py",
+    "bugbounty_toolkit/cors_check.py",
+    "bugbounty_toolkit/open_redirect.py",
+    "bugbounty_toolkit/sqli/parameter_tester.py",
+    "bugbounty_toolkit/xss/test_cases.py",
+    "bugbounty_toolkit/xss/result_validator.py",
+    "bugbounty_toolkit/diagnostics.py",
 ]
 
 [tool.coverage.run]
@@ -53,7 +61,7 @@ branch = false
 source = ["bugbounty_toolkit", "scripts", "skills/bugbounty-executor/scripts"]
 
 [tool.coverage.report]
-fail_under = 75
+fail_under = 77
 show_missing = true
 skip_covered = true
 

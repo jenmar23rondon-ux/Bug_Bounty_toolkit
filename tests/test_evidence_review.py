@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch
 
 from bugbounty_toolkit.analysis.evidence_review import review_evidence
+from bugbounty_toolkit.analysis.ollama_review import DEFAULT_OLLAMA_MODEL
 from bugbounty_toolkit import cli
 
 
@@ -111,6 +112,21 @@ class EvidenceReviewTests(unittest.TestCase):
             review.assert_called_once()
             self.assertEqual(data["network_requests_sent_by_review"], 1)
             self.assertEqual(data["ollama_review"]["provider"], "ollama-local")
+
+    def test_cli_uses_qwen_as_local_ollama_default_and_allows_model_override(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, output = root / "evidence.json", root / "review.json"
+            source.write_text(json.dumps({"type": "xss", "results": []}))
+            for extra_args, expected_model in (([], DEFAULT_OLLAMA_MODEL), (["--model", "custom:latest"], "custom:latest")):
+                args = cli.build_parser().parse_args(
+                    ["analyze", "evidence", "--input", str(source), "--output", str(output), "--ai", "ollama", *extra_args]
+                )
+                with self.subTest(model=expected_model), patch.object(
+                    cli, "review_with_ollama", return_value={"provider": "ollama-local", "model": expected_model}
+                ) as review:
+                    args.func(args)
+                self.assertEqual(review.call_args.args[1], expected_model)
 
     def test_cli_review_is_offline_without_program_initialization(self):
         with tempfile.TemporaryDirectory() as directory:

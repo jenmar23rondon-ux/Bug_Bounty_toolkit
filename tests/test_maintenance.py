@@ -38,6 +38,7 @@ class MaintenanceTests(unittest.TestCase):
         self.assertEqual(result["network_requests_sent"], 0)
         names = {check["name"] for check in result["checks"]}
         self.assertIn("dependency:PyYAML", names)
+        self.assertIn("tool:ollama", names)
         self.assertIn("skill-source", names)
         self.assertIn("skill-installation", names)
         self.assertIn("configuration", names)
