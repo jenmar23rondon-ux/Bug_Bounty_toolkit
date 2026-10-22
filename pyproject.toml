@@ -57,6 +57,7 @@ files = [
     "bugbounty_toolkit/xss/result_validator.py",
     "bugbounty_toolkit/diagnostics.py",
     "bugbounty_toolkit/analysis/live_review.py",
+    "bugbounty_toolkit/hunt.py",
     "bugbounty_toolkit/apk_scan.py",
     "bugbounty_toolkit/ssrf_check.py",
     "bugbounty_toolkit/csrf_audit.py",

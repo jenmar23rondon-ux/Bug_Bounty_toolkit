@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import threading
 from urllib.parse import urlsplit
 from typing import Any
@@ -43,11 +44,15 @@ class _BrowserRequestBudget:
         expected_origin: tuple[str, str, int | None],
         budget: ExecutionBudget | None,
         rate_limiter: RateLimiter | None,
+        initial_url: str = "",
+        observed_sinks: set[str] | None = None,
     ) -> None:
         self.scope = scope
         self.expected_origin = expected_origin
+        self.initial_url = initial_url
         self.budget = budget
         self.rate_limiter = rate_limiter
+        self.observed_sinks = observed_sinks if observed_sinks is not None else set()
         self.error: Exception | None = None
         self._pending: dict[tuple[str, str, str], list[Any]] = {}
         self._lock = threading.Lock()
@@ -61,6 +66,9 @@ class _BrowserRequestBudget:
         lease = None
         started = False
         try:
+            is_navigation = getattr(request, "is_navigation_request", None)
+            if callable(is_navigation) and is_navigation() and request.url != self.initial_url:
+                self.observed_sinks.add("location")
             if _origin(request.url) != self.expected_origin:
                 route.abort()
                 return
@@ -173,7 +181,42 @@ class PlaywrightExecutionChecker:
         }
         context = self._browser.new_context(extra_http_headers=browser_headers)
         expected_origin = _origin(url)
-        request_budget = _BrowserRequestBudget(self.scope, expected_origin, self.execution_budget, self.rate_limiter)
+        observed_sinks: set[str] = set()
+        request_budget = _BrowserRequestBudget(
+            self.scope,
+            expected_origin,
+            self.execution_budget,
+            self.rate_limiter,
+            url,
+            observed_sinks,
+        )
+        init_script = """(() => {
+              const marker = __BBTK_MARKER__;
+              window.__bbtk_dom_sinks = [];
+              const record = name => {
+                if (!window.__bbtk_dom_sinks.includes(name)) window.__bbtk_dom_sinks.push(name);
+              };
+              const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+              if (descriptor && descriptor.set && descriptor.configurable) {
+                Object.defineProperty(Element.prototype, 'innerHTML', {
+                  configurable: descriptor.configurable,
+                  enumerable: descriptor.enumerable,
+                  get: descriptor.get,
+                  set(value) {
+                    if (String(value).includes(marker)) record('innerHTML');
+                    return descriptor.set.call(this, value);
+                  }
+                });
+              }
+              for (const name of ['write', 'writeln']) {
+                const original = Document.prototype[name];
+                Document.prototype[name] = function(...values) {
+                  if (values.map(String).join('').includes(marker)) record('document.' + name);
+                  return original.apply(this, values);
+                };
+              }
+            })();""".replace("__BBTK_MARKER__", json.dumps(marker))
+        context.add_init_script(init_script)
         context.route("**/*", request_budget.handle)
         page = context.new_page()
         page.on("requestfinished", lambda request: request_budget.finish(request, True))
@@ -217,6 +260,7 @@ class PlaywrightExecutionChecker:
                 marker,
             )
             marker_observed = page.evaluate("marker => window.__bbtk_xss_marker === marker", marker)
+            observed_sinks.update(page.evaluate("() => window.__bbtk_dom_sinks || []"))
             if request_budget.error is not None:
                 raise request_budget.error
             if self.execution_budget is not None:
@@ -226,6 +270,7 @@ class PlaywrightExecutionChecker:
                 "classification": classify_execution(True, bool(marker_observed), alert_observed),
                 "marker_observed": bool(marker_observed),
                 "alert_observed": alert_observed,
+                "dom_sinks": sorted(observed_sinks),
                 "dialogs": dialogs,
                 "console_errors": console_errors,
                 "page_errors": page_errors,

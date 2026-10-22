@@ -13,7 +13,7 @@ from ..requests_engine.parameters import load_parameter_names, with_parameter
 from ..analysis.html_context import analyze_html
 from .reflection_detector import detect_reflection
 from .result_validator import classify_reflection
-from .test_cases import new_marker, payloads_for_marker
+from .test_cases import new_marker, payload_cases_for_marker
 from .playwright_confirm import PlaywrightExecutionChecker, require_playwright_installed
 
 
@@ -54,7 +54,8 @@ class XssParameterTester:
             for route in routes:
                 for parameter in parameters:
                     marker = new_marker()
-                    for payload in payloads_for_marker(marker, include_context=options.confirm_exec):
+                    for payload_case in payload_cases_for_marker(marker, include_context=options.confirm_exec):
+                        payload = payload_case.payload
                         if test_count >= options.max_tests:
                             path = write_evidence_json(evidence_dir, {"type": "xss", "results": results}, prefix="xss")
                             return path, results
@@ -71,6 +72,7 @@ class XssParameterTester:
                                     "method": "GET",
                                     "parameter": parameter,
                                     "payload": payload,
+                                    "payload_context": payload_case.context,
                                     "classification": "error",
                                     "confirmed": False,
                                     "transport_error": True,
@@ -105,6 +107,7 @@ class XssParameterTester:
                             "method": "GET",
                             "parameter": parameter,
                             "payload": payload,
+                            "payload_context": payload_case.context,
                             "status_code": response.status_code,
                             "duration_ms": response.duration_ms,
                             "classification": validation["classification"],
@@ -113,6 +116,7 @@ class XssParameterTester:
                             "reflected": reflection.reflected,
                             "reflected_unescaped": reflection.reflected_unescaped,
                             "reflection_context": redact_text(reflection.context),
+                            "reflection_contexts": context.get("contexts", []),
                             "body_truncated": response.body_truncated,
                             "content_type": media_type,
                             "context_analysis": context,
@@ -164,6 +168,7 @@ class XssParameterTester:
                                     return path, results
                                 result["browser_execution_observed"] = execution["classification"] == "confirmed"
                                 result["execution"] = execution
+                                result["dom_sinks"] = execution.get("dom_sinks", [])
                                 result["classification"] = execution["classification"]
                                 result["confirmed"] = execution["classification"] == "confirmed"
                                 result["reason"] = (

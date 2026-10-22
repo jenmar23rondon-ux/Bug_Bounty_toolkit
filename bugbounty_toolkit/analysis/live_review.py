@@ -43,15 +43,18 @@ def resolve_ai_review_config(
 
 
 def has_review_candidate(evidence: dict[str, Any]) -> bool:
-    if evidence.get("classification") in {"candidate", "possible"}:
-        return True
     topic = evidence.get("type")
+    classification = evidence.get("classification")
+    if classification in {"candidate", "possible"} or (topic == "csrf-audit" and classification == "possible_csrf"):
+        return True
     rows = evidence.get("steps" if topic == "access-control" else "results", [])
     if not isinstance(rows, list):
         return False
     accepted = {"candidate", "possible"}
     if topic in {"cors", "open-redirect"}:
         accepted.add("VULNERABLE")
+    elif topic == "csrf-audit":
+        accepted.add("possible_csrf")
     return any(isinstance(row, dict) and row.get("classification") in accepted for row in rows)
 
 
@@ -65,7 +68,11 @@ def review_evidence_file(path: Path, model: str, timeout: float) -> dict[str, An
     else:
         try:
             packet = review_evidence(evidence)
-            ai_review = {"status": "available", **review_with_ollama(packet, model, timeout)}
+            result = review_with_ollama(packet, model, timeout)
+            ai_review = {"status": "available", **result}
+            assessment = result.get("assessment")
+            if isinstance(assessment, dict) and isinstance(assessment.get("summary"), str):
+                ai_review["reason"] = " ".join(assessment["summary"].split())[:1200]
         except Exception:
             ai_review = "unavailable"
 
@@ -76,11 +83,20 @@ def review_evidence_file(path: Path, model: str, timeout: float) -> dict[str, An
 
 def format_ai_review(ai_review: dict[str, Any] | str, toolkit_verdict: str) -> str:
     if isinstance(ai_review, str):
-        return f"[i] AI review {ai_review}; toolkit verdict remains {toolkit_verdict}."
+        return f"[i] AI second opinion: {ai_review}; toolkit verdict remains {toolkit_verdict}. AI does not confirm findings."
     if ai_review.get("status") == "skipped":
-        return f"[i] AI review skipped (no candidate/possible finding); toolkit verdict: {toolkit_verdict}."
-    assessment = ai_review.get("assessment", {})
+        return f"[i] AI second opinion skipped (no candidate/possible finding); toolkit verdict: {toolkit_verdict}."
+    assessment = ai_review.get("assessment", ai_review)
+    if not isinstance(assessment, dict):
+        assessment = ai_review
     decision = assessment.get("decision") if isinstance(assessment, dict) else None
     if decision not in {"candidate", "not_observed", "inconclusive"}:
         decision = "inconclusive"
-    return f"[i] AI review: {decision}; toolkit verdict: {toolkit_verdict}."
+    reason = assessment.get("summary", assessment.get("reason")) if isinstance(assessment, dict) else None
+    if not isinstance(reason, str) or not reason.strip():
+        reason = "No reason was returned."
+    reason = " ".join(reason.split())[:500]
+    return (
+        f"[i] AI second opinion: {decision} ({reason}); toolkit verdict: {toolkit_verdict}. "
+        "AI does not confirm findings."
+    )

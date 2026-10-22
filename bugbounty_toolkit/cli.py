@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import redirect_stderr, redirect_stdout
 import importlib
+import hashlib
+import io
 import json
 import math
 from dataclasses import asdict
@@ -20,12 +23,13 @@ from .core.settings import load_settings, ExecutorSettings
 from .core.http_client import HttpClient
 from .core.rate_limiter import RateLimiter
 from .core.redaction import redact_url
+from .core.target import load_routes, normalize_url
 from .fuzzing.ffuf_runner import FfufOptions, FfufRunner
 from .requests_engine.replay import RequestReplayer
 from .requests_engine.headers import parse_header_items, parse_cookie_items
-from .requests_engine.parameters import parse_parameter_items
+from .requests_engine.parameters import load_parameter_names, parse_parameter_items, with_parameter
 from .xss.parameter_tester import XssOptions, XssParameterTester
-from .sqli.parameter_tester import SqliOptions, SqliParameterTester
+from .sqli.parameter_tester import SqliOptions, SqliParameterTester, request_group_size
 from .cors_check import CorsChecker, CorsOptions
 from .open_redirect import OpenRedirectOptions, OpenRedirectTester
 from .ssrf_check import SsrfChecker, SsrfOptions
@@ -56,6 +60,17 @@ from .reporting.html_report import render_html_report
 from .reporting.json_report import render_json_report
 from .reporting.review_markdown import render_evidence_review
 from .diagnostics import diagnose
+from .hunt import (
+    HuntTask,
+    MODULE_ORDER,
+    allocate_request_budgets,
+    collect_findings,
+    parse_module_selection,
+    plan_fingerprint,
+    redistribute_unused_budget,
+    render_hunt_html,
+    summarize_module,
+)
 from .utils.exceptions import ToolkitError
 from .utils.logger import setup_logger
 
@@ -106,7 +121,7 @@ def client_for(args: argparse.Namespace, settings: ExecutorSettings, scope: Scop
     return HttpClient(
         scope,
         timeout=args.timeout or settings.timeout,
-        rate_limiter=RateLimiter(args.rate or settings.requests_per_second),
+        rate_limiter=getattr(args, "_rate_limiter", None) or RateLimiter(args.rate or settings.requests_per_second),
         max_response_bytes=settings.max_response_bytes,
         execution_budget=getattr(args, "_execution_budget", None),
     )
@@ -294,7 +309,7 @@ def cmd_xss(args: argparse.Namespace) -> None:
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     routes, parameters = tester.validate(options)
-    variants = 7 if options.confirm_exec else 4
+    variants = 11 if options.confirm_exec else 4
     total = len(routes) * len(parameters) * variants
     if args.dry_run:
         print(
@@ -340,16 +355,28 @@ def cmd_sqli(args: argparse.Namespace) -> None:
     if args.cookie:
         headers["Cookie"] = parse_cookie_items(args.cookie)
     options = SqliOptions(
-        args.routes, args.parameters, args.base_url, args.max_tests or settings.max_tests, headers, args.deep
+        args.routes,
+        args.parameters,
+        args.base_url,
+        args.max_tests or settings.max_tests,
+        headers,
+        args.deep,
+        args.union,
+        args.union_max_columns,
     )
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     tester = SqliParameterTester(scope, client_for(args, settings, scope))
     routes, parameters = tester.validate(options)
     if args.dry_run:
-        group_size = 8 if options.deep else 3
+        group_size = request_group_size(options)
         budget = min(len(routes) * len(parameters) * group_size, options.max_tests // group_size * group_size)
-        mode = "error, timing and boolean probes" if options.deep else "SQLi error probes"
+        modes = ["error probes"]
+        if options.deep:
+            modes.extend(("timing", "boolean"))
+        if options.union:
+            modes.append("ORDER BY/UNION NULL probes")
+        mode = ", ".join(modes)
         print(f"[+] {mode} validated, up to {budget} requests. No requests sent.")
         return
     path, results = tester.run(options, store.paths.evidence_dir / "sqli")
@@ -359,6 +386,8 @@ def cmd_sqli(args: argparse.Namespace) -> None:
         "sqli", str(args.routes), ["sqli", str(args.routes), str(args.parameters)], 1 if failures else 0, path
     )
     mode = "deep" if options.deep else "error-based"
+    if options.union:
+        mode += "+union"
     print(
         f"[+] {len(results)} {mode} SQLi responses, {possible} possible indicators, {failures} errors. No SQLi automatically confirmed."
     )
@@ -403,6 +432,7 @@ def cmd_cors_check(args: argparse.Namespace) -> None:
 
 
 def cmd_ssrf_check(args: argparse.Namespace) -> None:
+    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -441,9 +471,11 @@ def cmd_ssrf_check(args: argparse.Namespace) -> None:
         f"[+] SSRF heuristic: {possible} possible/reflected of {len(result['results'])} probes; "
         f"baseline status {baseline_status}, time {baseline_time}ms; no SSRF automatically confirmed. Evidence: {path}"
     )
+    print_live_ai_review(path, ai_review_config, f"{possible} possible/reflected SSRF indicators")
 
 
 def cmd_csrf_audit(args: argparse.Namespace) -> None:
+    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -478,6 +510,7 @@ def cmd_csrf_audit(args: argparse.Namespace) -> None:
         path,
     )
     print(f"[+] Evidence: {path}")
+    print_live_ai_review(path, ai_review_config, str(classification or "inconclusive"))
 
 
 def cmd_apk_scan(args: argparse.Namespace) -> None:
@@ -599,6 +632,735 @@ def cmd_open_redirect(args: argparse.Namespace) -> None:
     )
     print(f"[+] Open redirect summary: {vulnerable} vulnerable of {len(results)} probes. Evidence: {path}")
     print_live_ai_review(path, ai_review_config, f"{vulnerable} vulnerable of {len(results)} probes")
+
+
+def _hunt_tasks(
+    args: argparse.Namespace, scope: ScopeValidator
+) -> tuple[list[HuntTask], dict[str, dict[str, str]], str]:
+    selected = set(parse_module_selection(args.only, args.skip))
+    base_url = normalize_url(args.base_url)
+    scope.require(base_url)
+    static: dict[str, dict[str, str]] = {}
+    tasks: list[HuntTask] = []
+
+    for module in MODULE_ORDER:
+        if module not in selected:
+            reason = "not selected by --only" if args.only else "excluded by --skip"
+            static[module] = {"status": "skipped", "reason": reason}
+
+    params: list[str] = []
+    params_error: str | None = None
+    if args.params is not None:
+        try:
+            params = load_parameter_names(args.params)
+            if not params:
+                params_error = "parameter file contains no usable parameter names"
+        except (OSError, UnicodeError, ValueError) as exc:
+            params_error = type(exc).__name__
+
+    routes: list[str] = []
+    routes_error: str | None = None
+    if args.routes is not None:
+        try:
+            routes = load_routes(args.routes, base_url=base_url)
+            if not routes:
+                routes_error = "route file contains no usable routes"
+        except (OSError, UnicodeError, ValueError) as exc:
+            routes_error = type(exc).__name__
+
+    if "cors-check" in selected:
+        tasks.append(HuntTask("cors-check", "cors-check", ("cors-check", args.program, "--url", base_url), 4, 4, 4))
+
+    if "ssrf-check" in selected:
+        if bool(args.ssrf_url) != bool(args.ssrf_param):
+            static["ssrf-check"] = {
+                "status": "error",
+                "reason": "--ssrf-url and --ssrf-param must be supplied together",
+            }
+        elif not args.ssrf_url:
+            static["ssrf-check"] = {
+                "status": "skipped",
+                "reason": "SSRF probes require explicit --ssrf-url and --ssrf-param inputs",
+            }
+        else:
+            ssrf_url = normalize_url(args.ssrf_url)
+            scope.require(ssrf_url)
+            tasks.append(
+                HuntTask(
+                    "ssrf-check",
+                    "ssrf-check",
+                    ("ssrf-check", args.program, "--url", ssrf_url, "--param", args.ssrf_param),
+                    6,
+                    6,
+                    6,
+                )
+            )
+
+    if "csrf-audit" in selected:
+        csrf_url = normalize_url(args.csrf_url or base_url)
+        scope.require(csrf_url)
+        tasks.append(HuntTask("csrf-audit", "csrf-audit", ("csrf-audit", args.program, "--url", csrf_url), 1, 1, 1))
+
+    if "open-redirect" in selected:
+        if params_error:
+            static["open-redirect"] = {"status": "error", "reason": params_error}
+        elif args.params is None:
+            static["open-redirect"] = {"status": "skipped", "reason": "--params was not supplied"}
+        elif not params:
+            static["open-redirect"] = {"status": "skipped", "reason": "no usable parameters were supplied"}
+        else:
+            tasks.append(
+                HuntTask(
+                    "open-redirect",
+                    "open-redirect",
+                    ("open-redirect", args.program),
+                    5 * len(params),
+                    5,
+                    5,
+                    tuple(params),
+                )
+            )
+
+    for module in ("xss", "sqli"):
+        if module not in selected:
+            continue
+        if args.routes is None or args.params is None:
+            missing = [flag for flag, value in (("--routes", args.routes), ("--params", args.params)) if value is None]
+            static[module] = {"status": "skipped", "reason": f"required input missing: {', '.join(missing)}"}
+        elif routes_error or params_error:
+            static[module] = {"status": "error", "reason": routes_error or params_error or "invalid input"}
+        elif not routes or not params:
+            static[module] = {"status": "skipped", "reason": "routes and parameters must both contain usable entries"}
+        else:
+            command_parts = [
+                module,
+                args.program,
+                "--routes",
+                str(args.routes),
+                "--parameters",
+                str(args.params),
+                "--base-url",
+                base_url,
+            ]
+            if module == "xss":
+                variants = 11 if args.confirm_exec else 4
+                estimate = len(routes) * len(params) * variants * (2 if args.confirm_exec else 1)
+                minimum = 1
+                quantum = 1
+                if args.confirm_exec:
+                    command_parts.append("--confirm-exec")
+            else:
+                group_size = (8 if args.deep else 3) + (args.union_max_columns + 1 if args.union else 0)
+                estimate = len(routes) * len(params) * group_size
+                minimum = group_size
+                quantum = group_size
+                if args.deep:
+                    command_parts.append("--deep")
+                if args.union:
+                    command_parts.extend(("--union", "--union-max-columns", str(args.union_max_columns)))
+            command = tuple(command_parts)
+            tasks.append(HuntTask(module, module, command, estimate, minimum, quantum))
+
+    if "access-check" in selected:
+        if args.case_file is None:
+            static["access-check"] = {"status": "skipped", "reason": "--case-file was not supplied"}
+        else:
+            tasks.append(
+                HuntTask(
+                    "access-check",
+                    "access-check",
+                    ("access-check", args.program, "--case-file", str(args.case_file)),
+                    3,
+                    3,
+                    3,
+                )
+            )
+
+    return tasks, static, base_url
+
+
+def _hunt_child_argv(
+    task: HuntTask,
+    allocation: int,
+    settings: ExecutorSettings,
+    ai_config: tuple[str, float] | None,
+    dry_run: bool,
+    parameter: str | None = None,
+    base_url: str | None = None,
+) -> list[str]:
+    argv = list(task.argv)
+    if task.module == "open-redirect":
+        if parameter is None or base_url is None:
+            raise ValueError("Open-redirect hunt task requires a parameter and base URL.")
+        argv.extend(("--url", with_parameter(base_url, parameter, ""), "--param", parameter))
+    elif task.module in {"xss", "sqli", "access-check"}:
+        limit = allocation if allocation > 0 else settings.max_tests
+        argv.extend(("--max-tests", str(limit)))
+    if ai_config is not None:
+        argv.extend(("--ai-review", "--ai-model", ai_config[0], "--ai-timeout", str(ai_config[1])))
+    if dry_run:
+        argv.append("--dry-run")
+    return argv
+
+
+def _run_hunt_child(
+    parser: argparse.ArgumentParser,
+    task: HuntTask,
+    allocation: int,
+    settings: ExecutorSettings,
+    ai_config: tuple[str, float] | None,
+    budget: ExecutionBudget,
+    limiter: RateLimiter,
+    dry_run: bool,
+    parameter: str | None = None,
+    base_url: str | None = None,
+) -> None:
+    child = parser.parse_args(_hunt_child_argv(task, allocation, settings, ai_config, dry_run, parameter, base_url))
+    child._execution_budget = budget
+    child._rate_limiter = limiter
+    child.func(child)
+
+
+def _hunt_evidence_dir(store: RecordStore, module: str) -> Path:
+    return (
+        store.paths.evidence_dir
+        / {
+            "cors-check": "cors",
+            "ssrf-check": "ssrf",
+            "csrf-audit": "csrf-audit",
+            "open-redirect": "open-redirect",
+            "xss": "xss",
+            "sqli": "sqli",
+            "access-check": "access-control",
+        }[module]
+    )
+
+
+def _has_rate_limit(evidence_path: Path) -> bool:
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if not isinstance(evidence, dict):
+        return False
+    if evidence.get("stop_reason") == "rate_limited":
+        return True
+    stack: list[object] = [evidence]
+    while stack:
+        current = stack.pop()
+        if isinstance(current, dict):
+            if current.get("status_code") == 429:
+                return True
+            stack.extend(current.values())
+        elif isinstance(current, list):
+            stack.extend(current)
+    return False
+
+
+def _atomic_json(path: Path, value: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.replace(path)
+
+
+def _hunt_report(
+    program: str,
+    base_url: str,
+    max_tests: int,
+    requests_started: int,
+    module_results: list[dict[str, object]],
+    static: dict[str, dict[str, str]],
+    dry_run: bool,
+    cancelled: bool = False,
+) -> dict[str, object]:
+    modules: list[dict[str, object]] = []
+    for module in MODULE_ORDER:
+        rows = [item for item in module_results if item.get("module") == module]
+        if rows:
+            modules.append(summarize_module(module, rows))
+        elif module in static:
+            entry = static[module]
+            modules.append(
+                {
+                    "module": module,
+                    "status": entry["status"],
+                    "toolkit_verdict": entry["status"],
+                    "reason": entry["reason"],
+                    "classification_counts": {},
+                    "requests_attempted": 0,
+                    "inputs_not_tested": 0,
+                    "stop_reasons": [],
+                    "evidence_paths": [],
+                    "ai_reviews": [],
+                }
+            )
+        else:
+            modules.append(
+                {
+                    "module": module,
+                    "status": "skipped",
+                    "toolkit_verdict": "skipped",
+                    "reason": "not selected or no eligible inputs",
+                    "classification_counts": {},
+                    "requests_attempted": 0,
+                    "inputs_not_tested": 0,
+                    "stop_reasons": [],
+                    "evidence_paths": [],
+                    "ai_reviews": [],
+                }
+            )
+    findings = collect_findings(modules)
+    errors = any(module.get("status") == "error" for module in modules)
+    limited = any(module.get("status") == "rate_limited" for module in modules)
+    status = (
+        "cancelled"
+        if cancelled
+        else "validation_errors"
+        if dry_run and errors
+        else "validated"
+        if dry_run
+        else "error"
+        if errors
+        else "completed_with_rate_limits"
+        if limited
+        else "completed"
+    )
+    return {
+        "type": "hunt",
+        "program": program,
+        "base_url": redact_url(base_url),
+        "status": status,
+        "dry_run": dry_run,
+        "budget": {
+            "max_tests": max_tests,
+            "requests_started": requests_started,
+            "remaining": max(0, max_tests - requests_started),
+        },
+        "modules": modules,
+        "findings": findings,
+        "ai_review_note": "Ollama is a local second opinion over minimized evidence; it never confirms a vulnerability.",
+    }
+
+
+def _write_hunt_report(store: RecordStore, report: dict[str, object]) -> tuple[Path, Path]:
+    json_path = write_evidence_json(store.paths.reports_dir, report, prefix="hunt")
+    html_path = render_hunt_html(report, json_path.with_suffix(".html"))
+    report["html_report"] = str(html_path)
+    json_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return_code = 1 if report.get("status") in {"error", "validation_errors"} else 0
+    store.add_run(
+        "hunt",
+        report.get("base_url") if isinstance(report.get("base_url"), str) else None,
+        ["hunt"],
+        return_code,
+        json_path,
+    )
+    return json_path, html_path
+
+
+def _fingerprint_hunt_plan(
+    args: argparse.Namespace,
+    base_url: str,
+    tasks: list[HuntTask],
+    selected: tuple[str, ...],
+    ai_config: tuple[str, float] | None,
+    scope_path: Path,
+    max_tests: int,
+) -> str:
+    def digest(path: Path | None) -> str | None:
+        if path is None:
+            return None
+        try:
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError:
+            return "unreadable"
+
+    payload = {
+        "program": args.program,
+        "base_url": base_url,
+        "modules": selected,
+        "max_tests": max_tests,
+        "run_max_requests": args.run_max_requests,
+        "run_max_seconds": args.run_max_seconds,
+        "run_max_concurrency": args.run_max_concurrency,
+        "ai_review": ai_config,
+        "scope_sha256": digest(scope_path),
+        "routes_sha256": digest(args.routes),
+        "params_sha256": digest(args.params),
+        "case_sha256": digest(args.case_file),
+        "tasks": [
+            {
+                "id": task.task_id,
+                "module": task.module,
+                "argv": task.argv,
+                "parameters": task.parameters,
+                "estimate": task.estimated_requests,
+                "minimum": task.minimum_requests,
+                "quantum": task.request_quantum,
+            }
+            for task in tasks
+        ],
+    }
+    return plan_fingerprint(payload)
+
+
+def _execute_hunt_task(
+    parser: argparse.ArgumentParser,
+    task: HuntTask,
+    allocation: int,
+    settings: ExecutorSettings,
+    ai_config: tuple[str, float] | None,
+    budget: ExecutionBudget,
+    limiter: RateLimiter,
+    store: RecordStore,
+    base_url: str,
+) -> dict[str, object]:
+    before_requests = budget.summary().requests_started
+    evidence_paths: list[Path] = []
+    status = "completed"
+    error_type: str | None = None
+    rate_limited = False
+    inputs_not_tested = 0
+    attempted_parameters = 0
+    parameters = task.parameters
+    if task.module == "open-redirect":
+        count = min(len(parameters), allocation // 5)
+        selected_parameters = parameters[:count]
+    else:
+        selected_parameters = (None,)
+
+    for parameter in selected_parameters:
+        attempted_parameters += 1
+        evidence_dir = _hunt_evidence_dir(store, task.module)
+        before_files = set(evidence_dir.glob("*.json")) if evidence_dir.exists() else set()
+        try:
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                _run_hunt_child(
+                    parser,
+                    task,
+                    allocation,
+                    settings,
+                    ai_config,
+                    budget,
+                    limiter,
+                    False,
+                    parameter=parameter if isinstance(parameter, str) else None,
+                    base_url=base_url,
+                )
+        except KeyboardInterrupt:
+            raise
+        except (Exception, SystemExit) as exc:
+            status = "error"
+            error_type = type(exc).__name__
+            break
+        after_files = set(evidence_dir.glob("*.json")) if evidence_dir.exists() else set()
+        created = sorted(after_files - before_files, key=lambda path: path.stat().st_mtime_ns)
+        if not created:
+            status = "error"
+            error_type = "missing_evidence"
+            break
+        evidence_paths.extend(created)
+        if any(_has_rate_limit(path) for path in created):
+            status = "rate_limited"
+            rate_limited = True
+            break
+
+    if task.module == "open-redirect":
+        inputs_not_tested = max(0, len(parameters) - attempted_parameters)
+    requests_used = max(0, budget.summary().requests_started - before_requests)
+    outcome: dict[str, object] = {
+        "task_id": task.task_id,
+        "module": task.module,
+        "status": status,
+        "requests_started": requests_used,
+        "evidence_paths": [str(path) for path in evidence_paths],
+        "inputs_not_tested": inputs_not_tested,
+    }
+    if error_type:
+        outcome["error_type"] = error_type
+    if rate_limited:
+        outcome["reason"] = "module stopped after HTTP 429; later modules remain eligible"
+    elif inputs_not_tested:
+        outcome["reason"] = f"global budget left {inputs_not_tested} parameter(s) untested"
+    return outcome
+
+
+def cmd_hunt(args: argparse.Namespace) -> None:
+    ai_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    if args.resume and args.dry_run:
+        raise ValueError("--resume cannot be combined with --dry-run.")
+    selected = parse_module_selection(args.only, args.skip)
+    store, settings, scope = executor_context(args, automated=True)
+    try:
+        max_tests = args.max_tests or settings.max_tests
+        if max_tests > settings.max_tests:
+            raise ValueError("--max-tests exceeds the configured program limit.")
+        tasks, static, base_url = _hunt_tasks(args, scope)
+        parser = build_parser()
+        fingerprint = _fingerprint_hunt_plan(
+            args, base_url, tasks, selected, ai_config, store.paths.scope_file, max_tests
+        )
+        progress_path = store.paths.reports_dir / "hunt-progress.json"
+
+        if args.resume:
+            try:
+                state = json.loads(progress_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                raise ValueError("No valid saved hunt progress exists; run without --resume first.") from exc
+            if not isinstance(state, dict) or state.get("fingerprint") != fingerprint:
+                raise ValueError("Saved hunt progress does not match this program, inputs, scope or budget.")
+            prior_requests = state.get("requests_started", 0)
+            task_results = state.get("task_results", [])
+            completed = state.get("completed_tasks", [])
+            if (
+                type(prior_requests) is not int
+                or prior_requests < 0
+                or not isinstance(task_results, list)
+                or not isinstance(completed, list)
+            ):
+                raise ValueError("Saved hunt progress is malformed.")
+            if prior_requests > max_tests:
+                raise ValueError("Saved hunt progress already consumed the complete global request budget.")
+            state = {
+                "fingerprint": fingerprint,
+                "requests_started": prior_requests,
+                "completed_tasks": [item for item in completed if isinstance(item, str)],
+                "task_results": [item for item in task_results if isinstance(item, dict)],
+                "complete": False,
+            }
+        else:
+            prior_requests = 0
+            state = {
+                "fingerprint": fingerprint,
+                "requests_started": 0,
+                "completed_tasks": [],
+                "task_results": [],
+                "complete": False,
+            }
+
+        remaining = max_tests - prior_requests
+        limiter = RateLimiter(settings.requests_per_second)
+        preflight_budget = ExecutionBudget(max_requests=1, max_concurrency=1)
+        preflight_budget.cancel("dry_run_validation_only")
+        args._execution_budget = preflight_budget
+        args._rate_limiter = limiter
+
+        completed_ids = set(state["completed_tasks"])
+        result_by_id = {str(item.get("task_id")): item for item in state["task_results"]}
+        preflight_errors: dict[str, str] = {}
+        for task in tasks:
+            if task.task_id in completed_ids:
+                continue
+            try:
+                parameters = task.parameters or (None,)
+                for parameter in parameters:
+                    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                        _run_hunt_child(
+                            parser,
+                            task,
+                            settings.max_tests,
+                            settings,
+                            ai_config,
+                            preflight_budget,
+                            limiter,
+                            True,
+                            parameter=parameter if isinstance(parameter, str) else None,
+                            base_url=base_url,
+                        )
+            except (Exception, SystemExit) as exc:
+                preflight_errors[task.task_id] = type(exc).__name__
+
+        if args.dry_run:
+            dry_run_cap = min(max_tests, args.run_max_requests or max_tests)
+            allocations = allocate_request_budgets(tasks, dry_run_cap)
+            dry_results: list[dict[str, object]] = []
+            for task in tasks:
+                if task.task_id in preflight_errors:
+                    dry_results.append(
+                        {
+                            "task_id": task.task_id,
+                            "module": task.module,
+                            "status": "error",
+                            "error_type": preflight_errors[task.task_id],
+                            "evidence_paths": [],
+                            "requests_started": 0,
+                        }
+                    )
+                elif allocations[task.task_id]:
+                    dry_results.append(
+                        {
+                            "task_id": task.task_id,
+                            "module": task.module,
+                            "status": "validated",
+                            "evidence_paths": [],
+                            "requests_started": 0,
+                        }
+                    )
+                else:
+                    dry_results.append(
+                        {
+                            "task_id": task.task_id,
+                            "module": task.module,
+                            "status": "skipped",
+                            "reason": "global budget cannot fit the module minimum",
+                            "evidence_paths": [],
+                            "requests_started": 0,
+                        }
+                    )
+            report = _hunt_report(args.program, base_url, max_tests, 0, dry_results, static, True)
+            json_path, html_path = _write_hunt_report(store, report)
+            print("[+] Hunt plan validated. No HTTP requests sent.")
+            print(f"[+] Consolidated JSON: {json_path}")
+            print(f"[+] Consolidated HTML: {html_path}")
+            return
+
+        request_cap = min(remaining, args.run_max_requests or remaining)
+        budget = ExecutionBudget(
+            max_requests=max(1, request_cap),
+            max_seconds=args.run_max_seconds,
+            max_concurrency=1,
+        )
+        args._execution_budget = budget
+
+        for task_id, error_type in preflight_errors.items():
+            if task_id not in completed_ids:
+                error_task = next(task for task in tasks if task.task_id == task_id)
+                result_by_id[task_id] = {
+                    "task_id": task_id,
+                    "module": error_task.module,
+                    "status": "error",
+                    "error_type": error_type,
+                    "requests_started": 0,
+                    "evidence_paths": [],
+                }
+                completed_ids.add(task_id)
+        state["completed_tasks"] = sorted(completed_ids)
+        state["task_results"] = list(result_by_id.values())
+        _atomic_json(progress_path, state)
+
+        pending = [task for task in tasks if task.task_id not in completed_ids]
+        allocations = (
+            allocate_request_budgets(pending, request_cap)
+            if pending and request_cap
+            else {task.task_id: 0 for task in pending}
+        )
+        stop_module: str | None = None
+        for index, task in enumerate(pending):
+            budget_stop = budget.summary().stop_reason
+            if budget_stop:
+                outcome = {
+                    "task_id": task.task_id,
+                    "module": task.module,
+                    "status": "skipped",
+                    "reason": f"shared run budget stopped: {budget_stop}",
+                    "requests_started": 0,
+                    "evidence_paths": [],
+                }
+            elif task.module == stop_module:
+                outcome: dict[str, object] = {
+                    "task_id": task.task_id,
+                    "module": task.module,
+                    "status": "skipped",
+                    "reason": "module stopped after HTTP 429",
+                    "requests_started": 0,
+                    "evidence_paths": [],
+                }
+                quota = allocations.get(task.task_id, 0)
+                _ = redistribute_unused_budget(pending, allocations, index + 1, quota)
+            else:
+                quota = allocations.get(task.task_id, 0)
+                if quota <= 0:
+                    outcome = {
+                        "task_id": task.task_id,
+                        "module": task.module,
+                        "status": "skipped",
+                        "reason": "global request budget exhausted or below the module minimum",
+                        "requests_started": 0,
+                        "evidence_paths": [],
+                    }
+                else:
+                    before = budget.summary().requests_started
+                    try:
+                        outcome = _execute_hunt_task(
+                            parser, task, quota, settings, ai_config, budget, limiter, store, base_url
+                        )
+                    except KeyboardInterrupt:
+                        used = max(0, budget.summary().requests_started - before)
+                        state["requests_started"] = int(state["requests_started"]) + used
+                        result_by_id[task.task_id] = {
+                            "task_id": task.task_id,
+                            "module": task.module,
+                            "status": "cancelled",
+                            "reason": "cancelled by user; resume restarts this module within the remaining budget",
+                            "requests_started": used,
+                            "evidence_paths": [],
+                        }
+                        state["task_results"] = list(result_by_id.values())
+                        state["completed_tasks"] = sorted(completed_ids)
+                        _atomic_json(progress_path, state)
+                        budget.cancel("cancelled_by_user")
+                        report = _hunt_report(
+                            args.program,
+                            base_url,
+                            max_tests,
+                            int(state["requests_started"]),
+                            list(result_by_id.values()),
+                            static,
+                            False,
+                            cancelled=True,
+                        )
+                        json_path, html_path = _write_hunt_report(store, report)
+                        print("[!] Hunt cancelled. Progress is saved; use --resume with the same inputs to continue.")
+                        print(f"[+] Consolidated JSON: {json_path}")
+                        print(f"[+] Consolidated HTML: {html_path}")
+                        return
+                    except (Exception, SystemExit) as exc:
+                        outcome = {
+                            "task_id": task.task_id,
+                            "module": task.module,
+                            "status": "error",
+                            "error_type": type(exc).__name__,
+                            "reason": f"module failed: {type(exc).__name__}",
+                            "requests_started": max(0, budget.summary().requests_started - before),
+                            "evidence_paths": [],
+                        }
+                    used = int(outcome.get("requests_started", 0))
+                    unused = max(0, quota - used)
+                    _ = redistribute_unused_budget(pending, allocations, index + 1, unused)
+                    if outcome.get("status") == "rate_limited":
+                        stop_module = task.module
+            state["requests_started"] = int(state["requests_started"]) + int(outcome.get("requests_started", 0))
+            result_by_id[task.task_id] = outcome
+            completed_ids.add(task.task_id)
+            state["completed_tasks"] = sorted(completed_ids)
+            state["task_results"] = list(result_by_id.values())
+            _atomic_json(progress_path, state)
+
+        all_results = list(result_by_id.values())
+        report = _hunt_report(
+            args.program, base_url, max_tests, int(state["requests_started"]), all_results, static, False
+        )
+        state["complete"] = True
+        _atomic_json(progress_path, state)
+        json_path, html_path = _write_hunt_report(store, report)
+        for module in report["modules"]:
+            print(
+                f"[+] {module['module']}: status={module['status']}; toolkit={module['toolkit_verdict']}; "
+                f"requests={module['requests_attempted']}"
+            )
+            for review in module.get("ai_reviews", []):
+                print(format_ai_review(review, str(module["toolkit_verdict"])))
+        for finding in report["findings"]:
+            print(
+                f"[!] {finding['severity']} {finding['type']}: {finding['classification']} "
+                f"parameter={finding.get('parameter') or '-'} status={finding.get('status_code') or '-'}"
+            )
+        print(f"[+] Global budget: {report['budget']['requests_started']}/{max_tests} requests.")
+        print(f"[+] Consolidated JSON: {json_path}")
+        print(f"[+] Consolidated HTML: {html_path}")
+    finally:
+        store.close()
 
 
 def cmd_access_check(args: argparse.Namespace) -> None:
@@ -1082,6 +1844,17 @@ def build_parser() -> argparse.ArgumentParser:
     sqli.add_argument(
         "--deep", action="store_true", help="Add three delay and two boolean probes per complete parameter group"
     )
+    sqli.add_argument(
+        "--union",
+        action="store_true",
+        help="Opt in to bounded ORDER BY column-count and one UNION SELECT NULL comparison",
+    )
+    sqli.add_argument(
+        "--union-max-columns",
+        type=positive_int,
+        default=5,
+        help="Maximum ORDER BY positions to test with --union (1-8; default: 5)",
+    )
     sqli.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(sqli)
     add_ai_review_arguments(sqli)
@@ -1109,6 +1882,7 @@ def build_parser() -> argparse.ArgumentParser:
     ssrf.add_argument("--rate", type=positive_float)
     ssrf.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(ssrf)
+    add_ai_review_arguments(ssrf)
     ssrf.set_defaults(func=cmd_ssrf_check)
 
     redirect = sub.add_parser("open-redirect", help="Check a supplied in-scope URL parameter for external redirects")
@@ -1124,6 +1898,35 @@ def build_parser() -> argparse.ArgumentParser:
     add_ai_review_arguments(redirect)
     redirect.set_defaults(func=cmd_open_redirect)
 
+    hunt = sub.add_parser(
+        "hunt",
+        help="Run a scoped, sequential multi-check workflow under one shared request budget",
+    )
+    hunt.add_argument("program")
+    hunt.add_argument("--base-url", required=True)
+    hunt.add_argument("--routes", type=Path, help="User-supplied route list used by XSS and SQLi")
+    hunt.add_argument("--params", type=Path, help="User-supplied parameter names for redirects, XSS and SQLi")
+    hunt.add_argument("--case-file", type=Path, help="Known-resource access comparison case")
+    hunt.add_argument("--csrf-url", help="Form URL to audit; defaults to --base-url")
+    hunt.add_argument("--ssrf-url", help="Explicit URL with a user-controlled parameter for SSRF comparison")
+    hunt.add_argument("--ssrf-param", help="Parameter name paired with --ssrf-url; SSRF is otherwise skipped")
+    hunt.add_argument(
+        "--confirm-exec",
+        action="store_true",
+        help="Use Playwright for possible XSS reflections and include context-specific probes",
+    )
+    hunt.add_argument("--deep", action="store_true", help="Enable SQLi timing and boolean probes")
+    hunt.add_argument("--union", action="store_true", help="Enable bounded SQLi ORDER BY/UNION NULL probes")
+    hunt.add_argument("--union-max-columns", type=positive_int, default=5)
+    hunt.add_argument("--max-tests", type=positive_int, help="Global target-request cap (default: program setting)")
+    hunt.add_argument("--only", help="Comma-separated modules to run")
+    hunt.add_argument("--skip", help="Comma-separated modules to omit")
+    hunt.add_argument("--dry-run", action="store_true", help="Validate the complete plan without HTTP requests")
+    hunt.add_argument("--resume", action="store_true", help="Resume a saved run with identical inputs and scope")
+    add_run_budget_arguments(hunt)
+    add_ai_review_arguments(hunt)
+    hunt.set_defaults(func=cmd_hunt)
+
     csrf = sub.add_parser("csrf-audit", help="Heuristically inspect one in-scope HTML response for CSRF defenses")
     csrf.add_argument("program")
     csrf.add_argument("--url", required=True)
@@ -1133,6 +1936,7 @@ def build_parser() -> argparse.ArgumentParser:
     csrf.add_argument("--rate", type=positive_float)
     csrf.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(csrf)
+    add_ai_review_arguments(csrf)
     csrf.set_defaults(func=cmd_csrf_audit)
 
     apk_scan = sub.add_parser(

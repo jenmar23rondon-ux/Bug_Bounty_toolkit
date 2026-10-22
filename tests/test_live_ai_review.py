@@ -58,6 +58,7 @@ class LiveAiReviewTests(unittest.TestCase):
             self.assertEqual(packet["type"], "agent-review")
             self.assertEqual(saved["status"], "available")
             self.assertEqual(saved["assessment"], assessment)
+            self.assertEqual(saved["reason"], assessment["summary"])
             evidence = json.loads(path.read_text(encoding="utf-8"))
             self.assertEqual(evidence["ai_review"], saved)
 
@@ -83,6 +84,31 @@ class LiveAiReviewTests(unittest.TestCase):
             self.assertEqual(result, "unavailable")
             self.assertEqual(json.loads(path.read_text())["ai_review"], "unavailable")
 
+    def test_possible_csrf_is_sent_as_minimized_ai_review_candidate(self):
+        evidence = {
+            "type": "csrf-audit",
+            "classification": "possible_csrf",
+            "url": "https://private.example/form?session=secret",
+            "forms": [{"method": "post", "hidden_token_present": False}],
+            "cookies": [{"samesite": "lax", "secure": True, "httponly": True}],
+            "confirmed": False,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "csrf.json"
+            path.write_text(json.dumps(evidence), encoding="utf-8")
+            with patch(
+                "bugbounty_toolkit.analysis.live_review.review_with_ollama",
+                return_value={
+                    "assessment": {"decision": "candidate", "summary": "Review the form defense."},
+                    "provider": "ollama-local",
+                },
+            ) as review:
+                result = review_evidence_file(path, DEFAULT_OLLAMA_MODEL, DEFAULT_AI_REVIEW_TIMEOUT)
+            serialized = json.dumps(review.call_args.args[0])
+            self.assertNotIn("private.example", serialized)
+            self.assertNotIn("secret", serialized)
+            self.assertEqual(result["status"], "available")
+
     def test_configuration_defaults_and_requires_opt_in(self):
         self.assertEqual(
             resolve_ai_review_config(True, None, None),
@@ -102,6 +128,9 @@ class LiveAiReviewTests(unittest.TestCase):
             ["cors-check", "prog", "--url", "https://target.example/"],
             ["open-redirect", "prog", "--url", "https://target.example/?next=x", "--param", "next"],
             ["access-check", "prog", "--case-file", "case.json"],
+            ["ssrf-check", "prog", "--url", "https://target.example/?url=x", "--param", "url"],
+            ["csrf-audit", "prog", "--url", "https://target.example/form"],
+            ["hunt", "prog", "--base-url", "https://target.example/"],
         )
         for command in cases:
             with self.subTest(command=command[0]):
@@ -112,12 +141,28 @@ class LiveAiReviewTests(unittest.TestCase):
 
     def test_output_keeps_toolkit_verdict_separate_from_ai_assessment(self):
         line = format_ai_review(
-            {"status": "available", "assessment": {"decision": "not_observed"}},
+            {
+                "status": "available",
+                "assessment": {"decision": "not_observed", "summary": "No signal in the minimized evidence."},
+            },
             "possible SQLi indicators",
         )
-        self.assertIn("AI review: not_observed", line)
+        self.assertIn("AI second opinion: not_observed", line)
+        self.assertIn("No signal in the minimized evidence.", line)
         self.assertIn("toolkit verdict: possible SQLi indicators", line)
-        self.assertIn("AI review unavailable", format_ai_review("unavailable", "candidate"))
+        self.assertIn("does not confirm findings", line)
+        flattened = format_ai_review(
+            {
+                "status": "available",
+                "decision": "candidate",
+                "reason": "The A/B comparison differs.",
+                "not_confirmation": True,
+            },
+            "possible",
+        )
+        self.assertIn("AI second opinion: candidate", flattened)
+        self.assertIn("The A/B comparison differs.", flattened)
+        self.assertIn("AI second opinion: unavailable", format_ai_review("unavailable", "candidate"))
 
 
 if __name__ == "__main__":
