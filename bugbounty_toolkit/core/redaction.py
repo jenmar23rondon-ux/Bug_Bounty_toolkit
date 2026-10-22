@@ -9,6 +9,38 @@ SENSITIVE_KEY = re.compile(
     r"password|passwd|passphrase|secret|token|api.?key|authorization|cookie|session|csrf|credential", re.I
 )
 REDACTED = "[redacted]"
+JWT_TOKEN = re.compile(r"(?<![A-Za-z0-9_-])eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*(?![A-Za-z0-9_-])")
+HTML_INPUT = re.compile(r"<input\b[^>]*>", re.I)
+HTML_ATTRIBUTE = re.compile(r"\b([\w:-]+)\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s>]+))", re.I)
+HTML_VALUE = re.compile(r"\bvalue\s*=\s*(?:\"[^\"]*\"|'[^']*'|[^\s>]+)", re.I)
+
+
+def redact_jwts(value: str) -> str:
+    """Replace compact JWT-like values before storing or sending imported text for review."""
+    return JWT_TOKEN.sub(REDACTED, value)
+
+
+def redact_html_secrets(value: str, redact_all_hidden: bool = False) -> str:
+    """Redact values in HTML inputs whose name/id or type indicates a secret."""
+
+    def replace_input(match: re.Match[str]) -> str:
+        tag = match.group(0)
+        attributes: dict[str, str] = {}
+        for attribute in HTML_ATTRIBUTE.finditer(tag):
+            attribute_name = attribute.group(1).lower()
+            attribute_value = next((part for part in attribute.groups()[1:] if part is not None), "")
+            attributes[attribute_name] = attribute_value
+        field_name = f"{attributes.get('name', '')} {attributes.get('id', '')}"
+        is_hidden = attributes.get("type", "").lower() == "hidden"
+        if (
+            attributes.get("type", "").lower() != "password"
+            and not SENSITIVE_KEY.search(field_name)
+            and not (redact_all_hidden and is_hidden)
+        ):
+            return tag
+        return HTML_VALUE.sub('value="[redacted]"', tag)
+
+    return HTML_INPUT.sub(replace_input, redact_jwts(value))
 
 
 def redact_headers(headers: dict[str, str]) -> dict[str, str]:

@@ -83,6 +83,9 @@ files = [
     "bugbounty_toolkit/csrf_audit.py",
     "bugbounty_toolkit/jwt_forge.py",
     "bugbounty_toolkit/takeover_check.py",
+    "bugbounty_toolkit/burp_import.py",
+    "bugbounty_toolkit/analysis/ollama_review.py",
+    "bugbounty_toolkit/analysis/artifact_review.py",
 ]
 
 [tool.coverage.run]

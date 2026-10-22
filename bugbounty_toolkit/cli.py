@@ -46,7 +46,13 @@ from .access_control.range_checker import AccessRangeOptions, AccessRangeTester,
 from .access_control.write_lab import AccessWriteLabTester
 from .access_control.write_range import AccessWriteRangeTester
 from .access_control.guards import is_loopback_url
-from .analysis.ollama_review import DEFAULT_OLLAMA_MODEL, review_with_ollama
+from .analysis.ollama_review import DEFAULT_OLLAMA_MODEL, review_with_ollama, validate_ollama_config
+from .analysis.artifact_review import (
+    SECOND_OPINION,
+    generate_ai_report,
+    review_artifact,
+    review_evidence_with_ollama,
+)
 from .analysis.live_review import (
     add_ai_review_arguments,
     format_ai_review,
@@ -59,6 +65,16 @@ from .reporting.evidence import write_evidence_json
 from .reporting.html_report import render_html_report
 from .reporting.json_report import render_json_report
 from .reporting.review_markdown import render_evidence_review
+from .burp_import import (
+    MAX_ITEM_BYTES,
+    MAX_REQUEST_BYTES,
+    MAX_SITEMAP_BYTES,
+    extract_item_artifacts,
+    normalize_raw_request,
+    parse_sitemap,
+    read_bounded as read_burp_file,
+    safe_artifact_name,
+)
 from .diagnostics import diagnose
 from .hunt import (
     HuntTask,
@@ -1648,8 +1664,118 @@ def cmd_add_finding(args: argparse.Namespace) -> None:
     print(f"[+] Finding saved: {args.finding_id}")
 
 
+def cmd_import_burp(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    input_root = paths.program_dir / "inputs"
+    output_files: dict[Path, str] = {}
+    summary: list[str] = []
+
+    if args.base_url and not (args.sitemap or args.request):
+        raise ValueError("--base-url is supported only with --sitemap or --request.")
+    if args.sitemap:
+        parsed = parse_sitemap(read_burp_file(args.sitemap, MAX_SITEMAP_BYTES, "Burp sitemap"), args.base_url)
+        output_files[Path("routes.txt")] = "".join(f"{route}\n" for route in parsed.routes)
+        output_files[Path("parameters.txt")] = "".join(f"{name}\n" for name in parsed.parameters)
+        summary.append(
+            f"{len(parsed.routes)} unique routes, {len(parsed.parameters)} unique parameters, "
+            f"{parsed.ignored_static} static items ignored, {parsed.ignored_items} malformed items skipped"
+        )
+    elif args.request:
+        raw = read_burp_file(args.request, MAX_REQUEST_BYTES, "Burp request")
+        normalized = normalize_raw_request(raw, args.base_url)
+        output_files[Path("requests") / f"{safe_artifact_name(args.request)}.txt"] = normalized
+        summary.append("one normalized raw HTTP request; sensitive headers and body values redacted")
+    else:
+        item = extract_item_artifacts(read_burp_file(args.item, MAX_ITEM_BYTES, "Burp item"))
+        stem = safe_artifact_name(args.item)
+        if item.html is not None:
+            output_files[Path("burp") / f"{stem}-response.html"] = item.html
+        for index, token in enumerate(item.jwts, start=1):
+            output_files[Path("burp") / "private" / f"{stem}-jwt-{index:02d}.txt"] = token + "\n"
+        summary.append(f"HTML response: {'yes' if item.html is not None else 'no'}; JWTs extracted: {len(item.jwts)}")
+
+    destinations = {input_root / relative: content for relative, content in output_files.items()}
+    conflicts = [path for path in destinations if path.exists()]
+    if args.dry_run:
+        print(f"[i] Burp import dry-run for {args.program}; no files changed and no network requests sent.")
+        for path in destinations:
+            state = (
+                "would replace"
+                if path in conflicts and args.force
+                else "already exists (use --force)"
+                if path in conflicts
+                else "would create"
+            )
+            print(f"[dry-run] {state}: {path}")
+        if summary:
+            print(f"[+] Import plan: {'; '.join(summary)}")
+        if any(path in conflicts for path in destinations) and not args.force:
+            print("[!] Existing files will be left untouched; pass --force to replace them.")
+        return
+    if conflicts and not args.force:
+        joined = ", ".join(str(path) for path in conflicts)
+        raise ValueError(f"Import would overwrite existing file(s): {joined}. Pass --force to replace them.")
+    for path, content in destinations.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if args.force:
+            path.write_text(content, encoding="utf-8", newline="")
+        else:
+            with path.open("x", encoding="utf-8", newline="") as handle:
+                handle.write(content)
+        print(f"[+] Imported: {path}")
+    print(f"[+] Burp import complete: {'; '.join(summary)}. No network requests sent.")
+    if args.item and any("/private/" in str(path).replace("\\", "/") for path in destinations):
+        print("[!] Extracted JWT files contain sensitive credentials; keep them local and never commit them.")
+
+
+def cmd_ai_review(args: argparse.Namespace) -> None:
+    ProgramPaths(RECORDS_ROOT, args.program)
+    validate_ollama_config(args.model, args.ai_timeout)
+    if args.evidence_file:
+        if args.kind is not None:
+            raise ValueError("--kind is only valid with --artifact.")
+        try:
+            data = json.loads(bounded_text(args.evidence_file, 2_000_000))
+        except json.JSONDecodeError as exc:
+            raise ValueError("Evidence file must contain valid JSON.") from exc
+        if not isinstance(data, dict):
+            raise ValueError("Evidence file must contain a JSON object.")
+        packet = review_evidence(data)
+        if args.dry_run:
+            result = {
+                "type": "ai-evidence-review",
+                "status": "dry_run",
+                "decision": "inconclusive",
+                "reason": "Evidence minimized locally; Ollama was not contacted.",
+                "notice": SECOND_OPINION,
+                "model": args.model,
+                "raw_evidence_sent": False,
+                "minimized_packet": packet,
+            }
+        else:
+            result = review_evidence_with_ollama(data, args.model, args.ai_timeout)
+    else:
+        if args.kind is None:
+            raise ValueError("--kind is required with --artifact (html, request or response).")
+        result = review_artifact(
+            args.artifact,
+            args.kind,
+            args.model,
+            args.ai_timeout,
+            args.chunk_chars,
+            args.max_chunks,
+            args.dry_run,
+        )
+    print(f"[i] {SECOND_OPINION}")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
 def cmd_report(args: argparse.Namespace) -> None:
     store = store_for(args.program)
+    if args.draft_with_ai and not args.evidence_file:
+        raise ValueError("--draft-with-ai requires --evidence-file.")
+    if not args.draft_with_ai and (args.ai_model is not None or args.ai_timeout is not None):
+        raise ValueError("--ai-model and --ai-timeout require --draft-with-ai.")
     if args.evidence_file:
         if args.finding_id:
             raise ValueError("--evidence-file cannot be combined with --finding-id.")
@@ -1663,6 +1789,19 @@ def cmd_report(args: argparse.Namespace) -> None:
             raise ValueError("Evidence file must contain a JSON object.")
         destination = args.output or store.paths.reports_dir / f"evidence-review-{args.evidence_file.stem}.md"
         output = render_evidence_review(data, destination)
+        if args.draft_with_ai:
+            model = args.ai_model or DEFAULT_OLLAMA_MODEL
+            timeout = args.ai_timeout or 120.0
+            try:
+                draft = generate_ai_report(data, model, timeout)
+            except (OSError, RuntimeError, ValueError):
+                fallback = "> Ollama unavailable or returned an unusable draft. Deterministic template only; no AI confirmation.\n\n"
+                output.write_text(fallback + output.read_text(encoding="utf-8"), encoding="utf-8")
+                print(f"[!] Ollama draft unavailable; deterministic draft used: {output}. Nothing was submitted.")
+                return
+            output.write_text(draft, encoding="utf-8")
+            print(f"[+] AI-assisted Markdown draft created: {output}. {SECOND_OPINION} Nothing was submitted.")
+            return
         print(f"[+] Review draft created: {output}. Nothing was submitted.")
         return
     if args.output:
@@ -2133,7 +2272,46 @@ def build_parser() -> argparse.ArgumentParser:
         "--evidence-file", type=Path, help="Create a redacted Markdown review draft from native JSON evidence"
     )
     report.add_argument("--output", type=Path, help="Optional destination for an evidence review draft")
+    report.add_argument(
+        "--draft-with-ai", action="store_true", help="Ask local Ollama for an optional evidence-based Markdown draft"
+    )
+    report.add_argument("--ai-model", help=f"Local Ollama model for --draft-with-ai (default: {DEFAULT_OLLAMA_MODEL})")
+    report.add_argument("--ai-timeout", type=positive_float, help="Local Ollama timeout in seconds (default: 120)")
     report.set_defaults(func=cmd_report)
+
+    import_parser = sub.add_parser("import", help="Import supported local artifacts into one program's inputs")
+    import_sub = import_parser.add_subparsers(required=True)
+    burp_import = import_sub.add_parser(
+        "burp", help="Import Burp sitemap XML, raw requests or saved HTTP items; never sends requests"
+    )
+    burp_import.add_argument("program")
+    burp_source = burp_import.add_mutually_exclusive_group(required=True)
+    burp_source.add_argument("--sitemap", type=Path, help="Burp XML sitemap export")
+    burp_source.add_argument("--request", type=Path, help="Raw HTTP request exported from Burp")
+    burp_source.add_argument("--item", type=Path, help="Saved Burp item XML or raw HTTP response")
+    burp_import.add_argument("--base-url", help="Relativize same-origin sitemap URLs or resolve request targets")
+    burp_import.add_argument("--dry-run", action="store_true", help="List planned local files without writing")
+    burp_import.add_argument("--force", action="store_true", help="Replace existing imported files")
+    burp_import.set_defaults(func=cmd_import_burp)
+
+    ai_review = sub.add_parser(
+        "ai-review", help="Ask local Ollama for a second opinion on minimized evidence or a redacted artifact"
+    )
+    ai_review.add_argument("program")
+    ai_source = ai_review.add_mutually_exclusive_group(required=True)
+    ai_source.add_argument("--evidence-file", type=Path, help="Native JSON evidence, minimized before Ollama sees it")
+    ai_source.add_argument("--artifact", type=Path, help="Local HTML or raw HTTP request/response text")
+    ai_review.add_argument("--kind", choices=("html", "request", "response"), help="Required with --artifact")
+    ai_review.add_argument(
+        "--ai-model", "--model", dest="model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model"
+    )
+    ai_review.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
+    ai_review.add_argument("--chunk-chars", type=positive_int, default=6000, help="Artifact chunk size (default: 6000)")
+    ai_review.add_argument("--max-chunks", type=positive_int, default=20, help="Maximum artifact chunks (default: 20)")
+    ai_review.add_argument(
+        "--dry-run", action="store_true", help="Validate and minimize locally without contacting Ollama"
+    )
+    ai_review.set_defaults(func=cmd_ai_review)
 
     doctor = sub.add_parser("doctor", help="Offline checks for dependencies, skills and local configuration")
     doctor.add_argument("--program", help="Optionally validate one initialized program")
