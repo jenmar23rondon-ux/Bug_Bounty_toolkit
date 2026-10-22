@@ -48,6 +48,7 @@ class ResponseRecord:
     body_text: str
     body_size: int
     body_truncated: bool = False
+    set_cookies: tuple[str, ...] = ()
 
     def to_dict(self, body_limit: int = 8000) -> dict[str, object]:
         body = self.request.body_bytes()
@@ -192,4 +193,5 @@ class HttpClient:
             body_text=body_text,
             body_size=len(body),
             body_truncated=truncated,
+            set_cookies=tuple(headers.get_all("Set-Cookie", [])),
         )

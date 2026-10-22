@@ -17,6 +17,10 @@ SKILL_NAMES = (
     "bugbounty-access-control",
     "bugbounty-cors",
     "bugbounty-open-redirect",
+    "bugbounty-ssrf",
+    "bugbounty-csrf",
+    "bugbounty-apk-analysis",
+    "bugbounty-takeover",
 )
 
 
@@ -66,9 +70,13 @@ def install_skills(source: Path, destination: Path, *, execute: bool = False, up
             if changed:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(item, target)
-    return {"skills": list(SKILL_NAMES), "destination": str(destination),
-            "files_changed": sum(changed for _, _, changed in copies),
-            "executed": execute, "network_requests_sent": 0}
+    return {
+        "skills": list(SKILL_NAMES),
+        "destination": str(destination),
+        "files_changed": sum(changed for _, _, changed in copies),
+        "executed": execute,
+        "network_requests_sent": 0,
+    }
 
 
 def main() -> None:
@@ -76,12 +84,24 @@ def main() -> None:
     home = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex")))
     parser.add_argument("--destination", type=Path, default=home / "skills")
     parser.add_argument("--execute", action="store_true", help="Install files; default only previews")
-    parser.add_argument("--update", action="store_true", help="Replace differing managed files; leave unrelated files intact")
+    parser.add_argument(
+        "--update", action="store_true", help="Replace differing managed files; leave unrelated files intact"
+    )
     args = parser.parse_args()
     try:
         import json
-        print(json.dumps(install_skills(Path(__file__).resolve().parents[1] / "skills", args.destination,
-                                       execute=args.execute, update=args.update), indent=2))
+
+        print(
+            json.dumps(
+                install_skills(
+                    Path(__file__).resolve().parents[1] / "skills",
+                    args.destination,
+                    execute=args.execute,
+                    update=args.update,
+                ),
+                indent=2,
+            )
+        )
     except (OSError, ValueError) as exc:
         parser.exit(1, f"Error: {exc}\n")
 

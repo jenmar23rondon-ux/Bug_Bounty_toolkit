@@ -28,11 +28,15 @@ class _NoRedirect(HTTPRedirectHandler):
         return None
 
 
-def review_with_ollama(packet: dict, model: str, timeout: float = 120.0) -> dict:
+def validate_ollama_config(model: str, timeout: float) -> None:
     if not isinstance(model, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}", model):
         raise ValueError("Select a local Ollama model name without URL or header data.")
     if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or not 1 <= timeout <= 300:
         raise ValueError("Ollama timeout must be between 1 and 300 seconds.")
+
+
+def review_with_ollama(packet: dict, model: str, timeout: float = 120.0) -> dict:
+    validate_ollama_config(model, timeout)
     if not isinstance(packet, dict) or packet.get("type") != "agent-review":
         raise ValueError("Ollama review accepts only a minimized agent-review packet.")
     payload = {

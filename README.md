@@ -1,6 +1,6 @@
 # Bug Bounty Toolkit
 
-An authorized testing CLI that executes the targets, routes and parameters **you supply**. The toolkit supports bounded HTTP/Burp replay, ffuf, XSS and SQLi checks, CORS and open-redirect checks, access-control comparisons, and JSON/HTML evidence reports.
+An authorized testing CLI that executes the targets, routes and parameters **you supply**. The toolkit supports bounded HTTP/Burp replay, ffuf, XSS, SQLi and heuristic SSRF/CSRF checks, CORS and open-redirect checks, passive CNAME takeover candidates, access-control comparisons, and JSON/HTML evidence reports.
 
 Both `bbtk` and `bugbounty` run the same CLI. No AI API or API key is required. Reconnaissance is optional; your existing route discovery workflow can feed `inputs/routes.txt` and `inputs/parameters.txt` directly.
 
@@ -21,30 +21,39 @@ On Windows, activate with `.venv\Scripts\Activate.ps1`. Install [ffuf](https://g
 ### Optional Security Integrations
 
 ```bash
-python -m pip install -e ".[xss,sqli,jwt]"
+python -m pip install -e ".[csrf,xss,sqli,jwt]"
+# Optional dependency for takeover-check --resolve-dns; captured-CNAME matching is offline:
+python -m pip install -e ".[takeover]"
 # Or all Python profiles, including HTTP clients and database drivers:
 python -m pip install -e ".[all]"
 bugbounty resources
 ```
 
-The base install stays small. Extras provide Beautiful Soup/lxml/html5lib/Playwright, sqlparse, PyJWT/python-jose/cryptography/jwcrypto, requests/aiohttp/httpx and optional database drivers. The `dev` extra adds Ruff, mypy, coverage.py, Hypothesis and the package builder for CI. `--confirm-exec` needs the optional `xss` extra plus `python -m playwright install chromium`; browser confirmation remains off by default. External scanners, payload repositories and Burp extensions remain separate. The [security tools reference](skills/bugbounty-executor/references/security-tools.md) explains installation profiles and external-plan limitations. Each topic skill has its own focused tool references.
+The base install stays small. The `csrf` extra adds Beautiful Soup for the HTML parser; `xss` adds Beautiful Soup/lxml/html5lib/Playwright, `takeover` adds dnspython for explicit DNS lookups, while other extras provide sqlparse, PyJWT/python-jose/cryptography/jwcrypto, requests/aiohttp/httpx and optional database drivers. Offline CNAME signature matching needs no DNS dependency. The `dev` extra adds Ruff, mypy, coverage.py, Hypothesis and the package builder for CI. `--confirm-exec` needs the optional `xss` extra plus `python -m playwright install chromium`; browser confirmation remains off by default. External scanners, payload repositories and Burp extensions remain separate. The [security tools reference](skills/bugbounty-executor/references/security-tools.md) explains installation profiles and external-plan limitations. Each topic skill has its own focused tool references.
 
 `bbtk doctor` checks Python, required/optional dependencies, the repository and installed skill family, local settings, and (with `--program`) saved scope/authorization metadata. It is read-only and sends no HTTP. Use `bbtk doctor --json` for automation. Optional modules and ffuf are reported as warnings when absent; the command never installs anything.
 
 ```bash
 bugbounty analyze html --input registros/my-program/page.html --marker BBTK_MARKER --parser html5lib
 bugbounty analyze jwt --input registros/my-program/token.private.txt
+bugbounty jwt-forge --input registros/my-program/token.private.txt --output registros/my-program/private/jwt-candidates.json
+bugbounty takeover-check my-program --host docs.example.com --cname docs-project.github.io
+bugbounty takeover-check my-program --host docs.example.com --resolve-dns --dry-run
 bugbounty analyze sql --input registros/my-program/own-query.sql
 bugbounty sqli my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --rate 0.1 --max-tests 6 --dry-run
 bugbounty sqli my-program --routes inputs/routes.txt --parameters inputs/parameters.txt --deep --max-tests 8 --dry-run
 bugbounty cors-check my-program --url "https://target-autorizado.example/account" --dry-run
+bugbounty ssrf-check my-program --url "https://target-autorizado.example/fetch?url=https%3A%2F%2Fexample.org" --param url --dry-run
+bugbounty csrf-audit my-program --url "https://target-autorizado.example/account" --dry-run
+bugbounty apk-scan my-program --apk "inputs/app.apk" --dry-run
+bugbounty apk-scan my-program --apk "inputs/app.apk" --ai-review
 bugbounty open-redirect my-program --url "https://target-autorizado.example/login?next=%2Fhome" --param next --dry-run
 bugbounty tool-plan my-program --tool sqlmap --url "http://localhost:3000/search?q=1" --parameter q --dry-run
 ```
 
 ## Shared Run Budget
 
-Native HTTP commands (`request`, `xss`, `sqli`, `cors-check`, `open-redirect`, and `access-check`) accept a shared per-invocation budget:
+Native HTTP commands (`request`, `xss`, `sqli`, `cors-check`, `ssrf-check`, `csrf-audit`, `open-redirect`, and `access-check`) accept a shared per-invocation budget:
 
 ```bash
 bbtk request my-program --url "https://target-autorizado.example/health" --run-max-requests 1 --run-max-seconds 30 --run-max-concurrency 1 --dry-run
@@ -54,7 +63,7 @@ bbtk request my-program --url "https://target-autorizado.example/health" --run-m
 
 The shared guard covers native HTTP requests and same-origin Playwright traffic. `ffuf`, `nuclei`, recon tools and external scanner plans are separate processes and do not inherit its exact request counter; use their separately reviewed tool limits. A successful run summary is not a vulnerability verdict.
 
-`analyze` is offline. JWT verification additionally requires `--key-file` and an explicit `--algorithm`, with optional expected issuer/audience; decoding is not authentication. SQLi defaults to baseline/quote comparisons; `--deep` explicitly adds time and boolean probes. `cors-check` sends four Origin variants; `open-redirect` sends five query values and never follows `Location`. These commands require automation permission, scope and program rate limits. `tool-plan` prepares commands for sqlmap, XSStrike and Dalfox v3 but **never executes them**, even without `--dry-run`. External tools need separately reviewed runs because they do not inherit the hard request budget/scope controls. jwt_tool, JWT Editor, hashcat and John are catalogued manual tools. No automatic JWT forgery, password brute force, WAF evasion or database dumping is performed.
+`analyze`, `jwt-forge`, `takeover-check` without `--resolve-dns`, and `apk-scan` are offline. `jwt-forge` creates clearly labeled unsigned, algorithm-change, selected claim-change and optional HMAC test candidates, including local PEM public-key-as-HMAC candidates for RS256 input. It has no HTTP client and never submits tokens; generating a candidate does not show that a server accepts it. Keep input/output files private, use only test tokens and keys, and replay only against a local or explicitly authorized test service using accounts you control. `takeover-check` matches captured CNAMEs against local provider suffix patterns; `--resolve-dns` is a separate opt-in requiring an in-scope host and stored authorization reference. A match is only `possible_takeover`, never proof that a provider resource is unclaimed; the command performs no HTTP or resource-claim attempt. APK scanning reads bounded ZIP members in memory, parses textual or binary Android manifests, masks secret/email values and labels found HTTP(S) hosts against the program scope. It makes no network requests and never executes or extracts the APK. `--decompile` explicitly opts into local `jadx`/`apktool` parsing with a temporary output directory and timeout; the base ZIP-only mode needs no external tools. `--ai-review` sends only aggregate finding counts and secret-pattern categories to local Ollama, never APK contents or secret values. JWT verification additionally requires `--key-file` and an explicit `--algorithm`, with optional expected issuer/audience; decoding is not authentication. SQLi defaults to baseline/quote comparisons; `--deep` explicitly adds time and boolean probes. `cors-check` sends four Origin variants; `ssrf-check` makes one baseline and five fixed URL probes, compares status/body fingerprints and records timing without saving bodies; `csrf-audit` reads one HTML response and heuristically summarizes forms and `Set-Cookie` SameSite attributes without submitting forms; `open-redirect` sends five query values and never follows `Location`. SSRF and CSRF results are heuristic only; no metadata values or credentials are extracted, and CSRF exploitability is not confirmed. These live HTTP commands require automation permission, scope and program rate limits. `tool-plan` prepares commands for sqlmap, XSStrike and Dalfox v3 but **never executes them**, even without `--dry-run`. External tools need separately reviewed runs because they do not inherit the hard request budget/scope controls. jwt_tool, JWT Editor, hashcat and John are catalogued manual tools. No password brute force, WAF evasion or database dumping is performed.
 
 ## Program Setup
 
@@ -165,7 +174,7 @@ Without `--confirm-exec`, results are `possible`, `not_reproducible` or `error`,
 
 ## CORS And Redirects
 
-`cors-check <program> --url <URL>` tests the four configured Origin variants and classifies ACAO reflection with ACAC. `open-redirect <program> --url <URL> --param <name>` requires the query parameter to appear exactly once, tests five redirect values and records Location without following it. Both support `--dry-run`, scope/rate/timeout validation, and secret-free evidence. A CORS header result is not proof of sensitive-data access; an external Location is never visited by the toolkit.
+`cors-check <program> --url <URL>` tests the four configured Origin variants and classifies ACAO reflection with ACAC. `ssrf-check <program> --url <URL> --param <name>` requires one existing query parameter, compares a baseline with five fixed URL values, records timing deltas and never saves response bodies or follows redirects. `csrf-audit <program> --url <URL>` makes one GET, parses HTML forms and hidden token-like fields, and summarizes response cookie SameSite attributes. `open-redirect <program> --url <URL> --param <name>` requires the query parameter to appear exactly once, tests five redirect values and records Location without following it. These checks support `--dry-run`, scope/rate/timeout validation and redacted evidence. CORS, SSRF and CSRF results are heuristic observations, not proof; no form is submitted and an external Location is never visited by the toolkit.
 
 ## Limits and Reports
 
@@ -206,6 +215,7 @@ bbtk report my-program --finding-id FINDING-001 --format pdf
 Bug_Bounty_toolkit/
 |-- bugbounty_toolkit/
 |   |-- cli.py
+|   |-- apk_scan.py          # Bounded offline APK and Android manifest inspection
 |   |-- access_control/     # Read/write comparisons, ranges and guards
 |   |-- analysis/           # Offline HTML, SQL, JWT and evidence review
 |   |-- core/               # Scope, HTTP, budgets, settings and records
@@ -216,8 +226,10 @@ Bug_Bounty_toolkit/
 |   |-- sqli/               # Bounded SQLi probes
 |   |-- xss/                # Reflection and optional browser confirmation
 |   |-- cors_check.py       # CORS response checks
+|   |-- csrf_audit.py       # Heuristic forms and cookie attributes
 |   |-- diagnostics.py      # Read-only environment diagnostics
-|   `-- open_redirect.py    # Supplied-parameter redirect checks
+|   |-- open_redirect.py    # Supplied-parameter redirect checks
+|   `-- ssrf_check.py       # Bounded SSRF response comparisons
 |-- config/                 # Program configuration examples
 |-- docs/                   # Checklists and project documentation
 |-- inputs/                 # Supplied targets, routes, parameters, requests
@@ -238,16 +250,20 @@ The original `recon`, `scan nuclei`, `params`, `checklist`, `mark-reviewed` and 
 
 ## AI Skill
 
-The repository includes one general router/executor and seven separate topic skills. Install all eight sibling folders together so shared references and the single plan adapter resolve. These are ordinary discoverable skills, not a nested-skill engine; the router instructs the AI to load only the requested topic and finish its evidence summary before moving to another.
+The repository includes one general router/executor and ten separate topic skills. Install all eleven sibling folders together so shared references and the single plan adapter resolve. These are ordinary discoverable skills, not a nested-skill engine; the router instructs the AI to load only the requested topic and finish its evidence summary before moving to another.
 
 | Skill | Focus |
 | --- | --- |
 | [bugbounty-executor](skills/bugbounty-executor/SKILL.md) | Shared authorization, HTTP/Burp, ffuf, reporting and sequential topic routing |
+| [bugbounty-apk-analysis](skills/bugbounty-apk-analysis/SKILL.md) | Offline APK endpoints, secret-patterns, Firebase references and Android deep links |
+| [bugbounty-takeover](skills/bugbounty-takeover/SKILL.md) | Offline provider-CNAME candidates and optional scoped DNS lookup |
 | [bugbounty-xss](skills/bugbounty-xss/SKILL.md) | Reflection checks, HTML contexts, payload references, XSStrike/Dalfox drafts |
 | [bugbounty-sqli](skills/bugbounty-sqli/SKILL.md) | Baseline/quote probes, SQL review, sqlmap drafts |
 | [bugbounty-cors](skills/bugbounty-cors/SKILL.md) | CORS Origin/ACAO/ACAC comparisons |
+| [bugbounty-ssrf](skills/bugbounty-ssrf/SKILL.md) | One supplied URL parameter, five bounded SSRF indicators, no response-body retention |
+| [bugbounty-csrf](skills/bugbounty-csrf/SKILL.md) | Heuristic form-token and cookie SameSite audit; never submits a form |
 | [bugbounty-open-redirect](skills/bugbounty-open-redirect/SKILL.md) | Supplied redirect parameter checks without following Location |
-| [bugbounty-jwt](skills/bugbounty-jwt/SKILL.md) | Offline token inspection/verification and manual JWT tools |
+| [bugbounty-jwt](skills/bugbounty-jwt/SKILL.md) | Offline token inspection/verification and local test-candidate generation |
 | [bugbounty-authentication](skills/bugbounty-authentication/SKILL.md) | Login/session/reset/MFA/OAuth review with own test accounts |
 | [bugbounty-access-control](skills/bugbounty-access-control/SKILL.md) | Controlled IDOR/BOLA/role comparisons, Autorize/AuthMatrix/Authz references |
 
@@ -266,7 +282,7 @@ Invoke the router with: `Use $bugbounty-executor for XSS and SQLi on my authoriz
 
 Access-control work has native A/B comparisons for known private GET/JSON resources, an opt-in fixed-account read matrix, a policy-authorized range mode, and JSON POST/PUT/PATCH write checks. External ranges default to 25 sequential IDs and ten seconds; `--allow-public-range` explicitly permits up to 100 IDs, four workers and a one-second minimum. Local labs can use up to 100 IDs, four workers and 0.01 seconds without that flag. Writes default to loopback; `--allow-public-writes` is a separate opt-in required for public writes, including write ranges, and remote state may change. Disposable resources and explicit program authorization remain mandatory. The account matrix compares only the supplied known resources; it does not discover roles or enumerate resources. HTTP 200, reflected emails and extension colors are not confirmation. Admin access by an admin is a control, not escalation. Burp extensions, forced browsing, hidden-parameter discovery and nuclei templates need their own reviewed scope/budget; no password-guessing adapter is included. ParamSpider mines archived URLs rather than simply parsing local HTML/JS.
 
-The script accepts a JSON plan for `request`, `fuzz`, `xss`, `sqli`, `cors-check`, `open-redirect` or `access-check`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
+The script accepts a JSON plan for `request`, `fuzz`, `xss`, `sqli`, `cors-check`, `ssrf-check`, `csrf-audit`, `open-redirect`, `access-check` or `apk-scan`. It defaults to validation without HTTP traffic; `--execute` validates, executes once and generates reports. It never initializes authorization, changes scope or retries failures. Optional `--records-root` selects an existing records directory. Read the skill's command reference for the plan schema.
 
 ```bash
 python skills/bugbounty-executor/scripts/run_plan.py --toolkit-root . --plan registros/my-program/plan.json
@@ -275,13 +291,15 @@ python skills/bugbounty-executor/scripts/run_plan.py --toolkit-root . --plan reg
 
 ### Agent Evidence Review
 
-The IA running the skill is the reasoning component. Export one native access-control/XSS/SQLi/CORS/open-redirect evidence file into a minimal local packet:
+The IA running the skill is the reasoning component. Export one native access-control/XSS/SQLi/CORS/SSRF/CSRF/open-redirect evidence file into a minimal local packet:
 
 ```bash
 bugbounty analyze evidence --input registros/my-program/evidence/access-control/selected.json --output registros/my-program/review.json
 ```
 
 The exporter drops arbitrary response text/instructions, URLs, headers and secrets; it includes allowlisted statuses, context counts and comparison booleans. It is offline by default. An explicit `--ai ollama` sends only that minimized packet to the local Ollama service at `127.0.0.1:11434`, using `qwen2.5-coder:7b` by default; `--model <name>` overrides the model. There is no remote fallback or tool calling. `bbtk doctor` checks for the local Ollama executable without contacting the service. The [review workflow](skills/bugbounty-executor/references/agent-review.md) treats model output as untrusted and checks provenance, controls and uncertainty. A formatted packet does not authenticate source claims or grant testing permission, and no model automatically confirms a vulnerability.
+
+Live `access-check`, `xss`, `sqli`, `cors-check` and `open-redirect` commands can opt in after a candidate with `--ai-review`; `--ai-model` and `--ai-timeout` configure the local reviewer (defaults: `qwen2.5-coder:7b` and 120 seconds). The saved evidence gets an `ai_review` field. Only the minimized allowlisted packet is sent, Ollama failure is non-fatal, and the AI can return only `candidate`, `not_observed` or `inconclusive`; the toolkit verdict remains authoritative.
 
 ## Tests
 

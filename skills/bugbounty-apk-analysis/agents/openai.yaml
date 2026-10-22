@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty APK Analysis"
+  short_description: "Analiza APKs localmente sin ejecutar código ni contactar dominios"
+  default_prompt: "Usa $bugbounty-apk-analysis con el APK local que te indiqué. Valida con --dry-run, analiza el ZIP/manifiesto sin contactar hosts y resume JSON con secretos enmascarados; usa Ollama solo si lo pido."
+policy:
+  allow_implicit_invocation: true

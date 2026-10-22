@@ -1,0 +1,6 @@
+interface:
+  display_name: "Bug Bounty SSRF"
+  short_description: "Compara una URL autorizada con cinco indicadores SSRF acotados"
+  default_prompt: "Usa $bugbounty-ssrf solo con la URL y el parámetro autorizados que proporcioné; haz dry-run, ejecuta la comprobación acotada y resume evidencia heurística sin extraer metadatos."
+policy:
+  allow_implicit_invocation: true

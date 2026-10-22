@@ -28,8 +28,13 @@ from .xss.parameter_tester import XssOptions, XssParameterTester
 from .sqli.parameter_tester import SqliOptions, SqliParameterTester
 from .cors_check import CorsChecker, CorsOptions
 from .open_redirect import OpenRedirectOptions, OpenRedirectTester
+from .ssrf_check import SsrfChecker, SsrfOptions
+from .csrf_audit import CsrfAuditor, CsrfOptions
+from .apk_scan import ApkScanner
+from .takeover_check import analyze_cnames, normalize_dns_name, resolve_cname_records
 from .analysis.html_context import analyze_html
 from .analysis.jwt_inspector import inspect_jwt, ALGORITHMS
+from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
 from .access_control.comparison import AccessControlTester
@@ -38,6 +43,12 @@ from .access_control.write_lab import AccessWriteLabTester
 from .access_control.write_range import AccessWriteRangeTester
 from .access_control.guards import is_loopback_url
 from .analysis.ollama_review import DEFAULT_OLLAMA_MODEL, review_with_ollama
+from .analysis.live_review import (
+    add_ai_review_arguments,
+    format_ai_review,
+    resolve_ai_review_config,
+    review_evidence_file,
+)
 from .integrations.catalog import catalog
 from .integrations.external_plan import build_external_plan, TOOLS
 from .reporting.evidence import write_evidence_json
@@ -99,6 +110,13 @@ def client_for(args: argparse.Namespace, settings: ExecutorSettings, scope: Scop
         max_response_bytes=settings.max_response_bytes,
         execution_budget=getattr(args, "_execution_budget", None),
     )
+
+
+def print_live_ai_review(path: Path, config: tuple[str, float] | None, toolkit_verdict: str) -> None:
+    if config is None:
+        return
+    ai_review = review_evidence_file(path, config[0], config[1])
+    print(format_ai_review(ai_review, toolkit_verdict))
 
 
 def cmd_init(args: argparse.Namespace) -> None:
@@ -257,6 +275,7 @@ def cmd_fuzz(args: argparse.Namespace) -> None:
 
 
 def cmd_xss(args: argparse.Namespace) -> None:
+    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -295,6 +314,7 @@ def cmd_xss(args: argparse.Namespace) -> None:
         summary += ". No XSS automatically confirmed"
     print(f"[+] {summary}.")
     print(f"[+] Evidence: {path}")
+    print_live_ai_review(path, ai_review_config, f"{possible} possible, {confirmed} confirmed by browser")
     if len(results) < total:
         stop = json.loads(path.read_text(encoding="utf-8")).get("stop_reason")
         print(
@@ -314,6 +334,7 @@ def cmd_params(args: argparse.Namespace) -> None:
 
 
 def cmd_sqli(args: argparse.Namespace) -> None:
+    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     if args.cookie:
@@ -342,9 +363,11 @@ def cmd_sqli(args: argparse.Namespace) -> None:
         f"[+] {len(results)} {mode} SQLi responses, {possible} possible indicators, {failures} errors. No SQLi automatically confirmed."
     )
     print(f"[+] Evidence: {path}")
+    print_live_ai_review(path, ai_review_config, f"{possible} possible SQLi indicators")
 
 
 def cmd_cors_check(args: argparse.Namespace) -> None:
+    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -372,9 +395,185 @@ def cmd_cors_check(args: argparse.Namespace) -> None:
     print(
         f"[+] CORS summary: {counts['VULNERABLE']} vulnerable, {counts['DÉBIL']} weak, {counts['SEGURO']} safe. Evidence: {path}"
     )
+    print_live_ai_review(
+        path,
+        ai_review_config,
+        f"{counts['VULNERABLE']} vulnerable, {counts['DÉBIL']} weak, {counts['SEGURO']} safe",
+    )
+
+
+def cmd_ssrf_check(args: argparse.Namespace) -> None:
+    store, settings, scope = executor_context(args, automated=True)
+    headers = parse_header_items(args.header)
+    cookies = parse_cookie_items(args.cookie)
+    if cookies:
+        headers["Cookie"] = cookies
+    checker = SsrfChecker(scope, client_for(args, settings, scope))
+    options = SsrfOptions(args.url, args.param, headers)
+    request_urls = checker.validate(options)
+    if args.dry_run:
+        print(
+            f"[+] SSRF target in scope; one baseline and {len(request_urls)} fixed probes validated. No requests sent."
+        )
+        return
+    path, result = checker.run(options, store.paths.evidence_dir / "ssrf")
+    baseline = result["baseline"]
+    baseline_status = baseline.get("status_code", "-") if isinstance(baseline, dict) else "-"
+    baseline_time = baseline.get("duration_ms", "-") if isinstance(baseline, dict) else "-"
+    for row in result["results"]:
+        if not isinstance(row, dict):
+            continue
+        delta = row.get("timing_delta_ms")
+        delta_text = f"{delta:+}ms" if isinstance(delta, int) else "-"
+        print(
+            f"{row.get('payload', '-'):<52} status={row.get('status_code', '-')} "
+            f"time={row.get('duration_ms', '-')}ms delta={delta_text} verdict={row.get('classification', 'error')}"
+        )
+    possible = sum(row.get("classification") in {"possible", "reflected"} for row in result["results"])
+    store.add_run(
+        "ssrf-check",
+        redact_url(args.url),
+        ["ssrf-check", redact_url(args.url)],
+        1 if possible else 0,
+        path,
+    )
+    print(
+        f"[+] SSRF heuristic: {possible} possible/reflected of {len(result['results'])} probes; "
+        f"baseline status {baseline_status}, time {baseline_time}ms; no SSRF automatically confirmed. Evidence: {path}"
+    )
+
+
+def cmd_csrf_audit(args: argparse.Namespace) -> None:
+    store, settings, scope = executor_context(args, automated=True)
+    headers = parse_header_items(args.header)
+    cookies = parse_cookie_items(args.cookie)
+    if cookies:
+        headers["Cookie"] = cookies
+    auditor = CsrfAuditor(scope, client_for(args, settings, scope))
+    options = CsrfOptions(args.url, headers)
+    auditor.validate(options)
+    if args.dry_run:
+        print("[+] CSRF audit target in scope; one HTML GET validated. No requests sent.")
+        return
+
+    path, result = auditor.run(options, store.paths.evidence_dir / "csrf-audit")
+    print(
+        f"[+] CSRF heuristic: {result.get('classification', 'inconclusive')}; "
+        f"forms={result.get('form_count', '-')} methods={result.get('form_methods', [])} "
+        f"POST tokens={result.get('post_forms_with_hidden_token', '-')} "
+        f"cookie SameSite={result.get('cookie_samesite', [])}"
+    )
+
+    if result.get("samesite_none_without_secure", 0):
+        print("[!] One or more SameSite=None cookies lack Secure.")
+    if result.get("stop_reason"):
+        print(f"[!] Audit stopped: {result['stop_reason']}")
+    print("[!] Heuristic only; no CSRF request was forged or confirmed.")
+    classification = result.get("classification")
+    store.add_run(
+        "csrf-audit",
+        redact_url(args.url),
+        ["csrf-audit", redact_url(args.url)],
+        1 if classification == "possible_csrf" else 0,
+        path,
+    )
+    print(f"[+] Evidence: {path}")
+
+
+def cmd_apk_scan(args: argparse.Namespace) -> None:
+    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    scope = ScopeValidator(paths.scope_file)
+    if not scope.summary()["allowed"]:
+        raise ValueError("Add at least one allowed domain to this program's scope before scanning an APK.")
+    scanner = ApkScanner(scope)
+    apk = scanner.validate_input(args.apk)
+    if args.dry_run:
+        print(
+            f"[+] APK archive validated: {apk.name}. Local scan only; no archive files extracted and no requests sent."
+        )
+        return
+
+    evidence = scanner.scan(apk, decompile=args.decompile)
+    store = store_for(args.program)
+    path = write_evidence_json(store.paths.evidence_dir / "apk-scan", evidence, prefix="apk-scan")
+    secret_count = evidence["counts"].get("secret", 0)
+    counts = evidence["counts"]
+    print(
+        "[+] APK static scan: "
+        f"{evidence['files_scanned']} files, "
+        f"{counts.get('endpoint', 0)} endpoints, {secret_count} secret candidates, "
+        f"{counts.get('firebase', 0)} Firebase references, {counts.get('deep_link', 0)} deep links, "
+        f"{counts.get('email', 0)} emails."
+    )
+    print(
+        f"[i] Referenced web destinations: {evidence['scope_counts']['in_scope']} in scope, "
+        f"{evidence['scope_counts']['out_of_scope']} out of scope. Nothing was contacted."
+    )
+    for warning in evidence["warnings"]:
+        print(f"[!] {warning}")
+    store.add_run(
+        "apk-scan",
+        apk.name,
+        ["apk-scan", "--apk", apk.name],
+        1 if secret_count else 0,
+        path,
+    )
+    store.connection.close()
+    print(f"[+] Evidence (secrets masked): {path}")
+    print_live_ai_review(path, ai_review_config, f"{secret_count} secret-pattern candidates")
+
+
+def cmd_takeover_check(args: argparse.Namespace) -> None:
+    store = store_for(args.program)
+    try:
+        scope = ScopeValidator(store.paths.scope_file)
+        host = normalize_dns_name(args.host)
+        scope.require(host)
+        if not args.cname and not args.resolve_dns:
+            raise ValueError("Provide --cname for offline analysis or opt in to --resolve-dns.")
+        supplied_cnames = args.cname or []
+        analyze_cnames(host, supplied_cnames, "supplied_offline")
+        if args.resolve_dns:
+            store.require_authorization()
+
+        if args.dry_run:
+            operation = "DNS lookup validated" if args.resolve_dns else "offline CNAME analysis validated"
+            print(f"[+] {host} is in scope; {operation}. No DNS or HTTP requests sent.")
+            return
+
+        dns_status = "supplied_offline"
+        dns_queries = 0
+        cnames = list(supplied_cnames)
+        if args.resolve_dns:
+            resolved, dns_status, dns_queries = resolve_cname_records(host)
+            cnames = resolved + cnames
+        result = analyze_cnames(host, cnames, dns_status, dns_queries)
+        result["cname_source"] = (
+            "dns_and_supplied"
+            if args.resolve_dns and supplied_cnames
+            else ("dns" if args.resolve_dns else "supplied_offline")
+        )
+        path = write_evidence_json(store.paths.evidence_dir / "takeover", result, prefix="takeover-check")
+        store.add_run(
+            "takeover-check",
+            host,
+            ["takeover-check", host],
+            1 if result["classification"] == "possible_takeover" else 0,
+            path,
+        )
+    finally:
+        store.close()
+    for row in result["provider_matches"]:
+        print(f"[?] CNAME {row['cname']} matches: {', '.join(row['services'])}")
+    print(
+        f"[+] Takeover heuristic: {result['classification']}; DNS={result['dns_status']}; "
+        f"unclaimed status={result['unclaimed_status']}. No HTTP requests or claim attempts. Evidence: {path}"
+    )
 
 
 def cmd_open_redirect(args: argparse.Namespace) -> None:
+    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -399,9 +598,11 @@ def cmd_open_redirect(args: argparse.Namespace) -> None:
         "open-redirect", redact_url(args.url), ["open-redirect", redact_url(args.url)], 1 if vulnerable else 0, path
     )
     print(f"[+] Open redirect summary: {vulnerable} vulnerable of {len(results)} probes. Evidence: {path}")
+    print_live_ai_review(path, ai_review_config, f"{vulnerable} vulnerable of {len(results)} probes")
 
 
 def cmd_access_check(args: argparse.Namespace) -> None:
+    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
     range_requested = bool(args.id_range or args.lab_write_range)
     read_options = args.anonymous_check or args.inverse_cross or args.multi_account
     write_options = args.verify_persistence or args.inverse_write or args.cleanup
@@ -464,6 +665,7 @@ def cmd_access_check(args: argparse.Namespace) -> None:
             )
             return
         path, result = tester.run(args.case_file, options, store.paths.evidence_dir / "access-control")
+        print_live_ai_review(path, ai_review_config, str(result["classification"]))
         store.add_run(
             "access-check",
             None,
@@ -498,6 +700,7 @@ def cmd_access_check(args: argparse.Namespace) -> None:
             )
             return
         path, result = tester.run(args.case_file, options, store.paths.evidence_dir / "access-control")
+        print_live_ai_review(path, ai_review_config, str(result["classification"]))
         store.add_run(
             "access-check-lab-write-range",
             None,
@@ -529,6 +732,7 @@ def cmd_access_check(args: argparse.Namespace) -> None:
             args.inverse_write,
             args.cleanup,
         )
+        print_live_ai_review(path, ai_review_config, str(result["classification"]))
         store.add_run(
             "access-check-lab-write",
             None,
@@ -556,6 +760,7 @@ def cmd_access_check(args: argparse.Namespace) -> None:
         args.inverse_cross,
         args.multi_account,
     )
+    print_live_ai_review(path, ai_review_config, str(result["classification"]))
     store.add_run("access-check", None, ["access-check"], 0 if result["classification"] != "inconclusive" else 1, path)
     print(
         f"[+] Access comparison: {result['classification']}; {result['requests_attempted']} requests attempted; controls valid: {result['controls_valid']}."
@@ -614,6 +819,17 @@ def cmd_analyze(args: argparse.Namespace) -> None:
     else:
         key = bounded_text(args.key_file, 65536).encode("utf-8") if args.key_file else None
         data = inspect_jwt(text.strip(), key, args.algorithm, args.issuer, args.audience)
+    print_or_save(data, args.output)
+
+
+def cmd_jwt_forge(args: argparse.Namespace) -> None:
+    token = bounded_text(args.input, 65536).strip()
+    public_key = None
+    if args.public_key:
+        if args.public_key.stat().st_size > MAX_PUBLIC_KEY_BYTES:
+            raise ValueError("Public key file must be at most 1 MiB.")
+        public_key = args.public_key.read_bytes()
+    data = forge_jwt(token, args.secret, public_key)
     print_or_save(data, args.output)
 
 
@@ -850,6 +1066,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     xss.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(xss)
+    add_ai_review_arguments(xss)
     xss.set_defaults(func=cmd_xss)
 
     sqli = sub.add_parser("sqli", help="Bounded baseline/quote probes; --deep opts into timing and boolean probes")
@@ -867,6 +1084,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sqli.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(sqli)
+    add_ai_review_arguments(sqli)
     sqli.set_defaults(func=cmd_sqli)
 
     cors = sub.add_parser("cors-check", help="Check CORS response headers for a supplied in-scope URL")
@@ -878,7 +1096,20 @@ def build_parser() -> argparse.ArgumentParser:
     cors.add_argument("--rate", type=positive_float)
     cors.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(cors)
+    add_ai_review_arguments(cors)
     cors.set_defaults(func=cmd_cors_check)
+
+    ssrf = sub.add_parser("ssrf-check", help="Compare a supplied URL parameter against bounded SSRF indicators")
+    ssrf.add_argument("program")
+    ssrf.add_argument("--url", required=True)
+    ssrf.add_argument("--param", required=True)
+    ssrf.add_argument("--header", action="append")
+    ssrf.add_argument("--cookie", action="append")
+    ssrf.add_argument("--timeout", type=positive_float)
+    ssrf.add_argument("--rate", type=positive_float)
+    ssrf.add_argument("--dry-run", action="store_true")
+    add_run_budget_arguments(ssrf)
+    ssrf.set_defaults(func=cmd_ssrf_check)
 
     redirect = sub.add_parser("open-redirect", help="Check a supplied in-scope URL parameter for external redirects")
     redirect.add_argument("program")
@@ -890,7 +1121,50 @@ def build_parser() -> argparse.ArgumentParser:
     redirect.add_argument("--rate", type=positive_float)
     redirect.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(redirect)
+    add_ai_review_arguments(redirect)
     redirect.set_defaults(func=cmd_open_redirect)
+
+    csrf = sub.add_parser("csrf-audit", help="Heuristically inspect one in-scope HTML response for CSRF defenses")
+    csrf.add_argument("program")
+    csrf.add_argument("--url", required=True)
+    csrf.add_argument("--header", action="append")
+    csrf.add_argument("--cookie", action="append")
+    csrf.add_argument("--timeout", type=positive_float)
+    csrf.add_argument("--rate", type=positive_float)
+    csrf.add_argument("--dry-run", action="store_true")
+    add_run_budget_arguments(csrf)
+    csrf.set_defaults(func=cmd_csrf_audit)
+
+    apk_scan = sub.add_parser(
+        "apk-scan", help="Scan a local APK archive for endpoints, secret patterns and Android deep links"
+    )
+    apk_scan.add_argument("program")
+    apk_scan.add_argument("--apk", required=True, type=Path)
+    apk_scan.add_argument(
+        "--decompile",
+        action="store_true",
+        help="Opt in to local jadx/apktool parsing in a temporary directory (120-second limit)",
+    )
+    apk_scan.add_argument(
+        "--dry-run", action="store_true", help="Validate the APK archive without scanning its contents"
+    )
+    add_ai_review_arguments(apk_scan)
+    apk_scan.set_defaults(func=cmd_apk_scan)
+
+    takeover = sub.add_parser(
+        "takeover-check",
+        help="Match an in-scope host's CNAME to local provider signatures; no HTTP or claim attempts",
+    )
+    takeover.add_argument("program")
+    takeover.add_argument("--host", required=True, help="In-scope subdomain hostname")
+    takeover.add_argument(
+        "--cname", action="append", help="Captured CNAME target for offline signature matching (repeatable)"
+    )
+    takeover.add_argument(
+        "--resolve-dns", action="store_true", help="Opt in to one scoped CNAME lookup using optional dnspython"
+    )
+    takeover.add_argument("--dry-run", action="store_true", help="Validate scope and inputs without DNS queries")
+    takeover.set_defaults(func=cmd_takeover_check)
 
     access = sub.add_parser(
         "access-check", help="Known-resource authorization comparison; bounded read and disposable JSON write modes"
@@ -952,6 +1226,7 @@ def build_parser() -> argparse.ArgumentParser:
     access.add_argument("--max-tests", type=positive_int)
     access.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(access)
+    add_ai_review_arguments(access)
     access.set_defaults(func=cmd_access_check)
 
     resources = sub.add_parser("resources", help="Offline tool/library availability and official resource catalog")
@@ -980,6 +1255,23 @@ def build_parser() -> argparse.ArgumentParser:
     jwt.add_argument("--audience")
     jwt.add_argument("--output", type=Path)
     jwt.set_defaults(func=cmd_analyze)
+
+    jwt_forge = sub.add_parser(
+        "jwt-forge",
+        help="Generate offline JWT test candidates; never sends requests or confirms server acceptance",
+    )
+    jwt_forge.add_argument(
+        "--input", required=True, type=Path, help="Local compact JWT file; never pass tokens in chat"
+    )
+    jwt_forge.add_argument(
+        "--secret",
+        help="Optional local test secret; also generates candidates for secret, 123456 and password (not echoed)",
+    )
+    jwt_forge.add_argument(
+        "--public-key", type=Path, help="Optional local PEM public key/certificate for RS256-to-HS256 candidates"
+    )
+    jwt_forge.add_argument("--output", type=Path, help="Save generated candidate tokens to a local JSON file")
+    jwt_forge.set_defaults(func=cmd_jwt_forge)
     evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations with optional local Ollama review")
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)

@@ -5,9 +5,13 @@ Install `python -m pip install -e ".[jwt]"` for PyJWT, python-jose, cryptography
 ```bash
 bugbounty analyze jwt --input registros/my-program/token.private.txt
 bugbounty analyze jwt --input registros/my-program/token.private.txt --key-file registros/my-program/public-key.pem --algorithm RS256 --issuer https://issuer.example --audience own-test-app
+bugbounty jwt-forge --input registros/my-program/token.private.txt --output registros/my-program/private/jwt-candidates.json
+bugbounty jwt-forge --input registros/my-program/token.private.txt --secret 'local-test-secret' --public-key registros/my-program/public-key.pem --output registros/my-program/private/jwt-candidates.json
 ```
 
-The output excludes tokens, keys and claim values. Unverified decoding reports claim names and key-reference presence. Verification requires/checks `exp` and separately records issuer/audience checks; do not describe an unchecked field as validated.
+`jwt-forge` is offline: it generates `alg:none`, RS256-to-HS256, selected admin/role claim changes, HMAC candidates for the supplied secret and the small `secret`/`123456`/`password` list, and (for RS256 input) HMAC candidates using local PEM public-key bytes. It prints generated tokens unless `--output` is used; treat both the input and output as credentials and keep them out of git/chat. The `--secret` value is an argv value and may be visible to local process-inspection tools or shell history, so use only a disposable test secret. The command has no HTTP client and cannot determine whether an application accepts any candidate. Never replay candidates against a target unless it is a local or explicitly authorized test service using accounts you control.
+
+The analyzer output excludes tokens, keys and claim values. Unverified decoding reports claim names and key-reference presence. Verification requires/checks `exp` and separately records issuer/audience checks; do not describe an unchecked field as validated.
 
 | Tool | Role | Official source |
 | --- | --- | --- |

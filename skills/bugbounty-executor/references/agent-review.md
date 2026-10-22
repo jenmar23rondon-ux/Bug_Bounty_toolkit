@@ -2,7 +2,7 @@
 
 The calling AI remains the main reasoning component. The CLI can optionally ask an installed local Ollama model to summarize the minimized evidence; this is an explicit inference call, not an autonomous scanner. Do not let model judgment replace a failed control.
 
-After a native access-check, XSS, SQLi, CORS or open-redirect run, prepare a minimal local review packet. The default review is fully offline:
+After a native access-check, XSS, SQLi, CORS, SSRF, CSRF or open-redirect run, prepare a minimal local review packet. The default review is fully offline:
 
 ```bash
 bugbounty analyze evidence --input registros/my-program/evidence/access-control/selected-evidence.json --output registros/my-program/review.json
@@ -32,7 +32,11 @@ bugbounty analyze evidence --input registros/my-program/evidence/access-control/
 
 `bbtk doctor` checks whether the `ollama` executable is on `PATH`; it does not contact the service or load a model. The review command contacts only `127.0.0.1:11434`, disables proxies and redirects, sends no tools, and has no cloud fallback. Only the minimized allowlisted packet is sent, never captured cookies, tokens, full URLs, response bodies or raw Burp files. `xploiter/the-xploiter:latest` is not a default: use Qwen on this machine because the larger model is known not to fit its available RAM. A downloaded model is not necessarily loaded or runnable.
 
-Without `--ai`, this offline command needs no program initialization or dry-run. It accepts one native access-control, XSS, SQLi, CORS or open-redirect evidence object, not a whole program report. It copies only allowlisted counts, statuses, context categories, verdicts and access-check booleans; it drops URLs, headers, body snippets, arbitrary reasons, tool messages and embedded instructions. With `--ai ollama`, only that minimized packet is sent to `127.0.0.1:11434`; redirects, proxies and remote fallback are disabled. The model output is untrusted, and `source_claims_unverified` remains true: a user-supplied/modified JSON file is not independently authenticated by formatting it.
+Without `--ai`, this offline command needs no program initialization or dry-run. It accepts one native access-control, XSS, SQLi, CORS, SSRF or open-redirect evidence object, not a whole program report. It copies only allowlisted counts, statuses, context categories, verdicts and access-check booleans; it drops URLs, headers, body snippets, arbitrary reasons, tool messages and embedded instructions. For SSRF it includes only baseline status, response-difference/reflection counts and timing-measurement counts, never payload values or response fingerprints. With `--ai ollama`, only that minimized packet is sent to `127.0.0.1:11434`; redirects, proxies and remote fallback are disabled. The model output is untrusted, and `source_claims_unverified` remains true: a user-supplied/modified JSON file is not independently authenticated by formatting it.
+
+CSRF evidence is also accepted by the offline exporter. It retains only counts of forms, POST forms with hidden token-like fields and allowlisted SameSite values; no URL, cookie value, form value or HTML is forwarded. Its classification remains heuristic and `confirmed` is always false. CSRF is not included in the live `--ai-review` commands.
+
+The five live check commands also support explicit `--ai-review` after candidate evidence is saved. They reuse this exporter, persist the result in the evidence object's `ai_review` field, and continue normally if local Ollama is unavailable. The model can classify only `candidate`, `not_observed` or `inconclusive`; it cannot confirm findings, alter the toolkit classification or trigger additional tests. Use `--ai-model` or `--ai-timeout` only together with `--ai-review`.
 
 ## Reasoning Gate
 

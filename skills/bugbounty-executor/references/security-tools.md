@@ -4,6 +4,7 @@
 
 ```bash
 python -m pip install -e ".[xss,sqli,jwt]"
+python -m pip install -e ".[takeover]"  # only if scoped DNS lookup is needed
 python -m pip install -e ".[all]"
 bugbounty resources
 ```
@@ -14,6 +15,7 @@ bugbounty resources
 | `http` | requests, aiohttp, httpx | Optional clients, not the built-in scoped transport |
 | `sqli` | sqlparse | Offline SQL syntax analysis; HTTP quote probes need no SQL library |
 | `jwt` | PyJWT, python-jose, cryptography, jwcrypto | Local token inspection/verification and reviewed crypto work |
+| `takeover` | dnspython | Optional explicit CNAME lookup; offline signature matching needs no extra |
 | `databases` | PyMySQL, psycopg2-binary | Separately authorized direct database work |
 | `all` | All above | No scanner binaries, browser engines, Burp extensions or payload repositories |
 
