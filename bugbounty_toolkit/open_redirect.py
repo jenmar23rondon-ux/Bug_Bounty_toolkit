@@ -31,6 +31,7 @@ def replace_query_parameter(url: str, parameter: str, value: str) -> str:
         raise ValueError(f"Query parameter {parameter!r} must appear exactly once.")
     query = [(key, value if key == parameter else current) for key, current in pairs]
     from urllib.parse import urlencode
+
     return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(query), ""))
 
 
@@ -81,26 +82,37 @@ class OpenRedirectTester:
             try:
                 response = self.client.send(RequestSpec("GET", request_url, options.headers))
             except (ToolkitError, ValueError) as exc:
-                results.append({"payload": payload, "classification": "error",
-                                "reason": type(exc).__name__, "confirmed": False})
+                results.append(
+                    {"payload": payload, "classification": "error", "reason": type(exc).__name__, "confirmed": False}
+                )
                 stop_reason = "transport_error"
                 break
             location = response.headers.get("location")
             classification = classify_redirect(options.url, location, response.status_code)
-            results.append({
-                "payload": payload,
-                "status_code": response.status_code,
-                "location": redact_url(resolved_location(options.url, location)) if location else None,
-                "classification": classification,
-                "confirmed": classification == "VULNERABLE",
-                "duration_ms": response.duration_ms,
-            })
+            results.append(
+                {
+                    "payload": payload,
+                    "status_code": response.status_code,
+                    "location": redact_url(resolved_location(options.url, location)) if location else None,
+                    "classification": classification,
+                    "confirmed": classification == "VULNERABLE",
+                    "duration_ms": response.duration_ms,
+                }
+            )
             if response.status_code in {401, 403, 429}:
                 stop_reason = "access_or_rate_limit"
                 break
-        path = write_evidence_json(evidence_dir, {
-            "type": "open-redirect", "url": redact_url(options.url), "parameter": options.parameter,
-            "requests_attempted": len(results), "stop_reason": stop_reason, "results": results,
-            "note": "Redirects are not followed. Evidence omits request credentials and response bodies.",
-        }, prefix="open-redirect")
+        path = write_evidence_json(
+            evidence_dir,
+            {
+                "type": "open-redirect",
+                "url": redact_url(options.url),
+                "parameter": options.parameter,
+                "requests_attempted": len(results),
+                "stop_reason": stop_reason,
+                "results": results,
+                "note": "Redirects are not followed. Evidence omits request credentials and response bodies.",
+            },
+            prefix="open-redirect",
+        )
         return path, results

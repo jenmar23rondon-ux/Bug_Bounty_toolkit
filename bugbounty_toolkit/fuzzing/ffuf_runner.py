@@ -55,9 +55,15 @@ class FfufRunner:
             str(options.threads),
             "-timeout",
             str(options.timeout),
-            "-rate", str(options.rate),
-            "-noninteractive", "-ic", "-r=false", "-recursion=false", "-ac=false",
-            "-X", "GET",
+            "-rate",
+            str(options.rate),
+            "-noninteractive",
+            "-ic",
+            "-r=false",
+            "-recursion=false",
+            "-ac=false",
+            "-X",
+            "GET",
         ]
         if options.match_codes:
             command.extend(["-mc", options.match_codes])
@@ -69,16 +75,25 @@ class FfufRunner:
         config_dir.mkdir()
         environment = dict(os.environ, XDG_CONFIG_HOME=str(config_dir.resolve()))
         with log_path.open("w", encoding="utf-8") as output:
-            process = subprocess.run(command, stdout=output, stderr=subprocess.STDOUT, text=True, check=False, env=environment)
+            process = subprocess.run(
+                command, stdout=output, stderr=subprocess.STDOUT, text=True, check=False, env=environment
+            )
 
         recorded_command = [redact_url(item) if item.startswith(("http://", "https://")) else item for item in command]
         if process.returncode != 0:
             self.store.add_run("ffuf", redact_url(options.url), recorded_command, process.returncode, output_path)
             raise ExternalToolError(f"ffuf exited with code {process.returncode}. See {log_path}")
         results = redact_data(parse_ffuf_results(output_path))
-        evidence = write_evidence_json(self.store.paths.evidence_dir / "fuzzing", {
-            "type": "ffuf", "raw_output": str(output_path), "log": str(log_path), "results": results,
-        }, "ffuf")
+        evidence = write_evidence_json(
+            self.store.paths.evidence_dir / "fuzzing",
+            {
+                "type": "ffuf",
+                "raw_output": str(output_path),
+                "log": str(log_path),
+                "results": results,
+            },
+            "ffuf",
+        )
         self.store.add_run("ffuf", redact_url(options.url), recorded_command, process.returncode, evidence)
         return evidence, results
 

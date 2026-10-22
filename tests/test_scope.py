@@ -35,7 +35,12 @@ class ScopeTests(unittest.TestCase):
     def test_url_scope_binds_scheme_port_and_path(self):
         self.scope.write_text("https://example.com:8443/api\n")
         ensure_in_scope("https://example.com:8443/api/items", self.scope)
-        for target in ("http://example.com:8443/api", "https://example.com/api", "https://example.com:8443/apix", "https://example.com:8443/api/../admin"):
+        for target in (
+            "http://example.com:8443/api",
+            "https://example.com/api",
+            "https://example.com:8443/apix",
+            "https://example.com:8443/api/../admin",
+        ):
             with self.subTest(target=target), self.assertRaises(ValueError):
                 ensure_in_scope(target, self.scope)
 

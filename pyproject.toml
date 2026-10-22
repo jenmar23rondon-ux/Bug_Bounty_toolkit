@@ -31,7 +31,27 @@ all = [
 [tool.ruff]
 line-length = 120
 target-version = "py310"
-extend-exclude = ["build", "dist", "*.egg-info", ".test-deps", ".test-tmp"]
+extend-exclude = [
+    "build",
+    "dist",
+    "*.egg-info",
+    ".test-deps",
+    ".test-tmp",
+    ".venv/**",
+    "**/.venv/**",
+    "templates/**",
+    "**/templates/**",
+    "inputs/**",
+    "**/inputs/**",
+    "reports/**",
+    "**/reports/**",
+    "registros/**",
+    "**/registros/**",
+    "logs/**",
+    "**/logs/**",
+    "wordlists/**",
+    "**/wordlists/**",
+]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F"]

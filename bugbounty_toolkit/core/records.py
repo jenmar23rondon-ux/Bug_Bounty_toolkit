@@ -108,10 +108,19 @@ class RecordStore:
         )
         self.connection.commit()
 
-    def add_run(self, command_name: str, target: str | None, command: Iterable[str], return_code: int, output_path: Path | None) -> None:
+    def add_run(
+        self, command_name: str, target: str | None, command: Iterable[str], return_code: int, output_path: Path | None
+    ) -> None:
         self.connection.execute(
             "insert into runs(started_at, command_name, target, command, return_code, output_path) values(?, ?, ?, ?, ?, ?)",
-            (utc_now(), command_name, target, " ".join(command), return_code, str(output_path) if output_path else None),
+            (
+                utc_now(),
+                command_name,
+                target,
+                " ".join(command),
+                return_code,
+                str(output_path) if output_path else None,
+            ),
         )
         self.connection.commit()
 
@@ -125,7 +134,16 @@ class RecordStore:
         )
         self.connection.commit()
 
-    def add_finding(self, finding_id: str, title: str, category: str, severity: str, target: str, summary: str, evidence_path: str | None = None) -> None:
+    def add_finding(
+        self,
+        finding_id: str,
+        title: str,
+        category: str,
+        severity: str,
+        target: str,
+        summary: str,
+        evidence_path: str | None = None,
+    ) -> None:
         self.connection.execute(
             """
             insert into findings(id, created_at, title, category, severity, status, target, summary, evidence_path)

@@ -27,7 +27,10 @@ class CatalogAndPlanTests(unittest.TestCase):
         process.assert_not_called()
 
     def test_access_resources_distinguish_catalog_from_adapters(self):
-        with patch("socket.create_connection", side_effect=AssertionError("offline catalog")), patch("subprocess.run") as process:
+        with (
+            patch("socket.create_connection", side_effect=AssertionError("offline catalog")),
+            patch("subprocess.run") as process,
+        ):
             data = catalog()
         resources = {item["name"]: item for item in data["resources"]}
         for name in ("autorize", "authmatrix", "authz"):
@@ -62,14 +65,18 @@ class CatalogAndPlanTests(unittest.TestCase):
             for url in ("https://outside.example/search?q=1", "https://example.com/search/private?q=1"):
                 with self.assertRaises(ValueError):
                     build_external_plan("sqlmap", url, "q", scope, settings)
-            for tool, url, name in (("xsstrike", "https://example.com/search?q=1&other=2", "q"),
-                                    ("sqlmap", "https://example.com/search?q=1&q=2", "q"),
-                                    ("sqlmap", "https://example.com/search?q=1", "missing"),
-                                    ("sqlmap", "https://example.com/search?q=1", "--dump")):
+            for tool, url, name in (
+                ("xsstrike", "https://example.com/search?q=1&other=2", "q"),
+                ("sqlmap", "https://example.com/search?q=1&q=2", "q"),
+                ("sqlmap", "https://example.com/search?q=1", "missing"),
+                ("sqlmap", "https://example.com/search?q=1", "--dump"),
+            ):
                 with self.assertRaises(ValueError):
                     build_external_plan(tool, url, name, scope, settings)
             with self.assertRaises(ValueError):
-                build_external_plan("dalfox", "https://example.com/search?q=1", "q", scope, ExecutorSettings(requests_per_second=0.001))
+                build_external_plan(
+                    "dalfox", "https://example.com/search?q=1", "q", scope, ExecutorSettings(requests_per_second=0.001)
+                )
 
     def test_missing_optional_dependency_has_actionable_error(self):
         with patch.dict("sys.modules", {"bs4": None}), self.assertRaisesRegex(ValueError, "xss"):
@@ -80,7 +87,12 @@ class CatalogAndPlanTests(unittest.TestCase):
             path = Path(directory) / "scope.txt"
             path.write_text("example.com\n")
             scope = ScopeValidator(path)
-            for url in ("ftp://example.com/search?q=1", "file://example.com/search?q=1", "gopher://example.com/search?q=1", "https://user:private-password@example.com/search?q=1"):
+            for url in (
+                "ftp://example.com/search?q=1",
+                "file://example.com/search?q=1",
+                "gopher://example.com/search?q=1",
+                "https://user:private-password@example.com/search?q=1",
+            ):
                 with self.subTest(url=url), self.assertRaises(ValueError):
                     build_external_plan("sqlmap", url, "q", scope, ExecutorSettings())
             plan = build_external_plan("sqlmap", "example.com/search?q=1", "q", scope, ExecutorSettings())
@@ -88,19 +100,39 @@ class CatalogAndPlanTests(unittest.TestCase):
             self.assertIn(plan["target"], plan["command"])
 
 
-@unittest.skipUnless(importlib.util.find_spec("bs4") and importlib.util.find_spec("sqlparse"), "optional xss/sqli extras not installed")
+@unittest.skipUnless(
+    importlib.util.find_spec("bs4") and importlib.util.find_spec("sqlparse"), "optional xss/sqli extras not installed"
+)
 class OfflineWorkflowTests(unittest.TestCase):
     def test_sequential_local_analysis_needs_no_program_or_network(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             records = root / "no-program-config"
             parser = cli.build_parser()
-            with patch.object(cli, "store_for", side_effect=AssertionError("offline work needs no program")), patch("socket.create_connection", side_effect=AssertionError("offline work sends no traffic")):
-                for kind, content, options in (("html", "<p>MARKER</p>", ["--marker", "MARKER"]), ("sql", "SELECT 1;", [])):
+            with (
+                patch.object(cli, "store_for", side_effect=AssertionError("offline work needs no program")),
+                patch("socket.create_connection", side_effect=AssertionError("offline work sends no traffic")),
+            ):
+                for kind, content, options in (
+                    ("html", "<p>MARKER</p>", ["--marker", "MARKER"]),
+                    ("sql", "SELECT 1;", []),
+                ):
                     input_file = root / f"input.{kind}"
                     input_file.write_text(content, encoding="utf-8")
                     output = root / f"{kind}.json"
-                    args = parser.parse_args(["--records-root", str(records), "analyze", kind, "--input", str(input_file), "--output", str(output), *options])
+                    args = parser.parse_args(
+                        [
+                            "--records-root",
+                            str(records),
+                            "analyze",
+                            kind,
+                            "--input",
+                            str(input_file),
+                            "--output",
+                            str(output),
+                            *options,
+                        ]
+                    )
                     args.func(args)
                     self.assertIsInstance(json.loads(output.read_text(encoding="utf-8")), dict)
             self.assertFalse(records.exists())
@@ -109,7 +141,11 @@ class OfflineWorkflowTests(unittest.TestCase):
 @unittest.skipUnless(importlib.util.find_spec("bs4"), "optional xss extra not installed")
 class HtmlContextTests(unittest.TestCase):
     def test_source_reflection_survives_parser_normalization(self):
-        for document, marker in (("<MARKER></MARKER>", "MARKER"), ('<p data-MARKER="value">x</p>', "MARKER"), ('<p class="WORD ONE">x</p>', "WORD ONE")):
+        for document, marker in (
+            ("<MARKER></MARKER>", "MARKER"),
+            ('<p data-MARKER="value">x</p>', "MARKER"),
+            ('<p class="WORD ONE">x</p>', "WORD ONE"),
+        ):
             with self.subTest(document=document):
                 result = analyze_html(document, marker)
                 self.assertTrue(result["reflected"])
@@ -121,7 +157,9 @@ class HtmlContextTests(unittest.TestCase):
         with patch("urllib.request.urlopen", side_effect=AssertionError("offline only")):
             result = analyze_html(document, "MARKER")
         kinds = {item["context"] for item in result["contexts"]}
-        self.assertTrue({"html_text", "comment", "url_attribute", "attribute", "event_attribute", "script", "style"}.issubset(kinds))
+        self.assertTrue(
+            {"html_text", "comment", "url_attribute", "attribute", "event_attribute", "script", "style"}.issubset(kinds)
+        )
         self.assertFalse(result["confirmed"])
         self.assertNotIn("private-value", json.dumps(result))
         self.assertFalse(analyze_html("<p>other</p>", "MARKER")["reflected"])
@@ -139,6 +177,7 @@ class JwtTests(unittest.TestCase):
 
     def token(self, **changes):
         import jwt
+
         claims = {"sub": "private-user", "iss": "own-issuer", "aud": "own-app", "exp": int(time.time()) + 600}
         claims.update(changes)
         return jwt.encode(claims, self.key, algorithm="HS256", headers={"jku": "http://127.0.0.1:9/never-fetch"})
@@ -146,6 +185,7 @@ class JwtTests(unittest.TestCase):
     def test_malformed_algorithm_is_not_echoed(self):
         def segment(value):
             return base64.urlsafe_b64encode(json.dumps(value).encode()).rstrip(b"=").decode()
+
         for algorithm in ({"private": "private-algorithm-data"}, ["private-algorithm-data"], None, "x" * 100):
             token = segment({"alg": algorithm}) + "." + segment({"sub": "private-user"}) + ".AAAA"
             with self.assertRaises(ValueError) as error:
@@ -181,11 +221,14 @@ class JwtTests(unittest.TestCase):
 
     def test_unsigned_missing_exp_and_implicit_algorithm_rejected_for_verification(self):
         import jwt
+
         unsigned = jwt.encode({"sub": "private-user"}, "", algorithm="none")
         self.assertIn("unsigned_algorithm", inspect_jwt(unsigned)["warnings"])
-        for token, key, algorithm in ((unsigned, self.key.encode(), "none"),
-                                       (self.token(), self.key.encode(), None),
-                                       (jwt.encode({"sub": "private-user"}, self.key, algorithm="HS256"), self.key.encode(), "HS256")):
+        for token, key, algorithm in (
+            (unsigned, self.key.encode(), "none"),
+            (self.token(), self.key.encode(), None),
+            (jwt.encode({"sub": "private-user"}, self.key, algorithm="HS256"), self.key.encode(), "HS256"),
+        ):
             with self.assertRaises(ValueError):
                 inspect_jwt(token, key, algorithm)
 

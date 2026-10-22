@@ -1,11 +1,30 @@
 from __future__ import annotations
 
 
-ALGORITHMS = ("HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512", "EdDSA")
+ALGORITHMS = (
+    "HS256",
+    "HS384",
+    "HS512",
+    "RS256",
+    "RS384",
+    "RS512",
+    "PS256",
+    "PS384",
+    "PS512",
+    "ES256",
+    "ES384",
+    "ES512",
+    "EdDSA",
+)
 
 
-def inspect_jwt(token: str, key: bytes | None = None, algorithm: str | None = None,
-                issuer: str | None = None, audience: str | None = None) -> dict:
+def inspect_jwt(
+    token: str,
+    key: bytes | None = None,
+    algorithm: str | None = None,
+    issuer: str | None = None,
+    audience: str | None = None,
+) -> dict:
     if not token or len(token) > 65536 or token.count(".") != 2:
         raise ValueError("Expected one compact JWS token (maximum 64 KiB), not a cookie or request.")
     if (key is None) != (algorithm is None) or (algorithm is not None and algorithm not in ALGORITHMS):
@@ -23,8 +42,14 @@ def inspect_jwt(token: str, key: bytes | None = None, algorithm: str | None = No
             raise ValueError("Invalid algorithm header.")
         claims = jwt.decode(token, options={"verify_signature": False})
         if key is not None:
-            claims = jwt.decode(token, key, algorithms=[algorithm], issuer=issuer, audience=audience,
-                                options={"require": ["exp"], "verify_aud": audience is not None})
+            claims = jwt.decode(
+                token,
+                key,
+                algorithms=[algorithm],
+                issuer=issuer,
+                audience=audience,
+                options={"require": ["exp"], "verify_aud": audience is not None},
+            )
     except (jwt.PyJWTError, ValueError, TypeError) as exc:
         raise ValueError("JWT parsing or verification failed; token/key content is not logged.") from exc
     warnings = []
@@ -41,8 +66,16 @@ def inspect_jwt(token: str, key: bytes | None = None, algorithm: str | None = No
         warnings.append("audience_not_checked")
     if issuer is None:
         warnings.append("issuer_not_checked")
-    return {"algorithm": safe_algorithm, "claim_names": sorted(claims),
-            "has_kid": "kid" in header, "has_jku": "jku" in header, "has_x5u": "x5u" in header,
-            "signature_verified": key is not None, "expiration_checked": key is not None,
-            "issuer_checked": issuer is not None, "audience_checked": audience is not None,
-            "warnings": warnings, "confirmed_vulnerability": False}
+    return {
+        "algorithm": safe_algorithm,
+        "claim_names": sorted(claims),
+        "has_kid": "kid" in header,
+        "has_jku": "jku" in header,
+        "has_x5u": "x5u" in header,
+        "signature_verified": key is not None,
+        "expiration_checked": key is not None,
+        "issuer_checked": issuer is not None,
+        "audience_checked": audience is not None,
+        "warnings": warnings,
+        "confirmed_vulnerability": False,
+    }

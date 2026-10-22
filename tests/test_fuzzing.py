@@ -47,7 +47,11 @@ class FuzzingTests(unittest.TestCase):
             output = Path(command[command.index("-o") + 1])
             output.write_text(json.dumps({"results": []}))
             return SimpleNamespace(returncode=0)
-        with patch("bugbounty_toolkit.fuzzing.ffuf_runner.shutil.which", return_value="ffuf"), patch("bugbounty_toolkit.fuzzing.ffuf_runner.subprocess.run", side_effect=fake_ffuf) as run:
+
+        with (
+            patch("bugbounty_toolkit.fuzzing.ffuf_runner.shutil.which", return_value="ffuf"),
+            patch("bugbounty_toolkit.fuzzing.ffuf_runner.subprocess.run", side_effect=fake_ffuf) as run,
+        ):
             output, results = self.runner.run(FfufOptions("https://example.com/FUZZ", self.wordlist, threads=2, rate=1))
         command = run.call_args.args[0]
         self.assertIn("-r=false", command)

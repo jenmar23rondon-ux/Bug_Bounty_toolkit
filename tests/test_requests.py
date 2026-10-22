@@ -92,7 +92,9 @@ class RequestTests(unittest.TestCase):
         self.assertIn("private-response-token", record.body_text)
 
     def test_request_response_secrets_are_redacted(self):
-        spec = RequestSpec("GET", self.base + "/search?access_token=private-query", {"Authorization": "Bearer private-header"})
+        spec = RequestSpec(
+            "GET", self.base + "/search?access_token=private-query", {"Authorization": "Bearer private-header"}
+        )
         record, path = RequestReplayer(self.scope, self.client).send_and_save(spec, self.root / "evidence")
         saved = path.read_text()
         for secret in ("private-header", "private-cookie", "private-query", "private-response-token"):
@@ -119,7 +121,9 @@ class RequestTests(unittest.TestCase):
         self.assertEqual(record.body_size, 10)
 
     def test_headers_cookies_and_invalid_requests(self):
-        self.assertEqual(parse_header_items(["Accept: text/html", "accept: application/json"]), {"accept": "application/json"})
+        self.assertEqual(
+            parse_header_items(["Accept: text/html", "accept: application/json"]), {"accept": "application/json"}
+        )
         self.assertIn("session=value", parse_cookie_items(["session=value"]))
         for value in ("Invalid header", "X-Test: ok\r\nInjected: header"):
             with self.assertRaises(ValueError):
@@ -127,7 +131,9 @@ class RequestTests(unittest.TestCase):
         with self.assertRaises(RequestBuildError):
             parse_raw_http_request("GET / HTTP/1.1\nHost: one.example\nHOST: two.example\n\n")
         with self.assertRaises(RequestBuildError) as failure:
-            parse_raw_http_request("GET / HTTP/1.1\nHost: example.com\nAuthorization Bearer private-malformed-token\n\n")
+            parse_raw_http_request(
+                "GET / HTTP/1.1\nHost: example.com\nAuthorization Bearer private-malformed-token\n\n"
+            )
         self.assertNotIn("private-malformed-token", str(failure.exception))
 
     def test_unique_evidence_filenames(self):
@@ -141,7 +147,10 @@ class RequestTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             RateLimiter(0)
         limiter = RateLimiter(2)
-        with patch("bugbounty_toolkit.core.rate_limiter.time.monotonic", side_effect=[10, 10, 10.1, 10.5]), patch("bugbounty_toolkit.core.rate_limiter.time.sleep") as sleep:
+        with (
+            patch("bugbounty_toolkit.core.rate_limiter.time.monotonic", side_effect=[10, 10, 10.1, 10.5]),
+            patch("bugbounty_toolkit.core.rate_limiter.time.sleep") as sleep,
+        ):
             limiter.wait()
             limiter.wait()
             self.assertAlmostEqual(sleep.call_args.args[0], 0.4)

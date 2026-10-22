@@ -8,8 +8,11 @@ from bugbounty_toolkit.core.http_client import ResponseRecord
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.cors_check import CorsChecker, CorsOptions, classify_cors, origins_for_target
 from bugbounty_toolkit.open_redirect import (
-    OpenRedirectOptions, OpenRedirectTester, REDIRECT_PAYLOADS,
-    classify_redirect, replace_query_parameter,
+    OpenRedirectOptions,
+    OpenRedirectTester,
+    REDIRECT_PAYLOADS,
+    classify_redirect,
+    replace_query_parameter,
 )
 
 
@@ -39,9 +42,11 @@ class CorsAndRedirectTests(unittest.TestCase):
             {"access-control-allow-origin": "*", "access-control-allow-credentials": "true"},
             {},
         ]
+
         def send(spec):
             headers = outcomes.pop(0)
             return ResponseRecord(spec, spec.url, 200, "OK", 3, headers, "private-body-do-not-save", 25)
+
         client.send.side_effect = send
         options = CorsOptions("https://example.com/profile?access_token=private", {"Cookie": "session=secret"})
         path, results = CorsChecker(self.scope, client).run(options, self.root / "evidence")
@@ -75,10 +80,12 @@ class CorsAndRedirectTests(unittest.TestCase):
         client = Mock()
         locations = ["https://evil.com/", "/dashboard", None, "//evil.com", "/login"]
         statuses = [301, 302, 200, 307, 308]
+
         def send(spec):
             index = client.send.call_count - 1
             headers = {"location": locations[index]} if locations[index] else {}
             return ResponseRecord(spec, spec.url, statuses[index], "test", 2, headers, "body-not-evidence", 18)
+
         client.send.side_effect = send
         options = OpenRedirectOptions("https://example.com/login?next=%2F", "next", {"Cookie": "secret=session"})
         path, results = OpenRedirectTester(self.scope, client).run(options, self.root / "redirect-evidence")

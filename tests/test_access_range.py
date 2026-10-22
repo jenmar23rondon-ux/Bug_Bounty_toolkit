@@ -28,14 +28,24 @@ class AccessRangeTests(unittest.TestCase):
             encoding="utf-8",
         )
         case = {
-            "owner_request": "owner.http", "actor_request": "actor.http", "base_url": self.base,
-            "session_headers": ["Authorization"], "resource": {"path_segment": 2},
-            "accounts_authorized": True, "resource_private": True, "expected_cross_access": "deny",
+            "owner_request": "owner.http",
+            "actor_request": "actor.http",
+            "base_url": self.base,
+            "session_headers": ["Authorization"],
+            "resource": {"path_segment": 2},
+            "accounts_authorized": True,
+            "resource_private": True,
+            "expected_cross_access": "deny",
             "identifier_enumeration_authorized": True,
             "checks": {
-                "success_pointer": "/success", "success_value": True, "resource_pointer": "/data/id",
-                "owner_resource": "20", "actor_resource": "10", "private_pointer": "/data/proof",
-                "owner_marker": "owner-proof-123456", "actor_marker": "actor-proof-654321",
+                "success_pointer": "/success",
+                "success_value": True,
+                "resource_pointer": "/data/id",
+                "owner_resource": "20",
+                "actor_resource": "10",
+                "private_pointer": "/data/proof",
+                "owner_marker": "owner-proof-123456",
+                "actor_marker": "actor-proof-654321",
             },
         }
         self.case_file = self.root / "case.json"
@@ -49,8 +59,17 @@ class AccessRangeTests(unittest.TestCase):
 
     def response(self, request, status, value):
         body = json.dumps(value)
-        return ResponseRecord(request, request.prepared_url(), status, "OK", 1,
-                              {"content-type": "application/json"}, body, len(body), False)
+        return ResponseRecord(
+            request,
+            request.prepared_url(),
+            status,
+            "OK",
+            1,
+            {"content-type": "application/json"},
+            body,
+            len(body),
+            False,
+        )
 
     def test_numeric_range_is_strictly_bounded(self):
         self.assertEqual(list(parse_id_range("4-6")), [4, 5, 6])
@@ -109,8 +128,10 @@ class AccessRangeTests(unittest.TestCase):
         remote.mkdir()
         host = "authorized.example"
         (remote / "scope.txt").write_text(host + "\n", encoding="utf-8")
-        for filename, resource_id, token in (("owner.http", "20", "owner-session"),
-                                              ("actor.http", "10", "actor-session")):
+        for filename, resource_id, token in (
+            ("owner.http", "20", "owner-session"),
+            ("actor.http", "10", "actor-session"),
+        ):
             (remote / filename).write_text(
                 f"GET /api/items/{resource_id} HTTP/1.1\r\nHost: {host}\r\nAuthorization: Bearer {token}\r\n\r\n",
                 encoding="utf-8",
@@ -123,18 +144,23 @@ class AccessRangeTests(unittest.TestCase):
 
         _, default_requests = tester.validate(case_file, AccessRangeOptions("1-25", 27))
         self.assertEqual(len(default_requests), 25)
-        for options in (AccessRangeOptions("1-26", 28),
-                        AccessRangeOptions("1-2", 4, concurrency=2),
-                        AccessRangeOptions("1-2", 4, min_interval=9.99)):
+        for options in (
+            AccessRangeOptions("1-26", 28),
+            AccessRangeOptions("1-2", 4, concurrency=2),
+            AccessRangeOptions("1-2", 4, min_interval=9.99),
+        ):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 tester.validate(case_file, options)
 
-        relaxed = AccessRangeOptions("1-100", 102, max_range=100, concurrency=4,
-                                     min_interval=1.0, allow_public_range=True)
+        relaxed = AccessRangeOptions(
+            "1-100", 102, max_range=100, concurrency=4, min_interval=1.0, allow_public_range=True
+        )
         _, requests = tester.validate(case_file, relaxed)
         self.assertEqual(len(requests), 100)
-        for unsafe in (AccessRangeOptions("1-2", 4, max_range=2, min_interval=0.99, allow_public_range=True),
-                       AccessRangeOptions("1-2", 4, max_range=2, concurrency=5, min_interval=1, allow_public_range=True)):
+        for unsafe in (
+            AccessRangeOptions("1-2", 4, max_range=2, min_interval=0.99, allow_public_range=True),
+            AccessRangeOptions("1-2", 4, max_range=2, concurrency=5, min_interval=1, allow_public_range=True),
+        ):
             with self.subTest(options=unsafe), self.assertRaises(ValueError):
                 tester.validate(case_file, unsafe)
         self.client.send.assert_not_called()
@@ -162,7 +188,15 @@ class AccessRangeTests(unittest.TestCase):
                 peak_active = max(peak_active, active)
             try:
                 time.sleep(0.04 if probe else 0.005)
-                value = owner if path.endswith("/20") else actor if path.endswith("/10") else crossed if path.endswith("/1") else denied
+                value = (
+                    owner
+                    if path.endswith("/20")
+                    else actor
+                    if path.endswith("/10")
+                    else crossed
+                    if path.endswith("/1")
+                    else denied
+                )
                 return self.response(request, 200 if value is not denied else 403, value)
             finally:
                 with active_lock:
@@ -170,7 +204,8 @@ class AccessRangeTests(unittest.TestCase):
 
         self.client.send.side_effect = send
         _, result = self.tester.run(
-            self.case_file, AccessRangeOptions("1-5", 7, max_range=5, concurrency=3, min_interval=0.01),
+            self.case_file,
+            AccessRangeOptions("1-5", 7, max_range=5, concurrency=3, min_interval=0.01),
             self.root / "concurrent-evidence",
         )
         self.assertGreaterEqual(peak_active, 2)
@@ -192,6 +227,7 @@ class AccessRangeTests(unittest.TestCase):
         owner = {"success": True, "data": {"id": "20", "proof": "owner-proof-123456"}}
         actor = {"success": True, "data": {"id": "10", "proof": "actor-proof-654321"}}
         cross = {"success": True, "data": {"id": "secret-other-id", "proof": None}}
+
         def send(request):
             path = request.prepared_url()
             if path.endswith("/20"):
@@ -199,9 +235,12 @@ class AccessRangeTests(unittest.TestCase):
             if path.endswith("/10"):
                 return self.response(request, 200, actor)
             return self.response(request, 200, cross)
+
         self.client.send.side_effect = send
         with patch.object(RateLimiter, "wait", return_value=None):
-            evidence_path, result = self.tester.run(self.case_file, AccessRangeOptions("1-5", 7), self.root / "evidence")
+            evidence_path, result = self.tester.run(
+                self.case_file, AccessRangeOptions("1-5", 7), self.root / "evidence"
+            )
         self.assertEqual(result["classification"], "candidate")
         self.assertEqual(result["candidate_offset"], 0)
         self.assertEqual(result["requests_attempted"], 3)
@@ -216,6 +255,7 @@ class AccessRangeTests(unittest.TestCase):
         owner = {"success": True, "data": {"id": "20", "proof": "owner-proof-123456"}}
         actor = {"success": True, "data": {"id": "10", "proof": "actor-proof-654321"}}
         denied = {"success": False}
+
         def send(request):
             path = request.prepared_url()
             if path.endswith("/20"):
@@ -223,6 +263,7 @@ class AccessRangeTests(unittest.TestCase):
             if path.endswith("/10"):
                 return self.response(request, 200, actor)
             return self.response(request, 403, denied)
+
         self.client.send.side_effect = send
         with patch.object(RateLimiter, "wait", return_value=None):
             _, result = self.tester.run(self.case_file, AccessRangeOptions("1-3", 5), self.root / "evidence")
@@ -237,14 +278,19 @@ class AccessRangeTests(unittest.TestCase):
         self.case_file.write_text(json.dumps(case), encoding="utf-8")
         owner = {"success": True, "data": {"id": "20", "proof": "owner-proof-123456"}}
         actor = {"success": True, "data": {"id": "10", "proof": "actor-proof-654321"}}
-        crossed = {"success": True, "data": {"id": "10", "proof": "actor-proof-654321", "account_id": "account-B-private"}}
+        crossed = {
+            "success": True,
+            "data": {"id": "10", "proof": "actor-proof-654321", "account_id": "account-B-private"},
+        }
         self.client.send.side_effect = [
             self.response(RequestSpec("GET", self.base + "/api/items/20", {}), 200, owner),
             self.response(RequestSpec("GET", self.base + "/api/items/10", {}), 200, actor),
             self.response(RequestSpec("GET", self.base + "/api/items/10", {}), 200, crossed),
         ]
         with patch.object(RateLimiter, "wait", return_value=None):
-            path, result = self.tester.run(self.case_file, AccessRangeOptions("10-11", 4), self.root / "identity-evidence")
+            path, result = self.tester.run(
+                self.case_file, AccessRangeOptions("10-11", 4), self.root / "identity-evidence"
+            )
         self.assertEqual(result["classification"], "candidate")
         self.assertTrue(result["results"][0]["identity_differs_from_actor"])
         self.assertNotIn("account-B-private", path.read_text(encoding="utf-8"))
