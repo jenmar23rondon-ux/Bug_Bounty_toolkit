@@ -37,12 +37,17 @@ class SkillFamilyTests(unittest.TestCase):
             for document in folder.rglob("*.md"):
                 for link in re.findall(r"\]\(([^)]+)\)", document.read_text(encoding="utf-8")):
                     if "://" not in link and not link.startswith("#"):
-                        self.assertTrue((document.parent / link.split("#")[0]).is_file(), f"Broken link in {document}: {link}")
+                        self.assertTrue(
+                            (document.parent / link.split("#")[0]).is_file(), f"Broken link in {document}: {link}"
+                        )
 
     def test_preview_writes_nothing_and_full_install_preserves_siblings(self):
         with tempfile.TemporaryDirectory() as directory:
             destination = Path(directory) / "skills"
-            with patch("socket.create_connection", side_effect=AssertionError("offline install")), patch("subprocess.run") as process:
+            with (
+                patch("socket.create_connection", side_effect=AssertionError("offline install")),
+                patch("subprocess.run") as process,
+            ):
                 preview = installer.install_skills(ROOT / "skills", destination)
                 self.assertFalse(destination.exists())
                 self.assertFalse(preview["executed"])
@@ -52,15 +57,24 @@ class SkillFamilyTests(unittest.TestCase):
             unrelated = destination / "other-skill.txt"
             unrelated.write_text("keep this", encoding="utf-8")
             for name in installer.SKILL_NAMES:
-                self.assertEqual((destination / name / "SKILL.md").read_bytes(), (ROOT / "skills" / name / "SKILL.md").read_bytes())
+                self.assertEqual(
+                    (destination / name / "SKILL.md").read_bytes(), (ROOT / "skills" / name / "SKILL.md").read_bytes()
+                )
             self.assertEqual(installer.install_skills(ROOT / "skills", destination, execute=True)["files_changed"], 0)
             self.assertEqual(unrelated.read_text(), "keep this")
             # The shared adapter must still work outside its repository location.
-            spec = importlib.util.spec_from_file_location("installed_runner", destination / "bugbounty-executor" / "scripts" / "run_plan.py")
+            spec = importlib.util.spec_from_file_location(
+                "installed_runner", destination / "bugbounty-executor" / "scripts" / "run_plan.py"
+            )
             runner = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(runner)
             with patch.object(runner.subprocess, "run", return_value=SimpleNamespace(returncode=0)) as run:
-                self.assertEqual(runner.run_plan({"program": "lab", "action": "request", "raw_request": "registros/lab/control.http"}, ROOT), 0)
+                self.assertEqual(
+                    runner.run_plan(
+                        {"program": "lab", "action": "request", "raw_request": "registros/lab/control.http"}, ROOT
+                    ),
+                    0,
+                )
             run.assert_called_once()
             self.assertIn("--dry-run", run.call_args.args[0])
 
@@ -78,7 +92,9 @@ class SkillFamilyTests(unittest.TestCase):
             self.assertFalse((destination / "bugbounty-executor").exists())
             self.assertEqual(existing.read_text(), "user customization")
             installer.install_skills(ROOT / "skills", destination, execute=True, update=True)
-            self.assertEqual(existing.read_bytes(), (ROOT / "skills" / installer.SKILL_NAMES[-1] / "SKILL.md").read_bytes())
+            self.assertEqual(
+                existing.read_bytes(), (ROOT / "skills" / installer.SKILL_NAMES[-1] / "SKILL.md").read_bytes()
+            )
             self.assertEqual(custom.read_text(), "keep custom")
 
     def test_overlap_and_parent_file_rejected_before_writes(self):

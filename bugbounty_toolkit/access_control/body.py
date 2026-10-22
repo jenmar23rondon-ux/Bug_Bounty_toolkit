@@ -57,8 +57,11 @@ class BodyDocument:
     def fields(self) -> dict[str, int]:
         if self.media_type == "application/json":
             return numeric_fields(self.value)
-        return {"/" + key.replace("~", "~0").replace("/", "~1"): int(value)
-                for key, value in self.value if id_name(key) and re.fullmatch(r"-?[0-9]{1,19}", value)}
+        return {
+            "/" + key.replace("~", "~0").replace("/", "~1"): int(value)
+            for key, value in self.value
+            if id_name(key) and re.fullmatch(r"-?[0-9]{1,19}", value)
+        }
 
     def replace(self, pointer: str, value: int) -> str:
         if pointer not in self.fields() or type(value) is not int or not -(2**63) <= value < 2**63:

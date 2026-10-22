@@ -44,7 +44,9 @@ class RequestReplayer:
         self.scope.require(spec.url)
         return spec
 
-    def send_and_save(self, spec: RequestSpec, destination: Path, markers: list[str] | None = None) -> tuple[ResponseRecord, Path]:
+    def send_and_save(
+        self, spec: RequestSpec, destination: Path, markers: list[str] | None = None
+    ) -> tuple[ResponseRecord, Path]:
         self.scope.require(spec.prepared_url())
         record = self.client.send(spec)
         evidence = {

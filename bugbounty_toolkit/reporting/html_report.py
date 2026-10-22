@@ -49,8 +49,8 @@ def render_html_report(store: RecordStore, destination: Path) -> Path:
   <h1>Bug Bounty Toolkit Report</h1>
   <p><strong>Program:</strong> {escape(str(report["program"]))}</p>
   <p><strong>Records path:</strong> {escape(str(report["records_path"]))}</p>
-  <p><strong>Allowed scope:</strong> {escape(', '.join(report['scope']['allowed']))}</p>
-  <p><strong>Exclusions:</strong> {escape(', '.join(report['scope']['excluded']))}</p>
+  <p><strong>Allowed scope:</strong> {escape(", ".join(report["scope"]["allowed"]))}</p>
+  <p><strong>Exclusions:</strong> {escape(", ".join(report["scope"]["excluded"]))}</p>
   <div class="stats">
     <div class="stat"><strong>{counts["runs"]}</strong><br>Runs</div>
     <div class="stat"><strong>{counts["reviewed"]}</strong><br>Reviewed</div>
@@ -67,7 +67,7 @@ def render_html_report(store: RecordStore, destination: Path) -> Path:
     <tbody>{findings or "<tr><td colspan='4'>No findings recorded.</td></tr>"}</tbody>
   </table>
   <h2>Request, Fuzzing and XSS Evidence</h2>
-  {evidence or '<p>No JSON evidence recorded.</p>'}
+  {evidence or "<p>No JSON evidence recorded.</p>"}
 </body>
 </html>
 """

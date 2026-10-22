@@ -70,10 +70,18 @@ def probe_verdict(response, case: AccessCase, filters: tuple[int, ...]) -> dict:
     else:
         verdict = "inconclusive"
     filtered = response.body_size in filters
-    return {"status": response.status_code, "size": response.body_size, "verdict": "filtered" if filtered else verdict,
-            "noise_filtered": filtered, "candidate_before_filter": candidate, "different_identity": different,
-            "private_proof_matched": proof, "confirmed": False, "write_effect_verified": False,
-            "observations": facts}
+    return {
+        "status": response.status_code,
+        "size": response.body_size,
+        "verdict": "filtered" if filtered else verdict,
+        "noise_filtered": filtered,
+        "candidate_before_filter": candidate,
+        "different_identity": different,
+        "private_proof_matched": proof,
+        "confirmed": False,
+        "write_effect_verified": False,
+        "observations": facts,
+    }
 
 
 @dataclass(frozen=True)
@@ -99,7 +107,12 @@ class AccessBatchTester:
         self.scope, self.client, self.client_factory = scope, client, client_factory
 
     def validate(self, case_file: Path, options: BatchOptions, max_tests: int) -> tuple[AccessCase, list[Probe]]:
-        if type(options.concurrency) is not int or not 1 <= options.concurrency <= 100 or not math.isfinite(options.delay) or options.delay < 0:
+        if (
+            type(options.concurrency) is not int
+            or not 1 <= options.concurrency <= 100
+            or not math.isfinite(options.delay)
+            or options.delay < 0
+        ):
             raise ValueError("Concurrency must be 1-100 and delay must be finite and nonnegative.")
         if type(max_tests) is not int or not 3 <= max_tests <= 10000:
             raise ValueError("A bounded batch budget of 3-10000 requests is required.")
@@ -107,16 +120,28 @@ class AccessBatchTester:
         values = parse_id_range(options.id_range, max_tests) if options.id_range is not None else None
         probes = []
         if options.body_idor:
-            content_type = next((value for key, value in case.cross.headers.items() if key.lower() == "content-type"), "")
+            content_type = next(
+                (value for key, value in case.cross.headers.items() if key.lower() == "content-type"), ""
+            )
             document = BodyDocument.parse(case.cross.body, content_type)
             methods = options.methods or (case.owner.method,)
             if not set(methods) <= set(case.methods):
                 raise ValueError("Requested methods must be explicitly approved in the case.")
-            if any(method in {"PUT", "PATCH", "DELETE"} or (method == "POST" and case.owner.method != "POST") for method in methods) and not options.allow_write:
+            if (
+                any(
+                    method in {"PUT", "PATCH", "DELETE"} or (method == "POST" and case.owner.method != "POST")
+                    for method in methods
+                )
+                and not options.allow_write
+            ):
                 raise ValueError("Write-method probes require --allow-write and case writes_authorized=true.")
             for field, value, body in document.variations(list(case.body_fields), values):
                 for method in dict.fromkeys(methods):
-                    probes.append(Probe(RequestSpec(method, case.cross.url, dict(case.cross.headers), body=body), str(value), field))
+                    probes.append(
+                        Probe(
+                            RequestSpec(method, case.cross.url, dict(case.cross.headers), body=body), str(value), field
+                        )
+                    )
                     if len(probes) + 2 > max_tests:
                         raise ValueError("The complete body plan exceeds the configured request budget.")
         else:
@@ -140,13 +165,29 @@ class AccessBatchTester:
 
     def run(self, case_file: Path, options: BatchOptions, evidence_dir: Path, max_tests: int):
         case, probes = self.validate(case_file, options, max_tests)
-        result = {"type": "access-control", "mode": "body" if options.body_idor else "range", "classification": "inconclusive",
-                  "confirmed": False, "controls_valid": False, "steps": [], "results": [], "requests_attempted": 0,
-                  "planned_probes": len(probes), "request_budget": max_tests, "stop_reason": None,
-                  "concurrency": options.concurrency, "inverse_sent": False, "anonymous_sent": False}
+        result = {
+            "type": "access-control",
+            "mode": "body" if options.body_idor else "range",
+            "classification": "inconclusive",
+            "confirmed": False,
+            "controls_valid": False,
+            "steps": [],
+            "results": [],
+            "requests_attempted": 0,
+            "planned_probes": len(probes),
+            "request_budget": max_tests,
+            "stop_reason": None,
+            "concurrency": options.concurrency,
+            "inverse_sent": False,
+            "anonymous_sent": False,
+        }
         stop = Event()
-        limiter = RateLimiter(min(self.client.rate_limiter.requests_per_second, 1 / options.delay) if options.delay else self.client.rate_limiter.requests_per_second,
-                              cancel_event=stop)
+        limiter = RateLimiter(
+            min(self.client.rate_limiter.requests_per_second, 1 / options.delay)
+            if options.delay
+            else self.client.rate_limiter.requests_per_second,
+            cancel_event=stop,
+        )
         limiter._last_request_at = self.client.rate_limiter._last_request_at
         self.client.rate_limiter = limiter
         for account, request in (("owner", case.owner), ("actor", case.actor)):
@@ -159,7 +200,14 @@ class AccessBatchTester:
             facts = observations(response, case.checks)
             result["steps"].append({"step": account + "_control", **facts})
             other = "actor" if account == "owner" else "owner"
-            if response.status_code != 200 or response.body_truncated or facts["application_success"] is not True or not facts[f"{account}_resource_match"] or not facts[f"{account}_private_match"] or facts[f"{other}_marker_seen"]:
+            if (
+                response.status_code != 200
+                or response.body_truncated
+                or facts["application_success"] is not True
+                or not facts[f"{account}_resource_match"]
+                or not facts[f"{account}_private_match"]
+                or facts[f"{other}_marker_seen"]
+            ):
                 result["stop_reason"] = "invalid_" + account + "_control"
                 break
             if account == "actor":
@@ -172,21 +220,44 @@ class AccessBatchTester:
             if stop.is_set():
                 return index, None
             if not hasattr(state, "client"):
-                state.client = self.client_factory(limiter) if self.client_factory else HttpClient(self.scope, self.client.timeout, limiter, self.client.max_response_bytes)
+                state.client = (
+                    self.client_factory(limiter)
+                    if self.client_factory
+                    else HttpClient(self.scope, self.client.timeout, limiter, self.client.max_response_bytes)
+                )
             probe = probes[index]
             try:
                 response = state.client.send(probe.request)
                 row = probe_verdict(response, case, options.filter_sizes)
                 if response.status_code in {401, 429} or response.body_truncated or 300 <= response.status_code < 400:
                     stop.set()
-                    row["stop_reason"] = "rate_limited" if response.status_code == 429 else "truncated_response" if response.body_truncated else "access_or_rate_limit" if response.status_code == 401 else "redirect_not_followed"
+                    row["stop_reason"] = (
+                        "rate_limited"
+                        if response.status_code == 429
+                        else "truncated_response"
+                        if response.body_truncated
+                        else "access_or_rate_limit"
+                        if response.status_code == 401
+                        else "redirect_not_followed"
+                    )
             except (ToolkitError, ValueError):
                 if stop.is_set():
                     return index, None
                 stop.set()
-                row = {"status": None, "size": 0, "verdict": "error", "confirmed": False, "stop_reason": "transport_error"}
-            return index, {"id": probe.identifier, "url": redact_url(probe.request.prepared_url()), "method": probe.request.method,
-                           "field": probe.field, **row}
+                row = {
+                    "status": None,
+                    "size": 0,
+                    "verdict": "error",
+                    "confirmed": False,
+                    "stop_reason": "transport_error",
+                }
+            return index, {
+                "id": probe.identifier,
+                "url": redact_url(probe.request.prepared_url()),
+                "method": probe.request.method,
+                "field": probe.field,
+                **row,
+            }
 
         collected = {}
         next_index = 0
@@ -212,6 +283,10 @@ class AccessBatchTester:
         result["stop_reason"] = next((row["stop_reason"] for row in result["results"] if "stop_reason" in row), None)
         if any(row["verdict"] == "candidate" for row in result["results"]):
             result["classification"] = "candidate"
-        elif result["results"] and not stop.is_set() and all(row["verdict"] == "rejected_in_this_test" for row in result["results"]):
+        elif (
+            result["results"]
+            and not stop.is_set()
+            and all(row["verdict"] == "rejected_in_this_test" for row in result["results"])
+        ):
             result["classification"] = "rejected_in_this_test"
         return write_evidence_json(evidence_dir, result, prefix="access-batch"), result

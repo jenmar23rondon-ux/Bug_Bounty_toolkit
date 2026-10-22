@@ -5,7 +5,9 @@ import re
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 
-SENSITIVE_KEY = re.compile(r"password|passwd|passphrase|secret|token|api.?key|authorization|cookie|session|csrf|credential", re.I)
+SENSITIVE_KEY = re.compile(
+    r"password|passwd|passphrase|secret|token|api.?key|authorization|cookie|session|csrf|credential", re.I
+)
 REDACTED = "[redacted]"
 
 
@@ -15,7 +17,10 @@ def redact_headers(headers: dict[str, str]) -> dict[str, str]:
 
 def redact_url(url: str) -> str:
     parsed = urlsplit(url)
-    query = [(key, REDACTED if SENSITIVE_KEY.search(key) else value) for key, value in parse_qsl(parsed.query, keep_blank_values=True)]
+    query = [
+        (key, REDACTED if SENSITIVE_KEY.search(key) else value)
+        for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+    ]
     netloc = parsed.netloc.rsplit("@", 1)[-1]
     return urlunsplit((parsed.scheme, netloc, parsed.path, urlencode(query), ""))
 
@@ -47,7 +52,7 @@ def redact_text(value: str | None) -> str | None:
             return urlencode([(key, REDACTED if SENSITIVE_KEY.search(key) else item) for key, item in pairs])
     value = re.sub(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*", "Bearer [redacted]", value)
     return re.sub(
-        r'''(?i)(["']?(?:password|passwd|secret|[\w-]*token|api[_-]?key|session[_-]?id)["']?\s*[:=]\s*["']?)[^\s"'&<>,;}]+''',
+        r"""(?i)(["']?(?:password|passwd|secret|[\w-]*token|api[_-]?key|session[_-]?id)["']?\s*[:=]\s*["']?)[^\s"'&<>,;}]+""",
         lambda match: match.group(1) + REDACTED,
         value,
     )

@@ -16,9 +16,12 @@ class OllamaReviewTests(unittest.TestCase):
             "body": "private response body",
         }
         packet = review_evidence(source)
-        assessment = {"decision": "candidate", "summary": "Review required.",
-                      "evidence": ["A crossed response matched configured predicates."],
-                      "limitations": ["Account ownership still needs verification."]}
+        assessment = {
+            "decision": "candidate",
+            "summary": "Review required.",
+            "evidence": ["A crossed response matched configured predicates."],
+            "limitations": ["Account ownership still needs verification."],
+        }
         envelope = {"message": {"content": json.dumps(assessment)}}
         opener = Mock()
         opener.open.return_value = io.BytesIO(json.dumps(envelope).encode("utf-8"))

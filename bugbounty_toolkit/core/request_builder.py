@@ -66,5 +66,7 @@ def parse_raw_http_request(raw: str, base_url: str | None = None) -> RequestSpec
     if not parsed.hostname:
         raise RequestBuildError(f"Could not resolve host from raw request target: {raw_target}")
 
-    headers = {key: value for key, value in headers.items() if key.lower() not in {"content-length", "transfer-encoding"}}
+    headers = {
+        key: value for key, value in headers.items() if key.lower() not in {"content-length", "transfer-encoding"}
+    }
     return RequestSpec(method=method, url=normalize_url(url), headers=headers, body=body or None)

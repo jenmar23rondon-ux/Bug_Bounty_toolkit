@@ -15,12 +15,16 @@ def origins_for_target(url: str) -> list[str]:
     host = urlsplit(url).hostname
     if not host:
         raise ValueError("URL must include a hostname.")
-    return list(dict.fromkeys((
-        "https://evil.com",
-        "null",
-        f"https://evil.{host}",
-        f"https://{host}.evil.com",
-    )))
+    return list(
+        dict.fromkeys(
+            (
+                "https://evil.com",
+                "null",
+                f"https://evil.{host}",
+                f"https://{host}.evil.com",
+            )
+        )
+    )
 
 
 def classify_cors(origin: str, allow_origin: str | None, allow_credentials: str | None) -> str:
@@ -59,27 +63,35 @@ class CorsChecker:
             try:
                 response = self.client.send(RequestSpec("GET", options.url, headers))
             except (ToolkitError, ValueError) as exc:
-                results.append({"origin": origin, "classification": "error",
-                                "reason": type(exc).__name__, "confirmed": False})
+                results.append(
+                    {"origin": origin, "classification": "error", "reason": type(exc).__name__, "confirmed": False}
+                )
                 stop_reason = "transport_error"
                 break
             allow_origin = response.headers.get("access-control-allow-origin")
             allow_credentials = response.headers.get("access-control-allow-credentials")
             classification = classify_cors(origin, allow_origin, allow_credentials)
-            results.append({
-                "origin": origin,
-                "status_code": response.status_code,
-                "access_control_allow_origin": allow_origin,
-                "access_control_allow_credentials": allow_credentials,
-                "classification": classification,
-                "confirmed": classification == "VULNERABLE",
-                "duration_ms": response.duration_ms,
-            })
+            results.append(
+                {
+                    "origin": origin,
+                    "status_code": response.status_code,
+                    "access_control_allow_origin": allow_origin,
+                    "access_control_allow_credentials": allow_credentials,
+                    "classification": classification,
+                    "confirmed": classification == "VULNERABLE",
+                    "duration_ms": response.duration_ms,
+                }
+            )
             if response.status_code in {401, 403, 429}:
                 stop_reason = "access_or_rate_limit"
                 break
-        evidence = {"type": "cors", "url": redact_url(options.url), "requests_attempted": len(results),
-                   "stop_reason": stop_reason, "results": results,
-                   "note": "Only Origin and CORS response headers are recorded; request credentials and response bodies are omitted."}
+        evidence = {
+            "type": "cors",
+            "url": redact_url(options.url),
+            "requests_attempted": len(results),
+            "stop_reason": stop_reason,
+            "results": results,
+            "note": "Only Origin and CORS response headers are recorded; request credentials and response bodies are omitted.",
+        }
         path = write_evidence_json(evidence_dir, evidence, prefix="cors")
         return path, results
