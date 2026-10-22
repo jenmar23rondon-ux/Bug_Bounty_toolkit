@@ -11,7 +11,7 @@ from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.xss.parameter_tester import XssOptions, XssParameterTester, with_parameter
 from bugbounty_toolkit.xss.reflection_detector import detect_reflection
 from bugbounty_toolkit.xss.result_validator import classify_reflection
-from bugbounty_toolkit.xss.test_cases import payloads_for_marker
+from bugbounty_toolkit.xss.test_cases import payload_cases_for_marker, payloads_for_marker
 from bugbounty_toolkit.xss.playwright_confirm import classify_execution, require_playwright_installed
 from bugbounty_toolkit.utils.exceptions import ToolkitError
 
@@ -43,6 +43,8 @@ class XssTests(unittest.TestCase):
             self.assertEqual(result["context_analysis"]["status"], "analyzed")
             kinds = {entry["context"] for entry in result["context_analysis"]["contexts"]}
             self.assertTrue({"html_text", "url_attribute", "attribute", "event_attribute", "script"}.issubset(kinds))
+            self.assertEqual(result["payload_context"], "plain_value")
+            self.assertEqual(result["reflection_contexts"], result["context_analysis"]["contexts"])
             self.assertFalse(result["confirmed"])
             self.assertFalse(result["browser_execution_observed"])
             client.send.assert_called_once()
@@ -98,6 +100,25 @@ class XssTests(unittest.TestCase):
         self.assertTrue(any(item.startswith("javascript:") for item in expanded))
         self.assertTrue(all("window.__bbtk_xss_marker" in item and "alert(" in item for item in expanded[4:]))
 
+    def test_context_payloads_have_explicit_context_labels_and_dom_sink_cases(self):
+        cases = payload_cases_for_marker("m123", include_context=True)
+        contexts = {case.context for case in cases}
+        self.assertEqual(len(cases), 11)
+        self.assertTrue(
+            {
+                "html_text",
+                "attribute_event",
+                "script",
+                "url",
+                "without_angle_brackets",
+                "dom_inner_html",
+                "dom_document_write",
+            }.issubset(contexts)
+        )
+        no_angles = next(case.payload for case in cases if case.context == "without_angle_brackets")
+        self.assertNotIn("<", no_angles)
+        self.assertNotIn(">", no_angles)
+
     def test_execution_classification_includes_alert_and_escaped_reflection(self):
         self.assertEqual(classify_execution(True, True, False), "confirmed")
         self.assertEqual(classify_execution(True, False, True), "confirmed")
@@ -128,6 +149,7 @@ class XssTests(unittest.TestCase):
                 "classification": "confirmed",
                 "marker_observed": True,
                 "alert_observed": True,
+                "dom_sinks": ["innerHTML"],
                 "dialogs": [{"type": "alert", "text": "BBTK_MARKER"}],
                 "console_errors": [],
                 "page_errors": [],
@@ -144,6 +166,7 @@ class XssTests(unittest.TestCase):
             checker_type.return_value.confirm.assert_called_once()
             self.assertEqual(results[0]["classification"], "confirmed")
             self.assertTrue(results[0]["confirmed"])
+            self.assertEqual(results[0]["dom_sinks"], ["innerHTML"])
 
             client.reset_mock()
             client.send.side_effect = lambda spec: ResponseRecord(
@@ -159,6 +182,31 @@ class XssTests(unittest.TestCase):
                 )
             checker_type.return_value.confirm.assert_not_called()
             self.assertEqual(results[0]["classification"], "not_reflected")
+
+            client.reset_mock()
+            client.send.side_effect = lambda spec: ResponseRecord(
+                spec, spec.url, 200, "OK", 1, {"content-type": "text/html"}, "<p>BBTK_MARKER</p>", 22
+            )
+            with (
+                patch("bugbounty_toolkit.xss.parameter_tester.require_playwright_installed"),
+                patch("bugbounty_toolkit.xss.parameter_tester.PlaywrightExecutionChecker") as checker_type,
+                patch("bugbounty_toolkit.xss.parameter_tester.new_marker", return_value="BBTK_MARKER"),
+            ):
+                checker_type.return_value.confirm.return_value = {
+                    "classification": "reflected_not_executed",
+                    "marker_observed": False,
+                    "alert_observed": False,
+                    "dom_sinks": ["innerHTML", "document.write", "location"],
+                    "dialogs": [],
+                    "console_errors": [],
+                    "page_errors": [],
+                }
+                _, results = XssParameterTester(ScopeValidator(scope_file), client).run(
+                    XssOptions(routes, params, max_tests=1, confirm_exec=True), root / "evidence"
+                )
+            self.assertEqual(results[0]["classification"], "reflected_not_executed")
+            self.assertFalse(results[0]["confirmed"])
+            self.assertEqual(results[0]["dom_sinks"], ["innerHTML", "document.write", "location"])
 
     def test_browser_budget_error_writes_partial_evidence_and_stops(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -171,5 +171,6 @@ class CsrfAuditor:
             )
 
         result["stop_reason"] = stop_reason
+        result["requests_attempted"] = 1
         path = write_evidence_json(evidence_dir, result, prefix="csrf-audit")
         return path, result

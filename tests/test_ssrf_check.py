@@ -38,6 +38,16 @@ class SsrfCheckTests(unittest.TestCase):
         )
 
     def test_fixed_payloads_are_validated_and_comparison_records_only_minimized_data(self):
+        self.assertEqual(
+            SSRF_PAYLOADS,
+            (
+                "http://127.0.0.1:80",
+                "http://127.0.0.1:22",
+                "http://127.0.0.1:8080",
+                "http://169.254.169.254/latest/meta-data/",
+                "http://[::1]",
+            ),
+        )
         client = Mock()
         bodies = [
             "changed-body-private-24",
