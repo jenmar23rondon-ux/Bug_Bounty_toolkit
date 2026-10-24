@@ -86,6 +86,7 @@ files = [
     "bugbounty_toolkit/burp_import.py",
     "bugbounty_toolkit/analysis/ollama_review.py",
     "bugbounty_toolkit/analysis/artifact_review.py",
+    "bugbounty_toolkit/analysis/evidence_engine.py",
 ]
 
 [tool.coverage.run]

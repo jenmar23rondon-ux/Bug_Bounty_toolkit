@@ -210,6 +210,18 @@ Sitemap XML produces deduplicated `routes.txt` and `parameters.txt`; an optional
 
 `ai-review --evidence-file` sends only the existing allowlisted minimized evidence packet. `--artifact` sends bounded, overlapping text chunks after local redaction; `--chunk-chars` defaults to 6000 and `--max-chunks` defaults to 20. Model JSON is validated and retried once; unparsed/oversized artifacts are reported with an explicit status. Ollama is contacted only at `127.0.0.1:11434`; if unavailable, the command reports that state without failing the toolkit. Its result is always a **second opinion, not confirmation**. It never sends target requests or submits a report. `report --draft-with-ai` uses the minimized evidence and falls back to the deterministic Markdown draft if the local model is unavailable or returns an unusable draft. The recommended local model is `qwen2.5-coder:7b`; quality and useful context depend on model size and the selected chunk limits. Review all generated text manually.
 
+### Unified Evidence Import
+
+The offline `evidence import` command normalizes supplied Burp XML, HAR, ffuf JSON, Nuclei JSON/JSONL, native toolkit JSON, raw HTTP captures, structured CSV, HTML, Markdown and text into one typed JSON bundle. Import multiple files together to compare their account/session fingerprints consistently:
+
+```bash
+bbtk evidence import my-program --input burp-history.xml traffic.har ffuf.json nuclei.jsonl --dry-run
+bbtk evidence import my-program --input burp-history.xml traffic.har ffuf.json nuclei.jsonl
+bbtk evidence correlate my-program --input registros/my-program/evidence/imports/unified-evidence.json --dry-run
+```
+
+The importer stores source paths and record locators, extracts endpoint templates and parameter names, records response fingerprints/shape fingerprints, and merges semantically duplicate observations while preserving each provenance reference. Session and resource identifiers are HMAC-fingerprinted using a random per-import salt, so identities correlate only among files imported together; raw cookies, tokens, body text and parameter values are not stored. Re-importing does not overwrite the default bundle unless `--force` is used. `--dry-run` parses and summarizes without creating output files. Correlations report endpoint, session, resource and response differences only; they are not vulnerability findings, do not prove authorization, and do not send network requests or call Ollama.
+
 ## Limits and Reports
 
 `init --config` copies limits into `registros/<program>/settings.yaml`. The included defaults are 1 request/second, 5 ffuf threads, a 15-second timeout, at most 100 XSS HTTP probes and a 1 MB captured response. Raise `max_tests` in the program's `settings.yaml` only when its policy allows the additional requests; per-command `--max-tests` cannot exceed that configured limit. Range mode defaults to 25 IDs in public scope; the separate reviewed public opt-in raises its hard cap to 100, while loopback tests can configure up to 100.
@@ -231,7 +243,7 @@ Authorization headers, cookies and common password/token fields are redacted fro
 
 The case file's scope, account ownership, expected access and disposable-resource declarations are researcher attestations; the toolkit cannot independently verify program policy or account identity. `anonymous_access`, matrix candidates and write-response predicates are test evidence, not automatic vulnerability confirmation. `public_endpoint` is informational; an explicit `expected_anonymous` mismatch is separately flagged. The matrix contains only supplied accounts and known resources (at most ten accounts), and its diagonal cells are ordinary controls. Persistence verification checks only the explicitly selected scalar through the supplied owner GET. Cleanup compares a final scoped GET against each captured original value; a failed or unavailable readback is reported separately from the access-test outcome. Always inspect disposable test data after writes, including public opt-in runs.
 
-The Burp importer is offline and supports only sitemap XML, raw HTTP requests and saved items; it does not interpret Burp HTML reports. Its parsers are bounded and best-effort, and redaction cannot identify every proprietary secret format. Extracted JWT files are intentionally sensitive. Ollama is a local second opinion only: it does not confirm findings, send target requests or submit reports. Artifact review sends redacted chunks to the local model; context can be incomplete when `--max-chunks` truncates a file, and analysis quality depends on the installed model and its context capacity. AI report drafts must be manually checked against the source evidence.
+The route-oriented Burp importer is offline and supports only sitemap XML, raw HTTP requests and saved items; it does not interpret Burp HTML reports. The unified evidence importer additionally accepts HAR, ffuf/Nuclei JSON, toolkit JSON, raw HTTP, CSV, HTML, Markdown and text. Those adapters are bounded and best-effort; arbitrary document text is not retained, but redaction cannot identify every proprietary secret format. Provenance paths can disclose local filenames and are included for traceability. Per-import HMAC fingerprints cannot correlate identities across separate import runs. Ollama is a local second opinion only: it does not confirm findings, send target requests or submit reports. Artifact review sends redacted chunks to the local model; context can be incomplete when `--max-chunks` truncates a file, and analysis quality depends on the installed model and its context capacity. AI report drafts must be manually checked against the source evidence.
 
 CI runs Ruff lint and formatting across `bugbounty_toolkit/`, `tests/`, `scripts/` and `skills/`; a guard test verifies every Python file under the package and tests is included in Ruff's discovered file set. Strict mypy covers the access comparison/write lab, shared budget and runner, CORS/redirect, SQLi/XSS, diagnostics, hunt, SSRF/CSRF, JWT forge, takeover and APK scan modules. Coverage gates require at least 90% combined for the two critical access-control modules, at least 80% combined for `hunt.py`, `ssrf_check.py`, `csrf_audit.py` and `jwt_forge.py`, plus the existing 77% package-wide floor across `bugbounty_toolkit`, the skill installer and plan runner. The CLI and some older modules remain outside strict mypy. Run the same checks locally with `pip install -e ".[dev]"`.
 
@@ -254,7 +266,7 @@ Bug_Bounty_toolkit/
 |   |-- apk_scan.py          # Bounded offline APK and Android manifest inspection
 |   |-- burp_import.py       # Offline Burp sitemap, raw request and saved-item importer
 |   |-- access_control/     # Read/write comparisons, ranges and guards
-|   |-- analysis/           # Offline review, HTML/SQL/JWT analysis and local Ollama
+|   |-- analysis/           # Offline evidence import/correlation, review, HTML/SQL/JWT and local Ollama
 |   |-- core/               # Scope, HTTP, budgets, settings and records
 |   |-- fuzzing/            # ffuf adapter, wordlists and result parsing
 |   |-- integrations/       # External plan/catalog adapters
