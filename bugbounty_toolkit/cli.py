@@ -41,6 +41,7 @@ from .analysis.jwt_inspector import inspect_jwt, ALGORITHMS
 from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
+from .analysis.evidence_engine import correlations_from_bundle, import_evidence
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
@@ -1728,6 +1729,61 @@ def cmd_import_burp(args: argparse.Namespace) -> None:
         print("[!] Extracted JWT files contain sensitive credentials; keep them local and never commit them.")
 
 
+def _write_offline_json(path: Path, data: dict[str, object], force: bool) -> None:
+    if path.exists() and not force:
+        raise ValueError(f"Output already exists: {path}. Pass --force to replace it.")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rendered = json.dumps(data, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
+    if force:
+        path.write_text(rendered, encoding="utf-8")
+    else:
+        with path.open("x", encoding="utf-8", newline="") as handle:
+            handle.write(rendered)
+
+
+def cmd_evidence_import(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    bundle = import_evidence(args.input, args.format)
+    default_path = paths.evidence_dir / "imports" / "unified-evidence.json"
+    destination = args.output or default_path
+    summary = bundle["summary"]
+    if not isinstance(summary, dict):
+        raise RuntimeError("Evidence importer returned an invalid summary.")
+    if args.dry_run:
+        print(
+            f"[i] Offline evidence import plan for {args.program}: {summary['records_parsed']} observations parsed, "
+            f"{summary['records_unique']} unique, {summary['correlation_groups']} correlation groups."
+        )
+        print(f"[dry-run] would write: {destination}")
+        print("[i] No target requests or Ollama calls sent; correlations are not vulnerability findings.")
+        return
+    _write_offline_json(destination, bundle, args.force)
+    print(
+        f"[+] Evidence bundle saved: {destination} ({summary['records_unique']} unique observations, "
+        f"{summary['correlation_groups']} correlation groups). No network requests sent."
+    )
+
+
+def cmd_evidence_correlate(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    result = correlations_from_bundle(args.input)
+    bundle_id = result.get("bundle_id")
+    safe_id = bundle_id if isinstance(bundle_id, str) and re.fullmatch(r"[a-f0-9]{24}", bundle_id) else "bundle"
+    destination = args.output or paths.reports_dir / f"evidence-correlations-{safe_id}.json"
+    summary = result["summary"]
+    if not isinstance(summary, dict):
+        raise RuntimeError("Evidence correlator returned an invalid summary.")
+    if args.dry_run:
+        print(
+            f"[i] Offline correlation plan: {summary['records']} records, "
+            f"{summary['correlation_groups']} descriptive groups. No findings are inferred."
+        )
+        print(f"[dry-run] would write: {destination}")
+        return
+    _write_offline_json(destination, result, args.force)
+    print(f"[+] Correlations saved: {destination} ({summary['correlation_groups']} groups; no findings inferred).")
+
+
 def cmd_ai_review(args: argparse.Namespace) -> None:
     ProgramPaths(RECORDS_ROOT, args.program)
     validate_ollama_config(args.model, args.ai_timeout)
@@ -2293,6 +2349,51 @@ def build_parser() -> argparse.ArgumentParser:
     burp_import.add_argument("--dry-run", action="store_true", help="List planned local files without writing")
     burp_import.add_argument("--force", action="store_true", help="Replace existing imported files")
     burp_import.set_defaults(func=cmd_import_burp)
+
+    evidence_cli = sub.add_parser(
+        "evidence", help="Normalize and correlate local evidence from Burp and supported scanner formats"
+    )
+    evidence_sub = evidence_cli.add_subparsers(dest="evidence_command", required=True)
+    evidence_import = evidence_sub.add_parser(
+        "import", help="Build a redacted, provenance-preserving evidence bundle; never sends requests"
+    )
+    evidence_import.add_argument("program")
+    evidence_import.add_argument(
+        "--input", type=Path, nargs="+", required=True, help="One or more local artifact files"
+    )
+    evidence_import.add_argument(
+        "--format",
+        choices=(
+            "auto",
+            "burp-xml",
+            "har",
+            "ffuf-json",
+            "nuclei-json",
+            "nuclei-jsonl",
+            "toolkit-json",
+            "http",
+            "html",
+            "markdown",
+            "text",
+            "csv",
+        ),
+        default="auto",
+        help="Input format; auto-detected by default",
+    )
+    evidence_import.add_argument("--output", type=Path, help="Optional local bundle path")
+    evidence_import.add_argument("--dry-run", action="store_true", help="Parse and summarize without writing files")
+    evidence_import.add_argument("--force", action="store_true", help="Replace an existing output file")
+    evidence_import.set_defaults(func=cmd_evidence_import)
+
+    evidence_correlate = evidence_sub.add_parser(
+        "correlate", help="Recompute descriptive endpoint/session/resource groups from a local bundle"
+    )
+    evidence_correlate.add_argument("program")
+    evidence_correlate.add_argument("--input", type=Path, required=True, help="Unified evidence bundle JSON")
+    evidence_correlate.add_argument("--output", type=Path, help="Optional local correlation report path")
+    evidence_correlate.add_argument("--dry-run", action="store_true", help="Validate and summarize without writing")
+    evidence_correlate.add_argument("--force", action="store_true", help="Replace an existing output file")
+    evidence_correlate.set_defaults(func=cmd_evidence_correlate)
 
     ai_review = sub.add_parser(
         "ai-review", help="Ask local Ollama for a second opinion on minimized evidence or a redacted artifact"
