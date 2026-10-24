@@ -9,3 +9,7 @@ Notable user-facing changes are recorded here. The project has not yet published
 - Add shared request/time budgets, read-only diagnostics, and reviewer-ready redacted Markdown evidence drafts.
 - Expand strict mypy checks to additional core and vulnerability-check modules, and raise the overall coverage gate to 77%.
 - Refresh the documented package layout and add security and contribution guidance.
+- Add hunt orchestration that chains contextual checks across supplied routes and parameters.
+- Add offline Burp import and local AI artifact review (including APK `--ai-review`) with no remote fallback.
+- Add additional bounded security checks and specialized topic skills for the executor.
+- Harden CI linting gates alongside the existing coverage requirements.
