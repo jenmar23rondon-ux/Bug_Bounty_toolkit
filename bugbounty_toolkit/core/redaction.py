@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 
@@ -44,7 +45,9 @@ def redact_html_secrets(value: str, redact_all_hidden: bool = False) -> str:
 
 
 def redact_headers(headers: dict[str, str]) -> dict[str, str]:
-    return {key: REDACTED if SENSITIVE_KEY.search(key) else redact_text(value) for key, value in headers.items()}
+    return {
+        key: REDACTED if SENSITIVE_KEY.search(key) else (redact_text(value) or "") for key, value in headers.items()
+    }
 
 
 def redact_url(url: str) -> str:
@@ -57,7 +60,7 @@ def redact_url(url: str) -> str:
     return urlunsplit((parsed.scheme, netloc, parsed.path, urlencode(query), ""))
 
 
-def redact_data(value):
+def redact_data(value: Any) -> Any:
     if isinstance(value, dict):
         return {key: REDACTED if SENSITIVE_KEY.search(str(key)) else redact_data(item) for key, item in value.items()}
     if isinstance(value, list):

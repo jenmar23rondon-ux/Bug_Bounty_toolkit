@@ -95,6 +95,7 @@ files = [
     "bugbounty_toolkit/analysis/benchmark.py",
     "bugbounty_toolkit/analysis/prioritization.py",
     "bugbounty_toolkit/analysis/investigation.py",
+    "bugbounty_toolkit/reporting/finding_report.py",
 ]
 
 [tool.coverage.run]
