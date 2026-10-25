@@ -1,0 +1,6 @@
+GET /api/orders/1002?debug=1 HTTP/1.1
+Host: 127.0.0.1:8099
+Authorization: Bearer lab-actor-token
+Accept: application/json
+User-Agent: bbtk-idor-lab
+

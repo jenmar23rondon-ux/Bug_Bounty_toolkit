@@ -10,6 +10,8 @@ import math
 from dataclasses import asdict
 from pathlib import Path
 import re
+import subprocess
+import sys
 
 from . import __version__
 from .core.checks import render_checklist
@@ -167,6 +169,56 @@ def cmd_init(args: argparse.Namespace) -> None:
         automation_allowed="true" if args.automation_allowed else "false",
     )
     print(f"[+] Program initialized: {store.paths.program_dir}")
+
+
+def cmd_lab_idor(args: argparse.Namespace) -> None:
+    """Run or preview the deterministic local IDOR end-to-end workflow."""
+    project_root = Path(__file__).resolve().parents[1]
+    test_file = project_root / "tests" / "test_end_to_end_idor.py"
+    if args.dry_run:
+        print("[i] Local-only IDOR lab plan. --dry-run sends no requests and writes no files.")
+        print("[1] Server command for a manual run: bash labs/idor_lab/run.sh (PowerShell: ./labs/idor_lab/run.ps1).")
+        print(
+            '[2] bbtk --records-root <LAB_ROOT>/records init idor-lab --authorization "isolated local IDOR lab fixture" --automation-allowed'
+        )
+        print("[3] bbtk --records-root <LAB_ROOT>/records scope add idor-lab 127.0.0.1")
+        print(
+            "[4] bbtk --records-root <LAB_ROOT>/records import case idor-lab "
+            "--owner labs/idor_lab/captures/owner.txt --actor labs/idor_lab/captures/actor.txt "
+            "--base-url http://127.0.0.1:8099 --resource-pointer /data/id "
+            "--success-pointer /success --success-value true --private-pointer /data/marker "
+            "--private-marker owner-order-marker-1001 --actor-marker actor-order-marker-1002 "
+            "--attest-authorized-accounts --attest-private-resource"
+        )
+        print(
+            "[5] After policy approval for this disposable lab only, add "
+            '"identifier_enumeration_authorized": true to <LAB_ROOT>/records/idor-lab/private/case.json.'
+        )
+        print(
+            "[6] bbtk --records-root <LAB_ROOT>/records access-check idor-lab "
+            "--case-file <LAB_ROOT>/records/idor-lab/private/case.json --range 1001-1002 "
+            "--max-range 2 --max-tests 4 --min-interval 0.01"
+        )
+        print("[7] The test builds <LAB_ROOT>/records/idor-lab/private/public-case.json for /api/public/status.")
+        print(
+            "[8] bbtk --records-root <LAB_ROOT>/records access-check idor-lab "
+            "--case-file <LAB_ROOT>/records/idor-lab/private/public-case.json --anonymous-check --max-tests 4 "
+            "(expected: public_endpoint, not candidate)."
+        )
+        print("[9] bbtk --records-root <LAB_ROOT>/records report idor-lab --format json (repeat with --format html).")
+        print("[one command] bbtk lab idor")
+        print("[equivalent test command] python -m unittest discover -s tests -p test_end_to_end_idor.py -v")
+        return
+    if not test_file.is_file():
+        raise RuntimeError("The runnable IDOR lab needs the repository tests/test_end_to_end_idor.py file.")
+    print("[i] Running the deterministic IDOR lab. Traffic is restricted to 127.0.0.1; no external requests are sent.")
+    completed = subprocess.run(
+        [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", "test_end_to_end_idor.py", "-v"],
+        cwd=project_root,
+        check=False,
+    )
+    if completed.returncode:
+        raise RuntimeError(f"The end-to-end IDOR lab failed with exit code {completed.returncode}.")
 
 
 def cmd_scope_add(args: argparse.Namespace) -> None:
@@ -2215,6 +2267,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     takeover.add_argument("--dry-run", action="store_true", help="Validate scope and inputs without DNS queries")
     takeover.set_defaults(func=cmd_takeover_check)
+
+    lab = sub.add_parser("lab", help="Run deterministic local security labs; traffic never leaves loopback")
+    lab_sub = lab.add_subparsers(dest="lab_name", required=True)
+    lab_idor = lab_sub.add_parser("idor", help="Run the local IDOR/BOLA end-to-end demonstration")
+    lab_idor.add_argument("--dry-run", action="store_true", help="Print the exact local workflow without running it")
+    lab_idor.set_defaults(func=cmd_lab_idor)
 
     access = sub.add_parser(
         "access-check", help="Known-resource authorization comparison; bounded read and disposable JSON write modes"

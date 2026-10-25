@@ -4,6 +4,8 @@ Notable user-facing changes are recorded here. The project has not yet published
 
 ## Unreleased
 
+- Add a loopback-only deterministic IDOR/BOLA lab, raw fixture captures, a one-command end-to-end run, and an authorized-testing playbook.
+- Include the lab app in Ruff CI checks and strict mypy coverage.
 - Add offline `import case` generation from two distinct-account Burp GET captures, with strict origin/resource-difference validation, redacted summaries and researcher attestations.
 - Add an offline unified evidence importer for Burp, HAR, ffuf, Nuclei, toolkit JSON, HTTP captures, CSV and text artifacts, with redacted typed records, provenance, semantic deduplication and descriptive endpoint correlations.
 - Add optional local Ollama review for minimized evidence packets, with no remote fallback or automatic finding confirmation.
