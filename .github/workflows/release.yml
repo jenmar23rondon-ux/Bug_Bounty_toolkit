@@ -16,6 +16,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install -e ".[dashboard,xss,sqli,jwt,http,dev]"
+      - run: python -m playwright install --with-deps chromium
       - run: python -m pip check
       - run: bbtk --version
       - run: bash -n labs/idor_lab/run.sh
