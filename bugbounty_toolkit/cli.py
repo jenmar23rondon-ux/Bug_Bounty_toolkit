@@ -48,6 +48,7 @@ from .analysis.hypotheses import SECOND_OPINION as HYPOTHESES_SECOND_OPINION, an
 from .analysis.access_assessment import assess_access_control
 from .analysis.skill_router import route_hypotheses_file
 from .analysis.benchmark import run_idor_benchmark, write_benchmark_reports
+from .analysis.prioritization import prioritize_hypotheses_file, write_prioritization_report
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
@@ -1956,6 +1957,27 @@ def cmd_ai_route(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
+def cmd_ai_prioritize(args: argparse.Namespace) -> None:
+    ProgramPaths(RECORDS_ROOT, args.program)
+    if args.force and args.output is None:
+        raise ValueError("--force requires --output.")
+    result = prioritize_hypotheses_file(args.input, args.program, args.max_tests)
+    result["dry_run"] = args.dry_run
+    if args.dry_run:
+        print("[dry-run] No target request, Ollama call or file write performed.")
+    elif args.output is not None:
+        try:
+            report_path = write_prioritization_report(result, args.output, args.force)
+        except FileExistsError as exc:
+            raise ValueError(
+                f"Prioritization report already exists: {exc.filename}; use --force to replace it."
+            ) from exc
+        result["output"] = str(report_path)
+        print(f"[+] Prioritization report saved: {report_path}")
+    print("[i] Deterministic triage only. It does not confirm findings or execute the plan.")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
 def cmd_ai_benchmark(args: argparse.Namespace) -> None:
     if not args.dry_run and args.output is None:
         raise ValueError("--output is required unless --dry-run is used.")
@@ -2655,6 +2677,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run", action="store_true", required=True, help="Required; the router never executes plans"
     )
     ai_route.set_defaults(func=cmd_ai_route)
+
+    ai_prioritize = ai_sub.add_parser(
+        "prioritize", help="Rank reviewed hypotheses by evidence, potential impact, cost and operational risk"
+    )
+    ai_prioritize.add_argument("program")
+    ai_prioritize.add_argument("--input", type=Path, required=True, help="JSON output from `bbtk ai hypotheses`")
+    ai_prioritize.add_argument("--max-tests", type=positive_int, default=100, help="Estimated request budget")
+    ai_prioritize.add_argument("--output", type=Path, help="Optional JSON report path; refuses overwrite by default")
+    ai_prioritize.add_argument("--force", action="store_true", help="Replace an existing output report")
+    ai_prioritize.add_argument(
+        "--dry-run", action="store_true", help="Validate and print the plan without writing a report"
+    )
+    ai_prioritize.set_defaults(func=cmd_ai_prioritize)
 
     ai_benchmark = ai_sub.add_parser(
         "benchmark", help="Measure deterministic IDOR/BOLA assessment and optional local Ollama second opinion"

@@ -187,7 +187,8 @@ _CATEGORY_TO_SKILL = {
 }
 
 
-def _load_hypotheses(path: Path) -> tuple[dict[str, Any], list[tuple[str, dict[str, Any]]]]:
+def load_hypotheses_file(path: Path) -> tuple[dict[str, Any], list[tuple[str, dict[str, Any]]]]:
+    """Load the validated, reviewed hypotheses from a saved AI-hypotheses result."""
     try:
         with path.open("rb") as source:
             raw = source.read(MAX_HYPOTHESES_BYTES + 1)
@@ -420,5 +421,5 @@ def route_hypotheses_file(
     timeout: float = 120.0,
 ) -> dict[str, object]:
     """Read a saved hypotheses result and route it without writing files or executing its plan."""
-    data, hypotheses = _load_hypotheses(path)
+    data, hypotheses = load_hypotheses_file(path)
     return route_hypotheses(data, hypotheses, program, max_tests, model, timeout)

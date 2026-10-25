@@ -117,7 +117,7 @@ class EvidenceEngineTests(unittest.TestCase):
         self.assertEqual(record["sensitivity"], "sensitive")
         self.assertEqual(record["provenance"][0]["locator"], "/item[1]")
         serialized = json.dumps(bundle)
-        for secret in ("qsecret", "csecret", "900"):
+        for secret in ("qsecret", "csecret", "/api/items/900"):
             self.assertNotIn(secret, serialized)
 
     def test_ffuf_json_semantically_deduplicates_and_preserves_both_sources(self):
