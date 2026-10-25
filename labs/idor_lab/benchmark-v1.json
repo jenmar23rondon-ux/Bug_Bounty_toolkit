@@ -1,0 +1,177 @@
+{
+  "type": "bbtk-benchmark-dataset",
+  "schema_version": "1.0",
+  "dataset": "synthetic-idor-bola-v1",
+  "cases": [
+    {
+      "id": "idor-cross-private-marker",
+      "split": "holdout",
+      "truth": "vulnerable",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {"owner_resource": "owner-1", "actor_resource": "actor-1", "owner_marker": "owner-marker", "actor_marker": "actor-marker"}
+      },
+      "evidence": {
+        "type": "access-control", "mode": "read", "controls_valid": true,
+        "steps": [
+          {"step": "owner_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "actor_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "cross_read", "application_success": true, "owner_resource_match": true, "owner_private_match": true, "status_code": 200}
+        ]
+      }
+    },
+    {
+      "id": "protected-403-denial",
+      "split": "holdout",
+      "truth": "safe",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {"owner_resource": "owner-1", "actor_resource": "actor-1", "owner_marker": "owner-marker", "actor_marker": "actor-marker"}
+      },
+      "evidence": {
+        "type": "access-control", "mode": "read", "controls_valid": true,
+        "steps": [
+          {"step": "owner_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "actor_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "cross_read", "application_success": false, "owner_resource_match": false, "owner_private_match": false, "status_code": 403}
+        ]
+      }
+    },
+    {
+      "id": "http-200-access-denied-page",
+      "split": "holdout",
+      "truth": "safe",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {"owner_resource": "owner-1", "actor_resource": "actor-1", "owner_marker": "owner-marker", "actor_marker": "actor-marker"}
+      },
+      "evidence": {
+        "type": "access-control", "mode": "read", "controls_valid": true,
+        "steps": [
+          {"step": "owner_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "actor_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "cross_read", "application_success": false, "owner_resource_match": false, "owner_private_match": false, "status_code": 200}
+        ]
+      }
+    },
+    {
+      "id": "public-resource-control",
+      "split": "holdout",
+      "truth": "safe",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": false,
+        "expected_cross_access": "deny",
+        "checks": {"owner_resource": "public-1", "actor_resource": "public-2", "owner_marker": "public-marker", "actor_marker": "public-marker"}
+      },
+      "evidence": {
+        "type": "access-control", "mode": "read", "controls_valid": true,
+        "steps": [
+          {"step": "owner_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "actor_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "cross_read", "application_success": true, "owner_resource_match": true, "owner_private_match": true, "status_code": 200}
+        ]
+      }
+    },
+    {
+      "id": "reflected-marker-without-resource-match",
+      "split": "holdout",
+      "truth": "safe",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {"owner_resource": "owner-1", "actor_resource": "actor-1", "owner_marker": "owner-marker", "actor_marker": "actor-marker"}
+      },
+      "evidence": {
+        "type": "access-control", "mode": "read", "controls_valid": true,
+        "steps": [
+          {"step": "owner_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "actor_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "cross_read", "application_success": true, "owner_resource_match": false, "owner_private_match": true, "status_code": 200}
+        ]
+      }
+    },
+    {
+      "id": "private-marker-on-error-response",
+      "split": "holdout",
+      "truth": "vulnerable",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {"owner_resource": "owner-1", "actor_resource": "actor-1", "owner_marker": "owner-marker", "actor_marker": "actor-marker"}
+      },
+      "evidence": {
+        "type": "access-control", "mode": "read", "controls_valid": true,
+        "steps": [
+          {"step": "owner_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "actor_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "cross_read", "application_success": true, "owner_resource_match": true, "owner_private_match": true, "status_code": 403}
+        ]
+      }
+    },
+    {
+      "id": "missing-actor-control",
+      "split": "holdout",
+      "truth": "insufficient",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {"owner_resource": "owner-1", "actor_resource": "actor-1", "owner_marker": "owner-marker", "actor_marker": "actor-marker"}
+      },
+      "evidence": {
+        "type": "access-control", "mode": "read", "controls_valid": false,
+        "steps": [
+          {"step": "owner_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "cross_read", "application_success": true, "owner_resource_match": true, "owner_private_match": true, "status_code": 200}
+        ]
+      }
+    },
+    {
+      "id": "contradictory-cross-observations",
+      "split": "holdout",
+      "truth": "insufficient",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {"owner_resource": "owner-1", "actor_resource": "actor-1", "owner_marker": "owner-marker", "actor_marker": "actor-marker"}
+      },
+      "evidence": {
+        "type": "access-control", "mode": "read", "controls_valid": true,
+        "steps": [
+          {"step": "owner_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "actor_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "cross_read", "application_success": false, "owner_resource_match": true, "owner_private_match": false, "status_code": 200}
+        ]
+      }
+    },
+    {
+      "id": "development-denial-example",
+      "split": "development",
+      "truth": "safe",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {"owner_resource": "owner-1", "actor_resource": "actor-1", "owner_marker": "owner-marker", "actor_marker": "actor-marker"}
+      },
+      "evidence": {
+        "type": "access-control", "mode": "read", "controls_valid": true,
+        "steps": [
+          {"step": "owner_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "actor_control", "application_success": true, "resource_match": true, "private_match": true, "status_code": 200},
+          {"step": "cross_read", "application_success": false, "owner_resource_match": false, "owner_private_match": false, "status_code": 403}
+        ]
+      }
+    }
+  ]
+}

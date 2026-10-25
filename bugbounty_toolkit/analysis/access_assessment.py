@@ -34,6 +34,12 @@ def _insufficient(reason: str) -> dict[str, object]:
 def assess_access_control(case_path: Path, evidence_path: Path | None) -> dict[str, object]:
     """Classify supplied A/B evidence from explicit ownership predicates, never status alone."""
     case = _read_json(case_path, "Access case")
+    evidence = _read_json(evidence_path, "Access-check evidence") if evidence_path is not None else None
+    return assess_access_control_data(case, evidence)
+
+
+def assess_access_control_data(case: object, evidence: object | None) -> dict[str, object]:
+    """Classify in-memory A/B evidence using the same deterministic rules as the file API."""
     if not isinstance(case, dict):
         return _insufficient("The case is not a JSON object.")
     checks = case.get("checks")
@@ -47,10 +53,8 @@ def assess_access_control(case_path: Path, evidence_path: Path | None) -> dict[s
         return _insufficient("The case does not attest that this is a private resource.")
     if case.get("expected_cross_access") != "deny":
         return _insufficient("The case does not declare cross-account access as denied.")
-    if evidence_path is None:
+    if evidence is None:
         return _insufficient("No native access-check evidence was supplied; unified fingerprints do not map ownership.")
-
-    evidence = _read_json(evidence_path, "Access-check evidence")
     if not isinstance(evidence, dict) or evidence.get("type") != "access-control" or evidence.get("mode") != "read":
         return _insufficient("Evidence must be a native read-mode access-check result.")
     steps = evidence.get("steps")

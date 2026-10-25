@@ -78,7 +78,17 @@ class _Handler(BaseHTTPRequestHandler):
             self._send_json(200, {"success": True, "data": {"status": "ok"}})
             return
         segments = parsed.path.strip("/").split("/")
-        if len(segments) != 3 or segments[:2] != ["api", "orders"]:
+        if (
+            len(segments) != 3
+            or segments[0] != "api"
+            or segments[1]
+            not in {
+                "orders",
+                "protected-orders",
+                "ambiguous-orders",
+                "error-orders",
+            }
+        ):
             self._send_json(404, {"success": False})
             return
         supplied = self.headers.get("Authorization", "")
@@ -90,9 +100,21 @@ class _Handler(BaseHTTPRequestHandler):
         if resource_id not in ORDERS:
             self._send_json(404, {"success": False})
             return
-        # Deliberate lab flaw: actor can read owner order 1001. Owner cannot read actor order.
-        if user == "owner" and resource_id != "1001":
+        resource_owner = "owner" if resource_id == "1001" else "actor"
+        endpoint = segments[1]
+        # This endpoint deliberately models a one-way BOLA: actor can read owner order 1001.
+        if endpoint == "orders" and user == "owner" and resource_id != "1001":
             self._send_json(403, {"success": False})
+            return
+        if endpoint == "protected-orders" and user != resource_owner:
+            self._send_json(403, {"success": False, "error": "forbidden"})
+            return
+        if endpoint == "ambiguous-orders" and user != resource_owner:
+            # A generic HTML-like API denial intentionally returns HTTP 200.
+            self._send_json(200, {"success": False, "message": "Access denied"})
+            return
+        if endpoint == "error-orders" and user != resource_owner:
+            self._send_json(500, {"success": False, "error": "internal_error"})
             return
         data: dict[str, str | bool] = dict(ORDERS[resource_id])
         if query.get("debug") == ["1"]:
