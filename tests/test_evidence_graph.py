@@ -8,7 +8,11 @@ import tempfile
 import unittest
 
 from bugbounty_toolkit import cli
-from bugbounty_toolkit.analysis.evidence_graph import EvidenceGraphStore, preview_graph_ingest
+from bugbounty_toolkit.analysis.evidence_graph import (
+    EvidenceGraphStore,
+    _command_matches_registry,
+    preview_graph_ingest,
+)
 from bugbounty_toolkit.analysis.skill_router import SKILL_REGISTRY
 from bugbounty_toolkit.core.records import ProgramPaths, RecordStore
 
@@ -245,7 +249,7 @@ class EvidenceGraphTests(unittest.TestCase):
                         {
                             "step": 1,
                             "skill": skill.name,
-                            "command": skill.commands[0],
+                            "command": skill.commands[0].format(program="lab"),
                             "why": "Review context.",
                             "kind": "http",
                         }
@@ -264,6 +268,20 @@ class EvidenceGraphTests(unittest.TestCase):
             any("executed" in json.dumps(row).casefold() for row in graph.search(category="xss")["matches"])
         )
         records.close()
+
+    def test_registered_command_template_accepts_only_safe_program_substitution(self) -> None:
+        templates = SKILL_REGISTRY["bugbounty-sqli"].commands
+        self.assertTrue(
+            _command_matches_registry(
+                "bbtk sqli local-web-lab --routes <routes.txt> --parameters <parameters.txt> --dry-run", templates
+            )
+        )
+        self.assertFalse(
+            _command_matches_registry(
+                "bbtk sqli local-web-lab;whoami --routes <routes.txt> --parameters <parameters.txt> --dry-run",
+                templates,
+            )
+        )
 
     def test_unknown_skill_rejected_and_preview_creates_no_program_database(self) -> None:
         route = self.root / "bad-route.json"

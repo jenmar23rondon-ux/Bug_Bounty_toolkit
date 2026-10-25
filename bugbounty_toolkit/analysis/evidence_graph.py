@@ -115,6 +115,24 @@ def _list_of_mappings(value: object) -> list[dict[str, Any]]:
     return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
 
 
+def _command_matches_registry(command: str, templates: tuple[str, ...]) -> bool:
+    """Accept an exact registered command template with one safe program-name substitution."""
+    for template in templates:
+        if "{program}" not in template:
+            if command == template:
+                return True
+            continue
+        if template.count("{program}") != 1:
+            continue
+        prefix, suffix = template.split("{program}")
+        if not command.startswith(prefix) or not command.endswith(suffix):
+            continue
+        program = command[len(prefix) : len(command) - len(suffix) if suffix else None]
+        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", program):
+            return True
+    return False
+
+
 class EvidenceGraphStore:
     """Persist a minimized evidence graph in the program's existing SQLite database."""
 
@@ -493,7 +511,7 @@ class EvidenceGraphStore:
             command = plan.get("command")
             if not isinstance(plan_skill, str) or plan_skill not in registry or plan_skill not in valid:
                 raise ValueError("Skill route plan references an unknown or unselected skill.")
-            if not isinstance(command, str) or command not in registry[plan_skill].commands:
+            if not isinstance(command, str) or not _command_matches_registry(command, registry[plan_skill].commands):
                 raise ValueError(f"Skill route command is not registered for {plan_skill}.")
         count = 0
         for name, row in valid.items():

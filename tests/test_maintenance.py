@@ -17,12 +17,34 @@ from bugbounty_toolkit.diagnostics import diagnose
 from bugbounty_toolkit.reporting.html_report import render_html_report
 from bugbounty_toolkit.reporting.json_report import build_program_report, render_json_report
 from bugbounty_toolkit.reporting.review_markdown import render_evidence_review
+from bugbounty_toolkit.skill_data import resolve_skill_root
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 class MaintenanceTests(unittest.TestCase):
+    def test_skill_root_falls_back_to_installed_data_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = root / "site-packages" / "bugbounty_toolkit"
+            package.mkdir(parents=True)
+            installed = root / "share" / "bug-bounty-toolkit" / "skills"
+            (installed / "bugbounty-executor").mkdir(parents=True)
+            (installed / "bugbounty-executor" / "SKILL.md").write_text("skill", encoding="utf-8")
+            self.assertEqual(resolve_skill_root(package, root), installed)
+
+    def test_skill_root_prefers_repository_checkout(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = root / "repo" / "bugbounty_toolkit"
+            package.mkdir(parents=True)
+            source = root / "repo" / "skills"
+            source.mkdir()
+            installed = root / "share" / "bug-bounty-toolkit" / "skills"
+            installed.mkdir(parents=True)
+            self.assertEqual(resolve_skill_root(package, root), source)
+
     def test_doctor_is_offline_and_reports_dependencies_skills_and_configuration(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -38,6 +60,7 @@ class MaintenanceTests(unittest.TestCase):
         self.assertEqual(result["network_requests_sent"], 0)
         names = {check["name"] for check in result["checks"]}
         self.assertIn("dependency:PyYAML", names)
+        self.assertIn("extra:dashboard", names)
         self.assertIn("tool:ollama", names)
         self.assertIn("skill-source", names)
         self.assertIn("skill-installation", names)

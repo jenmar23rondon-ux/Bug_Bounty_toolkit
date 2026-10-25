@@ -19,8 +19,9 @@ http = ["requests>=2.32.4", "aiohttp>=3.12.14", "httpx>=0.28.1,<1"]
 sqli = ["sqlparse>=0.5.3"]
 jwt = ["PyJWT[crypto]>=2.10.1,<3", "python-jose[cryptography]>=3.5,<4", "cryptography>=44", "jwcrypto>=1.5.6"]
 takeover = ["dnspython>=2.6,<3"]
+dashboard = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1"]
 databases = ["PyMySQL>=1.1.1", "psycopg2-binary>=2.9.10"]
-dev = ["build>=1.2", "coverage[toml]>=7.6", "hypothesis>=6.100", "mypy>=1.11", "ruff>=0.8"]
+dev = ["build>=1.2", "coverage[toml]>=7.6", "hypothesis>=6.100", "httpx2>=2,<3", "mypy>=1.11", "ruff>=0.8"]
 all = [
     "beautifulsoup4>=4.12", "lxml>=5", "html5lib>=1.1", "playwright>=1.50",
     "requests>=2.32.4", "aiohttp>=3.12.14", "httpx>=0.28.1,<1", "sqlparse>=0.5.3",
@@ -77,6 +78,7 @@ files = [
     "bugbounty_toolkit/xss/test_cases.py",
     "bugbounty_toolkit/xss/result_validator.py",
     "bugbounty_toolkit/diagnostics.py",
+    "bugbounty_toolkit/skill_data.py",
     "bugbounty_toolkit/analysis/live_review.py",
     "bugbounty_toolkit/hunt.py",
     "bugbounty_toolkit/apk_scan.py",
@@ -99,6 +101,8 @@ files = [
     "bugbounty_toolkit/analysis/benchmark.py",
     "bugbounty_toolkit/analysis/prioritization.py",
     "bugbounty_toolkit/analysis/investigation.py",
+    "bugbounty_toolkit/analysis/investigation_memory.py",
+    "bugbounty_toolkit/dashboard.py",
     "bugbounty_toolkit/reporting/finding_report.py",
 ]
 
@@ -114,6 +118,40 @@ skip_covered = true
 [project.scripts]
 bbtk = "bugbounty_toolkit.cli:main"
 bugbounty = "bugbounty_toolkit.cli:main"
+
+[tool.setuptools.data-files]
+"share/bug-bounty-toolkit/skills/bugbounty-access-control" = ["skills/bugbounty-access-control/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-access-control/agents" = ["skills/bugbounty-access-control/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-access-control/references" = ["skills/bugbounty-access-control/references/*.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-apk-analysis" = ["skills/bugbounty-apk-analysis/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-apk-analysis/agents" = ["skills/bugbounty-apk-analysis/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-authentication" = ["skills/bugbounty-authentication/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-authentication/agents" = ["skills/bugbounty-authentication/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-authentication/references" = ["skills/bugbounty-authentication/references/*.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-cors" = ["skills/bugbounty-cors/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-cors/agents" = ["skills/bugbounty-cors/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-csrf" = ["skills/bugbounty-csrf/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-csrf/agents" = ["skills/bugbounty-csrf/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-executor" = ["skills/bugbounty-executor/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-executor/agents" = ["skills/bugbounty-executor/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-executor/references" = ["skills/bugbounty-executor/references/*.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-executor/scripts" = ["skills/bugbounty-executor/scripts/run_plan.py"]
+"share/bug-bounty-toolkit/skills/bugbounty-jwt" = ["skills/bugbounty-jwt/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-jwt/agents" = ["skills/bugbounty-jwt/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-jwt/references" = ["skills/bugbounty-jwt/references/*.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-open-redirect" = ["skills/bugbounty-open-redirect/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-open-redirect/agents" = ["skills/bugbounty-open-redirect/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-sqli" = ["skills/bugbounty-sqli/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-sqli/agents" = ["skills/bugbounty-sqli/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-sqli/references" = ["skills/bugbounty-sqli/references/*.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-ssrf" = ["skills/bugbounty-ssrf/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-ssrf/agents" = ["skills/bugbounty-ssrf/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-takeover" = ["skills/bugbounty-takeover/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-takeover/agents" = ["skills/bugbounty-takeover/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-takeover/references" = ["skills/bugbounty-takeover/references/*.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-xss" = ["skills/bugbounty-xss/SKILL.md"]
+"share/bug-bounty-toolkit/skills/bugbounty-xss/agents" = ["skills/bugbounty-xss/agents/openai.yaml"]
+"share/bug-bounty-toolkit/skills/bugbounty-xss/references" = ["skills/bugbounty-xss/references/*.md"]
 
 [tool.setuptools.packages.find]
 include = ["bugbounty_toolkit*"]

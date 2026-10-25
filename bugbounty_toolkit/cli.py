@@ -52,6 +52,7 @@ from .analysis.skill_router import route_hypotheses_file
 from .analysis.benchmark import run_idor_benchmark, write_benchmark_reports
 from .analysis.prioritization import prioritize_hypotheses_file, write_prioritization_report
 from .analysis.investigation import investigate_evidence
+from .analysis.investigation_memory import InvestigationMemory
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
@@ -2147,6 +2148,10 @@ def cmd_ai_investigate(args: argparse.Namespace) -> None:
     paths = ProgramPaths(RECORDS_ROOT, args.program)
     if args.force and args.output is None:
         raise ValueError("--force requires --output.")
+    if args.resume_session and not args.session_id:
+        raise ValueError("--resume-session requires --session-id.")
+    if args.session_id and args.output is not None:
+        raise ValueError("--session-id uses the program's non-overwriting investigation history; omit --output.")
     result = investigate_evidence(
         args.program,
         args.input,
@@ -2159,10 +2164,13 @@ def cmd_ai_investigate(args: argparse.Namespace) -> None:
         access_evidence=args.access_evidence,
     )
     rendered: dict[str, object] = dict(result)
+    history_path: Path | None = None
     if args.dry_run:
         print("[dry-run] No Ollama call, target request, command execution or file write performed.")
         if args.output is not None:
             print(f"[dry-run] would write: {args.output}")
+        if args.session_id:
+            print(f"[dry-run] would save investigation memory: {args.session_id}")
     elif args.output is not None:
         _write_offline_json(args.output, rendered, args.force)
         rendered["output"] = str(args.output)
@@ -2171,8 +2179,67 @@ def cmd_ai_investigate(args: argparse.Namespace) -> None:
         history_path = write_evidence_json(paths.evidence_dir / "ai-investigations", rendered, prefix="investigation")
         rendered["output"] = str(history_path)
         print(f"[+] Non-overwriting investigation history: {history_path}")
+    if args.session_id and history_path is not None:
+        bundle_id = result["correlation_summary"].get("bundle_id")
+        if not isinstance(bundle_id, str):
+            raise ValueError("Investigation result has no stable evidence bundle ID for memory storage.")
+        store = store_for(args.program)
+        try:
+            memory = InvestigationMemory(store).save_snapshot(
+                args.session_id,
+                bundle_id,
+                history_path.relative_to(paths.program_dir).as_posix(),
+                result["stages"],
+                resume=args.resume_session,
+            )
+        finally:
+            store.close()
+        rendered["memory"] = memory
+        print(f"[+] Investigation memory {memory['status']}: {args.session_id}")
     print(f"[i] {HYPOTHESES_SECOND_OPINION} The plan is advisory and was not executed.")
     print(json.dumps(rendered, indent=2, sort_keys=True))
+
+
+def cmd_investigation_close(args: argparse.Namespace) -> None:
+    store = store_for(args.program)
+    try:
+        result = InvestigationMemory(store).close(args.investigation_id)
+    finally:
+        store.close()
+    print("[+] Investigation closed; local evidence history is retained.")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+def cmd_investigation_status(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    if not paths.db_path.exists():
+        raise ValueError(f"No local investigation memory exists for {args.program}.")
+    store = store_for(args.program)
+    try:
+        result = InvestigationMemory(store).get(args.investigation_id)
+    finally:
+        store.close()
+    if result is None:
+        raise ValueError("Investigation does not exist in this program's local memory.")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+def cmd_dashboard(args: argparse.Namespace) -> None:
+    try:
+        from .dashboard import create_app, require_loopback_host
+
+        import uvicorn
+    except ImportError as exc:
+        raise ToolkitError(
+            "Dashboard dependencies are optional; install with `pip install -e '.[dashboard]'`."
+        ) from exc
+    host = require_loopback_host(args.host)
+    if not 1 <= args.port <= 65535:
+        raise ValueError("Dashboard port must be between 1 and 65535.")
+    app = create_app(RECORDS_ROOT, args.program)
+    print(f"[i] Local dashboard for {args.program}: http://{host}:{args.port}/")
+    print("[i] Loopback only. No active checks or target requests are available from the dashboard.")
+    uvicorn.run(app, host=host, port=args.port, access_log=False)
 
 
 def cmd_ai_benchmark(args: argparse.Namespace) -> None:
@@ -2889,6 +2956,27 @@ def build_parser() -> argparse.ArgumentParser:
     graph_search.add_argument("--limit", type=positive_int, default=50, help="Maximum matching nodes (1-100)")
     graph_search.set_defaults(func=cmd_graph_search)
 
+    investigation_cli = sub.add_parser(
+        "investigation", help="Close or inspect a saved local investigation without deleting its history"
+    )
+    investigation_sub = investigation_cli.add_subparsers(dest="investigation_command", required=True)
+    investigation_close = investigation_sub.add_parser("close", help="Close an active saved investigation")
+    investigation_close.add_argument("program")
+    investigation_close.add_argument("--id", dest="investigation_id", required=True)
+    investigation_close.set_defaults(func=cmd_investigation_close)
+    investigation_status = investigation_sub.add_parser("status", help="Show saved investigation state and events")
+    investigation_status.add_argument("program")
+    investigation_status.add_argument("--id", dest="investigation_id", required=True)
+    investigation_status.set_defaults(func=cmd_investigation_status)
+
+    dashboard = sub.add_parser(
+        "dashboard", help="Open a loopback-only local dashboard for one program; no active checks are exposed"
+    )
+    dashboard.add_argument("program")
+    dashboard.add_argument("--host", default="127.0.0.1", help="Loopback bind address only (default: 127.0.0.1)")
+    dashboard.add_argument("--port", type=positive_int, default=8765)
+    dashboard.set_defaults(func=cmd_dashboard)
+
     ai_review = sub.add_parser(
         "ai-review", help="Ask local Ollama for a second opinion on minimized evidence or a redacted artifact"
     )
@@ -2971,6 +3059,12 @@ def build_parser() -> argparse.ArgumentParser:
     ai_investigate.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
     ai_investigate.add_argument("--output", type=Path, help="Optional JSON output path; refuses overwrite by default")
     ai_investigate.add_argument("--force", action="store_true", help="Replace an existing --output file")
+    ai_investigate.add_argument(
+        "--session-id", help="Save the result in local investigation memory and append-only history"
+    )
+    ai_investigate.add_argument(
+        "--resume-session", action="store_true", help="Resume a closed session with the same evidence bundle"
+    )
     ai_investigate.add_argument(
         "--dry-run", action="store_true", help="Validate and preview offline without Ollama, HTTP or file writes"
     )
