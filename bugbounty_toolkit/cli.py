@@ -44,6 +44,9 @@ from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
 from .analysis.evidence_engine import correlations_from_bundle, import_evidence
+from .analysis.hypotheses import SECOND_OPINION as HYPOTHESES_SECOND_OPINION, analyze_hypotheses
+from .analysis.access_assessment import assess_access_control
+from .analysis.skill_router import route_hypotheses_file
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
@@ -1929,6 +1932,29 @@ def cmd_ai_review(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
+def cmd_ai_hypotheses(args: argparse.Namespace) -> None:
+    if args.access_evidence and not args.case_file:
+        raise ValueError("--access-evidence requires --case-file.")
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    result = analyze_hypotheses(args.input, args.ai_model, args.ai_timeout, args.dry_run)
+    if args.case_file:
+        result["access_control_assessment"] = assess_access_control(args.case_file, args.access_evidence)
+    print(f"[i] {HYPOTHESES_SECOND_OPINION}")
+    if args.dry_run:
+        print("[dry-run] No Ollama request or file write performed.")
+    else:
+        history_path = write_evidence_json(paths.evidence_dir / "ai-hypotheses", result, prefix="ai-hypotheses")
+        print(f"[+] Non-overwriting review history: {history_path}")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+def cmd_ai_route(args: argparse.Namespace) -> None:
+    ProgramPaths(RECORDS_ROOT, args.program)
+    result = route_hypotheses_file(args.input, args.program, args.max_tests, args.ai_model, args.ai_timeout)
+    print("[i] Route plan only. No skill command or target request was executed; review missing inputs before use.")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
 def cmd_report(args: argparse.Namespace) -> None:
     store = store_for(args.program)
     if args.draft_with_ai and not args.evidence_file:
@@ -2568,6 +2594,39 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run", action="store_true", help="Validate and minimize locally without contacting Ollama"
     )
     ai_review.set_defaults(func=cmd_ai_review)
+
+    ai_cli = sub.add_parser("ai", help="Analyze hypotheses or prepare a non-executing skill route")
+    ai_sub = ai_cli.add_subparsers(dest="ai_command", required=True)
+    ai_hypotheses = ai_sub.add_parser(
+        "hypotheses", help="Ask local Ollama for hypotheses from minimized correlated evidence"
+    )
+    ai_hypotheses.add_argument("program")
+    ai_hypotheses.add_argument("--input", type=Path, required=True, help="Unified evidence bundle JSON")
+    ai_hypotheses.add_argument(
+        "--case-file", type=Path, help="Local private A/B case for deterministic IDOR assessment"
+    )
+    ai_hypotheses.add_argument(
+        "--access-evidence", type=Path, help="Native read-mode access-check JSON; requires --case-file"
+    )
+    ai_hypotheses.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model")
+    ai_hypotheses.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
+    ai_hypotheses.add_argument(
+        "--dry-run", action="store_true", help="Validate and minimize locally without Ollama or file writes"
+    )
+    ai_hypotheses.set_defaults(func=cmd_ai_hypotheses)
+
+    ai_route = ai_sub.add_parser("route", help="Choose existing topic skills and print a validated non-executing plan")
+    ai_route.add_argument("program")
+    ai_route.add_argument("--input", type=Path, required=True, help="JSON output from `bbtk ai hypotheses`")
+    ai_route.add_argument("--max-tests", type=positive_int, default=100, help="Maximum planned HTTP test count")
+    ai_route.add_argument(
+        "--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model for ambiguous categories"
+    )
+    ai_route.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
+    ai_route.add_argument(
+        "--dry-run", action="store_true", required=True, help="Required; the router never executes plans"
+    )
+    ai_route.set_defaults(func=cmd_ai_route)
 
     doctor = sub.add_parser("doctor", help="Offline checks for dependencies, skills and local configuration")
     doctor.add_argument("--program", help="Optionally validate one initialized program")

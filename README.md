@@ -212,8 +212,16 @@ bbtk import burp my-program --item saved-item.xml
 bbtk ai-review my-program --evidence-file registros/my-program/evidence/xss/run.json
 bbtk ai-review my-program --artifact registros/my-program/inputs/burp/response.html --kind html --dry-run
 bbtk ai-review my-program --artifact captured-response.txt --kind response --chunk-chars 6000 --max-chunks 20
+bbtk ai hypotheses my-program --input registros/my-program/evidence/imports/unified-evidence.json --dry-run
+bbtk ai route my-program --input my-hypotheses.json --dry-run
 bbtk report my-program --evidence-file registros/my-program/evidence/xss/run.json --draft-with-ai
 ```
+
+`ai hypotheses` recomputes endpoint correlations and can ask local Ollama for a strict, per-group hypothesis using only endpoints, methods, anonymized session/resource labels and response fingerprints. It retries malformed model JSON once, marks invented evidence IDs, and saves each non-dry-run result as a unique history file. `--dry-run` validates and shows the minimized packets without Ollama or disk writes. Every result is a second opinion, never confirmation; HTTP status alone is not evidence of IDOR.
+
+For deterministic A/B interpretation, add `--case-file <private/case.json> --access-evidence <access-check.json>`. The evaluator requires valid owner and actor controls, and uses only application-success and configured owner-resource/private-marker predicates: `legitimate_access` describes valid own-account controls, `denied` requires an application-level denial, `possible_unauthorized_access` requires the crossed response to match both the owner's resource and private marker, and missing/conflicting proof is `insufficient_evidence`. It never treats HTTP status or Ollama's opinion as confirmation. Unified evidence fingerprints alone cannot establish which account owns a resource; without native access-check predicates the result stays insufficient.
+
+`ai route` validates the hypotheses JSON against the installed typed registry of topic skills, maps clear categories deterministically and asks local Ollama only for ambiguous categories. If Ollama is unavailable or proposes an unknown skill, a deterministic `bugbounty-executor` fallback is used. The output contains selected skills, missing prerequisites and reviewed command templates; the router never executes them or writes files. `--max-tests` rejects a plan whose estimated HTTP checks exceed the supplied budget. Treat all route text as advisory and inspect the selected skill's `SKILL.md` before acting.
 
 ### Case File Generation
 
