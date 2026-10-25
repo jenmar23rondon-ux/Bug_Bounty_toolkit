@@ -93,6 +93,7 @@ files = [
     "bugbounty_toolkit/analysis/access_assessment.py",
     "bugbounty_toolkit/analysis/skill_router.py",
     "bugbounty_toolkit/analysis/benchmark.py",
+    "bugbounty_toolkit/analysis/prioritization.py",
 ]
 
 [tool.coverage.run]
