@@ -22,10 +22,16 @@ class RuffCoverageTests(unittest.TestCase):
                 "skills",
             ],
             cwd=ROOT,
-            check=True,
             capture_output=True,
             text=True,
         )
+        if result.returncode != 0:
+            detail = (result.stderr or result.stdout or "").strip()
+            self.fail(
+                "Ruff discovery failed for the current interpreter "
+                f"({sys.executable}). Install the .[dev] extra so "
+                f"`python -m ruff` works. Detail: {detail}"
+            )
         discovered = {Path(line).resolve() for line in result.stdout.splitlines() if line.strip()}
         expected = {
             path.resolve() for root in (ROOT / "bugbounty_toolkit", ROOT / "tests") for path in root.rglob("*.py")
