@@ -344,6 +344,18 @@ bbtk api-workflow my-program --input registros/my-program/evidence/imports/unifi
 
 Path names such as `login`, `users` or `profile` create low-confidence hypotheses only. HTTP methods are read/write hints, not proof of behavior. Request-session fingerprints are kept separate from response-issued cookie fingerprints; the graph records cookie continuity only when opaque values match and timestamps are ordered. Legacy bundles without directional fingerprints cannot establish that transition. A session is not an account. Resource fingerprints do not establish ownership or privacy, and HTTP 200 does not confirm access. OpenAPI paths are exact documentation matches only; documentation does not prove that an endpoint exists or behaves as described. The model creates no ownership or permission relationship without direct evidence supporting it.
 
+### Offline API Object Relationships
+
+`bbtk object-discover` correlates individual object references across local Burp XML, raw HTTP and HAR captures. `bbtk object-candidates` ranks those references with deterministic, evidence-linked scores for manual IDOR/BOLA investigation. IDs remain separate by literal value, type and origin; shared parameter names alone never merge objects. HMAC references, source commitments and private atomic files protect the minimized output. Both commands stay offline and support `--dry-run` without writes.
+
+```bash
+bbtk object-discover object-demo --input examples/object-discovery/captures.har --attest-authorized-captures --dry-run
+bbtk object-discover object-demo --input examples/object-discovery/captures.har --attest-authorized-captures
+bbtk object-candidates object-demo --graph registros/object-demo/private/object-relationships/graph.json --verify-input examples/object-discovery/captures.har
+```
+
+The synthetic example needs no running server. The [object discovery guide](docs/object-discovery.md) explains the graph, ranking, provenance, limits and POSIX secure-I/O requirement. Candidates have unknown ownership/privacy and cannot execute cases or confirm findings; use the existing reviewed IDOR proposal/approval flow separately.
+
 ### Persistent Evidence Graph and Investigation Memory
 
 `bbtk graph ingest <program> --input <unified-evidence.json>` extends the existing API workflow graph into the program's local SQLite database. Optional `--hypotheses`, `--route`, `--case-file` plus `--access-evidence`, and `--openapi` inputs join AI hypotheses, registered skill suggestions, deterministic access assessments and documentation links. Relationships retain evidence references, provenance, observation time, epistemic state and limitations. Re-ingestion is idempotent for graph nodes/edges and adds a history row. `--dry-run` validates and counts the plan without creating the records directory or database.

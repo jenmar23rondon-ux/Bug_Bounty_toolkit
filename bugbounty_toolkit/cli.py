@@ -59,6 +59,15 @@ from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
 from .analysis.evidence_engine import correlations_from_bundle, import_evidence
 from .analysis.api_workflow import build_api_workflow
+from .analysis.object_relationships import (
+    discover_to_file,
+    load_object_key,
+    object_candidates,
+    read_object_graph,
+    save_object_json,
+    verify_object_sources,
+)
+from .core.private_files import local_path
 from .analysis.evidence_graph import EvidenceGraphStore, preview_graph_ingest
 from .analysis.hypotheses import SECOND_OPINION as HYPOTHESES_SECOND_OPINION, analyze_hypotheses
 from .analysis.access_assessment import assess_access_control
@@ -2325,6 +2334,76 @@ def cmd_api_workflow(args: argparse.Namespace) -> None:
     )
 
 
+def _object_key_path(args: argparse.Namespace) -> Path:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    return args.key_file or paths.program_dir / "private" / "object-relationships" / "key.bin"
+
+
+def cmd_object_discover(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    destination = args.output or paths.program_dir / "private" / "object-relationships" / "graph.json"
+    graph, candidates = discover_to_file(
+        args.program,
+        args.input,
+        _object_key_path(args),
+        destination,
+        authorized=args.attest_authorized_captures,
+        dry_run=args.dry_run,
+        force=args.force,
+        base_url=args.base_url,
+    )
+    summary = graph["summary"]
+    print(
+        json.dumps(
+            {
+                "dry_run": args.dry_run,
+                **summary,
+                "candidates": candidates["total_candidates"],
+                "network_requests_sent": 0,
+                "vulnerabilities_confirmed": 0,
+            },
+            sort_keys=True,
+        )
+    )
+    print("[i] Offline object references only; ownership and permissions require researcher review.")
+    if args.dry_run:
+        print("[dry-run] No key, graph, database or other file was written.")
+    else:
+        print("[+] Minimized graph saved privately with a local HMAC key. No HTTP requests sent.")
+
+
+def cmd_object_candidates(args: argparse.Namespace) -> None:
+    key_path = _object_key_path(args)
+    if args.output and local_path(args.output) in {
+        local_path(args.graph),
+        local_path(key_path),
+        *[local_path(p) for p in args.verify_input],
+    }:
+        raise ValueError("Candidate output must not replace the graph, key or source captures.")
+    key = load_object_key(key_path)
+    graph = read_object_graph(args.graph, args.program, key)
+    if args.verify_input:
+        verify_object_sources(graph, args.verify_input, key)
+    result = object_candidates(graph, args.program, key, limit=args.limit, min_score=args.min_score)
+    if args.dry_run:
+        print(
+            json.dumps(
+                {
+                    "dry_run": True,
+                    "total_candidates": result["total_candidates"],
+                    "listed": len(result["candidates"]),
+                    "network_requests_sent": 0,
+                    "vulnerabilities_confirmed": 0,
+                },
+                sort_keys=True,
+            )
+        )
+    else:
+        if args.output:
+            save_object_json(args.output, result, force=args.force)
+        print(json.dumps(result, indent=2, sort_keys=True))
+
+
 def cmd_graph_ingest(args: argparse.Namespace) -> None:
     paths = ProgramPaths(RECORDS_ROOT, args.program)
     preview = preview_graph_ingest(
@@ -3331,6 +3410,55 @@ def build_parser() -> argparse.ArgumentParser:
     api_workflow.add_argument("--force", action="store_true", help="Replace an existing output file")
     api_workflow.set_defaults(func=cmd_api_workflow)
 
+    object_discover = sub.add_parser(
+        "object-discover", help="Discover object relationships from authorized local captures, fully offline"
+    )
+    object_discover.add_argument("program")
+    object_discover.add_argument(
+        "--input",
+        type=Path,
+        action="append",
+        required=True,
+        help="Burp XML, raw HTTP or HAR; repeat for multiple files",
+    )
+    object_discover.add_argument("--base-url", help="Captured origin for raw HTTP without an absolute URL")
+    object_discover.add_argument("--key-file", type=Path, help="Private mode-0600 local HMAC key (created if absent)")
+    object_discover.add_argument("--output", type=Path, help="Private graph JSON destination")
+    object_discover.add_argument(
+        "--attest-authorized-captures",
+        action="store_true",
+        help="Declare authorization to analyze these captures, not to perform active tests",
+    )
+    object_discover.add_argument(
+        "--dry-run", action="store_true", help="Summarize without creating a key, graph, DB or directories"
+    )
+    object_discover.add_argument("--force", action="store_true", help="Atomically replace the graph output only")
+    object_discover.set_defaults(func=cmd_object_discover)
+
+    object_candidates_cli = sub.add_parser(
+        "object-candidates", help="Rank offline object references for researcher review, without executing cases"
+    )
+    object_candidates_cli.add_argument("program")
+    object_candidates_cli.add_argument(
+        "--graph", type=Path, required=True, help="Versioned signed graph from object-discover"
+    )
+    object_candidates_cli.add_argument("--key-file", type=Path, help="Same local HMAC key used for discovery")
+    object_candidates_cli.add_argument(
+        "--verify-input",
+        type=Path,
+        action="append",
+        default=[],
+        help="Verify exact source commitments; repeat for all source captures",
+    )
+    object_candidates_cli.add_argument("--limit", type=positive_int, default=20, help="Candidate count, 1-100")
+    object_candidates_cli.add_argument("--min-score", type=int, default=0, help="Minimum investigation priority, 0-100")
+    object_candidates_cli.add_argument("--output", type=Path, help="Optional private minimized candidate JSON")
+    object_candidates_cli.add_argument(
+        "--dry-run", action="store_true", help="Validate and count without writing files"
+    )
+    object_candidates_cli.add_argument("--force", action="store_true", help="Atomically replace candidate output")
+    object_candidates_cli.set_defaults(func=cmd_object_candidates)
+
     graph_cli = sub.add_parser("graph", help="Persist and search minimized local investigation evidence")
     graph_sub = graph_cli.add_subparsers(dest="graph_command", required=True)
     graph_ingest = graph_sub.add_parser(
@@ -3563,7 +3691,8 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
     RECORDS_ROOT = args.records_root
-    logger = setup_logger(args.log_file) if args.log_file else None
+    offline_dry_run = args.func in {cmd_object_discover, cmd_object_candidates} and args.dry_run
+    logger = setup_logger(args.log_file) if args.log_file and not offline_dry_run else None
     try:
         if logger:
             logger.info("Starting %s", args.func.__name__)

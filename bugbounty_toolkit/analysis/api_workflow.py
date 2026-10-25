@@ -157,6 +157,46 @@ def _node_id(kind: str, *parts: str) -> str:
     return f"{kind.lower()}-{digest}"
 
 
+graph_node_id = _node_id
+
+
+def merge_relation(
+    relations: dict[tuple[str, str, str], dict[str, object]],
+    relation: str,
+    source: str,
+    target: str,
+    evidence_refs: list[str],
+    provenance: list[dict[str, str]],
+    *,
+    state: str = "observed",
+    basis: str,
+    limitations: str,
+) -> None:
+    """Shared evidence-edge deduplication; callers must label inference explicitly."""
+    key = (relation, source, target)
+    existing = relations.get(key)
+    refs = sorted(set(evidence_refs))
+    if existing is not None:
+        current_refs = existing["evidence_refs"]
+        if isinstance(current_refs, list):
+            existing["evidence_refs"] = sorted(set(current_refs) | set(refs))
+        current_provenance = existing["provenance"]
+        if isinstance(current_provenance, list):
+            merged = [*current_provenance, *provenance]
+            existing["provenance"] = list({json.dumps(item, sort_keys=True): item for item in merged}.values())
+        return
+    relations[key] = {
+        "relation": relation,
+        "source": source,
+        "target": target,
+        "state": state,
+        "basis": basis,
+        "evidence_refs": refs,
+        "provenance": provenance,
+        "limitations": limitations,
+    }
+
+
 def _path_segments(endpoint: str) -> set[str]:
     return {part.casefold() for part in endpoint.split("/") if part and not part.startswith("{")}
 
@@ -314,28 +354,17 @@ def build_api_workflow(bundle_path: Path, openapi_path: Path | None = None) -> d
         basis: str,
         limitations: str,
     ) -> None:
-        key = (relation, source, target)
-        existing = relations.get(key)
-        refs = sorted(set(evidence_refs))
-        if existing is not None:
-            current_refs = existing["evidence_refs"]
-            if isinstance(current_refs, list):
-                existing["evidence_refs"] = sorted(set(current_refs) | set(refs))
-            current_provenance = existing["provenance"]
-            if isinstance(current_provenance, list):
-                merged = [*current_provenance, *provenance]
-                existing["provenance"] = list({json.dumps(item, sort_keys=True): item for item in merged}.values())
-            return
-        relations[key] = {
-            "relation": relation,
-            "source": source,
-            "target": target,
-            "state": state,
-            "basis": basis,
-            "evidence_refs": refs,
-            "provenance": provenance,
-            "limitations": limitations,
-        }
+        merge_relation(
+            relations,
+            relation,
+            source,
+            target,
+            evidence_refs,
+            provenance,
+            state=state,
+            basis=basis,
+            limitations=limitations,
+        )
 
     for record in records:
         evidence_id = str(record["evidence_id"])

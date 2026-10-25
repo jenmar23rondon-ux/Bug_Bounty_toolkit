@@ -112,6 +112,10 @@ class _Source:
     sensitivity_hint: bool = False
 
 
+# Raw normalized captures are shared in memory only; never serialize this model.
+CaptureSource = _Source
+
+
 def _fingerprint(value: str, salt: bytes) -> str:
     return hmac.new(salt, value.encode("utf-8", errors="replace"), hashlib.sha256).hexdigest()[:24]
 
@@ -167,6 +171,29 @@ def _parameter_names(url: str | None, body: str, content_type: str = "") -> tupl
     return tuple(sorted(names, key=str.casefold))
 
 
+def resource_path_segments(path: str, collections: set[str] | None = None) -> list[tuple[str, bool]]:
+    """Share the evidence importer's resource-position hints without asserting ownership."""
+    names = _RESOURCE_COLLECTIONS if collections is None else collections
+    parts = path.split("/")
+    return [
+        (
+            segment,
+            bool(
+                segment.isdigit()
+                or _UUID.fullmatch(segment)
+                or (len(segment) >= 24 and segment.isalnum())
+                or (
+                    index > 0
+                    and parts[index - 1].lower() in names
+                    and segment
+                    and segment.casefold() not in _STATIC_RESOURCE_SEGMENTS
+                )
+            ),
+        )
+        for index, segment in enumerate(parts)
+    ]
+
+
 def _endpoint(url: str | None, headers: dict[str, str], salt: bytes) -> tuple[str | None, str | None, list[str]]:
     if not isinstance(url, str) or len(url) > 16_384:
         return None, None, []
@@ -193,15 +220,7 @@ def _endpoint(url: str | None, headers: dict[str, str], salt: bytes) -> tuple[st
         path = parsed.path or "/"
         resource_values: list[str] = []
         segments = []
-        path_segments = path.split("/")
-        for index, segment in enumerate(path_segments):
-            follows_collection = index > 0 and path_segments[index - 1].lower() in _RESOURCE_COLLECTIONS
-            dynamic = (
-                segment.isdigit()
-                or bool(_UUID.fullmatch(segment))
-                or (len(segment) >= 24 and segment.isalnum())
-                or (follows_collection and bool(segment) and segment.casefold() not in _STATIC_RESOURCE_SEGMENTS)
-            )
+        for segment, dynamic in resource_path_segments(path):
             if dynamic:
                 resource_values.append(segment)
                 segments.append("{id}")
@@ -549,14 +568,15 @@ def _burp_xml(path: Path, raw: bytes, salt: bytes) -> list[EvidenceRecord]:
     return records
 
 
-def _har(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
+def har_capture_sources(data: Any, max_records: int = MAX_RECORDS) -> list[CaptureSource]:
+    """Reuse HAR decoding for offline consumers before evidence minimization loses IDs."""
     log = data.get("log") if isinstance(data, dict) else None
     entries = log.get("entries") if isinstance(log, dict) else None
     if not isinstance(entries, list):
         raise ValueError("HAR input must contain log.entries.")
-    if len(entries) > MAX_RECORDS:
-        raise ValueError(f"HAR exceeds the {MAX_RECORDS}-entry import limit.")
-    records = []
+    if len(entries) > max_records:
+        raise ValueError("HAR exceeds the selected entry limit.")
+    sources = []
     for index, entry in enumerate(entries, start=1):
         if not isinstance(entry, dict):
             continue
@@ -581,6 +601,9 @@ def _har(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
             if not any(name.lower() == "content-type" for name in request_headers):
                 request_headers["Content-Type"] = post_data["mimeType"]
         content = response.get("content", {})
+        if isinstance(content, dict) and isinstance(content.get("mimeType"), str):
+            if not any(name.lower() == "content-type" for name in response_headers):
+                response_headers["Content-Type"] = content["mimeType"]
         response_body = content.get("text", "") if isinstance(content, dict) else ""
         if isinstance(content, dict) and content.get("encoding") == "base64" and isinstance(response_body, str):
             try:
@@ -603,26 +626,26 @@ def _har(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
             "format": "har",
             "response_bytes": response_body.__len__(),
         }
-        record = _record(
-            _Source(
-                "har",
-                f"/log/entries[{index - 1}]",
-                request.get("url") if isinstance(request.get("url"), str) else None,
-                request.get("method") if isinstance(request.get("method"), str) else None,
-                request_headers,
-                body,
-                response_headers,
-                response_body,
-                _status(response.get("status")),
-                entry.get("startedDateTime") if isinstance(entry.get("startedDateTime"), str) else None,
-                tuple(sorted(parameters)),
-                technical,
-            ),
-            path,
-            salt,
+        source = _Source(
+            "har",
+            f"/log/entries[{index - 1}]",
+            request.get("url") if isinstance(request.get("url"), str) else None,
+            request.get("method") if isinstance(request.get("method"), str) else None,
+            request_headers,
+            body,
+            response_headers,
+            response_body,
+            _status(response.get("status")),
+            entry.get("startedDateTime") if isinstance(entry.get("startedDateTime"), str) else None,
+            tuple(sorted(parameters)),
+            technical,
         )
-        records.append(record)
-    return records
+        sources.append(source)
+    return sources
+
+
+def _har(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
+    return [_record(source, path, salt) for source in har_capture_sources(data)]
 
 
 def _ffuf(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
