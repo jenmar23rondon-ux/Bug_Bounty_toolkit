@@ -203,8 +203,11 @@ bbtk import burp my-program --item saved-item.xml
 bbtk ai-review my-program --evidence-file registros/my-program/evidence/xss/run.json
 bbtk ai-review my-program --artifact registros/my-program/inputs/burp/response.html --kind html --dry-run
 bbtk ai-review my-program --artifact captured-response.txt --kind response --chunk-chars 6000 --max-chunks 20
+bbtk ai hypotheses my-program --input registros/my-program/evidence/imports/unified-evidence.json --dry-run
 bbtk report my-program --evidence-file registros/my-program/evidence/xss/run.json --draft-with-ai
 ```
+
+`ai hypotheses` recomputes endpoint correlations and can ask local Ollama for a strict, per-group hypothesis using only endpoints, methods, anonymized session/resource labels and response fingerprints. It retries malformed model JSON once, marks invented evidence IDs, and saves each non-dry-run result as a unique history file. `--dry-run` validates and shows the minimized packets without Ollama or disk writes. Every result is a second opinion, never confirmation; HTTP status alone is not evidence of IDOR.
 
 ### Case File Generation
 
