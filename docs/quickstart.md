@@ -54,4 +54,4 @@ Ollama integration is optional. Install and start Ollama separately, then select
 
 Read the target program's current policy, exclusions, automation limits and reporting rules. Initialize a distinct program record, configure exact in-scope hosts and limits, and use the relevant topic skill. Begin with the local labs and dry-run previews. Review evidence and manually reproduce any candidate before reporting; the toolkit does not submit reports.
 
-See [authorized testing rules](authorized-testing.md), the [IDOR playbook](idor-playbook.md), and the [known limitations](../README.md#known-limitations).
+See [authorized testing rules](authorized-testing.md), the [bounded fuzzing and wordlist guide](fuzzing.md), the [IDOR playbook](idor-playbook.md), and the [known limitations](../README.md#known-limitations).

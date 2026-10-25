@@ -6,6 +6,7 @@ import io
 import json
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -155,6 +156,115 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(download.status_code, 200)
         self.assertIn("attachment", download.headers["content-disposition"])
         self.assertEqual(self.client.get("/api/reports/%2e%2e%2fsecret.json/content").status_code, 404)
+
+    def test_wordlist_dashboard_shows_local_metadata_without_reading_entries(self) -> None:
+        registry = self.root / "wordlists.json"
+        registry.write_text("[]", encoding="utf-8")
+        collections = [SimpleNamespace(name="SecLists", category=None)]
+        entries = [
+            SimpleNamespace(collection="SecLists", path=Path("api-endpoints.txt"), category="api", size_bytes=128),
+            SimpleNamespace(collection="SecLists", path=Path("common.txt"), category="directories", size_bytes=256),
+        ]
+        with (
+            patch("bugbounty_toolkit.dashboard.default_registry_path", return_value=registry),
+            patch("bugbounty_toolkit.dashboard.load_collections", return_value=collections),
+            patch("bugbounty_toolkit.dashboard.list_wordlists", return_value=entries),
+        ):
+            response = self.client.get("/api/wordlists")
+        self.assertEqual(response.status_code, 200, response.text)
+        result = response.json()
+        self.assertEqual(result["wordlist_count"], 2)
+        self.assertEqual(result["total_size_bytes"], 384)
+        self.assertEqual(result["counts_by_category"], {"api": 1, "directories": 1})
+        self.assertFalse(result["contents_read"])
+        self.assertNotIn(str(self.root), response.text)
+
+    def test_discovery_dashboard_redacts_output_paths_and_templates_resource_ids(self) -> None:
+        directory = self.paths.evidence_dir / "fuzzing"
+        directory.mkdir(parents=True)
+        artifact = directory / "20261025T120000-ffuf.json"
+        artifact.write_text(
+            json.dumps(
+                {
+                    "type": "ffuf",
+                    "raw_output": "C:/private/raw.json",
+                    "log": "C:/private/ffuf.log",
+                    "limits": {"planned_requests_upper_bound": 5, "ffuf_requests_observed": None},
+                    "results": [
+                        {
+                            "url": "https://target.example/api/orders/123?token=secret",
+                            "status": 200,
+                            "classification": "endpoint_candidate",
+                            "response_group": "response-0001",
+                        }
+                    ],
+                    "followup_candidates": [
+                        {
+                            "route_template": "/api/orders/{id}",
+                            "resource_privacy": "unknown",
+                            "vulnerability_confirmed": False,
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        response = self.client.get("/api/discovery")
+        self.assertEqual(response.status_code, 200, response.text)
+        result = response.json()
+        self.assertEqual(result["results"][0]["endpoint"], "/api/orders/{id}")
+        self.assertEqual(result["authorization_followups"][0]["vulnerability_confirmed"], False)
+        self.assertNotIn("C:/private", response.text)
+        self.assertNotIn("token=secret", response.text)
+
+    def test_access_matrix_dashboard_exposes_only_boolean_predicates(self) -> None:
+        directory = self.paths.evidence_dir / "access-control"
+        directory.mkdir(parents=True)
+        (directory / "access.json").write_text(
+            json.dumps(
+                {
+                    "type": "access-control",
+                    "mode": "account-matrix",
+                    "classification": "candidate",
+                    "controls_valid": True,
+                    "matrix_accounts": ["owner", "actor"],
+                    "matrix": [
+                        {
+                            "session_account": "actor",
+                            "resource_owner": "owner",
+                            "access_type": "cross",
+                            "classification": "candidate",
+                            "private_resource_match": True,
+                            "resource_id": "private-id-123",
+                            "marker": "private-marker-secret",
+                        }
+                    ],
+                    "steps": [
+                        {
+                            "step": "cross_actor_to_owner",
+                            "application_success": True,
+                            "owner_resource_match": True,
+                            "owner_private_match": True,
+                            "body": "private response body",
+                        }
+                    ],
+                    "stop_reason": "private_evidence_observed",
+                }
+            ),
+            encoding="utf-8",
+        )
+        response = self.client.get("/api/access-matrix")
+        self.assertEqual(response.status_code, 200, response.text)
+        result = response.json()
+        self.assertEqual(result["matrix"][0]["classification"], "candidate")
+        self.assertTrue(result["matrix"][0]["private_resource_match"])
+        self.assertFalse(result["confirmed"])
+        self.assertFalse(result["matrix"][0]["confirmed"])
+        self.assertNotIn("private-id-123", response.text)
+        self.assertNotIn("private-marker-secret", response.text)
+        self.assertNotIn("private response body", response.text)
+        self.assertEqual(self.client.get("/").status_code, 200)
+        self.assertIn("/api/access-matrix", self.client.get("/").text)
 
     def test_upload_validates_name_type_and_empty_body(self) -> None:
         headers = {"content-type": "application/octet-stream"}

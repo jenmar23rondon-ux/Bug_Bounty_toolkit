@@ -13,6 +13,7 @@ from bugbounty_toolkit.fuzzing.wordlist_manager import (
     default_prepared_root,
     default_registry_path,
     detect_local_collections,
+    classify_wordlist,
     inspect_wordlist,
     list_wordlists,
     load_collections,
@@ -72,6 +73,24 @@ class WordlistManagerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "specific category"):
             recommend_wordlists([self.collection], "other")
 
+    def test_professional_discovery_categories_include_files_extensions_and_technology(self) -> None:
+        cases = {
+            Path("Discovery/Web-Content/raft-medium-files.txt"): "files",
+            Path("Discovery/Web-Content/extensions.txt"): "extensions",
+            Path("Discovery/Web-Content/Technology-Detection/wordpress.txt"): "technology",
+            Path("Passwords/Common-Credentials/best1050.txt"): "other",
+        }
+        for path, expected in cases.items():
+            with self.subTest(path=path):
+                self.assertEqual(classify_wordlist(path), expected)
+
+    def test_credential_wordlists_are_not_listed_or_recommended(self) -> None:
+        credential_dir = self.collection_path / "Passwords" / "Common-Credentials"
+        credential_dir.mkdir(parents=True)
+        (credential_dir / "best1050.txt").write_text("admin\n", encoding="utf-8")
+        listed = {item.path.name for item in list_wordlists([self.collection])}
+        self.assertNotIn("best1050.txt", listed)
+
     def test_explicit_collection_category_overrides_path_inference(self) -> None:
         categorized = WordlistCollection("custom-api", self.collection_path, "custom")
         self.assertTrue(all(item.category == "custom" for item in list_wordlists([categorized])))
@@ -121,6 +140,7 @@ class WordlistManagerTests(unittest.TestCase):
         self.assertEqual(result.requests_estimate, 2)
         self.assertEqual(result.minimum_seconds, 1)
         self.assertTrue(result.large_file_warning)
+        self.assertRegex(result.sha256, r"^[0-9a-f]{64}$")
 
     def test_inspect_rejects_invalid_limits(self) -> None:
         path = self.root / "valid.txt"
@@ -146,6 +166,8 @@ class WordlistManagerTests(unittest.TestCase):
         self.assertEqual(result.requests_estimate, 3)
         self.assertEqual(result.minimum_seconds, 1.5)
         self.assertFalse(result.limit_reached)
+        self.assertEqual(len(result.source_hashes), 2)
+        self.assertRegex(result.output_sha256 or "", r"^[0-9a-f]{64}$")
 
     def test_prepare_cap_only_reports_reached_when_more_unique_entries_exist(self) -> None:
         exact = self.root / "exact.txt"
@@ -220,6 +242,13 @@ class WordlistManagerTests(unittest.TestCase):
             cmd_wordlists(args)
         self.assertIn("unique: 2", output.getvalue())
         self.assertIn("minimum at 2/s: 1.0s", output.getvalue())
+        self.assertIn("SHA-256:", output.getvalue())
+
+    def test_recommend_context_alias_is_accepted(self) -> None:
+        args = build_parser().parse_args(
+            ["wordlists", "recommend", "--context", "api", "--registry", str(self.registry)]
+        )
+        self.assertEqual(args.category, "api")
 
     def test_registry_path_helpers_are_user_local(self) -> None:
         registry = default_registry_path({"LOCALAPPDATA": str(self.root / "local")}, self.root / "home")

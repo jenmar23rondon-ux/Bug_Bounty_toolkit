@@ -188,10 +188,19 @@ Both private resource and marker matches produce `candidate`, even if exposed in
 
 ```bash
 bugbounty fuzz my-program --url "https://target-autorizado.example/FUZZ" --wordlist wordlists/api-endpoints.txt --dry-run
-bugbounty fuzz my-program --url "https://target-autorizado.example/FUZZ" --wordlist wordlists/api-endpoints.txt --threads 2 --rate 1 --timeout 10 --match-codes "200,204,301,302,401,403" --filter-size 4242
+bugbounty fuzz my-program --url "https://target-autorizado.example/FUZZ" --wordlist wordlists/api-endpoints.txt --max-tests 40 --max-seconds 60 --threads 2 --rate 1 --timeout 10 --dry-run
+bugbounty fuzz my-program --url "https://target-autorizado.example/FUZZ" --wordlist wordlists/api-endpoints.txt --max-tests 40 --max-seconds 60 --threads 2 --rate 1 --timeout 10 --confirm
 ```
 
-The adapter checks every wordlist substitution before starting, writes explicit ffuf JSON output, enforces rate/concurrency limits and removes identical result entries. `FUZZ` must be in a path or query on a fixed authorized host. An excluded candidate stops the entire run before any requests are sent. Redirect following, recursion and auto-calibration are disabled; a separate config directory isolates the run from your normal ffufrc.
+`--dry-run` prints the target, selected-input hash, one baseline request, the maximum planned request count, rate, concurrency, request timeout and wall-clock cap without sending traffic. Live execution requires `--confirm` after reviewing that plan. The total `--max-tests` includes one random missing-route baseline probe; at most `max-tests - 1` unique valid wordlist entries are passed to ffuf. The run budget reserves those external requests as an upper bound, while the report clearly separates them from native requests because ffuf does not expose a shared exact counter. `--run-max-requests`, `--run-max-seconds` and `--run-max-concurrency` can tighten that budget further, and program settings remain the ceiling.
+
+See the [bounded fuzzing and wordlist guide](docs/fuzzing.md) for collection registration, list fingerprints, rate and budget review, evidence interpretation, and the manual authorization follow-up.
+
+The adapter checks every selected wordlist substitution and the baseline URL against scope before starting. Redirect following, recursion and auto-calibration are disabled; a temporary ffuf configuration directory isolates the run from the user's ffufrc. The toolkit adds no retry loop. The baseline is fetched through the native scoped HTTP client and a 429 response stops the run before ffuf starts. During ffuf, rate limiting is not automatically bypassed; results containing 429 are labeled `rate_limited` and require a human decision before another run.
+
+Responses are grouped by status and shape, then compared with the baseline using status, body length, word count and line count. The labels distinguish generic responses, authentication/denial, redirects, server errors, rate limits and endpoint candidates. A candidate means only that the response differed from the missing-route baseline; an HTTP 200 or any ffuf match is not proof of a functional route or a vulnerability. Results are imported into the Unified Evidence Engine, API Workflow and local Evidence Graph. Resource-shaped routes may produce a low-confidence authorization-review hypothesis and a deterministic access-control skill plan; the plan is offline, requires a reviewed private `case.json`, and is never executed automatically. Investigation Memory records the fuzz evidence bundle and pending controls.
+
+Known limits: baseline comparison is heuristic and can miss content-dependent wildcard pages. ffuf's external request count is represented as a bounded planned upper limit, not an exact observed count. The toolkit stops before ffuf on a baseline 429; it cannot guarantee immediate cancellation on a 429 emitted later by ffuf, so keep the selected-input cap and rate conservative and inspect the saved results. It does not enumerate object IDs or confirm authorization flaws.
 
 ffuf requires a whole-number rate of at least 1 request/second. Use the HTTP/XSS commands for fractional rates. The bundled wordlists are small examples, not the full SecLists files. Replace them with reviewed lists from the [official SecLists repository](https://github.com/danielmiessler/SecLists); see `wordlists/README.md` for typical paths.
 
@@ -205,10 +214,12 @@ bbtk wordlists scan
 bbtk wordlists register my-lists /path/to/wordlists
 bbtk wordlists list
 bbtk wordlists inspect /path/to/list.txt --rate 1
-bbtk wordlists recommend --category api
+bbtk wordlists recommend --context api
 bbtk wordlists prepare --category endpoints --max-entries 1000 --rate 1 --dry-run
 bbtk wordlists prepare --category endpoints --max-entries 1000 --rate 1
 ```
+
+The manager classifies API endpoints, directories, files, parameters, extensions and technology-specific paths, while retaining XSS/SQLi lists for their dedicated checks. It excludes paths that look like password/credential guessing lists from discovery recommendations. It supports `--category` and `--context` for recommendations, and displays SHA-256 fingerprints when inspecting or preparing lists. No collection is downloaded automatically.
 
 Inspection and preparation stream entries and keep deduplication state in a temporary SQLite file rather than loading a large collection into RAM. Preparation caps unique entries and refuses to overwrite an existing output unless `--force` is supplied; the default output is in the per-user cache. Request counts and minimum duration are estimates based on unique prepared entries and the selected rate. They do not include response latency, retries, scope exclusions, or external-tool overhead. Review the chosen list and program policy before using it with `fuzz`.
 
@@ -354,7 +365,7 @@ Authorization headers, cookies and common password/token fields are redacted fro
 
 ### Known Limitations
 
-The optional dashboard is a local convenience interface, not an authentication boundary. It binds to a loopback IP, rejects non-loopback clients/Host values, and exposes no active check, shell, or Ollama route. Keep the machine account and local records directory protected. Evidence uploads are limited to 32 MiB and pass through the existing redacting importer; review generated bundles before sharing them. Reports are shown as text or downloaded as attachments.
+The optional dashboard is a local convenience interface, not an authentication boundary. It binds to a loopback IP, rejects non-loopback clients/Host values, and exposes no active check, shell, or Ollama route. Keep the machine account and local records directory protected. Evidence uploads are limited to 32 MiB and pass through the existing redacting importer; review generated bundles before sharing them. Reports are shown as text or downloaded as attachments. Read-only panels summarize registered wordlists without reading their entries, the latest ffuf discoveries and request ceiling, and access-matrix predicates without exposing resource IDs, private markers or response bodies. A route candidate remains unconfirmed.
 
 The case file's scope, account ownership, expected access and disposable-resource declarations are researcher attestations; the toolkit cannot independently verify program policy or account identity. Case generation from Burp requests is offline: pointers are syntax-checked, while marker existence and pointer meaning require separate response evidence. Generated case files contain resource identifiers and private markers and must stay local. `anonymous_access`, matrix candidates and write-response predicates are test evidence, not automatic vulnerability confirmation. `public_endpoint` is informational; an explicit `expected_anonymous` mismatch is separately flagged. The matrix contains only supplied accounts and known resources (at most ten accounts), and its diagonal cells are ordinary controls. Persistence verification checks only the explicitly selected scalar through the supplied owner GET. Cleanup compares a final scoped GET against each captured original value; a failed or unavailable readback is reported separately from the access-test outcome. Always inspect disposable test data after writes, including public opt-in runs.
 

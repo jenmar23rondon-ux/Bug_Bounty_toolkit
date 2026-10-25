@@ -21,6 +21,7 @@ class ExecutionSummary:
     max_concurrency: int
     peak_concurrency: int
     stop_reason: str | None
+    external_requests_reserved: int = 0
 
 
 class ExecutionBudget:
@@ -54,6 +55,7 @@ class ExecutionBudget:
         self._requests_started = 0
         self._responses_received = 0
         self._transport_errors = 0
+        self._external_requests_reserved = 0
         self._active = 0
         self._peak_concurrency = 0
         self._destinations: set[str] = set()
@@ -91,6 +93,38 @@ class ExecutionBudget:
         """Stop future dispatch after a response completes at or beyond the deadline."""
         if self.max_seconds is not None and time.monotonic() - self._started_at >= self.max_seconds:
             self.cancel("time_budget_exhausted")
+
+    def reserve_external_requests(self, request_count: int, url: str, concurrency: int) -> None:
+        """Reserve an external tool's request upper bound against this run budget.
+
+        External tools do not expose an exact shared request counter. Reserving the
+        bounded input count prevents native requests in this run from spending the
+        same budget slots; the summary labels this separately from observed HTTP.
+        """
+        if type(request_count) is not int or request_count <= 0:
+            raise ValueError("External request reservation must be a positive integer.")
+        if type(concurrency) is not int or concurrency <= 0 or concurrency > self.max_concurrency:
+            raise ValueError("External tool concurrency exceeds the run budget.")
+        host = urlsplit(url).hostname
+        if not host:
+            raise ValueError("A valid destination host is required for an external run budget.")
+        self._check_deadline()
+        with self._lock:
+            if self.max_requests is not None and self._reserved + request_count > self.max_requests:
+                raise ToolkitError(f"External request upper bound ({request_count}) exceeds the remaining run budget.")
+            self._reserved += request_count
+            self._external_requests_reserved += request_count
+            self._destinations.add(host.lower())
+
+    def release_external_reservation(self, request_count: int) -> None:
+        """Release a reservation only when the external process was never started."""
+        if type(request_count) is not int or request_count <= 0:
+            raise ValueError("External request reservation release must be a positive integer.")
+        with self._lock:
+            if request_count > self._external_requests_reserved:
+                raise ValueError("Cannot release more external requests than were reserved.")
+            self._external_requests_reserved -= request_count
+            self._reserved -= request_count
 
     def acquire(self, url: str) -> _ExecutionLease:
         while not self._semaphore.acquire(timeout=0.05):
@@ -145,6 +179,7 @@ class ExecutionBudget:
                 max_concurrency=self.max_concurrency,
                 peak_concurrency=self._peak_concurrency,
                 stop_reason=self._stop_reason,
+                external_requests_reserved=self._external_requests_reserved,
             )
 
 

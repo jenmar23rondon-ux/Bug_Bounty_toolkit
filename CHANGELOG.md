@@ -4,6 +4,10 @@ Notable user-facing changes are recorded here. The project has not yet published
 
 ## Unreleased
 
+- Extend local wordlist classification to discovery categories, exclude credential-guessing collections, and record SHA-256 fingerprints.
+- Supervise ffuf with an explicit confirmation gate, capped unique inputs, a scoped baseline, wall-clock termination and a separately reported external request upper bound.
+- Classify ffuf responses against baseline shapes, group similar responses, and import discovery into unified evidence, API workflow, the local graph, investigation memory and a non-executing access-control follow-up plan.
+- Extend the loopback-only dashboard with read-only wordlist statistics, fuzz discovery summaries and predicate-only authorization matrices.
 - Add an offline wordlist manager for local SecLists, Assetnote, fuzzdb and custom collections, with streaming inspection, category recommendations, disk-backed deduplication, capped preparation and request/time estimates.
 - Package all topic skills, references and the plan adapter in wheel data files; discover them from both source checkouts and clean installations.
 - Add optional FastAPI local dashboard for one program: sanitized evidence import, investigation/memory views, graph search, hypothesis/control summaries, benchmark results and safe report viewing/download; no active check or model execution routes.

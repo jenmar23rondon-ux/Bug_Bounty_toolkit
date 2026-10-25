@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -13,13 +14,26 @@ from contextlib import ExitStack
 from typing import Iterable, Iterator, Mapping
 
 WORDLIST_EXTENSIONS = {".txt", ".lst", ".list", ".wordlist"}
-WORDLIST_CATEGORIES = ("api", "endpoints", "directories", "parameters", "xss", "sqli", "custom", "other")
+WORDLIST_CATEGORIES = (
+    "api",
+    "endpoints",
+    "directories",
+    "files",
+    "parameters",
+    "extensions",
+    "technology",
+    "xss",
+    "sqli",
+    "custom",
+    "other",
+)
 MAX_ENTRY_BYTES = 64 * 1024
 MAX_PREPARED_ENTRIES = 1_000_000
 DEFAULT_LARGE_FILE_WARNING_BYTES = 1024 * 1024 * 1024
 REGISTRY_VERSION = 1
 _NAME_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$")
 _SKIP_DIRS = {".git", ".svn", "node_modules", "__pycache__", ".venv", "venv"}
+_CREDENTIAL_MARKERS = {"password", "passwords", "credential", "credentials", "bruteforce", "brute-force"}
 
 
 @dataclass(frozen=True)
@@ -57,6 +71,7 @@ class WordlistInspection:
     requests_estimate: int
     minimum_seconds: float
     large_file_warning: bool
+    sha256: str
 
 
 @dataclass(frozen=True)
@@ -72,6 +87,8 @@ class PreparationResult:
     limit_reached: bool
     requests_estimate: int
     minimum_seconds: float
+    source_hashes: tuple[tuple[str, str], ...]
+    output_sha256: str | None
 
 
 @dataclass(frozen=True)
@@ -109,7 +126,18 @@ def _validated_category(category: str | None) -> str | None:
     if category is None:
         return None
     normalized = category.strip().lower().replace("-", "_")
-    aliases = {"route": "endpoints", "routes": "endpoints", "params": "parameters", "sql": "sqli"}
+    aliases = {
+        "route": "endpoints",
+        "routes": "endpoints",
+        "params": "parameters",
+        "sql": "sqli",
+        "file": "files",
+        "extension": "extensions",
+        "tech": "technology",
+        "technology_specific_paths": "technology",
+        "technology_paths": "technology",
+        "api_endpoints": "api",
+    }
     normalized = aliases.get(normalized, normalized)
     if normalized not in WORDLIST_CATEGORIES:
         raise ValueError(f"Unknown wordlist category {category!r}; choose from {', '.join(WORDLIST_CATEGORIES)}.")
@@ -121,6 +149,21 @@ def _validate_name(name: str) -> str:
     if not _NAME_PATTERN.fullmatch(clean):
         raise ValueError("Collection name must be 1-64 letters, digits, dots, underscores or hyphens.")
     return clean
+
+
+def sha256_file(path: Path) -> str:
+    """Hash a local file in bounded-memory chunks."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _is_credential_wordlist(path: Path) -> bool:
+    """Keep password and credential guessing lists out of discovery recommendations."""
+    parts = {part.casefold().replace("_", "-") for part in path.parts}
+    return any(marker in part for marker in ("password", "credential", "bruteforce", "brute-force") for part in parts)
 
 
 def load_collections(registry_path: Path) -> list[WordlistCollection]:
@@ -303,12 +346,24 @@ def _walk_wordlists(root: Path) -> Iterator[Path]:
 def classify_wordlist(path: Path, fallback: str | None = None) -> str:
     """Infer a broad purpose from the relative path and filename."""
     normalized = str(path).casefold().replace("_", "-").replace("\\", "/")
+    parts = set(normalized.split("/"))
+    if any(part in _CREDENTIAL_MARKERS for part in parts):
+        return "other"
     if any(part in normalized for part in ("xss", "cross-site-scripting")):
         return "xss"
     if any(part in normalized for part in ("sqli", "sql-injection", "databases")):
         return "sqli"
     if any(part in normalized for part in ("parameter", "param-name", "param_names")):
         return "parameters"
+    if any(part in normalized for part in ("extension", "extensions", "file-ext")):
+        return "extensions"
+    if any(part in normalized for part in ("technology", "technologies", "tech-specific", "wordpress", "drupal")):
+        return "technology"
+    if any(part in normalized for part in ("common-files", "raft-files", "file-names", "filenames", "/files/")):
+        return "files"
+    filename_tokens = normalized.split("/")[-1].split(".")[0].split("-")
+    if any(token in {"file", "files", "filename", "filenames"} for token in filename_tokens):
+        return "files"
     if any(part in normalized for part in ("api", "api-endpoint", "graphql")):
         return "api"
     if any(part in normalized for part in ("directory", "directories", "raft", "common.txt")):
@@ -325,6 +380,10 @@ def list_wordlists(collections: Iterable[WordlistCollection]) -> list[WordlistFi
         if not collection.path.is_dir():
             continue
         for path in _walk_wordlists(collection.path):
+            if _is_credential_wordlist(path.relative_to(collection.path)) or _is_credential_wordlist(
+                Path(collection.path.name)
+            ):
+                continue
             relative = path.relative_to(collection.path)
             category = collection.category or classify_wordlist(relative)
             try:
@@ -434,6 +493,7 @@ def inspect_wordlist(
         requests_estimate=unique,
         minimum_seconds=unique / rate,
         large_file_warning=size >= large_file_warning_bytes,
+        sha256=sha256_file(path),
     )
 
 
@@ -447,7 +507,10 @@ def recommend_wordlists(collections: Iterable[WordlistCollection], category: str
     """Select local lists for a category, ordered by smaller files first."""
     requested = _validated_category(category)
     if requested is None or requested == "other":
-        raise ValueError("Choose a specific category: api, endpoints, directories, parameters, xss or sqli.")
+        raise ValueError(
+            "Choose a specific category from the discovery set: api, endpoints, directories, files, parameters, "
+            "extensions or technology."
+        )
     matches = [item for item in list_wordlists(collections) if _category_matches(item.category, requested)]
     return sorted(matches, key=lambda item: (item.size_bytes, item.collection.casefold(), str(item.path).casefold()))
 
@@ -469,7 +532,10 @@ def prepare_wordlist(
     """
     requested = _validated_category(category)
     if requested is None or requested == "other":
-        raise ValueError("Choose a specific category: api, endpoints, directories, parameters, xss or sqli.")
+        raise ValueError(
+            "Choose a specific category: api, endpoints, directories, files, parameters, extensions, "
+            "technology, xss or sqli."
+        )
     if max_entries <= 0 or max_entries > MAX_PREPARED_ENTRIES:
         raise ValueError(f"--max-entries must be between 1 and {MAX_PREPARED_ENTRIES:,}.")
     if rate <= 0:
@@ -487,6 +553,8 @@ def prepare_wordlist(
         raise FileExistsError(f"Output already exists; use --force to replace it: {output_path}")
     if not dry_run:
         output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    source_hashes = tuple((str(item.path), sha256_file(item.path)) for item in files)
 
     temporary: Path | None = None
     unique = duplicates = invalid = 0
@@ -553,6 +621,8 @@ def prepare_wordlist(
         limit_reached=limit_reached,
         requests_estimate=unique,
         minimum_seconds=unique / rate,
+        source_hashes=source_hashes,
+        output_sha256=sha256_file(output_path) if not dry_run else None,
     )
 
 

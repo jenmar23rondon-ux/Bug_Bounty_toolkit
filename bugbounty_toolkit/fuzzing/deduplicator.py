@@ -2,7 +2,7 @@ from __future__ import annotations
 
 
 def deduplicate_results(results: list[dict[str, object]]) -> list[dict[str, object]]:
-    seen: set[tuple[object, object, object, object, object]] = set()
+    seen: set[tuple[object, object, object, object, object, object]] = set()
     unique: list[dict[str, object]] = []
     for item in results:
         key = (
@@ -11,6 +11,7 @@ def deduplicate_results(results: list[dict[str, object]]) -> list[dict[str, obje
             item.get("length"),
             item.get("words"),
             item.get("lines"),
+            item.get("redirectlocation"),
         )
         if key in seen:
             continue
