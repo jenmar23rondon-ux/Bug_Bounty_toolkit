@@ -89,6 +89,7 @@ files = [
     "bugbounty_toolkit/analysis/artifact_review.py",
     "bugbounty_toolkit/analysis/evidence_engine.py",
     "bugbounty_toolkit/analysis/hypotheses.py",
+    "bugbounty_toolkit/analysis/access_assessment.py",
 ]
 
 [tool.coverage.run]

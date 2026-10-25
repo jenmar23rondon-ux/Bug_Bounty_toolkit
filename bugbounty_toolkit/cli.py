@@ -43,6 +43,7 @@ from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
 from .analysis.evidence_engine import correlations_from_bundle, import_evidence
 from .analysis.hypotheses import SECOND_OPINION as HYPOTHESES_SECOND_OPINION, analyze_hypotheses
+from .analysis.access_assessment import assess_access_control
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
@@ -1879,8 +1880,12 @@ def cmd_ai_review(args: argparse.Namespace) -> None:
 
 
 def cmd_ai_hypotheses(args: argparse.Namespace) -> None:
+    if args.access_evidence and not args.case_file:
+        raise ValueError("--access-evidence requires --case-file.")
     paths = ProgramPaths(RECORDS_ROOT, args.program)
     result = analyze_hypotheses(args.input, args.ai_model, args.ai_timeout, args.dry_run)
+    if args.case_file:
+        result["access_control_assessment"] = assess_access_control(args.case_file, args.access_evidence)
     print(f"[i] {HYPOTHESES_SECOND_OPINION}")
     if args.dry_run:
         print("[dry-run] No Ollama request or file write performed.")
@@ -2531,6 +2536,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ai_hypotheses.add_argument("program")
     ai_hypotheses.add_argument("--input", type=Path, required=True, help="Unified evidence bundle JSON")
+    ai_hypotheses.add_argument(
+        "--case-file", type=Path, help="Local private A/B case for deterministic IDOR assessment"
+    )
+    ai_hypotheses.add_argument(
+        "--access-evidence", type=Path, help="Native read-mode access-check JSON; requires --case-file"
+    )
     ai_hypotheses.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model")
     ai_hypotheses.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
     ai_hypotheses.add_argument(

@@ -209,6 +209,8 @@ bbtk report my-program --evidence-file registros/my-program/evidence/xss/run.jso
 
 `ai hypotheses` recomputes endpoint correlations and can ask local Ollama for a strict, per-group hypothesis using only endpoints, methods, anonymized session/resource labels and response fingerprints. It retries malformed model JSON once, marks invented evidence IDs, and saves each non-dry-run result as a unique history file. `--dry-run` validates and shows the minimized packets without Ollama or disk writes. Every result is a second opinion, never confirmation; HTTP status alone is not evidence of IDOR.
 
+For deterministic A/B interpretation, add `--case-file <private/case.json> --access-evidence <access-check.json>`. The evaluator requires valid owner and actor controls, and uses only application-success and configured owner-resource/private-marker predicates: `legitimate_access` describes valid own-account controls, `denied` requires an application-level denial, `possible_unauthorized_access` requires the crossed response to match both the owner's resource and private marker, and missing/conflicting proof is `insufficient_evidence`. It never treats HTTP status or Ollama's opinion as confirmation. Unified evidence fingerprints alone cannot establish which account owns a resource; without native access-check predicates the result stays insufficient.
+
 ### Case File Generation
 
 Create an offline, read-only `access-check` case from two raw Burp GET captures. Each capture must use a distinct authorized account and refer to that account's own resource. The generator requires the application's response pointers, both existing private markers, and explicit researcher attestations; it will not guess these values:
