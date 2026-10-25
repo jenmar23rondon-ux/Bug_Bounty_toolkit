@@ -43,6 +43,12 @@ bbtk access-check my-program \
 
 After reviewing the plan and confirming program policy, run the same command without `--dry-run`. Inspect the saved evidence. A `candidate` means the configured private-resource predicates matched in that response; it does not prove impact or establish a reportable vulnerability by itself.
 
+### Reproduce a protected control in the local lab
+
+The repository lab also exposes `/api/protected-orders/<id>`, which enforces ownership. Its captures are `labs/idor_lab/captures/protected-owner.txt` and `protected-actor.txt`. The end-to-end workflow imports the case, normalizes and correlates both captures, prepares a mocked Ollama hypothesis, routes to the access-control skill without executing its plan, then runs the bounded comparison against loopback and generates an assessment and report. Expected results are `rejected_in_this_test`, assessment `denied`, and report `not_observed`.
+
+Run `bbtk lab idor` for both vulnerable and protected end-to-end scenarios. The Ollama response is mocked for determinism; the test does not require a model service. This protected fixture is a control for the toolkit and makes no claim about other routes or roles on a real target. See [the local lab guide](../labs/idor_lab/README.md) for details.
+
 ## 5. Optional, explicitly authorized range
 
 Range checks require a separate case declaration. Only after confirming that the program permits identifier enumeration, edit the private case file to add:

@@ -24,7 +24,12 @@ For the complete automated flow, run:
 bbtk lab idor
 ```
 
-It starts the service on a free loopback port, runs the real CLI import/access-check/report commands against a temporary records directory, and cleans up the server and generated files afterward. Preview the steps without starting the service or making requests:
+It starts the service on a free loopback port, then runs two end-to-end scenarios against a temporary records directory:
+
+- The deliberately vulnerable route is imported, checked with a bounded local ID range, and reported as a `candidate` (never confirmed automatically). A public endpoint acts as a negative control.
+- The protected route goes through evidence import and correlation, a mocked local-model hypothesis, deterministic skill routing, the actual owner/actor comparison, deterministic access assessment, and a review report. The expected result is `rejected_in_this_test` / `denied` and a report marked `not_observed`.
+
+The model is mocked so the workflow is deterministic and does not require Ollama. The hypothesis remains a hypothesis; the router prints a plan and does not execute it. The test then explicitly runs the three-request comparison against the loopback-only lab. Generated files and the local server are cleaned up afterward. Preview the steps without starting the service or making requests:
 
 ```bash
 bbtk lab idor --dry-run
@@ -46,6 +51,6 @@ The lab also exposes `GET /api/protected-orders/<id>`, which enforces ownership 
 
 ## Fixture contents
 
-`captures/owner.txt` and `captures/actor.txt` are raw HTTP/1.1 requests to each account's own order. They contain only the fixed dummy tokens declared in `app.py`. The tests copy them to a temporary directory, substitute an ephemeral loopback port, and generate the private case there. No network request leaves loopback, and no test contacts an external service.
+`captures/owner.txt` and `captures/actor.txt` are raw HTTP/1.1 requests to each account's own vulnerable order. `captures/protected-owner.txt` and `captures/protected-actor.txt` target the protected control route. All captures contain only the fixed dummy tokens declared in `app.py`. The tests copy captures to a temporary directory, substitute an ephemeral loopback port and live fixture tokens, then generate private cases there. No network request leaves loopback, and no test contacts an external service.
 
 The test adds `identifier_enumeration_authorized: true` only to its temporary generated case because this disposable fixture explicitly allows testing the two known IDs. `import case` does not make that policy declaration for real programs.
