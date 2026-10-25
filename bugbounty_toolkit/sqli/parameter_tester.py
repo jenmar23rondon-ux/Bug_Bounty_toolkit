@@ -151,6 +151,7 @@ class SqliParameterTester:
                     results.append(
                         {
                             "route": redact_url(route),
+                            "method": "GET",
                             "parameter": parameter,
                             "stage": stage,
                             "status_code": response.status_code,
@@ -218,6 +219,7 @@ class SqliParameterTester:
             results.append(
                 {
                     "route": redact_url(route),
+                    "method": "GET",
                     "parameter": parameter,
                     "stage": stage,
                     "classification": "error",
@@ -263,6 +265,7 @@ class SqliParameterTester:
             results.append(
                 {
                     "route": redact_url(route),
+                    "method": "GET",
                     "parameter": parameter,
                     "stage": stage,
                     "status_code": response.status_code,
@@ -312,6 +315,7 @@ class SqliParameterTester:
         results.append(
             {
                 "route": redact_url(route),
+                "method": "GET",
                 "parameter": parameter,
                 "stage": stage,
                 "status_code": response.status_code,

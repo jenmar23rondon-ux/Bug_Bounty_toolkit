@@ -91,6 +91,8 @@ class EvidenceRecord:
     validation_status: str
     technical_evidence: dict[str, object]
     provenance: tuple[EvidenceProvenance, ...]
+    request_session_fingerprint: str | None = None
+    response_session_fingerprint: str | None = None
 
 
 @dataclass(frozen=True)
@@ -226,6 +228,30 @@ def _session_values(headers: dict[str, str]) -> list[str]:
     return sorted(values)
 
 
+def _directional_session_fingerprint(headers: dict[str, str], *, response: bool, salt: bytes) -> str | None:
+    """Fingerprint cookie/session material separately for observed flow transitions."""
+    cookie_names = {"set-cookie"} if response else {"cookie"}
+    cookie_values: list[str] = []
+    auth_values: list[str] = []
+    for name, value in headers.items():
+        lowered = name.lower()
+        if lowered in cookie_names and value:
+            first = value.split(";", 1)[0].strip()
+            if "=" in first:
+                key, item = first.split("=", 1)
+                if key.strip() and item.strip():
+                    cookie_values.append(f"cookie:{key.strip().casefold()}={item.strip()}")
+        elif lowered in {"authorization", "proxy-authorization", "x-api-key"} and value:
+            auth_values.append(f"{lowered}:{value.strip()}")
+    # Cookie names/values provide a comparable Set-Cookie -> Cookie transition. If
+    # no cookie was observed, retain opaque auth-header continuity as a fallback.
+    material = sorted(cookie_values) if cookie_values else sorted(auth_values)
+    if not material:
+        return None
+    fingerprint = _fingerprint("\n".join(material), salt)
+    return f"hmac-sha256:{fingerprint}"
+
+
 def _normalized_body(body: str) -> str:
     safe = redact_jwts(redact_text(body) or "")
     safe = redact_html_secrets(safe)
@@ -313,6 +339,8 @@ def _record(source: _Source, path: Path, salt: bytes) -> EvidenceRecord:
         if _RESOURCE_NAME.search(name) and value and value not in resource_values:
             resource_values.append(value)
     session_fingerprint = _fingerprint("\n".join(sorted(all_session_values)), salt) if all_session_values else None
+    request_session_fingerprint = _directional_session_fingerprint(request_headers, response=False, salt=salt)
+    response_session_fingerprint = _directional_session_fingerprint(response_headers, response=True, salt=salt)
     resource_fingerprint = _fingerprint("\n".join(sorted(resource_values)), salt) if resource_values else None
     normalized = _normalized_body(source.response_body)
     response_fingerprint = _fingerprint(normalized, salt) if source.response_body else None
@@ -371,6 +399,8 @@ def _record(source: _Source, path: Path, salt: bytes) -> EvidenceRecord:
         "parameters": parameter_names,
         "status_code": source.status_code,
         "session": session_fingerprint,
+        "request_session": request_session_fingerprint,
+        "response_session": response_session_fingerprint,
         "resource": resource_fingerprint,
         "response": response_fingerprint,
         "technical": technical.get("classification"),
@@ -386,6 +416,8 @@ def _record(source: _Source, path: Path, salt: bytes) -> EvidenceRecord:
         parameters=parameter_names,
         status_code=source.status_code,
         session_fingerprint=f"hmac-sha256:{session_fingerprint}" if session_fingerprint else None,
+        request_session_fingerprint=request_session_fingerprint,
+        response_session_fingerprint=response_session_fingerprint,
         resource_fingerprint=f"hmac-sha256:{resource_fingerprint}" if resource_fingerprint else None,
         response_fingerprint=f"hmac-sha256:{response_fingerprint}" if response_fingerprint else None,
         response_shape_fingerprint=f"hmac-sha256:{response_shape}" if response_shape else None,
@@ -716,7 +748,12 @@ def _toolkit_json(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
         raw_type = row.get("type")
         row_type = raw_type[:80] if isinstance(raw_type, str) else "toolkit"
         url = next(
-            (row[key] for key in ("url", "target", "endpoint", "request_url") if isinstance(row.get(key), str)), None
+            (
+                row[key]
+                for key in ("url", "target", "endpoint", "request_url", "route")
+                if isinstance(row.get(key), str)
+            ),
+            None,
         )
         status = _status(row.get("status_code"))
         classification = row.get("classification")
@@ -727,6 +764,10 @@ def _toolkit_json(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
             "possible",
             "confirmed",
             "not_observed",
+            "not_reproducible",
+            "not_reflected",
+            "reflected_not_executed",
+            "not_vulnerable",
             "weak",
             "protected",
             "inconclusive",
@@ -751,9 +792,13 @@ def _toolkit_json(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
                     url,
                     row.get("method") if isinstance(row.get("method"), str) else None,
                     status_code=status,
-                    parameters=tuple(str(item)[:200] for item in row.get("parameters", []) if isinstance(item, str))
-                    if isinstance(row.get("parameters"), list)
-                    else (),
+                    parameters=(
+                        tuple(str(item)[:200] for item in row.get("parameters", []) if isinstance(item, str))
+                        if isinstance(row.get("parameters"), list)
+                        else (row["parameter"][:200],)
+                        if isinstance(row.get("parameter"), str)
+                        else ()
+                    ),
                     technical=technical,
                     sensitivity_hint=any(_SENSITIVE_NAME.search(str(key)) for key in row),
                 ),
@@ -950,6 +995,8 @@ def _semantic_key(record: EvidenceRecord) -> tuple[object, ...]:
         record.parameters,
         record.status_code,
         record.session_fingerprint,
+        record.request_session_fingerprint,
+        record.response_session_fingerprint,
         record.resource_fingerprint,
         record.response_fingerprint,
         record.technical_evidence.get("classification"),
@@ -977,6 +1024,8 @@ def deduplicate(records: Iterable[EvidenceRecord]) -> list[EvidenceRecord]:
             parameters=previous.parameters,
             status_code=previous.status_code,
             session_fingerprint=previous.session_fingerprint,
+            request_session_fingerprint=previous.request_session_fingerprint,
+            response_session_fingerprint=previous.response_session_fingerprint,
             resource_fingerprint=previous.resource_fingerprint,
             response_fingerprint=previous.response_fingerprint,
             response_shape_fingerprint=previous.response_shape_fingerprint,
@@ -1101,7 +1150,7 @@ def import_evidence(paths: list[Path], format_name: str = "auto") -> dict[str, o
     correlations = correlate_evidence(unique)
     canonical = json.dumps(record_rows, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "type": "unified-evidence-bundle",
         "bundle_id": hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:24],
         "created_at": datetime.now().astimezone().isoformat(timespec="seconds"),
