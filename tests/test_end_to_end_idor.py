@@ -8,7 +8,7 @@ import sys
 import tempfile
 import threading
 import unittest
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.request import ProxyHandler, Request, build_opener
 
 from bugbounty_toolkit.access_control.comparison import load_case
@@ -182,6 +182,25 @@ class IdorEndToEndTests(unittest.TestCase):
                 self.assertEqual(private_data["classification"], "candidate")
                 self.assertIs(private_data["confirmed"], False)
 
+                self._assert_cli_ok(
+                    records,
+                    "access-check",
+                    "idor-lab",
+                    "--case-file",
+                    str(case_path),
+                    "--inverse-cross",
+                    "--max-tests",
+                    "4",
+                )
+                inverse_data = json.loads(
+                    self._latest_evidence(records / "idor-lab" / "evidence" / "access-control").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                self.assertEqual(inverse_data["classification"], "candidate")
+                self.assertEqual(inverse_data["inverse_result"], "rejected_in_this_test")
+                self.assertFalse(inverse_data["bidirectional_access"])
+
                 public_owner = captures_dir / "public-owner.txt"
                 public_actor = captures_dir / "public-actor.txt"
                 self._write_raw_request(public_owner, "/api/public/status?id=1001", f"127.0.0.1:{port}", owner_auth)
@@ -237,6 +256,58 @@ class IdorEndToEndTests(unittest.TestCase):
                 self.assertTrue(html_report.is_file())
                 self.assertGreater(html_report.stat().st_size, 0)
 
+        finally:
+            server.shutdown()
+            server.server_close()
+            server_thread.join(timeout=3)
+
+    def test_lab_models_one_way_flaw_protected_ambiguous_error_and_public_paths(self) -> None:
+        try:
+            server = make_server("127.0.0.1", 0)
+        except OSError as exc:
+            self.skipTest(f"Could not bind the local IDOR lab server in this CI environment: {exc}")
+        server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+        server_thread.start()
+        try:
+            origin = f"http://127.0.0.1:{server.server_address[1]}"
+            try:
+                owner = self._login(origin, "owner")
+                actor = self._login(origin, "actor")
+            except URLError as exc:
+                reason = exc.reason
+                if isinstance(reason, PermissionError) or (
+                    isinstance(reason, OSError) and getattr(reason, "winerror", None) == 10013
+                ):
+                    self.skipTest(f"CI sandbox denies loopback client sockets; lab scenario skipped: {reason}")
+                raise
+
+            def get(path: str, token: str) -> tuple[int, dict[str, object]]:
+                request = Request(
+                    origin + path,
+                    headers={"Authorization": token, "Accept": "application/json"},
+                    method="GET",
+                )
+                try:
+                    response = build_opener(ProxyHandler({})).open(request, timeout=3)
+                except HTTPError as error:
+                    return error.code, json.loads(error.read().decode("utf-8"))
+                with response:
+                    return response.status, json.loads(response.read().decode("utf-8"))
+
+            status, owner_record = get("/api/orders/1001", actor)
+            self.assertEqual(status, 200)
+            self.assertEqual(owner_record["data"]["marker"], "owner-order-marker-1001")
+            self.assertEqual(get("/api/orders/1002", owner)[0], 403)
+
+            self.assertEqual(get("/api/protected-orders/1001", owner)[0], 200)
+            self.assertEqual(get("/api/protected-orders/1002", actor)[0], 200)
+            self.assertEqual(get("/api/protected-orders/1001", actor)[0], 403)
+
+            status, denied_page = get("/api/ambiguous-orders/1001", actor)
+            self.assertEqual(status, 200)
+            self.assertIs(denied_page["success"], False)
+            self.assertEqual(get("/api/error-orders/1001", actor)[0], 500)
+            self.assertEqual(get("/api/public/status", actor)[0], 200)
         finally:
             server.shutdown()
             server.server_close()

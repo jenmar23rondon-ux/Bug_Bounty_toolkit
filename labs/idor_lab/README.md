@@ -42,6 +42,8 @@ The owner account owns order `1001`; the actor owns order `1002`. Both normal ac
 
 `GET /api/public/status` is public and returns a benign status. Supplying its fixture-only `id` query returns a public marker so the access-check control can demonstrate the `public_endpoint` classification. It must not become an IDOR candidate. `?debug=1` is accepted by the orders endpoint as a harmless query variant and does not change authorization.
 
+The lab also exposes `GET /api/protected-orders/<id>`, which enforces ownership and returns 403 for the other account; `/api/ambiguous-orders/<id>`, which returns HTTP 200 with `success: false` and a generic “Access denied” body on a cross-account read; and `/api/error-orders/<id>`, which returns 500 on that cross-account read. These controls demonstrate that HTTP 200 is not proof of access, and that generic errors are not vulnerability evidence. The automated scenario checks the one-way BOLA, the inverse actor direction, protected access, the 200 denial page, the error response and public endpoint. Every route is bound to the same loopback-only fixture and contains no real account data.
+
 ## Fixture contents
 
 `captures/owner.txt` and `captures/actor.txt` are raw HTTP/1.1 requests to each account's own order. They contain only the fixed dummy tokens declared in `app.py`. The tests copy them to a temporary directory, substitute an ephemeral loopback port, and generate the private case there. No network request leaves loopback, and no test contacts an external service.

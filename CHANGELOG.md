@@ -4,6 +4,9 @@ Notable user-facing changes are recorded here. The project has not yet published
 
 ## Unreleased
 
+- Add a versioned synthetic IDOR/BOLA benchmark comparing deterministic assessment, optional local Ollama review and a conservative combined verdict, with JSON/Markdown metrics and holdout isolation.
+- Expand the loopback IDOR lab with inverse-account checks, protected and ambiguous HTTP-200 controls, and server-error behavior.
+- Add strict mypy and an 85% coverage gate for the synthetic IDOR/BOLA benchmark.
 - Add a loopback-only deterministic IDOR/BOLA lab, raw fixture captures, a one-command end-to-end run, and an authorized-testing playbook.
 - Include the lab app in Ruff CI checks and strict mypy coverage.
 - Add offline `import case` generation from two distinct-account Burp GET captures, with strict origin/resource-difference validation, redacted summaries and researcher attestations.

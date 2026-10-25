@@ -47,6 +47,7 @@ from .analysis.evidence_engine import correlations_from_bundle, import_evidence
 from .analysis.hypotheses import SECOND_OPINION as HYPOTHESES_SECOND_OPINION, analyze_hypotheses
 from .analysis.access_assessment import assess_access_control
 from .analysis.skill_router import route_hypotheses_file
+from .analysis.benchmark import run_idor_benchmark, write_benchmark_reports
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
@@ -1955,6 +1956,33 @@ def cmd_ai_route(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
+def cmd_ai_benchmark(args: argparse.Namespace) -> None:
+    if not args.dry_run and args.output is None:
+        raise ValueError("--output is required unless --dry-run is used.")
+    if args.force and args.output is None:
+        raise ValueError("--force requires --output.")
+    result = run_idor_benchmark(
+        args.dataset,
+        split=args.split,
+        with_ollama=args.with_ollama,
+        model=args.ai_model,
+        timeout=args.ai_timeout,
+        dry_run=args.dry_run,
+    )
+    if args.dry_run:
+        print("[dry-run] No Ollama call, target request or file write performed.")
+    else:
+        result["outputs"] = {"json": str(args.output), "markdown": str(args.output.with_suffix(".md"))}
+        try:
+            json_path, markdown_path = write_benchmark_reports(result, args.output, args.force)
+        except FileExistsError as exc:
+            raise ValueError(str(exc)) from exc
+        result["outputs"] = {"json": str(json_path), "markdown": str(markdown_path)}
+        print(f"[+] Benchmark reports saved: {json_path} and {markdown_path}")
+    print(f"[i] {SECOND_OPINION}")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
 def cmd_report(args: argparse.Namespace) -> None:
     store = store_for(args.program)
     if args.draft_with_ai and not args.evidence_file:
@@ -2627,6 +2655,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run", action="store_true", required=True, help="Required; the router never executes plans"
     )
     ai_route.set_defaults(func=cmd_ai_route)
+
+    ai_benchmark = ai_sub.add_parser(
+        "benchmark", help="Measure deterministic IDOR/BOLA assessment and optional local Ollama second opinion"
+    )
+    ai_benchmark.add_argument("--dataset", type=Path, required=True, help="Versioned synthetic benchmark JSON")
+    ai_benchmark.add_argument(
+        "--split", choices=("holdout", "development", "all"), default="holdout", help="Evaluation split"
+    )
+    ai_benchmark.add_argument(
+        "--with-ollama", action="store_true", help="Opt in to a local Ollama call for each selected case"
+    )
+    ai_benchmark.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model")
+    ai_benchmark.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
+    ai_benchmark.add_argument("--output", type=Path, help="Output JSON path; a sibling Markdown report is created")
+    ai_benchmark.add_argument("--force", action="store_true", help="Replace existing JSON and Markdown reports")
+    ai_benchmark.add_argument(
+        "--dry-run", action="store_true", help="Validate dataset only; do not call Ollama or write reports"
+    )
+    ai_benchmark.set_defaults(func=cmd_ai_benchmark)
 
     doctor = sub.add_parser("doctor", help="Offline checks for dependencies, skills and local configuration")
     doctor.add_argument("--program", help="Optionally validate one initialized program")
