@@ -4,6 +4,7 @@ Notable user-facing changes are recorded here. The project has not yet published
 
 ## Unreleased
 
+- Add an offline wordlist manager for local SecLists, Assetnote, fuzzdb and custom collections, with streaming inspection, category recommendations, disk-backed deduplication, capped preparation and request/time estimates.
 - Package all topic skills, references and the plan adapter in wheel data files; discover them from both source checkouts and clean installations.
 - Add optional FastAPI local dashboard for one program: sanitized evidence import, investigation/memory views, graph search, hypothesis/control summaries, benchmark results and safe report viewing/download; no active check or model execution routes.
 - Add dashboard loopback/Host/Origin guards, bounded uploads, attachment-only report downloads, optional dependency profile, Windows/Linux quick start and a release-readiness checklist.

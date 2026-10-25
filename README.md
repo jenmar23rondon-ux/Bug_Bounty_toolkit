@@ -195,6 +195,25 @@ The adapter checks every wordlist substitution before starting, writes explicit 
 
 ffuf requires a whole-number rate of at least 1 request/second. Use the HTTP/XSS commands for fractional rates. The bundled wordlists are small examples, not the full SecLists files. Replace them with reviewed lists from the [official SecLists repository](https://github.com/danielmiessler/SecLists); see `wordlists/README.md` for typical paths.
 
+### Manage Local Wordlists
+
+The offline wordlist manager detects common Kali/Linux and Windows collection paths, and supports manually registered SecLists, Assetnote, fuzzdb and custom directories. It never downloads lists. Registry metadata and prepared lists stay in the user's local config/cache directories, outside the repository.
+
+```bash
+bbtk wordlists scan --dry-run
+bbtk wordlists scan
+bbtk wordlists register my-lists /path/to/wordlists
+bbtk wordlists list
+bbtk wordlists inspect /path/to/list.txt --rate 1
+bbtk wordlists recommend --category api
+bbtk wordlists prepare --category endpoints --max-entries 1000 --rate 1 --dry-run
+bbtk wordlists prepare --category endpoints --max-entries 1000 --rate 1
+```
+
+Inspection and preparation stream entries and keep deduplication state in a temporary SQLite file rather than loading a large collection into RAM. Preparation caps unique entries and refuses to overwrite an existing output unless `--force` is supplied; the default output is in the per-user cache. Request counts and minimum duration are estimates based on unique prepared entries and the selected rate. They do not include response latency, retries, scope exclusions, or external-tool overhead. Review the chosen list and program policy before using it with `fuzz`.
+
+Category inference uses collection labels, path names and filenames as hints; inspect recommendations before use. Duplicate removal is exact and case-sensitive. Lines over 64 KiB, NUL-containing lines and invalid UTF-8 are counted as invalid and skipped. Counting and preparation use temporary local disk space for uniqueness state.
+
 ## Test Supplied Parameters
 
 `inputs/routes.txt` accepts absolute URLs or relative routes with `--base-url`. `inputs/parameters.txt` accepts parameter names, one per line. Existing values of other query parameters are preserved. Empty lines, comments and duplicate entries are ignored.
@@ -343,7 +362,7 @@ The IDOR lab contains a deliberate one-way cross-account read flaw, a protected 
 
 The route-oriented Burp importer is offline and supports only sitemap XML, raw HTTP requests and saved items; it does not interpret Burp HTML reports. The unified evidence importer additionally accepts HAR, ffuf/Nuclei JSON, toolkit JSON, raw HTTP, CSV, HTML, Markdown and text. Those adapters are bounded and best-effort; arbitrary document text is not retained, but redaction cannot identify every proprietary secret format. Provenance paths can disclose local filenames and are included for traceability. Per-import HMAC fingerprints cannot correlate identities across separate import runs. API workflow and persistent evidence graphs inherit that limit and do not infer account identity, resource ownership or privacy from fingerprints, route names, documentation or HTTP status. The persistent graph is local investigation memory, not a source of independent truth; its pseudonym key shares the program database and should be protected with it. Ollama is a local second opinion only: it does not confirm findings, send target requests or submit reports. Artifact review sends redacted chunks to the local model; context can be incomplete when `--max-chunks` truncates a file, and analysis quality depends on the installed model and its context capacity. AI report drafts must be manually checked against the source evidence. The evidence report generator uses only allowlisted fields and generic category remediations; a reported validation state is bounded by the saved result predicates and does not replace researcher confirmation of scope, ownership, impact or severity.
 
-CI runs Ruff lint and formatting across `bugbounty_toolkit/`, `tests/`, `scripts/` and `skills/`; a guard test verifies every Python file under the package and tests is included in Ruff's discovered file set. Strict mypy covers the access comparison/write lab/function matrix, shared budget and runner, CORS/redirect, SQLi/XSS, diagnostics, hunt, SSRF/CSRF, JWT forge, takeover, APK scan, IDOR/BOLA benchmark and assessment, prioritization, investigation orchestration, API workflow, persistent evidence graph, investigation memory, dashboard and evidence finding report modules. Coverage gates require at least 90% combined for the two critical access-control modules, at least 80% for the BFLA function matrix, API workflow intelligence, persistent evidence graph and dashboard, at least 80% combined for `hunt.py`, `ssrf_check.py`, `csrf_audit.py` and `jwt_forge.py`, at least 85% each for the evidence engine, IDOR/BOLA benchmark, prioritization, investigation orchestration and evidence finding report modules, plus the existing 77% package-wide floor across `bugbounty_toolkit`, the skill installer and plan runner. The CLI and some older modules remain outside strict mypy. Run the same checks locally with `pip install -e ".[dashboard,dev]"`.
+CI runs Ruff lint and formatting across `bugbounty_toolkit/`, `tests/`, `scripts/` and `skills/`; a guard test verifies every Python file under the package and tests is included in Ruff's discovered file set. Strict mypy covers the access comparison/write lab/function matrix, shared budget and runner, CORS/redirect, SQLi/XSS, diagnostics, hunt, SSRF/CSRF, JWT forge, takeover, APK scan, IDOR/BOLA benchmark and assessment, prioritization, investigation orchestration, API workflow, persistent evidence graph, investigation memory, dashboard, evidence finding report and offline wordlist manager. Coverage gates require at least 90% combined for the two critical access-control modules, at least 80% for the BFLA function matrix, API workflow intelligence, persistent evidence graph, dashboard and wordlist manager, at least 80% combined for `hunt.py`, `ssrf_check.py`, `csrf_audit.py` and `jwt_forge.py`, at least 85% each for the evidence engine, IDOR/BOLA benchmark, prioritization, investigation orchestration and evidence finding report modules, plus the existing 77% package-wide floor across `bugbounty_toolkit`, the skill installer and plan runner. The CLI and some older modules remain outside strict mypy. Run the same checks locally with `pip install -e ".[dashboard,dev]"`.
 
 The installed version is synchronized in `pyproject.toml` and `bugbounty_toolkit/__init__.py`; `bbtk --version` prints it. Pushing a matching `v<version>` tag runs the release workflow, rechecks tests/coverage, builds wheel and source archives, and publishes a GitHub Release with generated notes. The workflow rejects tags that do not match package metadata.
 

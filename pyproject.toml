@@ -104,6 +104,7 @@ files = [
     "bugbounty_toolkit/analysis/investigation_memory.py",
     "bugbounty_toolkit/dashboard.py",
     "bugbounty_toolkit/reporting/finding_report.py",
+    "bugbounty_toolkit/fuzzing/wordlist_manager.py",
 ]
 
 [tool.coverage.run]

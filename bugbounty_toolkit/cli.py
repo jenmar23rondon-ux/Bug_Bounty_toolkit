@@ -27,6 +27,19 @@ from .core.rate_limiter import RateLimiter
 from .core.redaction import redact_url
 from .core.target import load_routes, normalize_url
 from .fuzzing.ffuf_runner import FfufOptions, FfufRunner
+from .fuzzing.wordlist_manager import (
+    WORDLIST_CATEGORIES,
+    default_prepared_root,
+    default_registry_path,
+    detect_local_collections,
+    inspect_wordlist,
+    list_wordlists,
+    load_collections,
+    prepare_wordlist,
+    recommend_wordlists,
+    register_collection,
+    scan_collections,
+)
 from .requests_engine.replay import RequestReplayer
 from .requests_engine.headers import parse_header_items, parse_cookie_items
 from .requests_engine.parameters import load_parameter_names, parse_parameter_items, with_parameter
@@ -404,6 +417,103 @@ def cmd_fuzz(args: argparse.Namespace) -> None:
     path, results = runner.run(options)
     store.mark_reviewed("fuzz-url", redact_url(args.url), str(path))
     print(f"[+] Fuzzing complete: {len(results)} unique matches. Evidence: {path}")
+
+
+def cmd_wordlists(args: argparse.Namespace) -> None:
+    """Manage local wordlist collections without network access."""
+    registry = getattr(args, "registry", None) or default_registry_path()
+    action = args.wordlists_action
+    if action == "scan":
+        if args.dry_run:
+            detected = detect_local_collections()
+            registered = {item.path.resolve(strict=False) for item in load_collections(registry)}
+            candidates = [(name, path) for name, path in detected if path.resolve(strict=False) not in registered]
+            if not candidates:
+                print("[i] No new local wordlist collections detected. No files written.")
+                return
+            print("[i] Detected collections (dry-run; no registry changes):")
+            for name, path in candidates:
+                print(f"  {name}\t{path}")
+            return
+        added = scan_collections(registry)
+        if not added:
+            print(f"[i] No new collections detected. Registry: {registry}")
+            return
+        print(f"[+] Registered {len(added)} local collection(s):")
+        for collection in added:
+            print(f"  {collection.name}\t{collection.path}")
+        print(f"[i] Registry: {registry}")
+        return
+
+    if action == "register":
+        collection = register_collection(registry, args.name, args.path, args.category)
+        print(f"[+] Registered {collection.name}: {collection.path} (category: {collection.category or 'auto'})")
+        print(f"[i] Registry: {registry}")
+        return
+
+    collections = load_collections(registry)
+    if action == "list":
+        if not collections:
+            print(f"[i] No collections registered. Run `bbtk wordlists scan` or `register`. Registry: {registry}")
+            return
+        files = list_wordlists(collections)
+        print(f"Collections: {len(collections)} | Wordlist files: {len(files)} | Registry: {registry}")
+        for collection in collections:
+            collection_files = [item for item in files if item.collection == collection.name]
+            print(f"\n{collection.name}\t{collection.path}\t{len(collection_files)} file(s)")
+            for item in collection_files:
+                print(f"  [{item.category}] {item.size_bytes:,} bytes\t{item.path}")
+        return
+
+    if action == "inspect":
+        result = inspect_wordlist(args.path, rate=args.rate, large_file_warning_bytes=args.warning_mib * 1024 * 1024)
+        print(f"File: {result.path}")
+        print(f"Size: {result.size_bytes:,} bytes" + (" [!] large-file warning" if result.large_file_warning else ""))
+        print(
+            f"Entries: {result.entry_count:,} | unique: {result.unique_entries:,} | "
+            f"duplicates: {result.duplicate_entries:,} | invalid: {result.invalid_lines:,}"
+        )
+        print(f"Blank: {result.blank_lines:,} | comments: {result.comment_lines:,}")
+        print(
+            f"Estimated requests: {result.requests_estimate:,} | minimum at {args.rate:g}/s: {result.minimum_seconds:.1f}s"
+        )
+        print("Preview:")
+        for entry in result.preview:
+            print(f"  {entry}")
+        return
+
+    if action == "recommend":
+        recommendations = recommend_wordlists(collections, args.category)
+        if not recommendations:
+            print(f"[i] No local wordlists found for category {args.category!r}.")
+            return
+        print(f"Recommended local lists for {args.category} (smaller files first):")
+        for item in recommendations:
+            print(f"  [{item.category}] {item.size_bytes:,} bytes\t{item.path}")
+        return
+
+    if action == "prepare":
+        output = args.output or (default_prepared_root() / f"{args.category}.txt")
+        result = prepare_wordlist(
+            collections,
+            args.category,
+            output,
+            max_entries=args.max_entries,
+            rate=args.rate,
+            force=args.force,
+            dry_run=args.dry_run,
+        )
+        mode = "Would prepare" if args.dry_run else "Prepared"
+        print(f"[+] {mode} {result.unique_entries:,} unique entries for {result.category}.")
+        print(
+            f"[i] Source files: {len(result.source_files)} | duplicates removed: {result.duplicate_entries:,} | "
+            f"invalid lines skipped: {result.invalid_lines:,}"
+        )
+        print(
+            f"[i] Estimated requests: {result.requests_estimate:,} | "
+            f"minimum at {args.rate:g}/s: {result.minimum_seconds:.1f}s | cap reached: {result.limit_reached}"
+        )
+        print(f"[i] Output: {result.output}" + (" (not written)" if args.dry_run else ""))
 
 
 def cmd_xss(args: argparse.Namespace) -> None:
@@ -2468,6 +2578,40 @@ def build_parser() -> argparse.ArgumentParser:
     fuzz.add_argument("--filter-size")
     fuzz.add_argument("--dry-run", action="store_true")
     fuzz.set_defaults(func=cmd_fuzz)
+
+    wordlists = sub.add_parser("wordlists", help="Manage local wordlist collections offline")
+    wordlists_sub = wordlists.add_subparsers(dest="wordlists_action", required=True)
+    wordlists_scan = wordlists_sub.add_parser("scan", help="Detect common local wordlist collection directories")
+    wordlists_scan.add_argument("--registry", type=Path, help="Override the per-user collection registry")
+    wordlists_scan.add_argument("--dry-run", action="store_true", help="Show detected collections without saving")
+    wordlists_scan.set_defaults(func=cmd_wordlists)
+    wordlists_register = wordlists_sub.add_parser("register", help="Register a local collection directory")
+    wordlists_register.add_argument("name")
+    wordlists_register.add_argument("path", type=Path)
+    wordlists_register.add_argument("--category", choices=WORDLIST_CATEGORIES)
+    wordlists_register.add_argument("--registry", type=Path, help="Override the per-user collection registry")
+    wordlists_register.set_defaults(func=cmd_wordlists)
+    wordlists_list = wordlists_sub.add_parser("list", help="List registered collections and supported files")
+    wordlists_list.add_argument("--registry", type=Path, help="Override the per-user collection registry")
+    wordlists_list.set_defaults(func=cmd_wordlists)
+    wordlists_inspect = wordlists_sub.add_parser("inspect", help="Stream-count and preview one wordlist")
+    wordlists_inspect.add_argument("path", type=Path)
+    wordlists_inspect.add_argument("--rate", type=positive_float, default=1.0)
+    wordlists_inspect.add_argument("--warning-mib", type=positive_int, default=1024)
+    wordlists_inspect.set_defaults(func=cmd_wordlists)
+    wordlists_recommend = wordlists_sub.add_parser("recommend", help="Recommend registered lists by category")
+    wordlists_recommend.add_argument("--category", required=True, choices=WORDLIST_CATEGORIES[:-1])
+    wordlists_recommend.add_argument("--registry", type=Path, help="Override the per-user collection registry")
+    wordlists_recommend.set_defaults(func=cmd_wordlists)
+    wordlists_prepare = wordlists_sub.add_parser("prepare", help="Combine, deduplicate and cap local lists")
+    wordlists_prepare.add_argument("--category", required=True, choices=WORDLIST_CATEGORIES[:-1])
+    wordlists_prepare.add_argument("--max-entries", type=positive_int, required=True)
+    wordlists_prepare.add_argument("--rate", type=positive_float, default=1.0)
+    wordlists_prepare.add_argument("--output", type=Path, help="Output path; defaults to the per-user cache")
+    wordlists_prepare.add_argument("--force", action="store_true", help="Replace an existing prepared file")
+    wordlists_prepare.add_argument("--dry-run", action="store_true", help="Estimate the prepared file without writing")
+    wordlists_prepare.add_argument("--registry", type=Path, help="Override the per-user collection registry")
+    wordlists_prepare.set_defaults(func=cmd_wordlists)
 
     xss = sub.add_parser("xss")
     xss.add_argument("program")
