@@ -44,6 +44,7 @@ from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
 from .analysis.evidence_engine import correlations_from_bundle, import_evidence
+from .analysis.api_workflow import build_api_workflow
 from .analysis.hypotheses import SECOND_OPINION as HYPOTHESES_SECOND_OPINION, analyze_hypotheses
 from .analysis.access_assessment import assess_access_control
 from .analysis.skill_router import route_hypotheses_file
@@ -1899,6 +1900,31 @@ def cmd_evidence_correlate(args: argparse.Namespace) -> None:
     print(f"[+] Correlations saved: {destination} ({summary['correlation_groups']} groups; no findings inferred).")
 
 
+def cmd_api_workflow(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    result = build_api_workflow(args.input, args.openapi)
+    bundle_id = result.get("bundle_id")
+    safe_id = bundle_id if isinstance(bundle_id, str) and re.fullmatch(r"[A-Za-z0-9_-]{1,64}", bundle_id) else "unknown"
+    destination = args.output or paths.evidence_dir / "workflows" / f"api-workflow-{safe_id}.json"
+    summary = result.get("summary")
+    if not isinstance(summary, dict):
+        raise RuntimeError("API workflow builder returned an invalid summary.")
+    if args.dry_run:
+        print(
+            f"[i] Offline API workflow plan: {summary['records_usable']} observations, "
+            f"{summary['nodes']} nodes, {summary['relations']} relations, "
+            f"{summary['hypotheses']} hypotheses. No server behavior or findings inferred."
+        )
+        print(f"[dry-run] would write: {destination}")
+        print("[i] No HTTP requests, Ollama calls or file writes performed.")
+        return
+    _write_offline_json(destination, result, args.force)
+    print(
+        f"[+] API workflow model saved: {destination} ({summary['nodes']} nodes, "
+        f"{summary['relations']} relations). Hypotheses are explicitly labeled; no findings confirmed."
+    )
+
+
 def cmd_ai_review(args: argparse.Namespace) -> None:
     ProgramPaths(RECORDS_ROOT, args.program)
     validate_ollama_config(args.model, args.ai_timeout)
@@ -2684,6 +2710,15 @@ def build_parser() -> argparse.ArgumentParser:
     evidence_correlate.add_argument("--dry-run", action="store_true", help="Validate and summarize without writing")
     evidence_correlate.add_argument("--force", action="store_true", help="Replace an existing output file")
     evidence_correlate.set_defaults(func=cmd_evidence_correlate)
+
+    api_workflow = sub.add_parser("api-workflow", help="Build an offline API workflow graph from normalized evidence")
+    api_workflow.add_argument("program")
+    api_workflow.add_argument("--input", type=Path, required=True, help="Unified evidence bundle JSON")
+    api_workflow.add_argument("--openapi", type=Path, help="Optional local OpenAPI JSON/YAML document")
+    api_workflow.add_argument("--output", type=Path, help="Optional local JSON model path")
+    api_workflow.add_argument("--dry-run", action="store_true", help="Validate and summarize without writing")
+    api_workflow.add_argument("--force", action="store_true", help="Replace an existing output file")
+    api_workflow.set_defaults(func=cmd_api_workflow)
 
     ai_review = sub.add_parser(
         "ai-review", help="Ask local Ollama for a second opinion on minimized evidence or a redacted artifact"

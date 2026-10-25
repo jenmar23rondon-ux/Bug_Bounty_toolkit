@@ -25,6 +25,7 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/access_control/comparison.py,bugbounty_toolkit/access_control/write_lab.py" --fail-under=90
       - run: coverage report --include="bugbounty_toolkit/hunt.py,bugbounty_toolkit/ssrf_check.py,bugbounty_toolkit/csrf_audit.py,bugbounty_toolkit/jwt_forge.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/analysis/evidence_engine.py" --fail-under=85
+      - run: coverage report --include="bugbounty_toolkit/analysis/api_workflow.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/analysis/benchmark.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/analysis/prioritization.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/analysis/investigation.py" --fail-under=85
