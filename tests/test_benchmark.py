@@ -56,6 +56,7 @@ class BenchmarkTests(unittest.TestCase):
         )
         self.assertEqual(result["dataset_audit"]["unique_case_evidence_inputs"], 12)
         self.assertEqual(result["dataset_audit"]["cross_split_shared_minimized_packets"], 7)
+        self.assertFalse(result["dataset_audit"]["model_prompt_independent"])
         metrics = result["methods"]["deterministic"]["metrics"]
         self.assertEqual(metrics["true_positive"], 3)
         self.assertEqual(metrics["false_positive"], 0)
@@ -81,6 +82,27 @@ class BenchmarkTests(unittest.TestCase):
                 json.dumps({"case": item["case"], "evidence": item["evidence"]}, sort_keys=True) for item in split
             }
             self.assertEqual(len(canonical), len(split))
+
+    def test_v2_holdout_has_adversarial_and_negative_scenarios(self) -> None:
+        _, holdout = _load_dataset(DATASET_V2, "holdout")
+        families = {item["scenario_family"] for item in holdout}
+        self.assertTrue(
+            {
+                "holdout_misleading_forbidden_body",
+                "holdout_error_page_embeds_record",
+                "holdout_role_boundary_denial",
+                "holdout_public_profile",
+                "holdout_owner_session_mismatch",
+                "holdout_partial_owner_marker_match",
+            }.issubset(families)
+        )
+
+    def test_v2_report_marks_reused_model_prompts_as_not_independent(self) -> None:
+        result = run_idor_benchmark(DATASET_V2, split="holdout")
+        markdown = render_benchmark_markdown(result)
+        self.assertEqual(result["dataset_audit"]["cross_split_shared_minimized_packets"], 7)
+        self.assertFalse(result["dataset_audit"]["model_prompt_independent"])
+        self.assertIn("independent model prompts: `False`", markdown)
 
     def test_v2_rejects_duplicate_inputs_and_cross_split_family_reuse(self) -> None:
         data = json.loads(DATASET_V2.read_text(encoding="utf-8"))

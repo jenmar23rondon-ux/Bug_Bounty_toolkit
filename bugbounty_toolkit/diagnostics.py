@@ -11,6 +11,7 @@ from . import __version__
 from .core.records import ProgramPaths
 from .core.settings import load_settings
 from .core.scope_validator import ScopeValidator
+from .skill_data import resolve_skill_root
 
 
 OPTIONAL_MODULES = {
@@ -20,6 +21,7 @@ OPTIONAL_MODULES = {
     "jwt": ("jwt", "jose", "cryptography", "jwcrypto"),
     "http": ("requests", "aiohttp", "httpx"),
     "databases": ("pymysql", "psycopg2"),
+    "dashboard": ("fastapi", "uvicorn"),
     "takeover": ("dns.resolver",),
 }
 
@@ -79,7 +81,7 @@ def diagnose(
     )
     add("toolkit-version", "ok", __version__)
 
-    root = skills_root or Path(__file__).resolve().parents[1] / "skills"
+    root = skills_root or resolve_skill_root()
     skill_files = sorted(root.glob("bugbounty-*/SKILL.md")) if root.is_dir() else []
     add(
         "skill-source",

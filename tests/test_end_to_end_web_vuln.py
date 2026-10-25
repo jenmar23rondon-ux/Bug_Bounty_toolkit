@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 from pathlib import Path
 import tempfile
@@ -12,10 +13,12 @@ from unittest.mock import patch
 from bugbounty_toolkit import cli
 from bugbounty_toolkit.analysis.api_workflow import build_api_workflow
 from bugbounty_toolkit.analysis.evidence_engine import import_evidence
+from bugbounty_toolkit.analysis.evidence_graph import EvidenceGraphStore
 from bugbounty_toolkit.analysis.hypotheses import analyze_hypotheses
 from bugbounty_toolkit.analysis.skill_router import route_hypotheses
 from bugbounty_toolkit.core.http_client import HttpClient, RequestSpec
 from bugbounty_toolkit.core.rate_limiter import RateLimiter
+from bugbounty_toolkit.core.records import ProgramPaths, RecordStore
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.reporting.finding_report import (
     build_evidence_finding_report,
@@ -145,11 +148,27 @@ class EndToEndWebVulnerabilityLabTests(unittest.TestCase):
                 self.assertFalse(any(row["classification"] == "possible" for row in sqli_rows["protected"]))
                 self.assertFalse(any(row["classification"] == "possible" for row in sqli_rows["ambiguous"]))
 
-                bundle = import_evidence(artifacts)
+                burp_xml = root / "burp-capture.xml"
+                burp_request = (
+                    f"GET /xss/reflected?q=seed HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nAccept: text/html\r\n\r\n"
+                )
+                burp_response = (
+                    "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n"
+                    "<html><body>sanitized Burp fixture</body></html>"
+                )
+                request_b64 = base64.b64encode(burp_request.encode()).decode("ascii")
+                response_b64 = base64.b64encode(burp_response.encode()).decode("ascii")
+                burp_xml.write_text(
+                    "<items><item><url>http://127.0.0.1:%s/xss/reflected?q=seed</url>"
+                    '<request base64="true">%s</request><response base64="true">%s</response></item></items>'
+                    % (port, request_b64, response_b64),
+                    encoding="utf-8",
+                )
+                bundle = import_evidence([*artifacts, burp_xml])
                 bundle_path = root / "unified-evidence.json"
                 bundle_path.write_text(json.dumps(bundle), encoding="utf-8")
                 source_tools = {tool for record in bundle["records"] for tool in record["source_tools"]}
-                self.assertTrue({"xss", "sqli"}.issubset(source_tools))
+                self.assertTrue({"burp", "xss", "sqli"}.issubset(source_tools))
                 self.assertTrue(all("q" in record["parameters"] for record in bundle["records"]))
                 self.assertTrue(all(record["endpoint"] for record in bundle["records"]))
 
@@ -174,6 +193,29 @@ class EndToEndWebVulnerabilityLabTests(unittest.TestCase):
                 self.assertIn("bugbounty-xss", selected_skills)
                 self.assertIn("bugbounty-sqli", selected_skills)
                 self.assertTrue(all("--dry-run" in row["command"] for row in routed["plan"]))
+
+                hypotheses_path = root / "hypotheses.json"
+                hypotheses_path.write_text(json.dumps(hypotheses_result), encoding="utf-8")
+                route_path = root / "route.json"
+                route_path.write_text(json.dumps(routed), encoding="utf-8")
+                records_root = root / "records"
+                program_store = RecordStore(ProgramPaths(records_root, "local-web-lab"))
+                try:
+                    graph = EvidenceGraphStore(program_store)
+                    graph_result = graph.ingest(bundle_path, hypotheses_path=hypotheses_path, route_path=route_path)
+                    self.assertGreater(graph_result["nodes_written"], 0)
+                    self.assertGreater(graph_result["hypotheses_written"], 0)
+                    self.assertGreater(graph_result["skills_linked"], 0)
+                    graph_result_rows = graph.search(endpoint="/xss/reflected")
+                    self.assertTrue(graph_result_rows["matches"])
+                    self.assertTrue(
+                        any(
+                            relation["relation"] in {"SUPPORTS", "VALIDATED_BY", "RELATED_TO"}
+                            for relation in graph_result_rows["relations"]
+                        )
+                    )
+                finally:
+                    program_store.close()
 
                 reports_dir = root / "reports"
                 reports_dir.mkdir()
@@ -205,6 +247,64 @@ class EndToEndWebVulnerabilityLabTests(unittest.TestCase):
                     self.assertFalse(report["submitted"])
                 self.assertTrue({"xss", "sqli"}.issubset(rendered_categories))
                 self.assertGreaterEqual(len(list(reports_dir.glob("*.json"))), 2)
+
+                original_records_root = cli.RECORDS_ROOT
+                cli.RECORDS_ROOT = records_root
+                try:
+                    investigation_args = cli.build_parser().parse_args(
+                        [
+                            "ai",
+                            "investigate",
+                            "local-web-lab",
+                            "--input",
+                            str(bundle_path),
+                            "--with-ollama",
+                            "--session-id",
+                            "web-vuln-e2e",
+                        ]
+                    )
+                    with (
+                        patch("bugbounty_toolkit.analysis.hypotheses.chat_with_ollama", side_effect=_model_response),
+                        redirect_stdout(StringIO()),
+                    ):
+                        investigation_args.func(investigation_args)
+                    close_args = cli.build_parser().parse_args(
+                        ["investigation", "close", "local-web-lab", "--id", "web-vuln-e2e"]
+                    )
+                    with redirect_stdout(StringIO()):
+                        close_args.func(close_args)
+                    resume_args = cli.build_parser().parse_args(
+                        [
+                            "ai",
+                            "investigate",
+                            "local-web-lab",
+                            "--input",
+                            str(bundle_path),
+                            "--with-ollama",
+                            "--session-id",
+                            "web-vuln-e2e",
+                            "--resume-session",
+                        ]
+                    )
+                    with (
+                        patch("bugbounty_toolkit.analysis.hypotheses.chat_with_ollama", side_effect=_model_response),
+                        redirect_stdout(StringIO()),
+                    ):
+                        resume_args.func(resume_args)
+                    status_args = cli.build_parser().parse_args(
+                        ["investigation", "status", "local-web-lab", "--id", "web-vuln-e2e"]
+                    )
+                    status_output = StringIO()
+                    with redirect_stdout(status_output):
+                        status_args.func(status_args)
+                    memory_state = json.loads(status_output.getvalue())
+                    self.assertEqual(memory_state["status"], "active")
+                    self.assertEqual(memory_state["resume_count"], 1)
+                    self.assertEqual(
+                        [event["event_type"] for event in memory_state["events"]], ["saved", "closed", "resumed"]
+                    )
+                finally:
+                    cli.RECORDS_ROOT = original_records_root
         except ToolkitError as exc:
             cause = exc.__cause__
             reason = getattr(cause, "reason", None)

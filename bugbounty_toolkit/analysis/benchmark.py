@@ -17,6 +17,34 @@ MAX_BENCHMARK_CASES = 200
 SECOND_OPINION = "Ollama es una segunda opinión, nunca confirmación."
 _TRUTHS = ("vulnerable", "safe", "insufficient")
 _DECISIONS = ("candidate", "not_observed", "inconclusive")
+_RESOURCE_KINDS = frozenset(
+    {
+        "account_profile",
+        "audit_entry",
+        "benefit_claim",
+        "catalog_entry",
+        "conversation",
+        "credit_record",
+        "device_setting",
+        "event_listing",
+        "inventory_item",
+        "legal_document",
+        "license_record",
+        "media_asset",
+        "medical_note",
+        "payment_record",
+        "purchase_order",
+        "reservation",
+        "service_case",
+        "subscription",
+        "support_ticket",
+        "team_message",
+        "warehouse_shipment",
+        "workflow_record",
+        "workspace_member",
+        "reimbursement",
+    }
+)
 _AI_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
@@ -82,6 +110,9 @@ def _load_dataset(path: Path, split: str) -> tuple[str, list[dict[str, Any]]]:
                 or not 20 <= len(item["rationale"]) <= 600
             ):
                 raise ValueError("Version 2 cases require a scenario family, short description and labeling rationale.")
+            resource_kind = item["case"].get("resource_kind")
+            if resource_kind is not None and resource_kind not in _RESOURCE_KINDS:
+                raise ValueError("Version 2 resource_kind must use a supported non-sensitive category.")
             previous_split = split_families.setdefault(family, item["split"])
             if previous_split != item["split"]:
                 raise ValueError("A benchmark scenario family cannot appear in both development and holdout.")
@@ -141,7 +172,7 @@ def _minimized_packet(case: dict[str, Any], evidence: dict[str, Any]) -> dict[st
             )
         }
 
-    return {
+    packet: dict[str, object] = {
         "attestations": {
             "accounts_authorized": case.get("accounts_authorized") is True,
             "resource_private": case.get("resource_private") is True,
@@ -152,6 +183,10 @@ def _minimized_packet(case: dict[str, Any], evidence: dict[str, Any]) -> dict[st
         "actor_control": predicates("actor_control"),
         "cross_read": predicates("cross_read"),
     }
+    resource_kind = case.get("resource_kind")
+    if isinstance(resource_kind, str) and resource_kind in _RESOURCE_KINDS:
+        packet["resource_kind"] = resource_kind
+    return packet
 
 
 def _ollama_decision(packet: dict[str, object], model: str, timeout: float) -> tuple[str, str, int]:
@@ -317,6 +352,7 @@ def _dataset_audit(
         audit["cross_split_shared_minimized_packets"] = len(
             packets_by_split["development"] & packets_by_split["holdout"]
         )
+        audit["model_prompt_independent"] = audit["cross_split_shared_minimized_packets"] == 0
     return audit
 
 
@@ -488,7 +524,7 @@ def run_idor_benchmark(
             "Evaluation uses only the selected split.",
             "No model training or prompt fitting is performed on benchmark cases.",
             "V2 scenario families and exact raw case/evidence inputs are disjoint between development and holdout.",
-            "V2 minimized Ollama predicate packets can repeat across splits; their overlap is reported in dataset_audit.",
+            "V2 resource-kind labels are allowlisted context only; minimized prompt overlap is reported in dataset_audit.",
             "Ollama receives only synthetic boolean predicates; no IDs, URLs, headers, markers or bodies.",
         ],
         "methods": {
@@ -575,7 +611,8 @@ def render_benchmark_markdown(result: dict[str, object]) -> str:
                 f"Unique case/evidence inputs: `{audit.get('unique_case_evidence_inputs')}`; "
                 f"unique minimized Ollama packets: `{audit.get('unique_minimized_ollama_packets')}`; "
                 f"repeated minimized packets: `{audit.get('repeated_minimized_ollama_packets')}`; "
-                f"shared across development/holdout: `{audit.get('cross_split_shared_minimized_packets', 'not applicable')}`.",
+                f"shared across development/holdout: `{audit.get('cross_split_shared_minimized_packets', 'not applicable')}`; "
+                f"independent model prompts: `{audit.get('model_prompt_independent', 'not applicable')}`.",
                 "",
                 "| Ground truth | Candidate | Not observed | Inconclusive |",
                 "|---|---:|---:|---:|",
@@ -606,8 +643,9 @@ def render_benchmark_markdown(result: dict[str, object]) -> str:
             "predict performance on real programs. "
             + (
                 "For dataset v2, insufficient ground-truth cases are excluded from binary rates and shown separately; "
-                "decision coverage is reported so abstentions cannot be hidden by precision/recall. Repeated minimized "
-                "packets are not independent model observations, even when their source cases differ."
+                "decision coverage is reported so abstentions cannot be hidden by precision/recall. Resource-kind context "
+                "is allowlisted and carries no truth label; independent model evaluation still depends on the reported "
+                "cross-split prompt overlap being zero."
                 if is_v2
                 else "For historical dataset v1, binary rates treat insufficient ground-truth cases as non-vulnerable."
             )

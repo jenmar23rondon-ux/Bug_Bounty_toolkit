@@ -8,6 +8,7 @@ from typing import Any
 
 from .hypotheses import _validate_hypothesis
 from .ollama_review import DEFAULT_OLLAMA_MODEL, OllamaUnavailableError, chat_with_ollama, validate_ollama_config
+from ..skill_data import resolve_skill_root
 
 MAX_HYPOTHESES_BYTES = 2_000_000
 SECOND_OPINION = "Segunda opinión, nunca confirmación."
@@ -151,7 +152,7 @@ SKILLS: tuple[SkillDefinition, ...] = (
 )
 
 SKILL_REGISTRY = {skill.name: skill for skill in SKILLS}
-SKILLS_ROOT = Path(__file__).resolve().parents[2] / "skills"
+SKILLS_ROOT = resolve_skill_root()
 _HYPOTHESES_TYPE = "ai-hypotheses"
 _GROUP_ID = re.compile(r"^[a-f0-9]{24}$")
 _ROUTE_SCHEMA: dict[str, Any] = {
