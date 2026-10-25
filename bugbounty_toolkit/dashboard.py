@@ -17,6 +17,7 @@ from .analysis.evidence_engine import MAX_INPUT_BYTES, import_evidence
 from .analysis.evidence_graph import EvidenceGraphStore
 from .analysis.investigation_memory import InvestigationMemory
 from .core.records import ProgramPaths, RecordStore
+from .fuzzing.wordlist_manager import default_registry_path, list_wordlists, load_collections
 from .reporting.evidence import write_evidence_json
 
 _PROGRAM_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$")
@@ -25,6 +26,29 @@ _REPORT_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,179}$")
 _UPLOAD_SUFFIXES = {".csv", ".har", ".html", ".htm", ".json", ".jsonl", ".md", ".txt", ".xml"}
 _REPORT_SUFFIXES = {".html", ".json", ".md", ".pdf"}
 _MAX_REPORT_BYTES = 8 * 1024 * 1024
+_RESOURCE_ID_SEGMENT = re.compile(r"^(?:\d{1,20}|[0-9a-fA-F]{8}-[0-9a-fA-F-]{27,35})$")
+_DISCOVERY_CLASSIFICATIONS = {
+    "generic_response",
+    "endpoint_candidate",
+    "not_found",
+    "rate_limited",
+    "authentication_required",
+    "access_denied",
+    "server_error",
+    "redirect",
+    "authentication_redirect",
+    "authentication_route",
+    "inconclusive",
+}
+_ACCESS_CLASSIFICATIONS = {
+    "candidate",
+    "rejected_in_this_test",
+    "inconclusive",
+    "public_endpoint",
+    "control_valid",
+    "insufficient_evidence",
+    "denied",
+}
 
 _DASHBOARD_HTML = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
@@ -42,12 +66,15 @@ a{color:#8bc5ff}.notice{color:#ffd479}.grid{display:grid;grid-template-columns:r
 <section><h2>Grafo</h2><form id="graph-form"><label>Endpoint <input id="endpoint" placeholder="/api/orders/{id}"></label><button>Buscar</button></form><pre id="graph"></pre></section>
 <section><h2>Hipótesis y controles pendientes</h2><pre id="hypotheses"></pre></section>
 <section><h2>Benchmark</h2><pre id="benchmark"></pre></section>
+<section><h2>Wordlists locales</h2><pre id="wordlists"></pre></section>
+<section><h2>Descubrimiento y presupuesto</h2><pre id="discovery"></pre></section>
+<section><h2>Matriz de autorización</h2><pre id="access-matrix"></pre></section>
 <section><h2>Reportes</h2><div id="reports"></div><pre id="report-content"></pre></section>
 </div>
 <script>
 const show=(id,value)=>{document.getElementById(id).textContent=JSON.stringify(value,null,2)};
 async function load(){
-  for(const [url,id] of [['/api/overview','overview'],['/api/hypotheses','hypotheses'],['/api/benchmark','benchmark']]){
+  for(const [url,id] of [['/api/overview','overview'],['/api/hypotheses','hypotheses'],['/api/benchmark','benchmark'],['/api/wordlists','wordlists'],['/api/discovery','discovery'],['/api/access-matrix','access-matrix']]){
     const r=await fetch(url); show(id,await r.json());
   }
   const r=await fetch('/api/reports'); const data=await r.json(); const box=document.getElementById('reports'); box.replaceChildren();
@@ -96,6 +123,21 @@ def _read_json_file(path: Path, maximum: int = _MAX_REPORT_BYTES) -> object:
         return json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exc:
         raise HTTPException(status_code=422, detail="Saved JSON artifact is malformed.") from exc
+
+
+def _safe_label(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    return "".join(character for character in value if character.isprintable())[:120]
+
+
+def _dashboard_route_template(value: str) -> str | None:
+    try:
+        path = urlsplit(value).path
+    except ValueError:
+        return None
+    parts = ["{id}" if _RESOURCE_ID_SEGMENT.fullmatch(part) else part for part in path.split("/")]
+    return "/".join(parts)[:2048]
 
 
 def _contained_report_path(paths: ProgramPaths, name: str) -> Path:
@@ -285,6 +327,252 @@ def create_app(records_root: Path, program: str) -> FastAPI:
             if isinstance(data, dict) and data.get("type") == "bbtk-benchmark":
                 return {"latest": data, "reports": [path.name]}
         return {"latest": None, "reports": []}
+
+    @app.get("/api/wordlists")
+    async def wordlists() -> dict[str, object]:
+        """Summarize registered local lists without opening or exposing their contents."""
+        registry = default_registry_path()
+        try:
+            collections = load_collections(registry)
+            entries = list_wordlists(collections)
+        except (OSError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="Local wordlist registry is unavailable or malformed.") from exc
+        category_counts: dict[str, int] = {}
+        collection_counts: dict[str, int] = {}
+        total_size = 0
+        for item in entries:
+            category_counts[item.category] = category_counts.get(item.category, 0) + 1
+            collection_counts[item.collection] = collection_counts.get(item.collection, 0) + 1
+            total_size += item.size_bytes
+        return {
+            "registry_present": registry.is_file(),
+            "collections": [
+                {
+                    "name": collection.name,
+                    "category": collection.category,
+                    "lists": collection_counts.get(collection.name, 0),
+                }
+                for collection in collections[:100]
+            ],
+            "wordlist_count": len(entries),
+            "total_size_bytes": total_size,
+            "counts_by_category": dict(sorted(category_counts.items())),
+            "sample": [
+                {
+                    "collection": item.collection,
+                    "name": item.path.name,
+                    "category": item.category,
+                    "size_bytes": item.size_bytes,
+                }
+                for item in entries[:100]
+            ],
+            "contents_read": False,
+            "network_requests_sent": 0,
+        }
+
+    @app.get("/api/discovery")
+    async def discovery() -> dict[str, object]:
+        """Return the latest bounded ffuf summary without exposing raw output paths."""
+        directory = paths.evidence_dir / "fuzzing"
+        candidates = sorted(
+            (path for path in directory.glob("*-ffuf.json") if path.is_file() and not path.is_symlink()),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )[:100]
+        for path in candidates:
+            try:
+                data = _read_json_file(path)
+            except (OSError, HTTPException):
+                continue
+            if not isinstance(data, dict) or data.get("type") != "ffuf":
+                continue
+            results = data.get("results")
+            safe_results: list[dict[str, object]] = []
+            counts: dict[str, int] = {}
+            if isinstance(results, list):
+                for result in results[:500]:
+                    if not isinstance(result, dict):
+                        continue
+                    classification = result.get("classification")
+                    if isinstance(classification, str) and classification in _DISCOVERY_CLASSIFICATIONS:
+                        counts[classification] = counts.get(classification, 0) + 1
+                    else:
+                        classification = "inconclusive"
+                    url = result.get("url")
+                    status = result.get("status")
+                    endpoint = _dashboard_route_template(url) if isinstance(url, str) else None
+                    safe_results.append(
+                        {
+                            "endpoint": endpoint,
+                            "status": status if type(status) is int else None,
+                            "classification": classification,
+                            "response_group": result.get("response_group")
+                            if isinstance(result.get("response_group"), str)
+                            else None,
+                        }
+                    )
+            followups = data.get("followup_candidates")
+            safe_followups = []
+            if isinstance(followups, list):
+                for item in followups[:100]:
+                    if not isinstance(item, dict) or not isinstance(item.get("route_template"), str):
+                        continue
+                    route_template = _dashboard_route_template(item["route_template"])
+                    if route_template is None or not route_template.startswith("/"):
+                        continue
+                    safe_followups.append(
+                        {
+                            "route_template": route_template,
+                            "classification": "candidate_for_authorization_review",
+                            "resource_privacy": "unknown",
+                            "vulnerability_confirmed": False,
+                        }
+                    )
+            limits = data.get("limits")
+            safe_limits = {
+                key: limits.get(key)
+                for key in (
+                    "max_entries",
+                    "max_seconds",
+                    "rate_per_second",
+                    "concurrency",
+                    "planned_requests_upper_bound",
+                    "ffuf_requests_observed",
+                )
+                if isinstance(limits, dict) and key in limits
+            }
+            return {
+                "latest": {
+                    "status": "stopped_rate_limited_baseline"
+                    if data.get("status") == "stopped_rate_limited_baseline"
+                    else "completed",
+                    "limits": safe_limits,
+                },
+                "result_count": len(results) if isinstance(results, list) else 0,
+                "counts_by_classification": dict(sorted(counts.items())),
+                "results": safe_results,
+                "authorization_followups": safe_followups,
+                "notice": "Discovery signals only; HTTP status does not confirm an endpoint or vulnerability.",
+            }
+        return {
+            "latest": None,
+            "result_count": 0,
+            "counts_by_classification": {},
+            "results": [],
+            "authorization_followups": [],
+            "notice": "No saved ffuf discovery evidence.",
+        }
+
+    @app.get("/api/access-matrix")
+    async def access_matrix() -> dict[str, object]:
+        """Expose predicate-only access matrix summaries, never IDs, markers or bodies."""
+        directory = paths.evidence_dir / "access-control"
+        candidates = sorted(
+            (path for path in directory.glob("*.json") if path.is_file() and not path.is_symlink()),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )[:100]
+        for path in candidates:
+            try:
+                data = _read_json_file(path)
+            except (OSError, HTTPException):
+                continue
+            if not isinstance(data, dict) or data.get("type") != "access-control":
+                continue
+            matrix = data.get("matrix")
+            safe_matrix = []
+            if isinstance(matrix, list):
+                for cell in matrix[:500]:
+                    if not isinstance(cell, dict):
+                        continue
+                    access_type = cell.get("access_type")
+                    classification = cell.get("classification")
+                    safe_matrix.append(
+                        {
+                            "session_account": _safe_label(cell.get("session_account")),
+                            "resource_owner": _safe_label(cell.get("resource_owner")),
+                            "access_type": access_type
+                            if isinstance(access_type, str) and access_type in {"control", "cross"}
+                            else "unknown",
+                            "classification": classification
+                            if isinstance(classification, str) and classification in _ACCESS_CLASSIFICATIONS
+                            else "inconclusive",
+                            "private_resource_match": cell.get("private_resource_match") is True,
+                            "confirmed": False,
+                        }
+                    )
+            steps = data.get("steps")
+            safe_steps = []
+            if isinstance(steps, list):
+                for step in steps[:100]:
+                    if not isinstance(step, dict):
+                        continue
+                    safe_steps.append(
+                        {
+                            "step": _safe_label(step.get("step")),
+                            "application_success": step.get("application_success")
+                            if type(step.get("application_success")) is bool
+                            else None,
+                            "resource_match": step.get("resource_match")
+                            if type(step.get("resource_match")) is bool
+                            else None,
+                            "private_match": step.get("private_match")
+                            if type(step.get("private_match")) is bool
+                            else None,
+                            "owner_resource_match": step.get("owner_resource_match")
+                            if type(step.get("owner_resource_match")) is bool
+                            else None,
+                            "owner_private_match": step.get("owner_private_match")
+                            if type(step.get("owner_private_match")) is bool
+                            else None,
+                        }
+                    )
+            mode = data.get("mode")
+            classification = data.get("classification")
+            stop_reason = data.get("stop_reason")
+            return {
+                "mode": mode
+                if isinstance(mode, str)
+                and mode in {"read", "account-matrix", "write", "write-range", "function-matrix"}
+                else "unknown",
+                "classification": classification
+                if isinstance(classification, str) and classification in _ACCESS_CLASSIFICATIONS
+                else "insufficient_evidence",
+                "controls_valid": data.get("controls_valid") is True,
+                "matrix_accounts": [_safe_label(value) for value in data.get("matrix_accounts", [])[:100]]
+                if isinstance(data.get("matrix_accounts"), list)
+                else [],
+                "matrix": safe_matrix,
+                "steps": safe_steps,
+                "stop_reason": stop_reason
+                if isinstance(stop_reason, str)
+                and stop_reason
+                in {
+                    "private_evidence_observed",
+                    "cross_read_rejected",
+                    "cross_matrix_rejected",
+                    "public_endpoint",
+                    "cross_read_not_proven",
+                    "partial_private_evidence",
+                    "rate_limited",
+                    "truncated_response",
+                    "redirect_not_followed",
+                    "transport_error",
+                    "invalid_owner_control",
+                    "invalid_actor_control",
+                }
+                else None,
+                "confirmed": False,
+                "network_requests_sent": 0,
+            }
+        return {
+            "latest": None,
+            "mode": None,
+            "classification": "insufficient_evidence",
+            "matrix": [],
+            "steps": [],
+            "confirmed": False,
+        }
 
     @app.get("/api/reports")
     async def list_reports() -> dict[str, object]:

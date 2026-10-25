@@ -105,6 +105,22 @@ class ExecutionBudgetTests(unittest.TestCase):
         self.assertEqual(summary.requests_started, 0)
         self.assertEqual(summary.destinations, ())
 
+    def test_external_request_upper_bound_is_reserved_and_reported_separately(self):
+        budget = ExecutionBudget(max_requests=4, max_concurrency=2)
+        budget.reserve_external_requests(3, self.base + "/FUZZ", 2)
+        self.client(budget).send(RequestSpec("GET", self.base))
+        summary = budget.summary()
+        self.assertEqual(summary.requests_started, 1)
+        self.assertEqual(summary.external_requests_reserved, 3)
+        self.assertEqual(summary.destinations, ("127.0.0.1",))
+        with self.assertRaisesRegex(ToolkitError, "remaining run budget"):
+            budget.reserve_external_requests(1, self.base + "/FUZZ", 1)
+
+    def test_external_reservation_rejects_concurrency_above_run_limit(self):
+        budget = ExecutionBudget(max_requests=4, max_concurrency=1)
+        with self.assertRaisesRegex(ValueError, "concurrency exceeds"):
+            budget.reserve_external_requests(1, self.base + "/FUZZ", 2)
+
     def test_shared_concurrency_cap_is_enforced(self):
         budget = ExecutionBudget(max_concurrency=1)
         clients = [self.client(budget), self.client(budget)]

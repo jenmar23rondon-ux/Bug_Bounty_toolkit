@@ -275,6 +275,32 @@ class WorkflowTests(unittest.TestCase):
         self.cli("fuzz", "manual", "--url", self.base + "/FUZZ", "--wordlist", "unused", expected=1)
         self.assertEqual(WorkflowLab.hits, [])
 
+    def test_fuzz_dry_run_shows_bounded_plan_without_network(self):
+        wordlist = self.root / "routes.txt"
+        wordlist.write_text("api\norders\nadmin\n", encoding="utf-8")
+        before = list(WorkflowLab.hits)
+        preview = self.cli(
+            "fuzz",
+            "lab",
+            "--url",
+            self.base + "/FUZZ",
+            "--wordlist",
+            str(wordlist),
+            "--max-tests",
+            "2",
+            "--dry-run",
+        )
+        self.assertEqual(WorkflowLab.hits, before)
+        self.assertIn("selected inputs 1 (cap 1)", preview.stdout)
+        self.assertIn("Planned upper bound: 2 requests including one baseline", preview.stdout)
+
+    def test_active_fuzz_requires_confirmation_without_sending_baseline(self):
+        wordlist = self.root / "routes.txt"
+        wordlist.write_text("api\n", encoding="utf-8")
+        before = list(WorkflowLab.hits)
+        self.cli("fuzz", "lab", "--url", self.base + "/FUZZ", "--wordlist", str(wordlist), expected=1)
+        self.assertEqual(WorkflowLab.hits, before)
+
     def test_bad_settings_and_program_name(self):
         config = self.root / "invalid.yaml"
         config.write_text("requests_per_second: 0\n")
@@ -287,7 +313,17 @@ class WorkflowTests(unittest.TestCase):
     def test_real_ffuf_against_local_laboratory(self):
         wordlist = self.root / "words.txt"
         wordlist.write_text("search\nquiet\nmissing\nredirect\n")
-        self.cli("fuzz", "lab", "--url", self.base + "/FUZZ", "--wordlist", str(wordlist), "--match-codes", "200")
+        self.cli(
+            "fuzz",
+            "lab",
+            "--url",
+            self.base + "/FUZZ",
+            "--wordlist",
+            str(wordlist),
+            "--match-codes",
+            "200",
+            "--confirm",
+        )
         self.cli("report", "lab", "--format", "json")
         path = self.records / "lab" / "reports" / "program-report.json"
         report = json.loads(path.read_text())
