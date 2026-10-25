@@ -4,6 +4,8 @@ Notable user-facing changes are recorded here. The project has not yet published
 
 ## Unreleased
 
+- Add offline `import discover-idor` proposals from paired Burp captures and explicit `import approve-idor --approve` conversion into native `access-check` cases, with pending ownership/privacy review, bounded inputs, private snapshot bundles and no discovery traffic or automatic findings.
+
 - Extend local wordlist classification to discovery categories, exclude credential-guessing collections, and record SHA-256 fingerprints.
 - Supervise ffuf with an explicit confirmation gate, capped unique inputs, a scoped baseline, wall-clock termination and a separately reported external request upper bound.
 - Classify ffuf responses against baseline shapes, group similar responses, and import discovery into unified evidence, API workflow, the local graph, investigation memory and a non-executing access-control follow-up plan.

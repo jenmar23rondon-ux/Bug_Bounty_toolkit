@@ -304,6 +304,22 @@ Sitemap XML produces deduplicated `routes.txt` and `parameters.txt`; an optional
 
 `ai-review --evidence-file` sends only the existing allowlisted minimized evidence packet. `--artifact` sends bounded, overlapping text chunks after local redaction; `--chunk-chars` defaults to 6000 and `--max-chunks` defaults to 20. Model JSON is validated and retried once; unparsed/oversized artifacts are reported with an explicit status. Ollama is contacted only at `127.0.0.1:11434`; if unavailable, the command reports that state without failing the toolkit. Its result is always a **second opinion, not confirmation**. It never sends target requests or submits a report. `report --draft-with-ai` uses the minimized evidence and falls back to the deterministic Markdown draft if the local model is unavailable or returns an unusable draft. The recommended local model is `qwen2.5-coder:7b`; quality and useful context depend on model size and the selected chunk limits. Review all generated text manually.
 
+### Discover IDOR/BOLA Case Proposals Offline
+
+`discover-idor` reduces case preparation, not authorization validation. It pairs request/response messages within Burp XML items, or accepts two raw requests with optional paired HTTP response files. It reuses the read-case generator to propose structurally compatible resources and suggests JSON pointers from the supplied own-resource responses:
+
+```bash
+bbtk import discover-idor my-program --owner account-a.xml --actor account-b.xml --dry-run
+bbtk import discover-idor my-program --owner account-a.xml --actor account-b.xml --output-dir registros/my-program/private/idor-discovery
+# Review proposal.json locally, select pointers and explicitly complete its attestations first:
+bbtk import approve-idor my-program --proposal registros/my-program/private/idor-discovery/proposal.json --candidate candidate-001 --approve --dry-run
+bbtk import approve-idor my-program --proposal registros/my-program/private/idor-discovery/proposal.json --candidate candidate-001 --approve
+```
+
+Discovery requires no network or initialized program and prints a count-only summary, never session values, URLs, IDs or response contents. The private proposal leaves ownership, privacy, origin, read-only semantics, control interpretation and approval pending. Approval requires complete unchanged control responses, an explicit researcher review plus `--approve`, and the program's existing scope. It writes the native `case-candidate-001.json` beside the proposal and sends no requests. A later `access-check --case-file ...` remains a separate action with all existing authorization, rate, scope and budget checks.
+
+No ranges, writes, role guesses or confirmed findings are generated. Session-only differences are not IDOR cases. Requests without responses can produce pending proposals but cannot be approved. Private snapshots retain credentials for a later separately authorized replay; they are stored in an exclusive directory (POSIX mode 0700, files 0600) and must never be committed, uploaded or treated as shareable reports. See [the discovery guide](docs/idor-case-discovery.md) for supported formats, hard limits, review fields, architecture audit and a reproducible local-only example, or follow [the IDOR playbook](docs/idor-playbook.md).
+
 ### Unified Evidence Import
 
 The offline `evidence import` command normalizes supplied Burp XML, HAR, ffuf JSON, Nuclei JSON/JSONL, native toolkit JSON, raw HTTP captures, structured CSV, HTML, Markdown and text into one typed JSON bundle. Import multiple files together to compare their account/session fingerprints consistently:
@@ -394,6 +410,7 @@ Bug_Bounty_toolkit/
 |   |-- idor_lab_server.py  # Loopback-only deterministic IDOR/BOLA fixture
 |   |-- apk_scan.py          # Bounded offline APK and Android manifest inspection
 |   |-- burp_import.py       # Offline Burp sitemap, raw request and saved-item importer
+|   |-- idor_discovery.py    # Offline proposals and explicit approval into native access-check cases
 |   |-- access_control/     # Read/write comparisons, ranges and guards
 |   |-- analysis/           # Evidence Engine, API workflows, persistent graph, hypotheses, routing and Ollama
 |   |-- core/               # Scope, HTTP, budgets, settings and records

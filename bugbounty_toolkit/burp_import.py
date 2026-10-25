@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import base64
 from dataclasses import dataclass
+import os
 import re
 from pathlib import Path
+import stat
 from urllib.parse import parse_qsl, urlsplit, urlunsplit
 import xml.etree.ElementTree as ET
 
-from .core.http_client import RequestSpec
+from .core.http_client import RequestSpec, ResponseRecord
 from .core.redaction import redact_headers, redact_html_secrets, redact_jwts, redact_text, redact_url
 from .core.request_builder import parse_raw_http_request
+from .core.target import normalize_url
+from .utils.exceptions import ToolkitError
 
 MAX_SITEMAP_BYTES = 100 * 1024 * 1024
 MAX_REQUEST_BYTES = 8 * 1024 * 1024
@@ -71,12 +75,15 @@ def _child_text(node: ET.Element, name: str) -> str | None:
     return None
 
 
-def _decode_xml_message(node: ET.Element) -> str:
-    value = "".join(node.itertext()).strip()
+def _decode_xml_message(node: ET.Element, strict: bool = False) -> str:
+    value = "".join(node.itertext())
+    if not strict:
+        value = value.strip()
     if node.attrib.get("base64", "").lower() == "true":
         try:
-            return base64.b64decode(value, validate=False).decode("utf-8", errors="replace")
-        except (ValueError, TypeError) as exc:
+            encoded = re.sub(r"\s", "", value) if strict else value
+            return base64.b64decode(encoded, validate=strict).decode("utf-8", errors="strict" if strict else "replace")
+        except (ValueError, TypeError, UnicodeError) as exc:
             raise ValueError("Burp item contains an invalid base64 message.") from exc
     return value
 
@@ -201,8 +208,9 @@ def normalize_raw_request(raw_bytes: bytes, base_url: str | None = None) -> str:
 
 
 def _parse_http_message(message: str) -> tuple[list[tuple[str, str]], str]:
-    normalized = message.replace("\r\n", "\n")
-    head, separator, body = normalized.partition("\n\n")
+    head, separator, body = message.partition("\r\n\r\n")
+    if not separator:
+        head, separator, body = message.partition("\n\n")
     if not separator:
         return [], ""
     headers: list[tuple[str, str]] = []
@@ -266,3 +274,171 @@ def extract_item_artifacts(item_bytes: bytes) -> BurpItem:
 def safe_artifact_name(path: Path) -> str:
     name = re.sub(r"[^A-Za-z0-9_-]+", "-", path.stem).strip("-_")[:64]
     return name or "burp-item"
+
+
+MAX_EXCHANGES = 32
+MAX_EXCHANGE_BYTES = 1_000_000
+
+
+@dataclass(frozen=True)
+class CapturedExchange:
+    """Private, lossless messages paired within one Burp item; never a report."""
+
+    raw_request: str
+    request: RequestSpec
+    raw_response: str | None = None
+
+
+def read_capture_file(path: Path, limit: int = MAX_ITEM_BYTES) -> bytes:
+    """Read bounded regular local files without following links or blocking on FIFOs."""
+    try:
+        path = path.expanduser().absolute()
+        if len(str(path)) > 4096 or any(part.is_symlink() for part in (path, *path.parents)):
+            raise ValueError("Capture paths must be regular local files without symbolic links.")
+        flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        descriptor = os.open(path, flags)
+        try:
+            info = os.fstat(descriptor)
+            if not stat.S_ISREG(info.st_mode):
+                raise ValueError("Capture paths must name regular local files.")
+            if info.st_size > limit:
+                raise ValueError("Capture input exceeds its size limit.")
+            with os.fdopen(descriptor, "rb") as source:
+                descriptor = -1
+                value = source.read(limit + 1)
+        finally:
+            if descriptor != -1:
+                os.close(descriptor)
+        if len(value) > limit:
+            raise ValueError("Capture input exceeds its size limit.")
+        return value
+    except OSError as exc:
+        raise ValueError("Cannot read the local capture file.") from exc
+
+
+def captured_response(exchange: CapturedExchange) -> ResponseRecord | None:
+    """Parse a complete bounded response, without interpreting it as live evidence."""
+    raw = exchange.raw_response
+    if raw is None:
+        return None
+    if len(raw.encode("utf-8")) > MAX_EXCHANGE_BYTES:
+        raise ValueError("Captured response exceeds the comparison size limit.")
+    first = raw.splitlines()[0] if raw else ""
+    match = re.fullmatch(r"HTTP/1\.[01] ([1-5][0-9]{2})(?: [^\r\n]*)?", first)
+    if match is None or ("\r\n\r\n" not in raw and "\n\n" not in raw):
+        raise ValueError("Captured response is incomplete or is not supported HTTP/1.x.")
+    pairs, body = _parse_http_message(raw)
+    headers = {key.lower(): value for key, value in pairs}
+    critical = {"content-length", "content-type", "content-encoding", "transfer-encoding"}
+    if any(sum(key.lower() == name for key, _ in pairs) > 1 for name in critical):
+        raise ValueError("Duplicate response framing/content headers are unsupported in discovery captures.")
+    if headers.get("content-encoding", "identity").lower() != "identity" or "transfer-encoding" in headers:
+        raise ValueError("Export decoded, uncompressed responses for offline JSON comparison.")
+    size = len(body.encode("utf-8"))
+    if "content-length" in headers:
+        length = headers["content-length"]
+        if not length.isdecimal() or int(length) != size:
+            raise ValueError("Captured response Content-Length does not match the complete body.")
+    return ResponseRecord(
+        exchange.request,
+        exchange.request.prepared_url(),
+        int(match[1]),
+        "",
+        0,
+        headers,
+        body,
+        size,
+        set_cookies=tuple(value for name, value in pairs if name.lower() == "set-cookie"),
+    )
+
+
+def parse_captured_exchanges(
+    data: bytes, base_url: str | None = None, response_data: bytes | None = None
+) -> tuple[CapturedExchange, ...]:
+    """Import raw HTTP or item-paired Burp XML for offline case preparation only."""
+    if len(data) > MAX_ITEM_BYTES:
+        raise ValueError("Capture input exceeds the Burp item size limit.")
+    if base_url is not None:
+        try:
+            base = urlsplit(normalize_url(base_url))
+        except ValueError as exc:
+            raise ValueError("The captured base URL must be an HTTP(S) origin.") from exc
+        if base.path not in {"", "/"} or base.query:
+            raise ValueError("The captured base URL must not contain a path or query.")
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeError as exc:
+        raise ValueError("Discovery captures must be UTF-8 HTTP or XML exports.") from exc
+    if "\x00" in text:
+        raise ValueError("NUL characters and non-UTF-8 XML are unsupported.")
+    messages: list[tuple[str, str | None, str | None]] = []
+    if text.lstrip().startswith("<"):
+        if response_data is not None:
+            raise ValueError("Separate responses are supported only with one raw request, not an XML history.")
+        if re.search(r"<!\s*(?:DOCTYPE|ENTITY)\b", text, re.I):
+            raise ValueError("Burp XML DTD/entity declarations are not supported.")
+        try:
+            root = ET.fromstring(text)
+        except (ET.ParseError, ValueError, RecursionError) as exc:
+            raise ValueError("Burp discovery XML is malformed.") from exc
+        for item in root.iter():
+            if _local_name(item.tag) != "item":
+                continue
+            requests = [child for child in item if _local_name(child.tag) == "request"]
+            responses = [child for child in item if _local_name(child.tag) == "response"]
+            if len(requests) != 1 or len(responses) > 1:
+                raise ValueError("Each Burp item needs exactly one request and at most one paired response.")
+            messages.append(
+                (
+                    _decode_xml_message(requests[0], strict=True),
+                    _decode_xml_message(responses[0], strict=True) if responses else None,
+                    _item_url(item),
+                )
+            )
+            if len(messages) > MAX_EXCHANGES:
+                raise ValueError("Capture exceeds the 32-item discovery limit; export a smaller selection.")
+        if not messages:
+            raise ValueError("Burp XML contains no paired request items.")
+    else:
+        try:
+            response = response_data.decode("utf-8") if response_data is not None else None
+        except UnicodeError as exc:
+            raise ValueError("Captured response must be UTF-8 HTTP text.") from exc
+        messages.append((text, response, None))
+
+    exchanges: list[CapturedExchange] = []
+    for raw, raw_response, item_url in messages:
+        if len(raw.encode("utf-8")) > MAX_EXCHANGE_BYTES:
+            raise ValueError("Captured request exceeds the comparison size limit.")
+        if "\r\n\r\n" not in raw and "\n\n" not in raw:
+            raise ValueError("Captured request is incomplete; export the complete HTTP message.")
+        first = raw.splitlines()[0] if raw else ""
+        if not re.fullmatch(r"[A-Z]{1,16} [^\s]+ HTTP/1\.[01]", first):
+            raise ValueError("Discovery requires a complete HTTP/1.x request line.")
+        try:
+            origin = base_url
+            if item_url is not None:
+                item_parts = urlsplit(normalize_url(item_url))
+                origin = f"{item_parts.scheme}://{item_parts.netloc}"
+                if base_url and normalize_url(base_url).rstrip("/") != origin:
+                    raise ValueError("The selected origin differs from the Burp item origin.")
+            captured = parse_raw_http_request(raw)
+            request = parse_raw_http_request(raw, origin)
+            if urlsplit(captured.prepared_url()).netloc != urlsplit(request.prepared_url()).netloc:
+                raise ValueError("Captured authority must not be overridden.")
+            host = next((value for key, value in captured.headers.items() if key.lower() == "host"), None)
+            if host is not None and host.lower() != urlsplit(request.prepared_url()).netloc.lower():
+                raise ValueError("Captured Host and destination disagree.")
+            if item_url is not None and request.prepared_url() != normalize_url(item_url):
+                raise ValueError("Burp item URL and request target disagree.")
+            for name, value in request.headers.items():
+                if not re.fullmatch(r"[!#$%&'*+.^_`|~0-9A-Za-z-]{1,80}", name) or any(
+                    (ord(char) < 32 and char != "\t") or ord(char) > 255 for char in value
+                ):
+                    raise ValueError("Invalid captured header encoding.")
+        except (ValueError, ToolkitError) as exc:
+            raise ValueError("Unsupported capture request or inconsistent origin; inspect it locally.") from exc
+        exchange = CapturedExchange(raw, request, raw_response)
+        captured_response(exchange)
+        exchanges.append(exchange)
+    return tuple(exchanges)

@@ -88,6 +88,7 @@ files = [
     "bugbounty_toolkit/takeover_check.py",
     "bugbounty_toolkit/burp_import.py",
     "bugbounty_toolkit/case_generator.py",
+    "bugbounty_toolkit/idor_discovery.py",
     "bugbounty_toolkit/idor_lab_server.py",
     "bugbounty_toolkit/web_vuln_lab_server.py",
     "bugbounty_toolkit/analysis/ollama_review.py",
