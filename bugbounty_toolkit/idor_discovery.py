@@ -64,7 +64,8 @@ def _json_document(exchange: CapturedExchange) -> Any:
         raise ValueError("Captured JSON is malformed or ambiguous; inspect it locally.") from exc
 
 
-def _leaves(document: Any, include_sensitive: bool = False) -> dict[str, Any]:
+def json_scalar_fields(document: Any, include_sensitive: bool = False) -> dict[str, Any]:
+    """Bounded JSON pointers shared by offline case and object discovery."""
     result: dict[str, Any] = {}
     nodes = 0
 
@@ -88,6 +89,9 @@ def _leaves(document: Any, include_sensitive: bool = False) -> dict[str, Any]:
 
     visit(document, "", 0)
     return result
+
+
+_leaves = json_scalar_fields
 
 
 def _resource_matches(value: Any, identifier: str) -> bool:

@@ -4,6 +4,8 @@ Use this workflow only for assets explicitly in scope and accounts/resources you
 
 ## 1. Select a known resource endpoint
 
+For larger existing captures, optionally start with [offline object relationship discovery](object-discovery.md). It links literal typed references across paths, queries and JSON, preserving source provenance and ranking investigation candidates. It sends no requests, does not infer ownership from sessions and does not create cases. Inspect the original captures and confirm the permissions below before proceeding with the existing proposal/approval flow.
+
 Choose a read-only GET endpoint that returns one private resource and contains a stable resource identifier, such as `/api/orders/12345`. Confirm the normal response using the resource owner's account. Prefer a resource with a harmless, unique marker already present, such as a test title or description. Do not create, edit, or delete data for a read comparison.
 
 Check the program policy before using any ID range. A range is optional and should be small, contiguous, predictable, and limited to identifiers the program explicitly authorizes you to test. Start with the known owner's ID and only a few adjacent test IDs. Do not infer permission to enumerate from the fact that IDs are numeric.
