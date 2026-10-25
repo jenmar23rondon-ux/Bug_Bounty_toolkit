@@ -16,6 +16,15 @@ bbtk --version
 bbtk doctor
 ```
 
+Run the deterministic local IDOR/BOLA workflow end to end with one command. It starts an isolated loopback service, imports the checked-in fake Burp captures, runs the bounded private and public controls, and verifies JSON/HTML reports. Preview the exact steps without starting the app or sending requests with `--dry-run`:
+
+```bash
+bbtk lab idor
+bbtk lab idor --dry-run
+```
+
+The local app, disposable captures, and expected behavior are documented in [labs/idor_lab](labs/idor_lab/README.md). The automated flow is also runnable directly with `python -m unittest discover -s tests -p test_end_to_end_idor.py -v`. For authorized program testing, follow the separate [IDOR playbook](docs/idor-playbook.md).
+
 On Windows, activate with `.venv\Scripts\Activate.ps1`. Install [ffuf](https://github.com/ffuf/ffuf#installation) separately and put its executable on `PATH`. Native HTTP checks and JSON/HTML reports work without ffuf. `requirements.txt` also includes optional ReportLab support for individual PDF findings.
 
 ### Optional Security Integrations
@@ -268,6 +277,8 @@ Authorization headers, cookies and common password/token fields are redacted fro
 
 The case file's scope, account ownership, expected access and disposable-resource declarations are researcher attestations; the toolkit cannot independently verify program policy or account identity. Case generation from Burp requests is offline: pointers are syntax-checked, while marker existence and pointer meaning require separate response evidence. Generated case files contain resource identifiers and private markers and must stay local. `anonymous_access`, matrix candidates and write-response predicates are test evidence, not automatic vulnerability confirmation. `public_endpoint` is informational; an explicit `expected_anonymous` mismatch is separately flagged. The matrix contains only supplied accounts and known resources (at most ten accounts), and its diagonal cells are ordinary controls. Persistence verification checks only the explicitly selected scalar through the supplied owner GET. Cleanup compares a final scoped GET against each captured original value; a failed or unavailable readback is reported separately from the access-test outcome. Always inspect disposable test data after writes, including public opt-in runs.
 
+The IDOR lab intentionally lets the actor read the owner's fixed order and uses public status data as a negative control. Its tokens and markers are fake fixtures and have no value outside the loopback demo. `bbtk lab idor` runs only the local end-to-end test; the report output is temporary and is removed when the test finishes. The range authorization added by that test is scoped to the disposable fixture and must never be copied to a real program without explicit policy approval.
+
 The route-oriented Burp importer is offline and supports only sitemap XML, raw HTTP requests and saved items; it does not interpret Burp HTML reports. The unified evidence importer additionally accepts HAR, ffuf/Nuclei JSON, toolkit JSON, raw HTTP, CSV, HTML, Markdown and text. Those adapters are bounded and best-effort; arbitrary document text is not retained, but redaction cannot identify every proprietary secret format. Provenance paths can disclose local filenames and are included for traceability. Per-import HMAC fingerprints cannot correlate identities across separate import runs. Ollama is a local second opinion only: it does not confirm findings, send target requests or submit reports. Artifact review sends redacted chunks to the local model; context can be incomplete when `--max-chunks` truncates a file, and analysis quality depends on the installed model and its context capacity. AI report drafts must be manually checked against the source evidence.
 
 CI runs Ruff lint and formatting across `bugbounty_toolkit/`, `tests/`, `scripts/` and `skills/`; a guard test verifies every Python file under the package and tests is included in Ruff's discovered file set. Strict mypy covers the access comparison/write lab, shared budget and runner, CORS/redirect, SQLi/XSS, diagnostics, hunt, SSRF/CSRF, JWT forge, takeover and APK scan modules. Coverage gates require at least 90% combined for the two critical access-control modules, at least 80% combined for `hunt.py`, `ssrf_check.py`, `csrf_audit.py` and `jwt_forge.py`, plus the existing 77% package-wide floor across `bugbounty_toolkit`, the skill installer and plan runner. The CLI and some older modules remain outside strict mypy. Run the same checks locally with `pip install -e ".[dev]"`.
@@ -288,6 +299,7 @@ bbtk report my-program --finding-id FINDING-001 --format pdf
 Bug_Bounty_toolkit/
 |-- bugbounty_toolkit/
 |   |-- cli.py
+|   |-- idor_lab_server.py  # Loopback-only deterministic IDOR/BOLA fixture
 |   |-- apk_scan.py          # Bounded offline APK and Android manifest inspection
 |   |-- burp_import.py       # Offline Burp sitemap, raw request and saved-item importer
 |   |-- access_control/     # Read/write comparisons, ranges and guards
@@ -307,6 +319,7 @@ Bug_Bounty_toolkit/
 |-- config/                 # Program configuration examples
 |-- docs/                   # Checklists and project documentation
 |-- inputs/                 # Supplied targets, routes, parameters, requests
+|-- labs/idor_lab/          # Local IDOR app, fake Burp captures and run scripts
 |-- scripts/                # Skill installer and maintenance utilities
 |-- skills/                 # General router and topic-specific skills
 |-- wordlists/              # Small replaceable examples
