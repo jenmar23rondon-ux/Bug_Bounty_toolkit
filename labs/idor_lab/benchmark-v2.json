@@ -1,0 +1,1121 @@
+{
+  "type": "bbtk-benchmark-dataset",
+  "schema_version": "2.0",
+  "dataset": "synthetic-idor-bola-v2",
+  "cases": [
+    {
+      "id": "development-private_record_read",
+      "split": "development",
+      "truth": "vulnerable",
+      "scenario_family": "development_private_record_read",
+      "scenario": "Cross-account response exposes the owner marker",
+      "rationale": "The actor controls pass and the crossed response contains the private owner marker.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-1",
+          "actor_resource": "actor-development-case-1",
+          "owner_marker": "owner-marker-development-case-1",
+          "actor_marker": "actor-marker-development-case-1"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": true,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-server_error_data_leak",
+      "split": "development",
+      "truth": "vulnerable",
+      "scenario_family": "development_server_error_data_leak",
+      "scenario": "Private record remains in a server-error response",
+      "rationale": "Application data predicates show the private record despite an HTTP server error.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-2",
+          "actor_resource": "actor-development-case-2",
+          "owner_marker": "owner-marker-development-case-2",
+          "actor_marker": "actor-marker-development-case-2"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": true,
+            "status_code": 500
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-forbidden_status_data_leak",
+      "split": "development",
+      "truth": "vulnerable",
+      "scenario_family": "development_forbidden_status_data_leak",
+      "scenario": "Private data predicates contradict a forbidden status",
+      "rationale": "The recorded body predicates establish private data; status alone is not authoritative.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-3",
+          "actor_resource": "actor-development-case-3",
+          "owner_marker": "owner-marker-development-case-3",
+          "actor_marker": "actor-marker-development-case-3"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": true,
+            "status_code": 403
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-explicit_forbidden",
+      "split": "development",
+      "truth": "safe",
+      "scenario_family": "development_explicit_forbidden",
+      "scenario": "Cross-account access is denied with no private data",
+      "rationale": "Both controls are valid and the crossed response has no owner resource or marker.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-4",
+          "actor_resource": "actor-development-case-4",
+          "owner_marker": "owner-marker-development-case-4",
+          "actor_marker": "actor-marker-development-case-4"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 403
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-http_200_denial",
+      "split": "development",
+      "truth": "safe",
+      "scenario_family": "development_http_200_denial",
+      "scenario": "HTTP 200 contains an application-level denial",
+      "rationale": "The application success and ownership predicates show denial despite HTTP 200.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-5",
+          "actor_resource": "actor-development-case-5",
+          "owner_marker": "owner-marker-development-case-5",
+          "actor_marker": "actor-marker-development-case-5"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-server_error_empty",
+      "split": "development",
+      "truth": "safe",
+      "scenario_family": "development_server_error_empty",
+      "scenario": "Server error contains no owner resource or marker",
+      "rationale": "The body predicates show no successful access and no private owner data.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-6",
+          "actor_resource": "actor-development-case-6",
+          "owner_marker": "owner-marker-development-case-6",
+          "actor_marker": "actor-marker-development-case-6"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 500
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-public_catalog",
+      "split": "development",
+      "truth": "safe",
+      "scenario_family": "development_public_catalog",
+      "scenario": "The tested resource is explicitly public",
+      "rationale": "The endpoint is public by design, so access is not an IDOR even if readable.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": false,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-7",
+          "actor_resource": "actor-development-case-7",
+          "owner_marker": "owner-marker-development-case-7",
+          "actor_marker": "actor-marker-development-case-7"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": true,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-explicit_unauthorized",
+      "split": "development",
+      "truth": "safe",
+      "scenario_family": "development_explicit_unauthorized",
+      "scenario": "Cross-account request is rejected without data",
+      "rationale": "Valid own-resource controls and a clear application-level denial support a safe label.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-8",
+          "actor_resource": "actor-development-case-8",
+          "owner_marker": "owner-marker-development-case-8",
+          "actor_marker": "actor-marker-development-case-8"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 401
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-invalid_owner_control",
+      "split": "development",
+      "truth": "insufficient",
+      "scenario_family": "development_invalid_owner_control",
+      "scenario": "Owner's own-resource control does not match",
+      "rationale": "The owner control is invalid, so the cross-account result cannot be interpreted.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-9",
+          "actor_resource": "actor-development-case-9",
+          "owner_marker": "owner-marker-development-case-9",
+          "actor_marker": "actor-marker-development-case-9"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": false,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": false,
+            "private_match": false,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-invalid_actor_control",
+      "split": "development",
+      "truth": "insufficient",
+      "scenario_family": "development_invalid_actor_control",
+      "scenario": "Actor cannot prove access to its own resource",
+      "rationale": "The actor control fails; there is no valid baseline for a crossed comparison.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-10",
+          "actor_resource": "actor-development-case-10",
+          "owner_marker": "owner-marker-development-case-10",
+          "actor_marker": "actor-marker-development-case-10"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": false,
+            "resource_match": false,
+            "private_match": false,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-missing_cross_read",
+      "split": "development",
+      "truth": "insufficient",
+      "scenario_family": "development_missing_cross_read",
+      "scenario": "Valid controls exist but no cross-read was captured",
+      "rationale": "Without a crossed response, the evidence cannot establish access or denial.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-11",
+          "actor_resource": "actor-development-case-11",
+          "owner_marker": "owner-marker-development-case-11",
+          "actor_marker": "actor-marker-development-case-11"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "development-contradictory_cross_predicates",
+      "split": "development",
+      "truth": "insufficient",
+      "scenario_family": "development_contradictory_cross_predicates",
+      "scenario": "Crossed response predicates conflict",
+      "rationale": "Resource match and private-marker match disagree, leaving ownership unproven.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-development-case-12",
+          "actor_resource": "actor-development-case-12",
+          "owner_marker": "owner-marker-development-case-12",
+          "actor_marker": "actor-marker-development-case-12"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": false,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-invoice_private_content",
+      "split": "holdout",
+      "truth": "vulnerable",
+      "scenario_family": "holdout_invoice_private_content",
+      "scenario": "Actor receives another user's invoice details",
+      "rationale": "The two controls pass and the crossed response matches the owner's private invoice marker.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-1",
+          "actor_resource": "actor-holdout-case-1",
+          "owner_marker": "owner-marker-holdout-case-1",
+          "actor_marker": "actor-marker-holdout-case-1"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": true,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-error_page_embeds_record",
+      "split": "holdout",
+      "truth": "vulnerable",
+      "scenario_family": "holdout_error_page_embeds_record",
+      "scenario": "An error response still includes the private record",
+      "rationale": "The application-level predicates attest private data even though transport status is 500.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-2",
+          "actor_resource": "actor-holdout-case-2",
+          "owner_marker": "owner-marker-holdout-case-2",
+          "actor_marker": "actor-marker-holdout-case-2"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": true,
+            "status_code": 500
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-misleading_forbidden_body",
+      "split": "holdout",
+      "truth": "vulnerable",
+      "scenario_family": "holdout_misleading_forbidden_body",
+      "scenario": "Forbidden status is paired with owner-private data",
+      "rationale": "The explicit content predicates indicate access; status code must not override them.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-3",
+          "actor_resource": "actor-holdout-case-3",
+          "owner_marker": "owner-marker-holdout-case-3",
+          "actor_marker": "actor-marker-holdout-case-3"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": true,
+            "status_code": 403
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-role_boundary_denial",
+      "split": "holdout",
+      "truth": "safe",
+      "scenario_family": "holdout_role_boundary_denial",
+      "scenario": "A valid actor is denied another user's object",
+      "rationale": "Valid controls plus false application success and absent private predicates establish denial.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-4",
+          "actor_resource": "actor-holdout-case-4",
+          "owner_marker": "owner-marker-holdout-case-4",
+          "actor_marker": "actor-marker-holdout-case-4"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 403
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-success_false_page",
+      "split": "holdout",
+      "truth": "safe",
+      "scenario_family": "holdout_success_false_page",
+      "scenario": "HTTP 200 response has success false and no owner data",
+      "rationale": "A 200 transport response is not application success and no owner marker is present.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-5",
+          "actor_resource": "actor-holdout-case-5",
+          "owner_marker": "owner-marker-holdout-case-5",
+          "actor_marker": "actor-marker-holdout-case-5"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-backend_failure_no_record",
+      "split": "holdout",
+      "truth": "safe",
+      "scenario_family": "holdout_backend_failure_no_record",
+      "scenario": "Backend failure returns no private record",
+      "rationale": "The response predicates show no application success and no private owner content.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-6",
+          "actor_resource": "actor-holdout-case-6",
+          "owner_marker": "owner-marker-holdout-case-6",
+          "actor_marker": "actor-marker-holdout-case-6"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 500
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-public_profile",
+      "split": "holdout",
+      "truth": "safe",
+      "scenario_family": "holdout_public_profile",
+      "scenario": "The resource is intentionally public to all users",
+      "rationale": "Public visibility is not unauthorized access; the case does not attest privacy.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": false,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-7",
+          "actor_resource": "actor-holdout-case-7",
+          "owner_marker": "owner-marker-holdout-case-7",
+          "actor_marker": "actor-marker-holdout-case-7"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": true,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-session_denial",
+      "split": "holdout",
+      "truth": "safe",
+      "scenario_family": "holdout_session_denial",
+      "scenario": "Crossed read is rejected before returning content",
+      "rationale": "Valid owner and actor controls are followed by an application-level denial.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-8",
+          "actor_resource": "actor-holdout-case-8",
+          "owner_marker": "owner-marker-holdout-case-8",
+          "actor_marker": "actor-marker-holdout-case-8"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 401
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-owner_session_mismatch",
+      "split": "holdout",
+      "truth": "insufficient",
+      "scenario_family": "holdout_owner_session_mismatch",
+      "scenario": "Owner control uses an invalid or mismatched identity",
+      "rationale": "An invalid owner baseline prevents attribution of any cross-read result.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-9",
+          "actor_resource": "actor-holdout-case-9",
+          "owner_marker": "owner-marker-holdout-case-9",
+          "actor_marker": "actor-marker-holdout-case-9"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": false,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": false,
+            "private_match": false,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-actor_own_object_unavailable",
+      "split": "holdout",
+      "truth": "insufficient",
+      "scenario_family": "holdout_actor_own_object_unavailable",
+      "scenario": "Actor's own-resource control is not established",
+      "rationale": "The actor baseline is absent in practice, so the comparison is inconclusive.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-10",
+          "actor_resource": "actor-holdout-case-10",
+          "owner_marker": "owner-marker-holdout-case-10",
+          "actor_marker": "actor-marker-holdout-case-10"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": false,
+            "resource_match": false,
+            "private_match": false,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": false,
+            "owner_resource_match": false,
+            "owner_private_match": false,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-cross_request_not_saved",
+      "split": "holdout",
+      "truth": "insufficient",
+      "scenario_family": "holdout_cross_request_not_saved",
+      "scenario": "No crossed response evidence was captured",
+      "rationale": "The available evidence lacks the decisive cross-read observation.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-11",
+          "actor_resource": "actor-holdout-case-11",
+          "owner_marker": "owner-marker-holdout-case-11",
+          "actor_marker": "actor-marker-holdout-case-11"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-partial_owner_marker_match",
+      "split": "holdout",
+      "truth": "insufficient",
+      "scenario_family": "holdout_partial_owner_marker_match",
+      "scenario": "Response has inconsistent resource and marker predicates",
+      "rationale": "Conflicting ownership predicates are insufficient to label access or denial.",
+      "case": {
+        "accounts_authorized": true,
+        "resource_private": true,
+        "expected_cross_access": "deny",
+        "checks": {
+          "owner_resource": "owner-holdout-case-12",
+          "actor_resource": "actor-holdout-case-12",
+          "owner_marker": "owner-marker-holdout-case-12",
+          "actor_marker": "actor-marker-holdout-case-12"
+        }
+      },
+      "evidence": {
+        "type": "access-control",
+        "mode": "read",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "actor_control",
+            "application_success": true,
+            "resource_match": true,
+            "private_match": true,
+            "status_code": 200
+          },
+          {
+            "step": "cross_read",
+            "application_success": true,
+            "owner_resource_match": true,
+            "owner_private_match": false,
+            "status_code": 200
+          }
+        ]
+      }
+    }
+  ]
+}
