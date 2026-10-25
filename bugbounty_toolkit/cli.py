@@ -55,6 +55,7 @@ from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
 from .access_control.write_range import AccessWriteRangeTester
+from .access_control.function_matrix import AccessFunctionMatrixTester
 from .access_control.guards import is_loopback_url
 from .analysis.ollama_review import DEFAULT_OLLAMA_MODEL, review_with_ollama, validate_ollama_config
 from .analysis.artifact_review import (
@@ -1448,6 +1449,55 @@ def cmd_hunt(args: argparse.Namespace) -> None:
 
 def cmd_access_check(args: argparse.Namespace) -> None:
     ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    if args.function_matrix:
+        incompatible = (
+            args.id_range
+            or args.lab_write
+            or args.lab_write_range
+            or args.anonymous_check
+            or args.inverse_cross
+            or args.multi_account
+            or args.verify_persistence
+            or args.inverse_write
+            or args.cleanup
+            or args.allow_public_range
+            or args.allow_public_writes
+            or args.max_range is not None
+            or args.concurrency is not None
+            or args.min_interval is not None
+        )
+        if incompatible:
+            raise ValueError(
+                "--function-matrix is a separate read-only mode; do not combine it with other access modes."
+            )
+        store, settings, scope = executor_context(args, automated=True)
+        budget = args.max_tests or settings.max_tests
+        if budget > settings.max_tests:
+            raise ValueError("Max tests exceeds the configured program limit.")
+        tester = AccessFunctionMatrixTester(scope, client_for(args, settings, scope))
+        case = tester.validate(args.case_file, budget)
+        if args.dry_run:
+            print(
+                f"[+] Read-only BFLA function matrix validated: {len(case.functions)} functions, "
+                f"{len({account.name for function in case.functions for account in function.accounts})} accounts, "
+                f"{case.request_count} GET requests planned; no requests sent."
+            )
+            return
+        path, result = tester.run(args.case_file, store.paths.evidence_dir / "access-control", budget)
+        print_live_ai_review(path, ai_review_config, str(result["classification"]))
+        store.add_run(
+            "access-check-function-matrix",
+            None,
+            ["access-check", "--function-matrix"],
+            0 if result["classification"] != "insufficient_evidence" else 1,
+            path,
+        )
+        print(
+            f"[+] BFLA function matrix: {result['classification']}; "
+            f"{result['requests_attempted']} GET requests attempted. No authorization flaw automatically confirmed."
+        )
+        print(f"[+] Evidence: {path}")
+        return
     range_requested = bool(args.id_range or args.lab_write_range)
     read_options = args.anonymous_check or args.inverse_cross or args.multi_account
     write_options = args.verify_persistence or args.inverse_write or args.cleanup
@@ -2481,6 +2531,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--multi-account",
         action="store_true",
         help="Build the complete read-access matrix for owner, actor and additional_accounts",
+    )
+    access.add_argument(
+        "--function-matrix",
+        action="store_true",
+        help="Run a read-only role/function matrix from exact supplied GET captures (BFLA triage)",
     )
     access.add_argument(
         "--verify-persistence", action="store_true", help="After the crossed write, read back a declared changed field"

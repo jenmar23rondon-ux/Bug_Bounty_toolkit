@@ -4,6 +4,9 @@ Notable user-facing changes are recorded here. The project has not yet published
 
 ## Unreleased
 
+- Add a bounded, GET-only BFLA function matrix from supplied authorized role captures, plus deterministic BOLA account-matrix and BFLA assessment without status-code-only or model-based confirmation.
+- Add a BFLA playbook documenting role attestations, read-only function requirements, explicit response predicates and manual verification.
+- Add strict typing and an 80% coverage gate for the BFLA function-matrix module.
 - Add offline `api-workflow` graphs from unified evidence, with provenance-bearing request/response/endpoint/session/resource nodes, low-confidence route/method hypotheses, exact documentation-only OpenAPI links, and observed cookie-session continuity without storing raw values.
 - Extend unified evidence bundles to schema 1.1 with optional directional request/response session fingerprints; preserve the legacy combined fingerprint and positional `EvidenceRecord` constructor compatibility.
 - Add strict typing and an 80% coverage gate for API Workflow Intelligence.

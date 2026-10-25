@@ -68,6 +68,7 @@ follow_imports = "silent"
 files = [
     "bugbounty_toolkit/access_control/comparison.py",
     "bugbounty_toolkit/access_control/write_lab.py",
+    "bugbounty_toolkit/access_control/function_matrix.py",
     "bugbounty_toolkit/core/execution_budget.py",
     "bugbounty_toolkit/core/runner.py",
     "bugbounty_toolkit/cors_check.py",
