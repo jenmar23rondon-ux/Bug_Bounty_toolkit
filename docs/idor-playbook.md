@@ -14,6 +14,16 @@ Use two authorized test accounts, A (resource owner) and B (actor). In Burp, cap
 
 ## 3. Generate the private case offline
 
+### Optional: discover a reviewable proposal first
+
+When you have both accounts' own-resource responses, use `bbtk import discover-idor <program> --owner account-a.xml --actor account-b.xml --dry-run`. For raw requests, add their `--owner-response` / `--actor-response` files and the actual captured `--base-url`. Discovery stays offline and uses the existing read-case structural checks, not a new IDOR scanner. It does not infer that a resource is private, that the accounts are yours, or that a difference is a vulnerability.
+
+Repeat without `--dry-run` and with `--output-dir registros/<program>/private/idor-discovery` to create a private proposal and hash-checked capture snapshots. Review the proposed correspondence and JSON fields locally. Complete the selected candidate's `review` fields only after confirming ownership of both resources, authorized accounts, privacy, read semantics, origin, success predicates and non-reflected controlled markers. The CLI summary deliberately contains no session values, URLs or resource IDs.
+
+Use `bbtk import approve-idor <program> --proposal .../proposal.json --candidate candidate-001 --approve --dry-run`, then omit `--dry-run` only to create the native case file. Approval rechecks complete captured responses and the existing program scope without sending HTTP requests. Missing control responses or attestations prevent conversion. It does not run the case, infer ranges or declare findings; continue with step 4 separately. The [discovery guide](idor-case-discovery.md) includes the exact review schema, limitations and loopback-only reproduction.
+
+### Existing manual generator
+
 The example below assumes JSON responses with `success`, `data.id`, and a unique `data.marker`. Replace paths and markers with values confirmed in your own responses. The importer reads local files only and sends no requests:
 
 ```bash

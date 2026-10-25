@@ -110,6 +110,7 @@ from .burp_import import (
     safe_artifact_name,
 )
 from .case_generator import CaseGenerationOptions, generate_case
+from .idor_discovery import approve_idor, discover_idor, discovery_summary, save_proposal
 from .diagnostics import diagnose
 from .hunt import (
     HuntTask,
@@ -2156,6 +2157,44 @@ def cmd_import_burp(args: argparse.Namespace) -> None:
         print("[!] Extracted JWT files contain sensitive credentials; keep them local and never commit them.")
 
 
+def cmd_import_discover_idor(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    discovery = discover_idor(
+        args.program,
+        args.owner,
+        args.actor,
+        base_url=args.base_url,
+        owner_response=args.owner_response,
+        actor_response=args.actor_response,
+        accounts_authorized=args.attest_authorized_accounts,
+    )
+    print(json.dumps(discovery_summary(discovery), indent=2, sort_keys=True))
+    if args.dry_run:
+        print("[dry-run] Offline discovery only; no files changed, no requests sent and no cases approved.")
+        return
+    destination = args.output_dir or paths.program_dir / "private" / "idor-discovery"
+    save_proposal(discovery, destination)
+    print("[+] Private proposal.json and capture snapshots saved in the selected proposal directory.")
+    print("[!] Keep the entire bundle private. Review the pending fields, then use import approve-idor --approve.")
+
+
+def cmd_import_approve_idor(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    result = approve_idor(
+        args.proposal,
+        args.candidate,
+        args.program,
+        ScopeValidator(paths.scope_file),
+        approve=args.approve,
+        dry_run=args.dry_run,
+    )
+    print(json.dumps(result, indent=2, sort_keys=True))
+    if result["case_written"]:
+        print(f"[+] Native case-{args.candidate}.json saved beside the private proposal; no requests sent.")
+    else:
+        print("[dry-run] Reviewed inputs validated offline; no case written and no requests sent.")
+
+
 def cmd_import_case(args: argparse.Namespace) -> None:
     paths = ProgramPaths(RECORDS_ROOT, args.program)
     output = args.output or paths.program_dir / "private" / "case.json"
@@ -3148,6 +3187,49 @@ def build_parser() -> argparse.ArgumentParser:
     burp_import.add_argument("--dry-run", action="store_true", help="List planned local files without writing")
     burp_import.add_argument("--force", action="store_true", help="Replace existing imported files")
     burp_import.set_defaults(func=cmd_import_burp)
+
+    discovery_import = import_sub.add_parser(
+        "discover-idor", help="Propose known-resource IDOR/BOLA cases from two local captures; no HTTP traffic"
+    )
+    discovery_import.add_argument("program")
+    discovery_import.add_argument("--owner", type=Path, required=True, help="Account A raw request or Burp XML items")
+    discovery_import.add_argument("--actor", type=Path, required=True, help="Account B raw request or Burp XML items")
+    discovery_import.add_argument("--owner-response", type=Path, help="Paired HTTP response for one raw owner request")
+    discovery_import.add_argument("--actor-response", type=Path, help="Paired HTTP response for one raw actor request")
+    discovery_import.add_argument(
+        "--base-url", help="Actual captured origin for raw relative requests; not a host override"
+    )
+    discovery_import.add_argument(
+        "--attest-authorized-accounts",
+        action="store_true",
+        help="Record account authorization; approval still requires explicit ownership/private-resource review",
+    )
+    discovery_import.add_argument(
+        "--output-dir",
+        type=Path,
+        help="New private bundle directory; defaults to registros/<program>/private/idor-discovery",
+    )
+    discovery_import.add_argument(
+        "--dry-run", action="store_true", help="Print count-only candidate summary; create no files"
+    )
+    discovery_import.set_defaults(func=cmd_import_discover_idor)
+
+    approval_import = import_sub.add_parser(
+        "approve-idor", help="Convert an explicitly reviewed private proposal to a native access-check case offline"
+    )
+    approval_import.add_argument("program")
+    approval_import.add_argument("--proposal", type=Path, required=True)
+    approval_import.add_argument("--candidate", required=True, help="Reviewed candidate ID, such as candidate-001")
+    approval_import.add_argument(
+        "--approve",
+        action="store_true",
+        required=True,
+        help="Explicitly approve the completed researcher review; never sends HTTP requests",
+    )
+    approval_import.add_argument(
+        "--dry-run", action="store_true", help="Validate reviewed inputs without creating a case"
+    )
+    approval_import.set_defaults(func=cmd_import_approve_idor)
 
     case_import = import_sub.add_parser(
         "case", help="Generate a private access-check read case from two local Burp captures; never sends requests"

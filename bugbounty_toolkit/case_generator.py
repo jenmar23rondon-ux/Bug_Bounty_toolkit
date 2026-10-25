@@ -7,9 +7,11 @@ import json
 import os
 from pathlib import Path
 import re
+from typing import Any
 from urllib.parse import parse_qsl, urlsplit
 
 from .core.http_client import RequestSpec
+from .access_control.comparison import pointer_parts
 from .core.redaction import REDACTED, redact_headers
 from .core.request_builder import parse_raw_http_request
 from .core.target import normalize_url
@@ -63,15 +65,24 @@ class _Capture:
     request: RequestSpec
 
 
+@dataclass(frozen=True)
+class ReadPair:
+    """Structural inference shared by manual case generation and offline discovery."""
+
+    origin: str
+    session_headers: tuple[str, ...]
+    resource: dict[str, object]
+    resource_kind: str
+    resource_name: str
+    owner_resource: str
+    actor_resource: str
+
+
 def _pointer_parts(pointer: str) -> list[str]:
-    if (
-        not isinstance(pointer, str)
-        or not pointer.startswith("/")
-        or len(pointer) > 256
-        or re.search(r"~(?![01])", pointer)
-    ):
-        raise ValueError("JSON pointers must start with '/' and use valid RFC 6901 escapes.")
-    return [part.replace("~1", "/").replace("~0", "~") for part in pointer[1:].split("/")]
+    try:
+        return pointer_parts(pointer)
+    except ValueError as exc:
+        raise ValueError("JSON pointers must start with '/' and use valid RFC 6901 escapes.") from exc
 
 
 def _read_capture(path: Path, base_url: str | None) -> _Capture:
@@ -238,8 +249,39 @@ def _validate_marker(marker: str, argument: str) -> None:
         raise ValueError(f"{argument} must be a 12-128 character ASCII identifier (letters, digits, '_' or '-').")
 
 
-def generate_case(options: CaseGenerationOptions) -> CaseGenerationResult:
-    """Validate two local captures and create a compatible, private read case."""
+def inspect_read_pair(owner: RequestSpec, actor: RequestSpec, base_url: str | None = None) -> ReadPair:
+    """Infer one resource difference using the existing read-case restrictions."""
+    owner_url, actor_url = owner.prepared_url(), actor.prepared_url()
+    owner_origin, actor_origin = _origin(owner_url), _origin(actor_url)
+    if owner_origin != actor_origin:
+        raise ValueError("The owner and actor captures must use the same origin (scheme, host and port).")
+    if urlsplit(owner_url).netloc != urlsplit(actor_url).netloc:
+        raise ValueError(
+            "The captures use the same effective origin but serialize the host/port differently; recapture consistently."
+        )
+    origin_url = _origin_url(owner_url)
+    if base_url and _origin(base_url) != owner_origin:
+        raise ValueError("--base-url must match the origin in both Burp captures.")
+    if owner.method != actor.method:
+        raise ValueError(
+            f"Request methods differ: owner={owner.method}, actor={actor.method}. "
+            "They must match; state-changing comparisons require --lab-write."
+        )
+    if owner.method != "GET":
+        raise ValueError(
+            f"This generator creates read cases and requires GET (both captures use {owner.method}). "
+            "Use the separate --lab-write case format for authorized JSON writes."
+        )
+    if owner.body is not None or actor.body is not None:
+        raise ValueError("GET captures with request bodies are unsupported; export clean GET requests from Burp.")
+    session_headers = _session_header_names(owner, actor)
+    _validate_other_headers(owner, actor)
+    selector, resource_kind, resource_name, owner_resource, actor_resource = _resource_selector(owner_url, actor_url)
+    return ReadPair(origin_url, session_headers, selector, resource_kind, resource_name, owner_resource, actor_resource)
+
+
+def prepare_case(options: CaseGenerationOptions) -> tuple[dict[str, Any], CaseGenerationResult]:
+    """Build the native case document and safe summary without writing or networking."""
     if not options.accounts_authorized:
         raise ValueError("Pass --attest-authorized-accounts to declare that both accounts are yours or authorized.")
     if not options.resource_private:
@@ -279,36 +321,7 @@ def generate_case(options: CaseGenerationOptions) -> CaseGenerationResult:
     actor_capture = _read_capture(options.actor, options.base_url)
     owner, actor = owner_capture.request, actor_capture.request
     owner_url, actor_url = owner.prepared_url(), actor.prepared_url()
-    owner_origin, actor_origin = _origin(owner_url), _origin(actor_url)
-    if owner_origin != actor_origin:
-        raise ValueError("The owner and actor captures must use the same origin (scheme, host and port).")
-    # The existing access-check loader compares normalized netloc strings; keep
-    # generated cases acceptable to that validator even for explicit default ports.
-    if urlsplit(owner_url).netloc != urlsplit(actor_url).netloc:
-        raise ValueError(
-            "The captures use the same effective origin but serialize the host/port differently; recapture consistently."
-        )
-    origin_url = _origin_url(owner_url)
-    if options.base_url and _origin(normalized_base) != owner_origin:
-        raise ValueError("--base-url must match the origin in both Burp captures.")
-    if owner.method != actor.method:
-        raise ValueError(
-            f"Request methods differ: owner={owner.method}, actor={actor.method}. "
-            "They must match; state-changing comparisons require --lab-write."
-        )
-    if owner.method != "GET":
-        raise ValueError(
-            f"This generator creates read cases and requires GET (both captures use {owner.method}). "
-            "Use the separate --lab-write case format for authorized JSON writes."
-        )
-    if owner.body is not None or actor.body is not None:
-        raise ValueError("GET captures with request bodies are unsupported; export clean GET requests from Burp.")
-
-    session_headers = _session_header_names(owner, actor)
-    _validate_other_headers(owner, actor)
-    selector, resource_kind, resource_name, owner_resource, actor_resource = _resource_selector(owner_url, actor_url)
-    if owner_resource == actor_resource:
-        raise ValueError("The owner and actor captures must reference distinct resources.")
+    pair = inspect_read_pair(owner, actor, options.base_url)
     for marker in (options.private_marker, options.actor_marker):
         if any(
             marker in owner_url or marker in actor_url or any(marker in value for value in request.headers.values())
@@ -317,18 +330,18 @@ def generate_case(options: CaseGenerationOptions) -> CaseGenerationResult:
             raise ValueError("Private markers must be observed in responses, not supplied in either request.")
 
     output = options.output.expanduser()
-    case: dict[str, object] = {
+    case: dict[str, Any] = {
         "owner_request": _request_reference(owner_capture.path, output),
         "actor_request": _request_reference(actor_capture.path, output),
-        "base_url": origin_url,
-        "session_headers": list(session_headers),
-        "resource": selector,
+        "base_url": pair.origin,
+        "session_headers": list(pair.session_headers),
+        "resource": pair.resource,
         "checks": {
             "success_pointer": options.success_pointer,
             "success_value": options.success_value,
             "resource_pointer": options.resource_pointer,
-            "owner_resource": owner_resource,
-            "actor_resource": actor_resource,
+            "owner_resource": pair.owner_resource,
+            "actor_resource": pair.actor_resource,
             "private_pointer": options.private_pointer,
             "owner_marker": options.private_marker,
             "actor_marker": options.actor_marker,
@@ -340,26 +353,31 @@ def generate_case(options: CaseGenerationOptions) -> CaseGenerationResult:
     existing = output.exists()
     if existing and not options.force and not options.dry_run:
         raise ValueError(f"Output already exists: {output}. Pass --force to replace it.")
-    if not options.dry_run:
-        rendered = json.dumps(case, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
-        output.parent.mkdir(parents=True, exist_ok=True)
-        if options.force:
-            output.write_text(rendered, encoding="utf-8")
-        else:
-            try:
-                with output.open("x", encoding="utf-8", newline="") as destination:
-                    destination.write(rendered)
-            except FileExistsError as exc:
-                raise ValueError(f"Output already exists: {output}. Pass --force to replace it.") from exc
-
-    return CaseGenerationResult(
+    return case, CaseGenerationResult(
         output=output,
         method=owner.method,
-        origin=origin_url,
-        resource_kind=resource_kind,
-        resource_name=resource_name,
-        session_headers=session_headers,
-        session_summary=_redacted_session_summary(owner, session_headers),
+        origin=pair.origin,
+        resource_kind=pair.resource_kind,
+        resource_name=pair.resource_name,
+        session_headers=pair.session_headers,
+        session_summary=_redacted_session_summary(owner, pair.session_headers),
         existing_output=existing,
         dry_run=options.dry_run,
     )
+
+
+def generate_case(options: CaseGenerationOptions) -> CaseGenerationResult:
+    """Validate two local captures and create a compatible, private read case."""
+    case, result = prepare_case(options)
+    if not options.dry_run:
+        rendered = json.dumps(case, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
+        result.output.parent.mkdir(parents=True, exist_ok=True)
+        if options.force:
+            result.output.write_text(rendered, encoding="utf-8")
+        else:
+            try:
+                with result.output.open("x", encoding="utf-8", newline="") as destination:
+                    destination.write(rendered)
+            except FileExistsError as exc:
+                raise ValueError(f"Output already exists: {result.output}. Pass --force to replace it.") from exc
+    return result
