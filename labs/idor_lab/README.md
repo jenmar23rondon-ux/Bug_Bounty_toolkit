@@ -54,3 +54,15 @@ The lab also exposes `GET /api/protected-orders/<id>`, which enforces ownership 
 `captures/owner.txt` and `captures/actor.txt` are raw HTTP/1.1 requests to each account's own vulnerable order. `captures/protected-owner.txt` and `captures/protected-actor.txt` target the protected control route. All captures contain only the fixed dummy tokens declared in `app.py`. The tests copy captures to a temporary directory, substitute an ephemeral loopback port and live fixture tokens, then generate private cases there. No network request leaves loopback, and no test contacts an external service.
 
 The test adds `identifier_enumeration_authorized: true` only to its temporary generated case because this disposable fixture explicitly allows testing the two known IDs. `import case` does not make that policy declaration for real programs.
+
+## Synthetic benchmark v2
+
+`benchmark-v2.json` is a 24-case, synthetic corpus with 12 development and 12 holdout records. Each split contains vulnerable, safe and insufficient-evidence labels, including private data paired with misleading HTTP statuses, legitimate public resources, denials, server errors, invalid controls, missing crossed reads and contradictory predicates. Scenario families do not cross splits, and the loader rejects duplicate case/evidence inputs. The holdout is for evaluation only; do not tune rules or prompts against it.
+
+Run the deterministic holdout benchmark and save paired JSON/Markdown output:
+
+```bash
+bbtk ai benchmark --dataset labs/idor_lab/benchmark-v2.json --output reports/idor-benchmark-v2.json
+```
+
+V2 excludes insufficient ground-truth labels from binary precision/recall/F1 and false-positive/negative denominators. It reports those labels and inconclusive predictions separately, along with labeled and overall decision coverage. Its audit counts unique raw inputs, unique minimized predicate packets and the packet overlap between splits, since different scenarios can collapse to the same Ollama input. The scenario families and raw evidence are disjoint, but repeated minimized packets mean v2 is a deterministic regression benchmark, not an independent Ollama generalization test. Results describe only this synthetic corpus and must not be presented as expected real-world performance. V1 remains available for historical comparison.
