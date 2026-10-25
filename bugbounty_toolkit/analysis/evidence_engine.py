@@ -748,7 +748,12 @@ def _toolkit_json(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
         raw_type = row.get("type")
         row_type = raw_type[:80] if isinstance(raw_type, str) else "toolkit"
         url = next(
-            (row[key] for key in ("url", "target", "endpoint", "request_url") if isinstance(row.get(key), str)), None
+            (
+                row[key]
+                for key in ("url", "target", "endpoint", "request_url", "route")
+                if isinstance(row.get(key), str)
+            ),
+            None,
         )
         status = _status(row.get("status_code"))
         classification = row.get("classification")
@@ -759,6 +764,10 @@ def _toolkit_json(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
             "possible",
             "confirmed",
             "not_observed",
+            "not_reproducible",
+            "not_reflected",
+            "reflected_not_executed",
+            "not_vulnerable",
             "weak",
             "protected",
             "inconclusive",
@@ -783,9 +792,13 @@ def _toolkit_json(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
                     url,
                     row.get("method") if isinstance(row.get("method"), str) else None,
                     status_code=status,
-                    parameters=tuple(str(item)[:200] for item in row.get("parameters", []) if isinstance(item, str))
-                    if isinstance(row.get("parameters"), list)
-                    else (),
+                    parameters=(
+                        tuple(str(item)[:200] for item in row.get("parameters", []) if isinstance(item, str))
+                        if isinstance(row.get("parameters"), list)
+                        else (row["parameter"][:200],)
+                        if isinstance(row.get("parameter"), str)
+                        else ()
+                    ),
                     technical=technical,
                     sensitivity_hint=any(_SENSITIVE_NAME.search(str(key)) for key in row),
                 ),

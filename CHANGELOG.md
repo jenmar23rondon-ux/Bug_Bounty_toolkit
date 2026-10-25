@@ -4,6 +4,13 @@ Notable user-facing changes are recorded here. The project has not yet published
 
 ## Unreleased
 
+- Add a deterministic loopback-only XSS/SQLi lab with vulnerable, protected, and ambiguous fixtures, bounded end-to-end checks, unified evidence import, API workflow analysis, mocked hypothesis review, skill routing, and draft reports. The SQLi fixture simulates an error string and does not connect to a database.
+- Add `bbtk lab web-vuln` and a no-traffic `--dry-run` preview for the local XSS/SQLi flow, plus Windows and POSIX fixture launch scripts.
+- Preserve native XSS/SQLi `route` and singular `parameter` fields when importing toolkit evidence, including non-reproducible classifications.
+- Add strict typing and an 80% coverage gate for the loopback web vulnerability fixture server.
+- Add persistent SQLite evidence graph and investigation memory, joining API workflow observations, bounded Ollama hypotheses, registered skill routes, deterministic access assessments and existing findings with provenance and epistemic state.
+- Add offline `bbtk graph ingest` and filtered `bbtk graph search`; pseudonymize attested account/resource identifiers, reject unknown skills/commands, preserve invalid hypothesis references without linking them, and never execute router plans.
+- Add strict typing and an 80% coverage gate for the persistent evidence graph.
 - Add a bounded, GET-only BFLA function matrix from supplied authorized role captures, plus deterministic BOLA account-matrix and BFLA assessment without status-code-only or model-based confirmation.
 - Add a BFLA playbook documenting role attestations, read-only function requirements, explicit response predicates and manual verification.
 - Add strict typing and an 80% coverage gate for the BFLA function-matrix module.

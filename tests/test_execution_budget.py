@@ -134,6 +134,14 @@ class ExecutionBudgetTests(unittest.TestCase):
         self.assertEqual(summary.transport_errors, 1)
         self.assertEqual(summary.responses_received, 0)
 
+    def test_timeout_is_reported_as_sanitized_transport_error(self):
+        client = self.client(ExecutionBudget(max_requests=1))
+        with patch.object(client.opener, "open", side_effect=URLError(TimeoutError("private timeout detail"))):
+            with self.assertRaisesRegex(ToolkitError, "HTTP request failed: URLError") as error:
+                client.send(RequestSpec("GET", self.base))
+        self.assertNotIn("private timeout detail", str(error.exception))
+        self.assertEqual(client.execution_budget.summary().transport_errors, 1)
+
     def test_playwright_requests_consume_the_shared_budget(self):
         budget = ExecutionBudget(max_requests=1, max_concurrency=1)
         router = _BrowserRequestBudget(self.scope, _origin(self.base), budget, RateLimiter(10000))

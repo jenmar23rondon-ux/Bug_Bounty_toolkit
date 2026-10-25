@@ -183,6 +183,43 @@ class EvidenceEngineTests(unittest.TestCase):
         self.assertIn("template_id", bundle["records"][0]["technical_evidence"])
         self.assertIn("classification", bundle["records"][1]["technical_evidence"])
 
+    def test_native_xss_and_sqli_route_and_parameter_are_imported(self):
+        xss = self.write_json(
+            "xss.json",
+            {
+                "type": "xss",
+                "results": [
+                    {
+                        "route": "http://127.0.0.1:8181/xss/reflected?q=seed",
+                        "parameter": "q",
+                        "status_code": 200,
+                        "classification": "possible",
+                    }
+                ],
+            },
+        )
+        sqli = self.write_json(
+            "sqli.json",
+            {
+                "type": "sqli",
+                "results": [
+                    {
+                        "route": "http://127.0.0.1:8181/sqli/vulnerable?q=seed",
+                        "parameter": "q",
+                        "status_code": 500,
+                        "classification": "possible",
+                    }
+                ],
+            },
+        )
+
+        bundle = import_evidence([xss, sqli])
+        rows = {row["source_tools"][0]: row for row in bundle["records"]}
+        self.assertEqual(rows["xss"]["endpoint"], "/xss/reflected")
+        self.assertEqual(rows["xss"]["parameters"], ["q"])
+        self.assertEqual(rows["sqli"]["endpoint"], "/sqli/vulnerable")
+        self.assertEqual(rows["sqli"]["parameters"], ["q"])
+
     def test_raw_http_request_and_response_extract_only_safe_metadata(self):
         request = self.root / "request.txt"
         request.write_bytes(

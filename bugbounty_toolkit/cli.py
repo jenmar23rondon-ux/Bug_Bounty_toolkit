@@ -45,6 +45,7 @@ from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
 from .analysis.evidence_engine import correlations_from_bundle, import_evidence
 from .analysis.api_workflow import build_api_workflow
+from .analysis.evidence_graph import EvidenceGraphStore, preview_graph_ingest
 from .analysis.hypotheses import SECOND_OPINION as HYPOTHESES_SECOND_OPINION, analyze_hypotheses
 from .analysis.access_assessment import assess_access_control
 from .analysis.skill_router import route_hypotheses_file
@@ -233,6 +234,37 @@ def cmd_lab_idor(args: argparse.Namespace) -> None:
     )
     if completed.returncode:
         raise RuntimeError(f"The end-to-end IDOR lab failed with exit code {completed.returncode}.")
+
+
+def cmd_lab_web_vuln(args: argparse.Namespace) -> None:
+    """Run or preview the local XSS/SQLi evidence-to-report workflow."""
+    project_root = Path(__file__).resolve().parents[1]
+    test_file = project_root / "tests" / "test_end_to_end_web_vuln.py"
+    if args.dry_run:
+        print("[i] Local-only XSS/SQLi lab plan. --dry-run starts no server and sends no requests.")
+        print(
+            "[1] Optional manual fixture server: bash labs/web_vuln_lab/run.sh (PowerShell: ./labs/web_vuln_lab/run.ps1)."
+        )
+        print("[2] The end-to-end test starts a temporary fixture on 127.0.0.1 and runs bounded XSS and SQLi checks.")
+        print(
+            "[3] It imports redacted evidence, builds API workflow, reviews mocked hypotheses, routes skills, and drafts reports."
+        )
+        print(
+            "[4] Fixtures simulate HTML reflection and SQL error text; no browser execution or real SQL engine is used."
+        )
+        print("[one command] bbtk lab web-vuln")
+        print("[equivalent test command] python -m unittest discover -s tests -p test_end_to_end_web_vuln.py -v")
+        return
+    if not test_file.is_file():
+        raise RuntimeError("The runnable web vulnerability lab needs tests/test_end_to_end_web_vuln.py.")
+    print("[i] Running deterministic XSS/SQLi fixtures. Requests are limited to an ephemeral loopback server.")
+    completed = subprocess.run(
+        [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", "test_end_to_end_web_vuln.py", "-v"],
+        cwd=project_root,
+        check=False,
+    )
+    if completed.returncode:
+        raise RuntimeError(f"The end-to-end web vulnerability lab failed with exit code {completed.returncode}.")
 
 
 def cmd_scope_add(args: argparse.Namespace) -> None:
@@ -1975,6 +2007,56 @@ def cmd_api_workflow(args: argparse.Namespace) -> None:
     )
 
 
+def cmd_graph_ingest(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    preview = preview_graph_ingest(
+        args.input,
+        args.openapi,
+        args.hypotheses,
+        args.route,
+        args.case_file,
+        args.access_evidence,
+    )
+    if args.dry_run:
+        print("[dry-run] Local evidence graph ingest validated; no SQLite file was created or changed.")
+        print(json.dumps(preview, indent=2, sort_keys=True))
+        return
+    store = RecordStore(paths)
+    try:
+        result = EvidenceGraphStore(store).ingest(
+            args.input,
+            args.openapi,
+            args.hypotheses,
+            args.route,
+            args.case_file,
+            args.access_evidence,
+        )
+    finally:
+        store.close()
+    print("[+] Evidence graph saved in the program's existing local SQLite database.")
+    print("[i] Imported model opinions remain hypotheses; account/resource declarations remain attestations.")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+def cmd_graph_search(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    if not paths.db_path.exists():
+        raise ValueError(f"No local program database exists for {args.program}; run `bbtk graph ingest` first.")
+    store = RecordStore(paths)
+    try:
+        result = EvidenceGraphStore(store).search(
+            endpoint=args.endpoint,
+            account=args.account,
+            resource=args.resource,
+            category=args.category,
+            finding_id=args.finding_id,
+            limit=args.limit,
+        )
+    finally:
+        store.close()
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
 def cmd_ai_review(args: argparse.Namespace) -> None:
     ProgramPaths(RECORDS_ROOT, args.program)
     validate_ollama_config(args.model, args.ai_timeout)
@@ -2485,6 +2567,11 @@ def build_parser() -> argparse.ArgumentParser:
     lab_idor = lab_sub.add_parser("idor", help="Run the local IDOR/BOLA end-to-end demonstration")
     lab_idor.add_argument("--dry-run", action="store_true", help="Print the exact local workflow without running it")
     lab_idor.set_defaults(func=cmd_lab_idor)
+    lab_web = lab_sub.add_parser("web-vuln", help="Run the local XSS/SQLi evidence-to-report demonstration")
+    lab_web.add_argument(
+        "--dry-run", action="store_true", help="Print the workflow without starting the fixture server"
+    )
+    lab_web.set_defaults(func=cmd_lab_web_vuln)
 
     access = sub.add_parser(
         "access-check", help="Known-resource authorization comparison; bounded read and disposable JSON write modes"
@@ -2774,6 +2861,33 @@ def build_parser() -> argparse.ArgumentParser:
     api_workflow.add_argument("--dry-run", action="store_true", help="Validate and summarize without writing")
     api_workflow.add_argument("--force", action="store_true", help="Replace an existing output file")
     api_workflow.set_defaults(func=cmd_api_workflow)
+
+    graph_cli = sub.add_parser("graph", help="Persist and search minimized local investigation evidence")
+    graph_sub = graph_cli.add_subparsers(dest="graph_command", required=True)
+    graph_ingest = graph_sub.add_parser(
+        "ingest", help="Add unified evidence and optional hypotheses/attestations to the local SQLite graph"
+    )
+    graph_ingest.add_argument("program")
+    graph_ingest.add_argument("--input", type=Path, required=True, help="Unified evidence bundle JSON")
+    graph_ingest.add_argument("--openapi", type=Path, help="Optional local OpenAPI JSON/YAML; documentation only")
+    graph_ingest.add_argument("--hypotheses", type=Path, help="Optional ai-hypotheses JSON; opinions remain hypotheses")
+    graph_ingest.add_argument("--route", type=Path, help="Optional validated ai route JSON; the plan is never executed")
+    graph_ingest.add_argument(
+        "--case-file", type=Path, help="Optional private access case; declarations are attestations"
+    )
+    graph_ingest.add_argument("--access-evidence", type=Path, help="Native access-check evidence; requires --case-file")
+    graph_ingest.add_argument("--dry-run", action="store_true", help="Validate and count without creating SQLite files")
+    graph_ingest.set_defaults(func=cmd_graph_ingest)
+
+    graph_search = graph_sub.add_parser("search", help="Search graph nodes and their one-hop evidence relations")
+    graph_search.add_argument("program")
+    graph_search.add_argument("--endpoint", help="Exact API path (numeric/UUID IDs are normalized)")
+    graph_search.add_argument("--account", help="Researcher account label; stored as a local pseudonym")
+    graph_search.add_argument("--resource", help="Resource ID or imported opaque fingerprint")
+    graph_search.add_argument("--category", help="Finding/hypothesis category")
+    graph_search.add_argument("--finding-id", help="Exact toolkit finding ID")
+    graph_search.add_argument("--limit", type=positive_int, default=50, help="Maximum matching nodes (1-100)")
+    graph_search.set_defaults(func=cmd_graph_search)
 
     ai_review = sub.add_parser(
         "ai-review", help="Ask local Ollama for a second opinion on minimized evidence or a redacted artifact"
