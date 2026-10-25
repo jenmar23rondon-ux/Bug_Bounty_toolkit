@@ -76,6 +76,7 @@ from .burp_import import (
     read_bounded as read_burp_file,
     safe_artifact_name,
 )
+from .case_generator import CaseGenerationOptions, generate_case
 from .diagnostics import diagnose
 from .hunt import (
     HuntTask,
@@ -1729,6 +1730,56 @@ def cmd_import_burp(args: argparse.Namespace) -> None:
         print("[!] Extracted JWT files contain sensitive credentials; keep them local and never commit them.")
 
 
+def cmd_import_case(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    output = args.output or paths.program_dir / "private" / "case.json"
+    try:
+        success_value = json.loads(args.success_value)
+    except json.JSONDecodeError as exc:
+        raise ValueError('--success-value must be a JSON string, integer or boolean, such as true or "ok".') from exc
+    if type(success_value) not in {bool, str, int}:
+        raise ValueError("--success-value must be a JSON string, integer or boolean.")
+    result = generate_case(
+        CaseGenerationOptions(
+            owner=args.owner,
+            actor=args.actor,
+            output=output,
+            base_url=args.base_url,
+            resource_pointer=args.resource_pointer,
+            private_pointer=args.private_pointer,
+            success_pointer=args.success_pointer,
+            success_value=success_value,
+            private_marker=args.private_marker,
+            actor_marker=args.actor_marker,
+            accounts_authorized=args.attest_authorized_accounts,
+            resource_private=args.attest_private_resource,
+            force=args.force,
+            dry_run=args.dry_run,
+        )
+    )
+    print(f"[i] Offline case generation for {args.program}; no HTTP requests sent.")
+    print(
+        f"[+] Captures: same origin, method {result.method}; resource inferred from {result.resource_kind} {result.resource_name}."
+    )
+    print(f"[+] Sesión detectada: {', '.join(result.session_summary)}.")
+    print(
+        "[+] Declarations: authorized accounts and private owner resource were attested; "
+        "cross-account access is expected to be denied."
+    )
+    print(
+        "[i] JSON pointers were syntax-checked only; without response captures the generator cannot verify "
+        "that they identify the resource, success field or private marker."
+    )
+    if result.dry_run:
+        state = "would replace" if result.existing_output and args.force else "would create"
+        if result.existing_output and not args.force:
+            state = "already exists (use --force to replace)"
+        print(f"[dry-run] {state}: {result.output}")
+    else:
+        print(f"[+] Case file saved: {result.output}")
+    print("[!] The generated case contains resource IDs and private markers; keep it local and outside public commits.")
+
+
 def _write_offline_json(path: Path, data: dict[str, object], force: bool) -> None:
     if path.exists() and not force:
         raise ValueError(f"Output already exists: {path}. Pass --force to replace it.")
@@ -2349,6 +2400,52 @@ def build_parser() -> argparse.ArgumentParser:
     burp_import.add_argument("--dry-run", action="store_true", help="List planned local files without writing")
     burp_import.add_argument("--force", action="store_true", help="Replace existing imported files")
     burp_import.set_defaults(func=cmd_import_burp)
+
+    case_import = import_sub.add_parser(
+        "case", help="Generate a private access-check read case from two local Burp captures; never sends requests"
+    )
+    case_import.add_argument("program")
+    case_import.add_argument(
+        "--owner", type=Path, required=True, help="Raw GET capture for account A and its own resource"
+    )
+    case_import.add_argument(
+        "--actor", type=Path, required=True, help="Raw GET capture for account B and its own resource"
+    )
+    case_import.add_argument("--base-url", help="Origin for relative request targets; defaults to HTTPS when omitted")
+    case_import.add_argument(
+        "--resource-pointer",
+        required=True,
+        help="JSON pointer to the resource ID in a response (syntax checked offline)",
+    )
+    case_import.add_argument("--success-pointer", required=True, help="JSON pointer to the successful-response field")
+    case_import.add_argument(
+        "--success-value", required=True, help='Expected success scalar as JSON, e.g. true or "ok"'
+    )
+    case_import.add_argument(
+        "--private-pointer", required=True, help="JSON pointer to the private marker in a response"
+    )
+    case_import.add_argument(
+        "--private-marker", required=True, help="Unique marker attested to exist in account A's resource"
+    )
+    case_import.add_argument(
+        "--actor-marker", required=True, help="Unique marker attested to exist in account B's resource"
+    )
+    case_import.add_argument(
+        "--attest-authorized-accounts",
+        action="store_true",
+        required=True,
+        help="Attest that both accounts are yours or explicitly authorized test accounts",
+    )
+    case_import.add_argument(
+        "--attest-private-resource",
+        action="store_true",
+        required=True,
+        help="Attest that the owner's resource is private and the markers are already present",
+    )
+    case_import.add_argument("--output", type=Path, help="Output path (default: registros/<program>/private/case.json)")
+    case_import.add_argument("--dry-run", action="store_true", help="Validate and show the plan without writing")
+    case_import.add_argument("--force", action="store_true", help="Replace an existing case.json")
+    case_import.set_defaults(func=cmd_import_case)
 
     evidence_cli = sub.add_parser(
         "evidence", help="Normalize and correlate local evidence from Burp and supported scanner formats"
