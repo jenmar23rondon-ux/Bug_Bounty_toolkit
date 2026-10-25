@@ -4,6 +4,7 @@ Notable user-facing changes are recorded here. The project has not yet published
 
 ## Unreleased
 
+- Add offline `import case` generation from two distinct-account Burp GET captures, with strict origin/resource-difference validation, redacted summaries and researcher attestations.
 - Add an offline unified evidence importer for Burp, HAR, ffuf, Nuclei, toolkit JSON, HTTP captures, CSV and text artifacts, with redacted typed records, provenance, semantic deduplication and descriptive endpoint correlations.
 - Add optional local Ollama review for minimized evidence packets, with no remote fallback or automatic finding confirmation.
 - Add shared request/time budgets, read-only diagnostics, and reviewer-ready redacted Markdown evidence drafts.
