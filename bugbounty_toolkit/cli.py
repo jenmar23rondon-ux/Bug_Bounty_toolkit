@@ -74,6 +74,12 @@ from .reporting.evidence import write_evidence_json
 from .reporting.html_report import render_html_report
 from .reporting.json_report import render_json_report
 from .reporting.review_markdown import render_evidence_review
+from .reporting.finding_report import (
+    build_evidence_finding_report,
+    render_evidence_report_html,
+    render_evidence_report_json,
+    render_evidence_report_pdf,
+)
 from .burp_import import (
     MAX_ITEM_BYTES,
     MAX_REQUEST_BYTES,
@@ -2044,19 +2050,37 @@ def cmd_report(args: argparse.Namespace) -> None:
         raise ValueError("--draft-with-ai requires --evidence-file.")
     if not args.draft_with_ai and (args.ai_model is not None or args.ai_timeout is not None):
         raise ValueError("--ai-model and --ai-timeout require --draft-with-ai.")
+    if args.force and not args.evidence_file and not args.finding_id:
+        raise ValueError("--force applies to evidence and individual finding reports only.")
     if args.evidence_file:
         if args.finding_id:
             raise ValueError("--evidence-file cannot be combined with --finding-id.")
-        if args.format not in {None, "markdown"}:
-            raise ValueError("Evidence review drafts use --format markdown.")
+        report_format = args.format or "markdown"
+        if args.draft_with_ai and report_format != "markdown":
+            raise ValueError("--draft-with-ai currently produces Markdown only.")
         try:
             data = json.loads(bounded_text(args.evidence_file, 2_000_000))
         except json.JSONDecodeError as exc:
             raise ValueError("Evidence file must contain valid JSON.") from exc
         if not isinstance(data, dict):
             raise ValueError("Evidence file must contain a JSON object.")
-        destination = args.output or store.paths.reports_dir / f"evidence-review-{args.evidence_file.stem}.md"
-        output = render_evidence_review(data, destination)
+        extension = "md" if report_format == "markdown" else report_format
+        destination = args.output or store.paths.reports_dir / f"evidence-review-{args.evidence_file.stem}.{extension}"
+        if destination.exists() and not args.force:
+            raise ValueError(f"Report already exists: {destination}. Use --force to replace it.")
+        report = build_evidence_finding_report(data, program=args.program, source_name=args.evidence_file.name)
+        if report_format == "json":
+            output = render_evidence_report_json(report, destination)
+        elif report_format == "html":
+            output = render_evidence_report_html(report, destination)
+        elif report_format == "pdf":
+            output = render_evidence_report_pdf(report, destination)
+        elif report_format == "markdown":
+            output = render_evidence_review(
+                data, destination, program=args.program, source_name=args.evidence_file.name
+            )
+        else:
+            raise ValueError("Evidence reports support markdown, json, html or pdf.")
         if args.draft_with_ai:
             model = args.ai_model or DEFAULT_OLLAMA_MODEL
             timeout = args.ai_timeout or 120.0
@@ -2093,12 +2117,15 @@ def cmd_report(args: argparse.Namespace) -> None:
     finding = store.finding(args.finding_id)
     if not finding:
         raise SystemExit(f"Finding not found: {args.finding_id}")
-    markdown = render_markdown(finding, store.paths.reports_dir / f"{args.finding_id}.md")
-    output = (
-        markdown
-        if args.format == "markdown"
-        else render_pdf(markdown, store.paths.reports_dir / f"{args.finding_id}.pdf")
-    )
+    finding_format = args.format or "pdf"
+    markdown_path = store.paths.reports_dir / f"{args.finding_id}.md"
+    pdf_path = store.paths.reports_dir / f"{args.finding_id}.pdf"
+    outputs = [markdown_path] if finding_format == "markdown" else [markdown_path, pdf_path]
+    existing = [path for path in outputs if path.exists()]
+    if existing and not args.force:
+        raise ValueError(f"Report already exists: {existing[0]}. Use --force to replace it.")
+    markdown = render_markdown(finding, markdown_path)
+    output = markdown if finding_format == "markdown" else render_pdf(markdown, pdf_path)
     store.mark_reviewed("report", args.finding_id, str(output))
     print(f"[+] Report created: {output}")
 
@@ -2542,10 +2569,9 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("program")
     report.add_argument("--finding-id")
     report.add_argument("--format", choices=["html", "json", "markdown", "pdf"])
-    report.add_argument(
-        "--evidence-file", type=Path, help="Create a redacted Markdown review draft from native JSON evidence"
-    )
+    report.add_argument("--evidence-file", type=Path, help="Create a redacted review report from native JSON evidence")
     report.add_argument("--output", type=Path, help="Optional destination for an evidence review draft")
+    report.add_argument("--force", action="store_true", help="Replace an existing evidence or finding report")
     report.add_argument(
         "--draft-with-ai", action="store_true", help="Ask local Ollama for an optional evidence-based Markdown draft"
     )

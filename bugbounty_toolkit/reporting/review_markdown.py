@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from ..core.redaction import redact_data
+from .finding_report import build_evidence_finding_report, render_evidence_report_markdown
 
 
 def _cell(value: Any) -> str:
@@ -17,29 +18,22 @@ def _cell(value: Any) -> str:
     return text.replace("|", "\\|").replace("\r", " ").replace("\n", " ")
 
 
-def render_evidence_review(data: dict[str, Any], destination: Path) -> Path:
-    """Write a redacted Markdown review draft from native JSON evidence; never submits it."""
+def render_evidence_review(
+    data: dict[str, Any], destination: Path, program: str = "Información pendiente", source_name: str | None = None
+) -> Path:
+    """Write a professional, redacted report draft from supplied JSON evidence."""
+    report = build_evidence_finding_report(
+        data,
+        program=program,
+        source_name=source_name or destination.stem,
+    )
     safe = redact_data(data)
     if not isinstance(safe, dict):
         raise ValueError("Evidence must be a JSON object.")
-    lines = [
-        "# Security Finding Review Draft",
-        "",
-        "> Draft only. Manually verify scope, impact, reproduction and evidence before submission. Nothing is sent to a platform.",
-        "",
-        "## Observed Result",
-        "",
-        f"- Type: {_cell(safe.get('type'))}",
-        f"- Mode: {_cell(safe.get('mode'))}",
-        f"- Target: {_cell(safe.get('url') or safe.get('target'))}",
-        f"- Classification: {_cell(safe.get('classification'))}",
-        f"- Confirmed by tool: {_cell(safe.get('confirmed'))}",
-        f"- Requests attempted: {_cell(safe.get('requests_attempted'))}",
-        f"- Stop reason: {_cell(safe.get('stop_reason'))}",
-        "",
-        "## A/B Comparison Evidence",
-        "",
-    ]
+    lines = [render_evidence_report_markdown(report), "## Observed Result", ""]
+    for key in ("type", "mode", "url", "target", "classification", "confirmed", "requests_attempted", "stop_reason"):
+        lines.append(f"- {key}: {_cell(safe.get(key))}")
+    lines.extend(["", "## A/B Comparison Evidence", ""])
     steps = safe.get("steps")
     if isinstance(steps, list) and steps:
         fields = (
@@ -54,20 +48,16 @@ def render_evidence_review(data: dict[str, Any], destination: Path) -> Path:
             "actor_private_match",
             "transport_error",
         )
-        lines.append("| " + " | ".join(fields) + " |")
-        lines.append("| " + " | ".join("---" for _ in fields) + " |")
+        lines.extend(["| " + " | ".join(fields) + " |", "| " + " | ".join("---" for _ in fields) + " |"])
         for item in steps:
-            if not isinstance(item, dict):
-                continue
-            lines.append("| " + " | ".join(_cell(item.get(field)) for field in fields) + " |")
-        lines.append("")
+            if isinstance(item, dict):
+                lines.append("| " + " | ".join(_cell(item.get(field)) for field in fields) + " |")
     else:
-        lines.extend(["No structured A/B step records were present in this evidence file.", ""])
-
+        lines.append("No structured A/B step records were present in this evidence file.")
     results = safe.get("results")
     if isinstance(results, list) and results:
         lines.extend(
-            ["## Probe Results", "", "| Probe | Status | Classification | Confirmed |", "| --- | --- | --- | --- |"]
+            ["", "## Probe Results", "", "| Probe | Status | Classification | Confirmed |", "| --- | --- | --- | --- |"]
         )
         for item in results:
             if isinstance(item, dict):
@@ -80,15 +70,14 @@ def render_evidence_review(data: dict[str, Any], destination: Path) -> Path:
                     )
                     + " |"
                 )
-        lines.append("")
-
     lines.extend(
         [
+            "",
             "## Researcher Review",
             "",
             "- Confirm the program policy, affected asset and authorization are still valid.",
-            "- Validate the controls and distinguish a candidate from a confirmed impact.",
-            "- Remove any remaining sensitive data and add concise reproduction and remediation details.",
+            "- Verify the controls and distinguish a candidate from technically validated behavior.",
+            "- Supply missing reproduction, impact and severity evidence without inferring it from an HTTP status.",
             "- This draft is local evidence only; the toolkit does not submit HackerOne reports.",
             "",
         ]

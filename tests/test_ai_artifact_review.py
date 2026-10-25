@@ -205,7 +205,8 @@ class AiArtifactReviewTests(unittest.TestCase):
                 args.func(args)
             draft = output_path.read_text(encoding="utf-8")
         self.assertIn("Deterministic template only", draft)
-        self.assertIn("Security Finding Review Draft", draft)
+        self.assertIn("Finding and validation", draft)
+        self.assertIn("Información pendiente", draft)
         self.assertIn("Nothing was submitted", output.getvalue())
 
     def test_ai_report_accepts_required_sections_and_uses_minimized_evidence(self):
@@ -216,8 +217,13 @@ class AiArtifactReviewTests(unittest.TestCase):
             "body": "private response body",
         }
         draft = (
-            "# XSS Review\n\n## Summary\nReview needed.\n\n## Steps to Reproduce\nNot established.\n\n"
-            "## Impact\nNot established.\n\n## Evidence\nA candidate was observed.\n\n## Suggested Severity\nNot established."
+            "# XSS Review\n\n## Summary\nReview needed.\n\n## Affected Asset and Endpoint\nNot established.\n\n"
+            "## Category and CWE\nNot established.\n\n## Preconditions\nNot established.\n\n"
+            "## Steps to Reproduce\nNot established.\n\n## Expected Result\nNot established.\n\n"
+            "## Observed Result\nA candidate was observed.\n\n## Evidence For and Against\nNot established.\n\n"
+            "## Negative Controls\nNot established.\n\n## Demonstrated Impact\nNot established.\n\n"
+            "## Suggested Severity and Basis\nNot established.\n\n## Limitations\nNot established.\n\n"
+            "## Remediation\nNot established."
         )
         with patch("bugbounty_toolkit.analysis.artifact_review.chat_with_ollama", return_value=draft) as chat:
             result = generate_ai_report(evidence)

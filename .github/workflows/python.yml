@@ -28,4 +28,5 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/analysis/benchmark.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/analysis/prioritization.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/analysis/investigation.py" --fail-under=85
+      - run: coverage report --include="bugbounty_toolkit/reporting/finding_report.py" --fail-under=85
       - run: coverage report
