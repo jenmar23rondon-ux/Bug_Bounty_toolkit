@@ -49,6 +49,7 @@ from .analysis.access_assessment import assess_access_control
 from .analysis.skill_router import route_hypotheses_file
 from .analysis.benchmark import run_idor_benchmark, write_benchmark_reports
 from .analysis.prioritization import prioritize_hypotheses_file, write_prioritization_report
+from .analysis.investigation import investigate_evidence
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
@@ -1978,6 +1979,38 @@ def cmd_ai_prioritize(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
+def cmd_ai_investigate(args: argparse.Namespace) -> None:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    if args.force and args.output is None:
+        raise ValueError("--force requires --output.")
+    result = investigate_evidence(
+        args.program,
+        args.input,
+        max_tests=args.max_tests,
+        model=args.ai_model,
+        timeout=args.ai_timeout,
+        offline=not args.with_ollama,
+        dry_run=args.dry_run,
+        case_file=args.case_file,
+        access_evidence=args.access_evidence,
+    )
+    rendered: dict[str, object] = dict(result)
+    if args.dry_run:
+        print("[dry-run] No Ollama call, target request, command execution or file write performed.")
+        if args.output is not None:
+            print(f"[dry-run] would write: {args.output}")
+    elif args.output is not None:
+        _write_offline_json(args.output, rendered, args.force)
+        rendered["output"] = str(args.output)
+        print(f"[+] Investigation saved: {args.output}")
+    else:
+        history_path = write_evidence_json(paths.evidence_dir / "ai-investigations", rendered, prefix="investigation")
+        rendered["output"] = str(history_path)
+        print(f"[+] Non-overwriting investigation history: {history_path}")
+    print(f"[i] {HYPOTHESES_SECOND_OPINION} The plan is advisory and was not executed.")
+    print(json.dumps(rendered, indent=2, sort_keys=True))
+
+
 def cmd_ai_benchmark(args: argparse.Namespace) -> None:
     if not args.dry_run and args.output is None:
         raise ValueError("--output is required unless --dry-run is used.")
@@ -2690,6 +2723,28 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run", action="store_true", help="Validate and print the plan without writing a report"
     )
     ai_prioritize.set_defaults(func=cmd_ai_prioritize)
+
+    ai_investigate = ai_sub.add_parser(
+        "investigate", help="Join evidence review, access assessment, skill routing and prioritization"
+    )
+    ai_investigate.add_argument("program")
+    ai_investigate.add_argument("--input", type=Path, required=True, help="Unified evidence bundle JSON")
+    ai_investigate.add_argument("--case-file", type=Path, help="Optional private A/B case file")
+    ai_investigate.add_argument(
+        "--access-evidence", type=Path, help="Native read-mode access-check evidence; requires --case-file"
+    )
+    ai_investigate.add_argument("--max-tests", type=positive_int, default=100, help="Maximum planned check budget")
+    ai_investigate.add_argument(
+        "--with-ollama", action="store_true", help="Opt in to local Ollama hypotheses and ambiguous routing"
+    )
+    ai_investigate.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model")
+    ai_investigate.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
+    ai_investigate.add_argument("--output", type=Path, help="Optional JSON output path; refuses overwrite by default")
+    ai_investigate.add_argument("--force", action="store_true", help="Replace an existing --output file")
+    ai_investigate.add_argument(
+        "--dry-run", action="store_true", help="Validate and preview offline without Ollama, HTTP or file writes"
+    )
+    ai_investigate.set_defaults(func=cmd_ai_investigate)
 
     ai_benchmark = ai_sub.add_parser(
         "benchmark", help="Measure deterministic IDOR/BOLA assessment and optional local Ollama second opinion"

@@ -187,16 +187,8 @@ _CATEGORY_TO_SKILL = {
 }
 
 
-def load_hypotheses_file(path: Path) -> tuple[dict[str, Any], list[tuple[str, dict[str, Any]]]]:
-    """Load the validated, reviewed hypotheses from a saved AI-hypotheses result."""
-    try:
-        with path.open("rb") as source:
-            raw = source.read(MAX_HYPOTHESES_BYTES + 1)
-        if len(raw) > MAX_HYPOTHESES_BYTES:
-            raise ValueError(f"Hypotheses file exceeds the {MAX_HYPOTHESES_BYTES}-byte limit.")
-        data = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exc:
-        raise ValueError("Hypotheses input must be readable UTF-8 JSON.") from exc
+def load_hypotheses_result(data: object) -> tuple[dict[str, Any], list[tuple[str, dict[str, Any]]]]:
+    """Validate an AI-hypotheses result and return only reviewed, schema-valid entries."""
     if not isinstance(data, dict) or data.get("type") != _HYPOTHESES_TYPE or not isinstance(data.get("groups"), list):
         raise ValueError("Input must be the JSON output from `bbtk ai hypotheses`.")
     if len(data["groups"]) > 2_000:
@@ -215,6 +207,19 @@ def load_hypotheses_file(path: Path) -> tuple[dict[str, Any], list[tuple[str, di
         except ValueError:
             continue
     return data, valid
+
+
+def load_hypotheses_file(path: Path) -> tuple[dict[str, Any], list[tuple[str, dict[str, Any]]]]:
+    """Load the validated, reviewed hypotheses from a saved AI-hypotheses result."""
+    try:
+        with path.open("rb") as source:
+            raw = source.read(MAX_HYPOTHESES_BYTES + 1)
+        if len(raw) > MAX_HYPOTHESES_BYTES:
+            raise ValueError(f"Hypotheses file exceeds the {MAX_HYPOTHESES_BYTES}-byte limit.")
+        data = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exc:
+        raise ValueError("Hypotheses input must be readable UTF-8 JSON.") from exc
+    return load_hypotheses_result(data)
 
 
 def _validate_ai_routes(value: object) -> tuple[list[dict[str, str]], list[str]]:
@@ -330,6 +335,7 @@ def route_hypotheses(
     max_tests: int,
     model: str = DEFAULT_OLLAMA_MODEL,
     timeout: float = 120.0,
+    use_ollama: bool = True,
 ) -> dict[str, object]:
     """Build a non-executing plan, using deterministic routes before local Ollama for ambiguity."""
     if type(max_tests) is not int or max_tests <= 0:
@@ -358,16 +364,20 @@ def route_hypotheses(
 
     ai_missing: list[str] = []
     if ambiguous:
-        try:
-            ai_selected, ai_missing = _ollama_route(ambiguous, model, timeout)
-        except OllamaUnavailableError:
+        if use_ollama:
+            try:
+                ai_selected, ai_missing = _ollama_route(ambiguous, model, timeout)
+            except OllamaUnavailableError:
+                ai_selected = []
+                ai_missing = ["Ollama unavailable; ambiguous categories used the deterministic executor fallback."]
+            except ValueError:
+                ai_selected = []
+                ai_missing = [
+                    "Ollama returned an invalid or unknown skill; ambiguous categories used the executor fallback."
+                ]
+        else:
             ai_selected = []
-            ai_missing = ["Ollama unavailable; ambiguous categories used the deterministic executor fallback."]
-        except ValueError:
-            ai_selected = []
-            ai_missing = [
-                "Ollama returned an invalid or unknown skill; ambiguous categories used the executor fallback."
-            ]
+            ai_missing = ["Ollama routing was disabled; ambiguous categories used the deterministic executor fallback."]
         if not ai_selected:
             fallback = SKILL_REGISTRY["bugbounty-executor"]
             ai_selected = [
@@ -419,7 +429,8 @@ def route_hypotheses_file(
     max_tests: int,
     model: str = DEFAULT_OLLAMA_MODEL,
     timeout: float = 120.0,
+    use_ollama: bool = True,
 ) -> dict[str, object]:
     """Read a saved hypotheses result and route it without writing files or executing its plan."""
     data, hypotheses = load_hypotheses_file(path)
-    return route_hypotheses(data, hypotheses, program, max_tests, model, timeout)
+    return route_hypotheses(data, hypotheses, program, max_tests, model, timeout, use_ollama)
