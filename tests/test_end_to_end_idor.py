@@ -2,16 +2,20 @@ from __future__ import annotations
 
 import json
 import os
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 from urllib.error import HTTPError, URLError
 from urllib.request import ProxyHandler, Request, build_opener
 
 from bugbounty_toolkit.access_control.comparison import load_case
+from bugbounty_toolkit import cli
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.idor_lab_server import make_server
 
@@ -256,6 +260,254 @@ class IdorEndToEndTests(unittest.TestCase):
                 self.assertTrue(html_report.is_file())
                 self.assertGreater(html_report.stat().st_size, 0)
 
+        finally:
+            server.shutdown()
+            server.server_close()
+            server_thread.join(timeout=3)
+
+    def test_protected_endpoint_end_to_end_pipeline_and_report(self) -> None:
+        try:
+            server = make_server("127.0.0.1", 0)
+        except OSError as exc:
+            self.skipTest(f"Could not bind the local IDOR lab server in this CI environment: {exc}")
+        server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+        server_thread.start()
+        try:
+            port = int(server.server_address[1])
+            origin = f"http://127.0.0.1:{port}"
+            try:
+                owner_auth = self._login(origin, "owner")
+                actor_auth = self._login(origin, "actor")
+            except URLError as exc:
+                reason = exc.reason
+                if isinstance(reason, PermissionError) or (
+                    isinstance(reason, OSError) and getattr(reason, "winerror", None) == 10013
+                ):
+                    self.skipTest(f"CI sandbox denies loopback client sockets; protected E2E skipped: {reason}")
+                raise
+
+            temporary_parent = REPOSITORY_ROOT / ".test-tmp"
+            temporary_parent.mkdir(exist_ok=True)
+            with tempfile.TemporaryDirectory(prefix="bbtk-idor-protected-e2e-", dir=temporary_parent) as temp_dir:
+                root = Path(temp_dir)
+                records = root / "records"
+                config = root / "settings.yaml"
+                config.write_text(
+                    "requests_per_second: 30\ntimeout: 3\nmax_concurrency: 4\nmax_tests: 8\nmax_response_bytes: 65536\n",
+                    encoding="utf-8",
+                )
+                private_dir = records / "idor-lab" / "private"
+                captures_dir = private_dir / "captures"
+                captures_dir.mkdir(parents=True)
+                captures = ("protected-owner.txt", "protected-actor.txt")
+                credentials = (owner_auth, actor_auth)
+                for name, filename, authorization in zip(captures, ("owner.txt", "actor.txt"), credentials):
+                    fixture = (FIXTURE_ROOT / "captures" / name).read_text(encoding="utf-8")
+                    fixture = fixture.replace("127.0.0.1:8099", f"127.0.0.1:{port}")
+                    fixture = fixture.replace(
+                        "Bearer lab-owner-token" if filename == "owner.txt" else "Bearer lab-actor-token",
+                        authorization,
+                    )
+                    (captures_dir / filename).write_text(fixture, encoding="utf-8")
+
+                self._assert_cli_ok(
+                    records,
+                    "init",
+                    "idor-lab",
+                    "--authorization",
+                    "isolated local protected IDOR lab fixture",
+                    "--automation-allowed",
+                    "--config",
+                    str(config),
+                )
+                self._assert_cli_ok(records, "scope", "add", "idor-lab", "127.0.0.1")
+                case_path = private_dir / "protected-case.json"
+                self._assert_cli_ok(
+                    records,
+                    "import",
+                    "case",
+                    "idor-lab",
+                    "--owner",
+                    str(captures_dir / "owner.txt"),
+                    "--actor",
+                    str(captures_dir / "actor.txt"),
+                    "--base-url",
+                    origin,
+                    "--resource-pointer",
+                    "/data/id",
+                    "--success-pointer",
+                    "/success",
+                    "--success-value",
+                    "true",
+                    "--private-pointer",
+                    "/data/marker",
+                    "--private-marker",
+                    "owner-order-marker-1001",
+                    "--actor-marker",
+                    "actor-order-marker-1002",
+                    "--attest-authorized-accounts",
+                    "--attest-private-resource",
+                    "--output",
+                    str(case_path),
+                )
+                loaded = load_case(case_path, ScopeValidator(records / "idor-lab" / "scope.txt"))
+                self.assertEqual([account.resource for account in loaded.accounts], ["1001", "1002"])
+
+                # The agent workflow starts with local normalization and correlation.
+                bundle_path = root / "protected-unified-evidence.json"
+                owner_capture, actor_capture = captures_dir / "owner.txt", captures_dir / "actor.txt"
+                self._assert_cli_ok(
+                    records,
+                    "evidence",
+                    "import",
+                    "idor-lab",
+                    "--input",
+                    str(owner_capture),
+                    str(actor_capture),
+                    "--format",
+                    "http",
+                    "--output",
+                    str(bundle_path),
+                )
+                bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+                self.assertGreaterEqual(bundle["summary"]["correlation_groups"], 1)
+                correlations_path = root / "protected-correlations.json"
+                self._assert_cli_ok(
+                    records,
+                    "evidence",
+                    "correlate",
+                    "idor-lab",
+                    "--input",
+                    str(bundle_path),
+                    "--output",
+                    str(correlations_path),
+                )
+                correlations = json.loads(correlations_path.read_text(encoding="utf-8"))
+                self.assertGreaterEqual(correlations["summary"]["correlation_groups"], 1)
+
+                record_id = bundle["records"][0]["evidence_id"]
+                hypothesis = {
+                    "category": "access_control",
+                    "summary": "Two authorized sessions use the same resource endpoint pattern.",
+                    "evidence_for": [
+                        {"record_id": record_id, "why": "A captured request identifies the resource pattern."}
+                    ],
+                    "evidence_against": [],
+                    "missing_controls": ["The cross-account authorization result has not yet been measured."],
+                    "confidence": "medium",
+                    "next_check": {
+                        "kind": "http",
+                        "suggestion": "Run the bounded owner/actor controls against the disposable local fixture.",
+                        "why": "The captured requests alone do not establish access behavior.",
+                    },
+                    "status": "hypothesis",
+                }
+                hypothesis_args = cli.build_parser().parse_args(
+                    [
+                        "--records-root",
+                        str(records),
+                        "ai",
+                        "hypotheses",
+                        "idor-lab",
+                        "--input",
+                        str(bundle_path),
+                    ]
+                )
+                hypothesis_output = StringIO()
+                with (
+                    patch(
+                        "bugbounty_toolkit.analysis.hypotheses.chat_with_ollama",
+                        return_value=json.dumps(hypothesis),
+                    ),
+                    redirect_stdout(hypothesis_output),
+                ):
+                    hypothesis_args.func(hypothesis_args)
+                rendered = hypothesis_output.getvalue()
+                hypotheses = json.loads(rendered[rendered.index("{\n") :])
+                self.assertEqual(hypotheses["groups"][0]["hypothesis"]["status"], "hypothesis")
+                self.assertEqual(hypotheses["vulnerabilities_confirmed"], 0)
+                hypotheses_path = root / "protected-hypotheses.json"
+                hypotheses_path.write_text(json.dumps(hypotheses), encoding="utf-8")
+
+                route = self._assert_cli_ok(
+                    records,
+                    "ai",
+                    "route",
+                    "idor-lab",
+                    "--input",
+                    str(hypotheses_path),
+                    "--dry-run",
+                )
+                route_json = json.loads(route.stdout[route.stdout.index("{\n") :])
+                self.assertEqual(route_json["selected"][0]["skill"], "bugbounty-access-control")
+                self.assertTrue(route_json["plan"][0]["command"].startswith("bbtk access-check idor-lab"))
+
+                # Run only the selected, three-request control/cross comparison in the loopback lab.
+                run = self._assert_cli_ok(
+                    records,
+                    "access-check",
+                    "idor-lab",
+                    "--case-file",
+                    str(case_path),
+                    "--max-tests",
+                    "3",
+                )
+                self.assertIn("Access comparison: rejected_in_this_test", run.stdout)
+                access_evidence = self._latest_evidence(records / "idor-lab" / "evidence" / "access-control")
+                observed = json.loads(access_evidence.read_text(encoding="utf-8"))
+                self.assertEqual(observed["classification"], "rejected_in_this_test")
+                self.assertEqual(observed["requests_attempted"], 3)
+                self.assertIs(observed["confirmed"], False)
+                cross = next(row for row in observed["steps"] if row["step"] == "cross_read")
+                self.assertIs(cross["application_success"], False)
+                self.assertIs(cross["owner_resource_match"], False)
+                self.assertIs(cross["owner_private_match"], False)
+
+                assessment_args = cli.build_parser().parse_args(
+                    [
+                        "--records-root",
+                        str(records),
+                        "ai",
+                        "hypotheses",
+                        "idor-lab",
+                        "--input",
+                        str(bundle_path),
+                        "--case-file",
+                        str(case_path),
+                        "--access-evidence",
+                        str(access_evidence),
+                        "--dry-run",
+                    ]
+                )
+                assessment_output = StringIO()
+                with redirect_stdout(assessment_output):
+                    assessment_args.func(assessment_args)
+                assessment_json = json.loads(assessment_output.getvalue()[assessment_output.getvalue().index("{\n") :])
+                assessment = assessment_json["access_control_assessment"]
+                self.assertEqual(assessment["classification"], "denied")
+                self.assertIs(assessment["confirmed"], False)
+                self.assertIs(assessment["status_code_used"], False)
+                self.assertIs(assessment["model_opinion_used"], False)
+
+                report_path = root / "protected-review.json"
+                self._assert_cli_ok(
+                    records,
+                    "report",
+                    "idor-lab",
+                    "--evidence-file",
+                    str(access_evidence),
+                    "--format",
+                    "json",
+                    "--output",
+                    str(report_path),
+                )
+                report = json.loads(report_path.read_text(encoding="utf-8"))
+                self.assertEqual(report["validation_state"], "not_observed")
+                self.assertNotEqual(report["validation_state"], "validated")
+                for path in (access_evidence, report_path):
+                    text = path.read_text(encoding="utf-8")
+                    self.assertNotIn("lab-owner-token", text)
+                    self.assertNotIn("lab-actor-token", text)
         finally:
             server.shutdown()
             server.server_close()
