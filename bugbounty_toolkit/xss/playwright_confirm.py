@@ -284,6 +284,7 @@ class PlaywrightExecutionChecker:
             self._browser.close()
             self._browser = None
         if self._manager is not None:
-            self._manager.stop()
+            # Playwright Sync API: ContextManager exposes start()/__exit__, not stop().
+            self._manager.__exit__(None, None, None)
             self._manager = None
             self._playwright = None
