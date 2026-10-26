@@ -1,0 +1,6 @@
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+Server: nginx
+Content-Length: 36
+
+{"error": "authentication_required"}

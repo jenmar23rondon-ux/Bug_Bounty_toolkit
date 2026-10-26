@@ -1,0 +1,6 @@
+GET /api/v1/orders/lab-1 HTTP/1.1
+Host: 127.0.0.1:8191
+Authorization: Bearer SYNTH-SECRET-token-lab
+Cookie: sid=SYNTH-SECRET-cookie-lab
+Accept: application/json
+

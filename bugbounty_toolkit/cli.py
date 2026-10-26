@@ -673,9 +673,13 @@ def cmd_fuzz_plan(args: argparse.Namespace) -> None:
         from .analysis.object_relationships import load_object_key
 
         object_key = load_object_key(Path(args.object_key))
+    capture_path = args.capture if args.capture is not None else args.har
+    capture_format = args.capture_format if args.capture is not None else "har"
+    if args.capture is None and (args.response is not None or args.origin is not None):
+        raise ValueError("--response and --origin require --capture.")
     plan = build_fuzz_plan(
         args.program,
-        Path(args.har),
+        Path(capture_path),
         collections=collections,
         scope=scope,
         category=args.category,
@@ -685,6 +689,9 @@ def cmd_fuzz_plan(args: argparse.Namespace) -> None:
         object_key=object_key,
         strict=args.strict,
         allow_truncate=args.allow_truncate,
+        capture_format=capture_format,
+        response_path=Path(args.response) if args.response is not None else None,
+        origin=args.origin,
     )
     print(
         json.dumps(
@@ -3226,7 +3233,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="Offline context-aware discovery plan from a local HAR (no downloads, no fuzz execution)",
     )
     fuzz_plan.add_argument("program")
-    fuzz_plan.add_argument("--har", type=Path, required=True, help="Local HAR capture to analyze offline")
+    capture_source = fuzz_plan.add_mutually_exclusive_group(required=True)
+    capture_source.add_argument("--har", type=Path, help="Local HAR capture to analyze offline")
+    capture_source.add_argument(
+        "--capture",
+        type=Path,
+        help="Local HAR, Burp XML, or raw HTTP request capture (format auto-detected or set with --format)",
+    )
+    fuzz_plan.add_argument(
+        "--format",
+        dest="capture_format",
+        choices=["auto", "har", "burp-xml", "raw-http"],
+        default="auto",
+        help="Capture format for --capture (default: auto-detect; mismatches are rejected)",
+    )
+    fuzz_plan.add_argument(
+        "--response",
+        type=Path,
+        help="Raw HTTP response explicitly paired with a single --capture raw request (never inferred)",
+    )
+    fuzz_plan.add_argument(
+        "--origin",
+        help="Explicit http(s)://host[:port] origin for a raw HTTP request; must agree with its Host header",
+    )
     fuzz_plan.add_argument(
         "--category",
         choices=list(DISCOVERY_CATEGORIES),

@@ -64,3 +64,45 @@ See [labs/context_fuzz_lab](../labs/context_fuzz_lab/README.md) for a loopback A
 - In-scope hosts only; stop on HTTP 429 at execution time (existing ffuf runner).
 - No ID enumeration; no auto-confirmed findings.
 - Execution tests only against synthetic loopback labs.
+
+## Multi-format captures (HAR, Burp XML, raw HTTP)
+
+`--har` keeps its historical behaviour and output. `--capture` accepts any supported local capture:
+
+```bash
+bbtk fuzz-plan my-program --capture history.xml --dry-run                 # Burp XML (auto-detected)
+bbtk fuzz-plan my-program --capture history.xml --format burp-xml --strict
+bbtk fuzz-plan my-program --capture req.http --origin http://127.0.0.1:8191 --dry-run
+bbtk fuzz-plan my-program --capture req.http --response resp.http --origin http://127.0.0.1:8191
+```
+
+Contract (`bugbounty_toolkit/fuzzing/capture_adapter.py`):
+
+- Reuses existing parsers: HAR → `import_har`; Burp/raw → `parse_captured_exchanges` and
+  `captured_response`. No new HTTP parser.
+- `--format auto` detects from leading syntax; an explicit `--format` that disagrees fails with
+  `format_mismatch`.
+- Burp items are validated independently. In the default `partial` mode bad items are isolated with
+  a stable reason code; `--strict` rejects the file. Globally malformed XML, DTD/entity
+  declarations, and empty exports are file-fatal and never repaired.
+- A request is only paired with the response of the same item, or with a `--response` file given
+  explicitly for one raw request. Missing responses are never invented (`requests_without_response`).
+- Raw HTTP has no scheme, so `--origin` is required; the Host header must agree (`host_inconsistent`).
+- The 32-entry limit and `--allow-truncate` semantics are the same as for HAR.
+- Non-HAR plans add `capture_import.provenance` (adapter version, SHA-256 of input files, item
+  locators, paired/unpaired counts). Summaries never contain URLs, headers, cookies, or bodies.
+
+File-fatal codes: `format_unknown`, `format_mismatch`, `not_utf8`, `nul_bytes`, `xml_dtd_or_entity`,
+`xml_malformed`, `xml_no_items`, `entries_over_limit`, `no_valid_entries`, `strict_entry_rejected`,
+`response_without_raw_request`, `raw_origin_required`.
+
+Per-item codes: `item_messages_ambiguous`, `request_missing`, `request_base64_invalid`,
+`response_base64_invalid`, `request_incomplete`, `request_line_invalid`, `request_headers_ambiguous`,
+`host_inconsistent`, `origin_inconsistent`, `item_url_invalid`, `message_too_large`,
+`response_incomplete`, `response_headers_ambiguous`, `response_encoding_unsupported`,
+`response_length_mismatch`, `request_invalid`, `over_entry_limit`.
+
+Parity fixtures (`labs/context_fuzz_lab/fixtures/capture.burp.xml`, `fixtures/raw/`) are generated
+deterministically from `capture.har` by `make_capture_fixtures.py`; `multi_capture_benchmark.py`
+reports before/after metrics offline. Planning stays separate from execution: run `bbtk fuzz`
+with `--dry-run`/`--confirm` as before.
