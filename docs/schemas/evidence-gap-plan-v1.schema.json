@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "ai_used": {
+      "const": false
+    },
+    "auto_confirmations": {
+      "const": 0
+    },
+    "executions": {
+      "const": 0
+    },
+    "network_requests_sent": {
+      "const": 0
+    },
+    "plan": {
+      "items": {
+        "properties": {
+          "execution_allowed": {
+            "const": false
+          },
+          "finding_confirmed": {
+            "const": false
+          },
+          "requires_human_review": {
+            "const": true
+          },
+          "step_type": {
+            "enum": [
+              "abstain_insufficient_information",
+              "attest_distinct_accounts",
+              "attest_ownership",
+              "blocked_missing_authorization",
+              "blocked_out_of_scope",
+              "complete_partial_capture",
+              "identify_missing_actor_response",
+              "identify_missing_negative_control",
+              "identify_missing_owner_response",
+              "repair_broken_reference",
+              "request_human_review",
+              "reuse_existing_control",
+              "review_content_denial",
+              "review_duplicate",
+              "review_legitimate_access",
+              "review_multiple_differences",
+              "review_origin_difference",
+              "review_stale_evidence",
+              "stop_contradicted_hypothesis",
+              "stop_incompatible_method",
+              "verify_evidence_digest"
+            ]
+          }
+        },
+        "required": [
+          "candidate_id",
+          "step_id",
+          "step_type",
+          "priority",
+          "reason_code",
+          "evidence_refs",
+          "missing_requirement",
+          "expected_information_gain",
+          "estimated_manual_steps",
+          "prerequisites",
+          "blocking_conditions",
+          "requires_human_review",
+          "execution_allowed",
+          "finding_confirmed"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "bbtk-evidence-gap-plan/1"
+    }
+  },
+  "required": [
+    "schema_version",
+    "program",
+    "status",
+    "candidates",
+    "plan",
+    "network_requests_sent"
+  ],
+  "title": "bbtk evidence-gap next-step plan",
+  "type": "object"
+}

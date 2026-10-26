@@ -1,5 +1,17 @@
 ## [Unreleased]
 
+### Evidence-gap guided investigation planner
+
+- Opt-in offline planner (`bbtk investigation next-steps PROGRAM [--dry-run]`) that names
+  missing controls and the next human review step from the Evidence Ledger + annotated
+  evidence. Schema `bbtk-evidence-gap-plan/1`. AI never decides steps; every recommendation
+  has `execution_allowed=false` and `finding_confirmed=false`.
+- Reuses Evidence Ledger validation, Investigation Memory (read-only), IDOR E2E eligibility
+  codes and dashboard concepts without duplicating those systems. Does not weaken the
+  PR #43 tool-policy gate or PR #45 redaction.
+- Synthetic lab `labs/evidence_gap_planner_eval/` (DEV + FINAL, 20 scenarios) with before/after
+  metrics vs manual flow and a generic baseline. Version stays 0.2.2; `v0.2.1` untouched.
+
 ### IDOR/BOLA end-to-end research quality
 
 - Wire the full offline research contract (capture→import→discovery→ranking→handoff→

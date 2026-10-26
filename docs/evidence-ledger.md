@@ -69,3 +69,9 @@ when a ledger exists; otherwise output is unchanged.
 - Duplicate detection is key-based (`dedup_key` or `surface|category`), not semantic.
 - Graph/memory/finding refs are only checked when the program SQLite DB exists.
 - Existing `findings` table and tool `classification` values are unchanged for compatibility.
+
+## Related: next-step planner
+
+After the ledger is populated, `bbtk investigation next-steps PROGRAM --dry-run`
+reads it (without writing) and returns a versioned plan of human review steps for
+missing controls. See [evidence-gap-planner.md](evidence-gap-planner.md).

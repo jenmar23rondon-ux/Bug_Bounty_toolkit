@@ -32,7 +32,7 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/web_vuln_lab_server.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/access_control/function_matrix.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/analysis/benchmark.py" --fail-under=85
-      - run: coverage report --include="bugbounty_toolkit/analysis/prioritization.py" --fail-under=85
+      - run: coverage report --include="bugbounty_toolkit/analysis/prioritization.py,bugbounty_toolkit/analysis/evidence_gap_planner.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/analysis/investigation.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/reporting/finding_report.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/dashboard.py" --fail-under=80
