@@ -118,7 +118,7 @@ class MaintenanceTests(unittest.TestCase):
         self.assertEqual(args.run_max_requests, 4)
         self.assertEqual(args.run_max_seconds, 30)
         self.assertEqual(args.run_max_concurrency, 2)
-        self.assertEqual(__version__, "0.2.1")
+        self.assertEqual(__version__, "0.2.2")
 
     def test_run_summary_reports_aggregated_requests_without_sensitive_urls(self):
         budget = ExecutionBudget(max_requests=3, max_seconds=10, max_concurrency=2)

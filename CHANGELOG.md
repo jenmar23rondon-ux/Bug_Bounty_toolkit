@@ -1,14 +1,18 @@
 # Changelog
 
-Notable user-facing changes are recorded here. The project has not yet published a tagged release for the changes listed under Unreleased.
+Notable user-facing changes are recorded here.
 
 ## Unreleased
 
 - Add offline `object-handoff` to turn object-relationship candidates into reproducible owner/actor capture-pair proposals (locators, provenance, suggested `discover-idor` command) without writing cases, calling access-check, approving, or sending HTTP.
 - Add `bbtk lab object-discover` with a versioned synthetic labeled corpus (`dev`/`eval`), Precision@k/recall/FP/FN metrics, and before/after comparison against `object-candidates` ranking. Synthetic metrics do not claim real bug-bounty confirmation performance.
 
+## 0.2.2 - 2026-10-25
+
 - Fix Playwright XSS confirmer shutdown for Playwright 1.64+ (`PlaywrightContextManager` no longer exposes `stop()`; use `__exit__`).
 - Clarify `test_ruff_coverage` failure when `python -m ruff` is unavailable for the active interpreter (install `.[dev]`).
+- Install Playwright Chromium in CI so XSS browser confirmation tests exercise the real binary instead of silently skipping.
+- Document the human-gated release process in `docs/RELEASING.md` (tag checklist, CI gates, and what must not be automated).
 
 - Add fully offline `object-discover` / `object-candidates` for typed object-reference correlation across local Burp/raw HTTP/HAR captures, provenance-bearing observed/inferred relationships, deterministic explainable 0-100 priority, HMAC pseudonyms/integrity, private atomic publication and no executable cases or confirmed findings.
 - Reuse bounded IDOR JSON traversal, Burp/HAR adapters, API workflow edge merging and graph limits; add strict typing, offline CLI smoke coverage and synthetic examples for object discovery.
