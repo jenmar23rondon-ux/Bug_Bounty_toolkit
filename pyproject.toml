@@ -116,6 +116,8 @@ files = [
     "bugbounty_toolkit/dashboard.py",
     "bugbounty_toolkit/reporting/finding_report.py",
     "bugbounty_toolkit/fuzzing/wordlist_manager.py",
+    "bugbounty_toolkit/fuzzing/content_ranking.py",
+    "bugbounty_toolkit/fuzzing/content_eval.py",
     "bugbounty_toolkit/fuzzing/context_planner.py",
     "bugbounty_toolkit/fuzzing/capture_adapter.py",
     "bugbounty_toolkit/context_fuzz_lab_server.py",

@@ -65,6 +65,10 @@ See [labs/context_fuzz_lab](../labs/context_fuzz_lab/README.md) for a loopback A
 - No ID enumeration; no auto-confirmed findings.
 - Execution tests only against synthetic loopback labs.
 
+### Content-aware wordlist ranking (opt-in)
+
+Use `--ranking content` to score registered lists from a bounded sample of their entries against the capture context. Default remains `--ranking filename`. Credential and XSS/SQLi lists stay excluded. See [Bounded discovery and wordlists](fuzzing.md#opt-in-content-aware-ranking).
+
 ## Multi-format captures (HAR, Burp XML, raw HTTP)
 
 `--har` keeps its historical behaviour and output. `--capture` accepts any supported local capture:

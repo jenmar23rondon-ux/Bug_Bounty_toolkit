@@ -27,6 +27,7 @@ from ..core.redaction import redact_data, redact_url
 from ..core.scope_validator import ScopeValidator
 from ..core.target import normalize_url
 from ..reporting.evidence import write_evidence_json
+from .content_ranking import CONTENT_PROFILE_VERSION, RANKING_MODES, collect_profiles, rank_content_aware
 from .wordlist_manager import (
     WORDLIST_CATEGORIES,
     WordlistCollection,
@@ -150,6 +151,7 @@ class FuzzPlan:
     auto_execute: bool = False
     vulnerabilities_confirmed: int = 0
     notes: list[str] = field(default_factory=list)
+    content_ranking: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         payload = {
@@ -174,6 +176,9 @@ class FuzzPlan:
                 "ffuf_runner_duplicated": False,
             },
         }
+        if self.content_ranking is not None:
+            # Only present when the opt-in content ranking ran; filename-mode plans are unchanged.
+            payload["content_ranking"] = self.content_ranking
         redacted = redact_data(payload)
         assert isinstance(redacted, dict)
         return redacted
@@ -385,8 +390,21 @@ def recommend_for_context(
     *,
     category: str | None = None,
     max_per_category: int = 3,
+    ranking: str = "filename",
+    explanations: list[dict[str, Any]] | None = None,
 ) -> tuple[list[WordlistRecommendation], list[dict[str, Any]]]:
-    """Recommend local discovery lists from capture evidence; never downloads."""
+    """Recommend local discovery lists from capture evidence; never downloads.
+
+    ``ranking="filename"`` (default) is the historical behaviour. ``ranking="content"``
+    is opt-in and delegates ordering to :mod:`content_ranking`; per-list explanations
+    are appended to ``explanations`` when a list is supplied.
+    """
+    if ranking not in RANKING_MODES:
+        raise ValueError(f"Unknown ranking mode {ranking!r}; choose from {', '.join(RANKING_MODES)}.")
+    if ranking == "content":
+        return _recommend_by_content(
+            collections, context, category=category, max_per_category=max_per_category, explanations=explanations
+        )
     requested = _validated_discovery_category(category)
     categories = (requested,) if requested else context.categories_needed
     collection_list = list(collections)
@@ -463,6 +481,66 @@ def recommend_for_context(
                     evidence=evidence,
                 )
             )
+    return recommendations, discarded
+
+
+def _recommend_by_content(
+    collections: Iterable[WordlistCollection],
+    context: CaptureContext,
+    *,
+    category: str | None,
+    max_per_category: int,
+    explanations: list[dict[str, Any]] | None,
+) -> tuple[list[WordlistRecommendation], list[dict[str, Any]]]:
+    """Narrow adapter from content-aware ranking to the planner's recommendation type."""
+    requested = _validated_discovery_category(category)
+    categories = (requested,) if requested else context.categories_needed
+    profiles, excluded = collect_profiles(list(collections))
+    discarded: list[dict[str, Any]] = [
+        {
+            "path": item["path"],
+            "category": "other",
+            "reason": "Excluded from generic discovery (credential or exploit-oriented list).",
+        }
+        for item in excluded
+    ]
+    for profile in profiles:
+        if profile.name_category in {"xss", "sqli"}:
+            discarded.append(
+                {
+                    "path": profile.path,
+                    "category": profile.name_category,
+                    "reason": "Excluded from generic discovery (credential or exploit-oriented list).",
+                }
+            )
+    recommendations: list[WordlistRecommendation] = []
+    seen_paths: set[str] = set()
+    for cat in categories:
+        reason, evidence = _recommendation_reason(cat, context)
+        ranked, dropped = rank_content_aware(profiles, cat, context)
+        discarded.extend(dropped)
+        if not ranked:
+            discarded.append({"category": cat, "reason": "No local lists registered for this category."})
+            continue
+        for item in ranked[:max_per_category]:
+            path_key = str(Path(item.path).resolve(strict=False))
+            if path_key in seen_paths:
+                discarded.append({"path": path_key, "category": cat, "reason": "Duplicate path already recommended."})
+                continue
+            seen_paths.add(path_key)
+            recommendations.append(
+                WordlistRecommendation(
+                    category=cat,
+                    path=path_key,
+                    collection=item.collection,
+                    size_bytes=item.size_bytes,
+                    reason=reason,
+                    evidence=evidence,
+                    sha256=item.explanation.get("sample_sha256"),
+                )
+            )
+            if explanations is not None:
+                explanations.append({"path": path_key, "score": item.score, **item.explanation})
     return recommendations, discarded
 
 
@@ -656,6 +734,7 @@ def build_fuzz_plan(
     object_key: bytes | None = None,
     strict: bool = False,
     allow_truncate: bool = False,
+    ranking: str = "filename",
     capture_format: str = "har",
     response_path: Path | None = None,
     origin: str | None = None,
@@ -681,7 +760,10 @@ def build_fuzz_plan(
             allow_truncate=allow_truncate,
         )
     context = analyze_capture_context(result)
-    recommendations, discarded_lists = recommend_for_context(collections, context, category=category)
+    explanations: list[dict[str, Any]] | None = [] if ranking == "content" else None
+    recommendations, discarded_lists = recommend_for_context(
+        collections, context, category=category, ranking=ranking, explanations=explanations
+    )
     targets, discarded_targets = build_plan_targets(
         context,
         recommendations,
@@ -728,6 +810,11 @@ def build_fuzz_plan(
         scope_hosts=scope_hosts,
         object_associations=associations,
         notes=notes,
+        content_ranking=(
+            {"mode": "content", "profile_version": CONTENT_PROFILE_VERSION, "explanations": explanations}
+            if explanations is not None
+            else None
+        ),
     )
 
 

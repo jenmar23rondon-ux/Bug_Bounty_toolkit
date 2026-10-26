@@ -1,3 +1,12 @@
+## [Unreleased]
+
+### Content-aware wordlist ranking (opt-in)
+
+- Add bounded, deterministic content profiling for local wordlists (`bugbounty_toolkit.fuzzing.content_ranking`).
+- Opt-in via `bbtk fuzz-plan --ranking content`; default filename ranking unchanged.
+- Synthetic DEV/FINAL evaluation corpus under `labs/content_wordlist_eval/` with frozen hashes.
+- Explanations include category/content signals, coverage, duplication, request cost, uncertainty, and sample SHA-256; no full payloads in reports.
+
 # Changelog
 
 Notable user-facing changes are recorded here.

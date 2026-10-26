@@ -1,0 +1,26 @@
+{
+  "collection_root": "collections/synth",
+  "dev": "ground_truth_dev.json",
+  "dev_sha256": "9a4737a84cfc7c7ac9b2011b41c7dbeda99a34adb7af7b8b4866abce5d73eac6",
+  "file_sha256": {
+    "Discovery/Web-Content/CMS/WordPress/wp-paths.txt": "77a837bf5648f38e43f4a0a85f35809921d30546adefed34de7e965815b299e4",
+    "Discovery/Web-Content/api/api-endpoints.txt": "01ee2e7f7f28a28fbfc536883901307f7259162b09d813de4941d55cef345d61",
+    "Discovery/Web-Content/api/api-secrets-passwords.txt": "c6b610c2251f85730bd3b9c226b15bbdc99fc32e2b18ab57b51b91de4c0eaf49",
+    "Discovery/Web-Content/common-dir-names.txt": "0a84dff27908a671b993c29a115dd616f070f88837236f18bcea6ae0ccbece29",
+    "Discovery/Web-Content/filenames/common-files.txt": "f0db8cec4e4dab03d28867e46c9630547ecc980cf94e4a9394bbfa6771f6355a",
+    "Discovery/Web-Content/huge-dirs.txt": "17c6f4417ca4ac91583226957ca77a2f6ec0c0bdd15226b6c3e37677126a46b2",
+    "Discovery/Web-Content/params/param-names.txt": "09131f2eee5701d13939dc33550b5845d2cd33be75146361d81f4abdf1b4a5db",
+    "Discovery/Web-Content/raft-large-directories.txt": "a1a4fb2687c58699e5087e72917ad6e020dc9a58754b8d4b19d5b51062247bcd",
+    "Discovery/Web-Content/tiny-dirs.txt": "86dc03602dcf385217216784784a8ecf20e6400decc3208170b12fcb0afb6698",
+    "Fuzzing/sqli-payloads.txt": "32f1f2ad98ad51875920aca735d3de26aecc29e0e4d7ebaf84dad945996b5692",
+    "Fuzzing/xss-endpoints.txt": "e077cee7d2e1b6b195d354960a2a405500aed624a4af97d5b0886a5c9ca6b8af",
+    "Passwords/common.txt": "4b8409d9ae27dcb49d391a9b82c464caa67e9ea4228ba9392d32f27334cf02bb",
+    "misc/api-endpoints-dup.txt": "01ee2e7f7f28a28fbfc536883901307f7259162b09d813de4941d55cef345d61",
+    "misc/json-params-as-dirs.txt": "e024138222765d50c0d4cfe1cf4e436c671dba44d2520eaedabe7934e9e32dba",
+    "misc/mixed.txt": "afb366516a4b44c58c4e91eaf5f30acb683dc3246e8f7a6ab9e6307886e25882",
+    "misc/overlong.txt": "e5c242820c36d34357ef5f756c8e8e71912951bccd4a31c09652403d7ddc41e2"
+  },
+  "final": "ground_truth_final.json",
+  "final_sha256": "c400b1c28e46c2a4fc0e6654199088a9529ff854194b18561aae0621ed4cf3b3",
+  "version": 1
+}
