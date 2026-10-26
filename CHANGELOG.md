@@ -4,6 +4,7 @@ Notable user-facing changes are recorded here.
 
 ## Unreleased
 
+- Add frozen independent adversarial IDOR/BOLA evaluation corpus `labs/adversarial_idor_eval` (adv-1.0) with ground truth, per-stage metrics (discovery / pairing / case proposal; confirmation not measured offline), error-cause matrix, version comparison and reproducible tests. Measurement only: no detection rule changes.
 - Add offline `object-handoff` to turn object-relationship candidates into reproducible owner/actor capture-pair proposals (locators, provenance, suggested `discover-idor` command) without writing cases, calling access-check, approving, or sending HTTP.
 - Add `bbtk lab object-discover` with a versioned synthetic labeled corpus (`dev`/`eval`), Precision@k/recall/FP/FN metrics, and before/after comparison against `object-candidates` ranking. Synthetic metrics do not claim real bug-bounty confirmation performance.
 - Extend `object-handoff` (handoff 1.1) with offline asymmetric pairing: typed identifiers observed only in one session's response JSON (nested objects/arrays) can form human-review proposals with another session's request-side identifier. Proposals label observed identifiers vs inferred relations, never infer ownership, keep provenance, stay `confirmed=false`/`case_executable=false`, and follow the documented `response-identifier-v1` guards (own type evidence, distinct sessions, same origin, shared-context exclusion, bounded). `--request-only` restores request-side-only pairing.
