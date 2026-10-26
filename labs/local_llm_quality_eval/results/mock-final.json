@@ -1,0 +1,1184 @@
+{
+ "configs": {
+  "A": {
+   "decision_stability_across_repeats": 1.0,
+   "name": "deterministic (no AI)",
+   "per_family": {
+    "access_denied": {
+     "correct": "2/2",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 2
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "2/2",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 2
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "0/2",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 2
+     }
+    },
+    "cors_not_exploitable": {
+     "correct": "0/2",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 2
+     }
+    },
+    "http200_false_positive": {
+     "correct": "2/2",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 2
+     }
+    },
+    "idor_true": {
+     "correct": "2/2",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 2
+     }
+    },
+    "insufficient_data": {
+     "correct": "2/2",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 2
+     }
+    },
+    "invalid_evidence": {
+     "correct": "2/2",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 2
+     }
+    },
+    "jwt_misread": {
+     "correct": "2/2",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "not_observed": 2
+     }
+    },
+    "missing_references": {
+     "correct": "0/2",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 2
+     }
+    },
+    "negative_controls_ok": {
+     "correct": "2/2",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "not_observed": 2
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "2/2",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 2
+     }
+    },
+    "public_resource": {
+     "correct": "2/2",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 2
+     }
+    },
+    "session_difference": {
+     "correct": "0/2",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "not_observed": 2
+     }
+    },
+    "shared_resource": {
+     "correct": "0/2",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 2
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "2/2",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 2
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "2/2",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 2
+     }
+    },
+    "tool_mislabeled_confirmed": {
+     "correct": "2/2",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 2
+     }
+    },
+    "truncated_evidence": {
+     "correct": "0/2",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 2
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "2/2",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 2
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": "not_measured",
+    "estimated_output_tokens": "not_measured",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": null,
+    "latency_ms_p95": null,
+    "model_calls": 0,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 0.35,
+    "accuracy": 0.7,
+    "accuracy_ci95": [
+     0.5457,
+     0.8193
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 8,
+    "contradictions_handled": "0/2",
+    "f1": 0.5,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.2222,
+    "invented_citations": 0,
+    "missing_control_recall": 0.4615,
+    "precision": 0.3333,
+    "precision_ci95": [
+     0.1381,
+     0.6094
+    ],
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": null,
+    "rejected_outputs": 0,
+    "runs": 40,
+    "valid_structured_output_rate": 1.0
+   },
+   "stage_wall_ms": 12.638
+  },
+  "B": {
+   "decision_stability_across_repeats": 1.0,
+   "name": "cautious-sim",
+   "per_family": {
+    "access_denied": {
+     "correct": "6/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 6
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "cors_not_exploitable": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "http200_false_positive": {
+     "correct": "6/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 6
+     }
+    },
+    "idor_true": {
+     "correct": "6/6",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "insufficient_data": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "invalid_evidence": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "jwt_misread": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "missing_references": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "negative_controls_ok": {
+     "correct": "6/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "not_observed": 6
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "public_resource": {
+     "correct": "6/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 6
+     }
+    },
+    "session_difference": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "shared_resource": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "6/6",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "tool_mislabeled_confirmed": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "truncated_evidence": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": 52686,
+    "estimated_output_tokens": 14226,
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": 2.32,
+    "latency_ms_p95": 5.476,
+    "model_calls": 120,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 0.6,
+    "accuracy": 0.75,
+    "accuracy_ci95": [
+     0.6656,
+     0.8189
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 12,
+    "contradictions_handled": "0/6",
+    "f1": 0.6667,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.1111,
+    "invented_citations": 0,
+    "missing_control_recall": 0.4615,
+    "precision": 0.5,
+    "precision_ci95": [
+     0.3143,
+     0.6857
+    ],
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": [
+     0.7575,
+     1.0
+    ],
+    "rejected_outputs": 0,
+    "runs": 120,
+    "valid_structured_output_rate": 1.0
+   },
+   "stage_wall_ms": 431.368
+  },
+  "C": {
+   "decision_stability_across_repeats": 1.0,
+   "name": "eager-sim",
+   "per_family": {
+    "access_denied": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "cors_not_exploitable": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "http200_false_positive": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "idor_true": {
+     "correct": "6/6",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "insufficient_data": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "invalid_evidence": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "jwt_misread": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "missing_references": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "negative_controls_ok": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "public_resource": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "session_difference": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "shared_resource": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "6/6",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "tool_mislabeled_confirmed": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "truncated_evidence": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "candidate": 6
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "0/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 6
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": 52686,
+    "estimated_output_tokens": 12420,
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": 2.179,
+    "latency_ms_p95": 2.427,
+    "model_calls": 120,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 0.05,
+    "accuracy": 0.1,
+    "accuracy_ci95": [
+     0.0581,
+     0.1667
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 102,
+    "contradictions_handled": "0/6",
+    "f1": 0.1905,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.9444,
+    "invented_citations": 6,
+    "missing_control_recall": 0.0,
+    "precision": 0.1053,
+    "precision_ci95": [
+     0.0612,
+     0.175
+    ],
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": [
+     0.7575,
+     1.0
+    ],
+    "rejected_outputs": 6,
+    "runs": 120,
+    "valid_structured_output_rate": 0.95
+   },
+   "stage_wall_ms": 348.096
+  },
+  "D": {
+   "decision_stability_across_repeats": 1.0,
+   "dual_vs_analyst_single_consensus_rule": {
+    "correct_agreements": 12,
+    "correctly_converted_to_inconclusive": 0,
+    "disagreements": 96,
+    "extra_calls_per_net_improvement": null,
+    "extra_model_calls": 120,
+    "improved": 0,
+    "incorrect_agreements": 12,
+    "worsened": 24
+   },
+   "dual_vs_analyst_single_production_rule": {
+    "correct_agreements": 12,
+    "correctly_converted_to_inconclusive": 12,
+    "disagreements": 96,
+    "extra_calls_per_net_improvement": null,
+    "extra_model_calls": 120,
+    "improved": 12,
+    "incorrect_agreements": 12,
+    "worsened": 36
+   },
+   "independent_models": true,
+   "name": "dual cautious-sim -> eager-sim",
+   "per_family": {
+    "access_denied": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "cors_not_exploitable": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "http200_false_positive": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "idor_true": {
+     "correct": "0/6",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "insufficient_data": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "invalid_evidence": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "jwt_misread": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "missing_references": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "negative_controls_ok": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "public_resource": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "session_difference": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "shared_resource": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "0/6",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "tool_mislabeled_confirmed": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "truncated_evidence": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": "not_measured",
+    "estimated_output_tokens": "not_measured",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": 4.395,
+    "latency_ms_p95": 5.056,
+    "model_calls": 240,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 1.0,
+    "accuracy": 0.55,
+    "accuracy_ci95": [
+     0.4608,
+     0.6361
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 0,
+    "contradictions_handled": "6/6",
+    "f1": 0.0,
+    "false_negative_rate": 1.0,
+    "false_positive_rate": 0.0,
+    "invented_citations": 0,
+    "missing_control_recall": 0.4615,
+    "precision": null,
+    "precision_ci95": null,
+    "provider_errors": 0,
+    "recall": 0.0,
+    "recall_ci95": [
+     0.0,
+     0.2425
+    ],
+    "rejected_outputs": 0,
+    "runs": 120,
+    "valid_structured_output_rate": 1.0
+   },
+   "quality_consensus_rule": {
+    "abstention_rate": 0.8,
+    "accuracy": 0.55,
+    "accuracy_ci95": [
+     0.4608,
+     0.6361
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 12,
+    "contradictions_handled": "0/6",
+    "f1": 0.6667,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.1111,
+    "invented_citations": 0,
+    "missing_control_recall": 0.4615,
+    "precision": 0.5,
+    "precision_ci95": [
+     0.3143,
+     0.6857
+    ],
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": [
+     0.7575,
+     1.0
+    ],
+    "rejected_outputs": 0,
+    "runs": 120,
+    "valid_structured_output_rate": 1.0
+   },
+   "stage_wall_ms": 685.239
+  },
+  "E": {
+   "decision_stability_across_repeats": 1.0,
+   "dual_vs_analyst_single_consensus_rule": {
+    "correct_agreements": 12,
+    "correctly_converted_to_inconclusive": 54,
+    "disagreements": 96,
+    "extra_calls_per_net_improvement": 2.22,
+    "extra_model_calls": 120,
+    "improved": 54,
+    "incorrect_agreements": 12,
+    "worsened": 0
+   },
+   "dual_vs_analyst_single_production_rule": {
+    "correct_agreements": 12,
+    "correctly_converted_to_inconclusive": 66,
+    "disagreements": 96,
+    "extra_calls_per_net_improvement": 2.22,
+    "extra_model_calls": 120,
+    "improved": 66,
+    "incorrect_agreements": 12,
+    "worsened": 12
+   },
+   "independent_models": true,
+   "name": "dual eager-sim -> cautious-sim",
+   "per_family": {
+    "access_denied": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "cors_not_exploitable": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "http200_false_positive": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "idor_true": {
+     "correct": "0/6",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "insufficient_data": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "invalid_evidence": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "jwt_misread": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "missing_references": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "negative_controls_ok": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "public_resource": {
+     "correct": "0/6",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "session_difference": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "shared_resource": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "0/6",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "tool_mislabeled_confirmed": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "truncated_evidence": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": true,
+     "predicted": {
+      "inconclusive": 6
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "6/6",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 6
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": "not_measured",
+    "estimated_output_tokens": "not_measured",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": 4.252,
+    "latency_ms_p95": 4.801,
+    "model_calls": 240,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 1.0,
+    "accuracy": 0.55,
+    "accuracy_ci95": [
+     0.4608,
+     0.6361
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 0,
+    "contradictions_handled": "6/6",
+    "f1": 0.0,
+    "false_negative_rate": 1.0,
+    "false_positive_rate": 0.0,
+    "invented_citations": 6,
+    "missing_control_recall": 0.4615,
+    "precision": null,
+    "precision_ci95": null,
+    "provider_errors": 0,
+    "recall": 0.0,
+    "recall_ci95": [
+     0.0,
+     0.2425
+    ],
+    "rejected_outputs": 0,
+    "runs": 120,
+    "valid_structured_output_rate": 1.0
+   },
+   "quality_consensus_rule": {
+    "abstention_rate": 0.8,
+    "accuracy": 0.55,
+    "accuracy_ci95": [
+     0.4608,
+     0.6361
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 12,
+    "contradictions_handled": "0/6",
+    "f1": 0.6667,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.1111,
+    "invented_citations": 6,
+    "missing_control_recall": 0.4615,
+    "precision": 0.5,
+    "precision_ci95": [
+     0.3143,
+     0.6857
+    ],
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": [
+     0.7575,
+     1.0
+    ],
+    "rejected_outputs": 0,
+    "runs": 120,
+    "valid_structured_output_rate": 1.0
+   },
+   "stage_wall_ms": 658.635
+  }
+ },
+ "corpus_manifest": [
+  "205f30eee340332b247edc203b13205587d6aa09bdb8079bef26587d71978dd7  dev.labels.json",
+  "ac4bcfff83b1a5bd0284e65334ed045b22e8a2836ac4dc146b28f040be46bec4  dev.scenarios.json",
+  "89280c4d97c68d676124efb9bba2cdad635af2f00c20e1d45b68abf11bbe8e91  final.labels.json",
+  "5e42a8063eff864ed4140ae6323ec7214ddd5f75ef739adc201906f37ceac937  final.scenarios.json"
+ ],
+ "harness_python_peak_bytes": 10026443,
+ "held_out_families": [
+  "cors_not_exploitable",
+  "jwt_misread",
+  "missing_references",
+  "negative_controls_ok",
+  "session_difference",
+  "shared_resource",
+  "tool_mislabeled_confirmed",
+  "truncated_evidence"
+ ],
+ "mode": "mock",
+ "models": {
+  "B": {
+   "model": "cautious-sim",
+   "simulated": true
+  },
+  "C": {
+   "model": "eager-sim",
+   "simulated": true
+  }
+ },
+ "notice": "SIMULATED profiles (cautious-sim, eager-sim). These are NOT Qwen or DeepSeek scores.",
+ "order_effect": {
+  "scenario_runs_with_different_consensus": 0
+ },
+ "privacy": {
+  "commands_executed": 0,
+  "ground_truth_strings_in_prompts": 0,
+  "payloads_with_tools": 0,
+  "prompt_injection_text_sent": 0,
+  "requests_observed": 720,
+  "secrets_or_canaries_sent": 0,
+  "tool_calls_accepted": 0,
+  "unauthorized_destinations": 0
+ },
+ "repeats": 3,
+ "scenarios": 40,
+ "schema_version": "bbtk.local-llm-quality-result.v1",
+ "split": "final",
+ "vram": "not_measured"
+}
