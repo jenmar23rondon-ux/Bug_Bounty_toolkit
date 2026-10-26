@@ -685,6 +685,7 @@ def cmd_fuzz_plan(args: argparse.Namespace) -> None:
         object_key=object_key,
         strict=args.strict,
         allow_truncate=args.allow_truncate,
+        ranking=getattr(args, "ranking", "filename"),
     )
     print(
         json.dumps(
@@ -3240,6 +3241,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum planned FUZZ targets (default 40)",
     )
     fuzz_plan.add_argument("--registry", type=Path, help="Override the per-user wordlist collection registry")
+    fuzz_plan.add_argument(
+        "--ranking",
+        choices=["filename", "content"],
+        default="filename",
+        help="Wordlist ranking: filename (default, historical) or opt-in bounded content sampling",
+    )
     fuzz_plan.add_argument(
         "--object-candidates",
         type=Path,
