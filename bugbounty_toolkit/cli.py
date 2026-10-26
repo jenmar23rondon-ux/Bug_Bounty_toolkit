@@ -28,6 +28,11 @@ from .core.rate_limiter import RateLimiter
 from .core.redaction import redact_url
 from .core.target import load_routes, normalize_url
 from .fuzzing.ffuf_runner import FfufOptions, FfufRunner
+from .fuzzing.context_planner import (
+    DISCOVERY_CATEGORIES,
+    build_fuzz_plan,
+    save_plan,
+)
 from .fuzzing.wordlist_manager import (
     WORDLIST_CATEGORIES,
     default_prepared_root,
@@ -635,6 +640,107 @@ def _integrate_fuzz_evidence(
         "ollama_calls": 0,
         "plan_executed": False,
     }
+
+
+def cmd_fuzz_plan(args: argparse.Namespace) -> None:
+    """Build an offline, context-aware discovery plan from a local HAR capture.
+
+    Never downloads wordlists, never opens network sockets, and never starts ffuf.
+    Approved execution reuses ``bbtk fuzz`` (authorization + ``--confirm``).
+    """
+    store = RecordStore(ProgramPaths(RECORDS_ROOT, args.program))
+    settings_path = store.paths.program_dir / "settings.yaml"
+    settings = load_settings(settings_path if settings_path.exists() else None)
+    scope = ScopeValidator(store.paths.scope_file)
+    registry = args.registry or default_registry_path()
+    collections = load_collections(registry)
+    max_tests = args.max_tests or min(settings.max_tests, 40)
+    if max_tests > settings.max_tests:
+        raise ValueError("Max tests exceeds the configured program limit.")
+    object_rows = None
+    object_key = None
+    if args.object_candidates:
+        payload = json.loads(Path(args.object_candidates).read_text(encoding="utf-8"))
+        if isinstance(payload, dict) and isinstance(payload.get("candidates"), list):
+            object_rows = payload["candidates"]
+        elif isinstance(payload, list):
+            object_rows = payload
+        else:
+            raise ValueError("Object candidates file must be a list or an object with a candidates array.")
+    if args.object_key:
+        from .analysis.object_relationships import load_object_key
+
+        object_key = load_object_key(Path(args.object_key))
+    plan = build_fuzz_plan(
+        args.program,
+        Path(args.har),
+        collections=collections,
+        scope=scope,
+        category=args.category,
+        max_tests=max_tests,
+        max_targets=args.max_targets,
+        object_candidates=object_rows,
+        object_key=object_key,
+        strict=args.strict,
+        allow_truncate=args.allow_truncate,
+    )
+    print(
+        json.dumps(
+            {
+                "dry_run": bool(args.dry_run),
+                "program": plan.program,
+                "plan_version": plan.plan_version,
+                "capture_import": plan.context.capture_import if plan.context else {},
+                "hosts": list(plan.context.hosts) if plan.context else [],
+                "technologies": list(plan.context.technologies) if plan.context else [],
+                "categories_needed": list(plan.context.categories_needed) if plan.context else [],
+                "recommendations": len(plan.recommendations),
+                "targets": len(plan.targets),
+                "discarded": len(plan.discarded),
+                "estimated_requests_total": plan.budget.get("estimated_requests_total"),
+                "object_associations": len(plan.object_associations),
+                "network_requests_sent": 0,
+                "auto_execute": False,
+                "vulnerabilities_confirmed": 0,
+            },
+            sort_keys=True,
+            indent=2,
+        )
+    )
+    if plan.recommendations:
+        print("[i] Wordlist recommendations (local collections only):")
+        for item in plan.recommendations:
+            print(f"  - {item.category}: {item.path} ({item.reason})")
+    if plan.targets:
+        print("[i] Planned targets (not executed):")
+        for item in plan.targets:
+            print(
+                f"  - {item.url_template}  wordlist={item.wordlist}  "
+                f"cap={item.max_entries}  est_requests={item.estimated_requests}"
+            )
+    for note in plan.notes:
+        print(f"[i] {note}")
+    if args.dry_run and not args.output:
+        print("[dry-run] Plan preview only. No evidence file, investigation memory entry or fuzz run was written.")
+        print("[i] Re-run without --dry-run (and optionally --output plan.json) to save the plan for review.")
+        return
+    # --dry-run --output writes the plan JSON only; evidence/memory require a non-dry-run save.
+    if args.dry_run and args.output:
+        output = Path(args.output)
+        if output.exists():
+            raise FileExistsError(f"Plan output already exists: {output}")
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(plan.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(f"[dry-run] Plan JSON written to {output}. No evidence or investigation memory entry created.")
+        return
+    saved = save_plan(store, plan, output=Path(args.output) if args.output else None, record_memory=True)
+    print(f"[+] Plan saved: {saved['output']}")
+    if saved.get("investigation_id"):
+        print(f"[+] Investigation memory: {saved['investigation_id']} (planning stage only).")
+    print(
+        "[i] To execute one target after human review, reuse: "
+        "bbtk fuzz <program> --url <url_template> --wordlist <path> --max-tests N --dry-run, then --confirm."
+    )
 
 
 def cmd_wordlists(args: argparse.Namespace) -> None:
@@ -2967,6 +3073,45 @@ def build_parser() -> argparse.ArgumentParser:
     add_run_budget_arguments(fuzz)
     fuzz.set_defaults(func=cmd_fuzz)
 
+    fuzz_plan = sub.add_parser(
+        "fuzz-plan",
+        help="Offline context-aware discovery plan from a local HAR (no downloads, no fuzz execution)",
+    )
+    fuzz_plan.add_argument("program")
+    fuzz_plan.add_argument("--har", type=Path, required=True, help="Local HAR capture to analyze offline")
+    fuzz_plan.add_argument(
+        "--category",
+        choices=list(DISCOVERY_CATEGORIES),
+        help="Limit recommendations to one discovery category",
+    )
+    fuzz_plan.add_argument("--max-tests", type=positive_int, help="Per-target request budget including one baseline")
+    fuzz_plan.add_argument(
+        "--max-targets",
+        type=positive_int,
+        default=40,
+        help="Maximum planned FUZZ targets (default 40)",
+    )
+    fuzz_plan.add_argument("--registry", type=Path, help="Override the per-user wordlist collection registry")
+    fuzz_plan.add_argument(
+        "--object-candidates",
+        type=Path,
+        help="Optional object-candidates JSON for structural endpoint association (never confirms ownership)",
+    )
+    fuzz_plan.add_argument("--object-key", type=Path, help="Optional local HMAC key used when associating object refs")
+    fuzz_plan.add_argument("--output", type=Path, help="Write the redacted plan JSON to this path")
+    fuzz_plan.add_argument("--strict", action="store_true", help="Reject the HAR if any entry fails validation")
+    fuzz_plan.add_argument(
+        "--allow-truncate",
+        action="store_true",
+        help="Opt in to analyzing only the first 32 entries of an over-cap HAR",
+    )
+    fuzz_plan.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview the plan without writing evidence or investigation memory",
+    )
+    fuzz_plan.set_defaults(func=cmd_fuzz_plan)
+
     wordlists = sub.add_parser("wordlists", help="Manage local wordlist collections offline")
     wordlists_sub = wordlists.add_subparsers(dest="wordlists_action", required=True)
     wordlists_scan = wordlists_sub.add_parser("scan", help="Detect common local wordlist collection directories")
@@ -3863,7 +4008,8 @@ def main() -> None:
     args = parser.parse_args()
     RECORDS_ROOT = args.records_root
     offline_dry_run = (
-        args.func in {cmd_object_discover, cmd_object_candidates, cmd_object_handoff, cmd_lab_object_discover}
+        args.func
+        in {cmd_object_discover, cmd_object_candidates, cmd_object_handoff, cmd_lab_object_discover, cmd_fuzz_plan}
         and args.dry_run
     )
     logger = setup_logger(args.log_file) if args.log_file and not offline_dry_run else None

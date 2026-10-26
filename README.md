@@ -194,7 +194,14 @@ bugbounty fuzz my-program --url "https://target-autorizado.example/FUZZ" --wordl
 
 `--dry-run` prints the target, selected-input hash, one baseline request, the maximum planned request count, rate, concurrency, request timeout and wall-clock cap without sending traffic. Live execution requires `--confirm` after reviewing that plan. The total `--max-tests` includes one random missing-route baseline probe; at most `max-tests - 1` unique valid wordlist entries are passed to ffuf. The run budget reserves those external requests as an upper bound, while the report clearly separates them from native requests because ffuf does not expose a shared exact counter. `--run-max-requests`, `--run-max-seconds` and `--run-max-concurrency` can tighten that budget further, and program settings remain the ceiling.
 
-See the [bounded fuzzing and wordlist guide](docs/fuzzing.md) for collection registration, list fingerprints, rate and budget review, evidence interpretation, and the manual authorization follow-up.
+Generate an offline, capture-aware plan before selecting lists:
+
+```bash
+bugbounty fuzz-plan my-program --har captures.har --dry-run
+bugbounty fuzz-plan my-program --har captures.har --category api --max-tests 40 --output plan.json
+```
+
+See the [context-aware fuzzing guide](docs/context-aware-fuzzing.md) and the [bounded fuzzing and wordlist guide](docs/fuzzing.md) for collection registration, list fingerprints, rate and budget review, evidence interpretation, and the manual authorization follow-up.
 
 The adapter checks every selected wordlist substitution and the baseline URL against scope before starting. Redirect following, recursion and auto-calibration are disabled; a temporary ffuf configuration directory isolates the run from the user's ffufrc. The toolkit adds no retry loop. The baseline is fetched through the native scoped HTTP client and a 429 response stops the run before ffuf starts. During ffuf, rate limiting is not automatically bypassed; results containing 429 are labeled `rate_limited` and require a human decision before another run.
 

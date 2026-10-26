@@ -44,3 +44,16 @@ The toolkit saves raw ffuf output, a minimized evidence record, response groups 
 Use the local dashboard to review wordlist metadata, the latest discovery summary, request ceilings and predicate-only access matrices. It does not expose raw response bodies, resource markers or IDs in the matrix view, and it has no active-check route.
 
 Before reporting a possible authorization issue, validate both known-resource controls and the cross-account request with authorized accounts, then reproduce it manually in Burp. See the [IDOR/BOLA playbook](idor-playbook.md). A candidate is not a confirmed vulnerability or an impact/severity assessment.
+
+
+## Context-aware plans from local captures
+
+When you already have an authorized HAR export, build a plan that ties capture evidence to local wordlists before calling ffuf:
+
+```bash
+bbtk fuzz-plan my-program --har captures.har --dry-run
+bbtk fuzz-plan my-program --har captures.har --category api --max-tests 40 --dry-run
+bbtk fuzz-plan my-program --har captures.har --output plan.json
+```
+
+The planner reuses resilient HAR import, the offline wordlist registry and Investigation Memory. It never downloads lists or starts fuzzing. Approved targets still go through `bbtk fuzz --dry-run` then `--confirm`. See [context-aware fuzzing](context-aware-fuzzing.md).

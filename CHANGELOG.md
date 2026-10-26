@@ -4,6 +4,11 @@ Notable user-facing changes are recorded here.
 
 ## Unreleased
 
+- Add offline `fuzz-plan`: context-aware discovery plans from local HAR captures, local wordlist
+  collections and optional Object Discovery associations; reuses `ffuf_runner` gates; synthetic
+  context-fuzz lab + before/after recommendation metrics; no downloads, no auto-execution, version stays 0.2.2.
+- Resilient HAR import with per-entry partial recovery (`har_import`), CLI `--strict` / `--allow-truncate`,
+  signed `capture_import` summaries and synthetic recovery fixtures (merged from PR #30).
 - Object discovery/handoff: open-vocabulary resource kind inference (P1). Identifiers outside the
   19-noun vocabulary get an HMAC-keyed `kind_ref` from their collection segment or typed field stem;
   pairing requires the same kind (and same position for request/request). Bare/generic ids are
