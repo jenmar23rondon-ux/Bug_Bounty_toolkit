@@ -59,6 +59,8 @@ class SecureSubprocessLabTests(unittest.TestCase):
     def _request(self, argv: list[str], **kwargs: object) -> SecureToolRequest:
         limits = kwargs.pop("limits", SecureToolLimits(timeout_seconds=2.0, max_output_bytes=4096))
         assert isinstance(limits, SecureToolLimits)
+        if argv and argv[0] == "labtool":
+            argv = [str(self.bin / "labtool"), *argv[1:]]
         return SecureToolRequest(
             executable_name="labtool",
             argv=tuple(argv),

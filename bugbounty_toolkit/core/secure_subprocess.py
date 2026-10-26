@@ -150,27 +150,46 @@ def tool_exists(name: str) -> bool:
     return _resolve_executable(name, DEFAULT_ALLOWED_EXECUTABLES) is not None
 
 
-def _resolve_executable(name: str, allowed: frozenset[str]) -> Path | None:
+def _is_under_roots(path: Path, roots: tuple[Path, ...]) -> bool:
+    if not roots:
+        return True
+    for root in roots:
+        try:
+            path.resolve(strict=False).relative_to(root.resolve(strict=False))
+            return True
+        except (ValueError, OSError):
+            continue
+    return False
+
+
+def _resolve_executable(
+    name: str,
+    allowed: frozenset[str],
+    *,
+    argv0: str | None = None,
+    allowed_path_roots: tuple[Path, ...] = (),
+) -> Path | None:
     if not name or name != Path(name).name or name in {".", ".."}:
         return None
     if name not in allowed:
         return None
     import shutil
 
+    if argv0:
+        candidate = Path(argv0)
+        try:
+            if candidate.name == name and candidate.is_file():
+                resolved_explicit = candidate.resolve(strict=False)
+                if _is_under_roots(resolved_explicit, allowed_path_roots):
+                    return resolved_explicit
+        except OSError:
+            pass
+
     found = shutil.which(name)
     if found is None:
         return None
     resolved = Path(found)
     if resolved.name != name:
-        return None
-    try:
-        if resolved.is_symlink():
-            # Allow PATH symlinks (normal for /usr/bin) but record the target basename.
-            target = resolved.resolve(strict=False)
-            if target.name not in allowed and target.name != name:
-                # Common package managers wrap binaries; require the requested basename on PATH.
-                pass
-    except OSError:
         return None
     return resolved
 
@@ -284,7 +303,12 @@ def prove_policy(request: SecureToolRequest) -> Path:
                 "External-contacting tools require an attested execution budget.",
             )
 
-    resolved = _resolve_executable(request.executable_name, request.allowed_executables)
+    resolved = _resolve_executable(
+        request.executable_name,
+        request.allowed_executables,
+        argv0=request.argv[0],
+        allowed_path_roots=request.allowed_path_roots,
+    )
     if resolved is None:
         raise PolicyRejected(CODE_TOOL_NOT_FOUND, f"Required tool not found in PATH: {request.executable_name}")
     return resolved

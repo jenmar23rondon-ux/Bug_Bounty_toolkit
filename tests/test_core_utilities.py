@@ -66,7 +66,7 @@ class CoreUtilityTests(unittest.TestCase):
                 fixture.write_text("#!/bin/sh\nexit 2\n", encoding="utf-8")
                 fixture.chmod(0o755)
                 with self.assertRaisesRegex(Exception, "exited with code 2"):
-                    run_tool(store, "fixture", None, ["fixture"], **common)
+                    run_tool(store, "fixture", None, [str(fixture)], **common)
             self.assertGreaterEqual(len(store.runs()), 2)
             store.close()
 
