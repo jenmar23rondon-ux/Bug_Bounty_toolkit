@@ -1,0 +1,243 @@
+{
+  "corpus_version": "irb-1.0",
+  "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
+  "origin": "http://127.0.0.1:8177",
+  "scenarios": [
+    {
+      "captures": [
+        "captures/S01.har"
+      ],
+      "damaged_entries": 0,
+      "description": "300 noise requests + one pair",
+      "exchanges": 302,
+      "family": "E",
+      "format": "har",
+      "id": "S01",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "archive"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": 3,
+        "novel_vs_dev": true,
+        "target_types": [
+          "archive"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "noise-300"
+    },
+    {
+      "captures": [
+        "captures/S02.har"
+      ],
+      "damaged_entries": 0,
+      "description": "60 distinct objects per session in one list endpoint",
+      "exchanges": 60,
+      "family": "C",
+      "format": "har",
+      "id": "S02",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "row"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": 5,
+        "novel_vs_dev": true,
+        "target_types": [
+          "row"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "many-objects"
+    },
+    {
+      "captures": [
+        "captures/S03.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Response nested 60 levels",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "S03",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "slot"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "slot"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "deep-nesting-60"
+    },
+    {
+      "captures": [
+        "captures/S04.har"
+      ],
+      "damaged_entries": 5,
+      "description": "Five damaged entries around a valid pair",
+      "exchanges": 7,
+      "family": "C",
+      "format": "har",
+      "id": "S04",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "tokens2",
+          "tokenset"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "tokens2",
+          "tokenset"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "mostly-damaged"
+    },
+    {
+      "captures": [
+        "captures/S05.har"
+      ],
+      "damaged_entries": 2,
+      "description": "Every entry damaged",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "S05",
+      "labels": {
+        "acceptable_first_steps": [
+          "complete_partial_capture",
+          "review_origin_difference",
+          "none",
+          "abstain_insufficient_information",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "technical_error",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "all-damaged"
+    },
+    {
+      "captures": [
+        "captures/S06.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Large (~60 KiB) response body",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "S06",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "blob"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "blob"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "large-body"
+    }
+  ],
+  "split": "stress"
+}

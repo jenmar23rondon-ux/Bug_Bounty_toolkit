@@ -1,0 +1,1699 @@
+{
+  "corpus_version": "irb-1.0",
+  "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
+  "origin": "http://127.0.0.1:8177",
+  "scenarios": [
+    {
+      "captures": [
+        "captures/A01.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Actor reads owner's statement and receives owner data",
+      "exchanges": 3,
+      "family": "A",
+      "format": "har",
+      "id": "A01",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "statement"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "statement"
+        ],
+        "vulnerability_truth": "vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "read-idor-proven"
+    },
+    {
+      "captures": [
+        "captures/A02.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Actor's cross-account read is correctly denied with 403",
+      "exchanges": 3,
+      "family": "A",
+      "format": "har",
+      "id": "A02",
+      "labels": {
+        "acceptable_first_steps": [
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "stop",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "payslip"
+        ],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "idor-absent-denied"
+    },
+    {
+      "captures": [
+        "captures/A03.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Public catalogue entry by id, flagged public in body",
+      "exchanges": 2,
+      "family": "A",
+      "format": "har",
+      "id": "A03",
+      "labels": {
+        "acceptable_first_steps": [
+          "abstain_insufficient_information",
+          "none",
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [
+          "catalog"
+        ],
+        "ideal_outcome": "abstain",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "public-resource-id"
+    },
+    {
+      "captures": [
+        "captures/A04.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Document explicitly shared with actor; both read same id",
+      "exchanges": 2,
+      "family": "A",
+      "format": "har",
+      "id": "A04",
+      "labels": {
+        "acceptable_first_steps": [
+          "abstain_insufficient_information",
+          "none",
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [
+          "document"
+        ],
+        "ideal_outcome": "abstain",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "shared-legit"
+    },
+    {
+      "captures": [
+        "captures/A05.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Actor's read of own-id pair answered 200 with a denial body",
+      "exchanges": 2,
+      "family": "A",
+      "format": "har",
+      "id": "A05",
+      "labels": {
+        "acceptable_first_steps": [
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "stop",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "contract"
+        ],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "denied-http-200"
+    },
+    {
+      "captures": [
+        "captures/A06.har"
+      ],
+      "damaged_entries": 0,
+      "description": "403 status but body contains owner data (contradictory)",
+      "exchanges": 2,
+      "family": "A",
+      "format": "har",
+      "id": "A06",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review",
+          "review_content_denial"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "claim"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "claim"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "success-with-403"
+    },
+    {
+      "captures": [
+        "captures/A07.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Admin legitimately reads a user's record",
+      "exchanges": 2,
+      "family": "A",
+      "format": "har",
+      "id": "A07",
+      "labels": {
+        "acceptable_first_steps": [
+          "abstain_insufficient_information",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "abstain",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "profile"
+        ],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "authorized-admin-role"
+    },
+    {
+      "captures": [
+        "captures/A08.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Viewer role cannot list; 401 for actor",
+      "exchanges": 2,
+      "family": "A",
+      "format": "har",
+      "id": "A08",
+      "labels": {
+        "acceptable_first_steps": [
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "stop",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "ledger"
+        ],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "insufficient-permission"
+    },
+    {
+      "captures": [
+        "captures/A09.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Negative control (actor\u2192owner id) correctly 404s",
+      "exchanges": 3,
+      "family": "A",
+      "format": "har",
+      "id": "A09",
+      "labels": {
+        "acceptable_first_steps": [
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "stop",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "prescription"
+        ],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "negative-control-correct"
+    },
+    {
+      "captures": [
+        "captures/A10.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Responses omit any owner attribute",
+      "exchanges": 2,
+      "family": "A",
+      "format": "har",
+      "id": "A10",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "ticket"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "ticket"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "ownership-not-shown"
+    },
+    {
+      "captures": [
+        "captures/B01.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Order references an invoice id in body; invoice is the target",
+      "exchanges": 3,
+      "family": "B",
+      "format": "har",
+      "id": "B01",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "invoice"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "invoice"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "cross-reference"
+    },
+    {
+      "captures": [
+        "captures/B02.har"
+      ],
+      "damaged_entries": 0,
+      "description": "UUID object identifiers",
+      "exchanges": 2,
+      "family": "B",
+      "format": "har",
+      "id": "B02",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "vault"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "vault"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "uuid-ids"
+    },
+    {
+      "captures": [
+        "captures/B03.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Id 900 is a team for owner and a project for actor",
+      "exchanges": 2,
+      "family": "B",
+      "format": "har",
+      "id": "B03",
+      "labels": {
+        "acceptable_first_steps": [
+          "abstain_insufficient_information",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [
+          "team",
+          "project"
+        ],
+        "ideal_outcome": "abstain",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "same-id-diff-namespace"
+    },
+    {
+      "captures": [
+        "captures/B04.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Comment nested under the same post; only comment id differs",
+      "exchanges": 2,
+      "family": "B",
+      "format": "har",
+      "id": "B04",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [
+          "post"
+        ],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "comment"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "comment"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "nested-resource"
+    },
+    {
+      "captures": [
+        "captures/B05.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Response lists member ids; member is not the access target",
+      "exchanges": 2,
+      "family": "B",
+      "format": "har",
+      "id": "B05",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [
+          "member"
+        ],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "group"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "group"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "array-members"
+    },
+    {
+      "captures": [
+        "captures/B06.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Same id appears in path, body id and query",
+      "exchanges": 2,
+      "family": "B",
+      "format": "har",
+      "id": "B06",
+      "labels": {
+        "acceptable_first_steps": [
+          "abstain_insufficient_information",
+          "none",
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review",
+          "review_multiple_differences"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "abstain",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "wallet"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "duplicate-fields"
+    },
+    {
+      "captures": [
+        "captures/B07.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Shared org object appears in every response; not a target",
+      "exchanges": 4,
+      "family": "B",
+      "format": "har",
+      "id": "B07",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [
+          "org"
+        ],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "report"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "report"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "shared-object-across"
+    },
+    {
+      "captures": [
+        "captures/B08.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Parent account id far more frequent than the child target",
+      "exchanges": 8,
+      "family": "B",
+      "format": "har",
+      "id": "B08",
+      "labels": {
+        "acceptable_first_steps": [
+          "abstain_insufficient_information",
+          "none",
+          "review_multiple_differences"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [
+          "summary"
+        ],
+        "ideal_outcome": "abstain",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "card"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "parent-frequency-trap"
+    },
+    {
+      "captures": [
+        "captures/B09.har"
+      ],
+      "damaged_entries": 0,
+      "description": "owner_id field equal across sessions (fixture user)",
+      "exchanges": 2,
+      "family": "B",
+      "format": "har",
+      "id": "B09",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "note"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "note"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "ownership-looking-field"
+    },
+    {
+      "captures": [
+        "captures/C01.xml"
+      ],
+      "damaged_entries": 0,
+      "description": "Read pair as Burp XML export",
+      "exchanges": 2,
+      "family": "C",
+      "format": "burp",
+      "id": "C01",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "shipment"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "shipment"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "burp-xml"
+    },
+    {
+      "captures": [
+        "captures/C02-0.http",
+        "captures/C02-1.http"
+      ],
+      "damaged_entries": 0,
+      "description": "Two raw HTTP request files without responses",
+      "exchanges": 2,
+      "family": "C",
+      "format": "raw",
+      "id": "C02",
+      "labels": {
+        "acceptable_first_steps": [
+          "complete_partial_capture",
+          "review_origin_difference",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "technical_error",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "permit"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "raw-http"
+    },
+    {
+      "captures": [
+        "captures/C03.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Actor captured before owner",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "C03",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "license"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "license"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "reordered"
+    },
+    {
+      "captures": [
+        "captures/C04.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Owner response missing",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "C04",
+      "labels": {
+        "acceptable_first_steps": [
+          "complete_partial_capture",
+          "review_origin_difference",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "technical_error",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "refund"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "missing-response"
+    },
+    {
+      "captures": [
+        "captures/C05.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Actor read redirected to login (302)",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "C05",
+      "labels": {
+        "acceptable_first_steps": [
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none",
+          "abstain_insufficient_information",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "stop",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "quote"
+        ],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "redirect"
+    },
+    {
+      "captures": [
+        "captures/C06.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Owner and actor captured on different origins",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "C06",
+      "labels": {
+        "acceptable_first_steps": [
+          "complete_partial_capture",
+          "review_origin_difference",
+          "none",
+          "abstain_insufficient_information",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "technical_error",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "policy"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "mixed-origins"
+    },
+    {
+      "captures": [
+        "captures/C07.har"
+      ],
+      "damaged_entries": 0,
+      "description": "PATCH pair only; read generator must not be used",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "C07",
+      "labels": {
+        "acceptable_first_steps": [
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none",
+          "abstain_insufficient_information",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "stop",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "address"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "write-method"
+    },
+    {
+      "captures": [
+        "captures/C08.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Each request captured three times",
+      "exchanges": 6,
+      "family": "C",
+      "format": "har",
+      "id": "C08",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "booking"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": 1,
+        "novel_vs_dev": true,
+        "target_types": [
+          "booking"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "duplicate-captures"
+    },
+    {
+      "captures": [
+        "captures/C09.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Both requests carry the same token",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "C09",
+      "labels": {
+        "acceptable_first_steps": [
+          "abstain_insufficient_information",
+          "none",
+          "attest_distinct_accounts"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "abstain",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "cart"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "ambiguous-session"
+    },
+    {
+      "captures": [
+        "captures/C10.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Target id only in deeply nested JSON response",
+      "exchanges": 2,
+      "family": "C",
+      "format": "har",
+      "id": "C10",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "subscription"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "subscription"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "deep-json"
+    },
+    {
+      "captures": [
+        "captures/C11.har"
+      ],
+      "damaged_entries": 1,
+      "description": "One damaged HAR entry among a valid pair",
+      "exchanges": 3,
+      "family": "C",
+      "format": "har",
+      "id": "C11",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "estimate"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "estimate"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "partially-damaged"
+    },
+    {
+      "captures": [
+        "captures/D11.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Evidence edited after registration",
+      "exchanges": 2,
+      "family": "D",
+      "format": "har",
+      "id": "D11",
+      "labels": {
+        "acceptable_first_steps": [
+          "verify_evidence_digest",
+          "repair_broken_reference"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "integrity_block",
+        "ideal_pair_types": [
+          "manifest"
+        ],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "manifest"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": "tamper_evidence",
+      "tag": "evidence-altered"
+    },
+    {
+      "captures": [
+        "captures/D12.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Evidence file removed",
+      "exchanges": 2,
+      "family": "D",
+      "format": "har",
+      "id": "D12",
+      "labels": {
+        "acceptable_first_steps": [
+          "verify_evidence_digest",
+          "repair_broken_reference"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "integrity_block",
+        "ideal_pair_types": [
+          "dossier"
+        ],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "dossier"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": "delete_evidence",
+      "tag": "evidence-deleted"
+    },
+    {
+      "captures": [
+        "captures/D13.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Candidate cites unrecorded evidence id",
+      "exchanges": 2,
+      "family": "D",
+      "format": "har",
+      "id": "D13",
+      "labels": {
+        "acceptable_first_steps": [
+          "verify_evidence_digest",
+          "repair_broken_reference"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "integrity_block",
+        "ideal_pair_types": [
+          "transcript"
+        ],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "transcript"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": "broken_ref",
+      "tag": "broken-reference"
+    },
+    {
+      "captures": [
+        "captures/D14.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Annotated owner capture expired before now",
+      "exchanges": 2,
+      "family": "D",
+      "format": "har",
+      "id": "D14",
+      "labels": {
+        "acceptable_first_steps": [
+          "review_stale_evidence",
+          "verify_evidence_digest",
+          "repair_broken_reference"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "integrity_block",
+        "ideal_pair_types": [
+          "certificate"
+        ],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "certificate"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": "expired_annotation",
+      "tag": "expired-evidence"
+    },
+    {
+      "captures": [
+        "captures/D15.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Stored negative control contradicts hypothesis",
+      "exchanges": 2,
+      "family": "D",
+      "format": "har",
+      "id": "D15",
+      "labels": {
+        "acceptable_first_steps": [
+          "stop_contradicted_hypothesis"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "stop",
+        "ideal_pair_types": [
+          "agreement"
+        ],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "agreement"
+        ],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": "contradicting_control",
+      "tag": "contradiction"
+    },
+    {
+      "captures": [
+        "captures/D16.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Same issue raised twice with the same dedup key",
+      "exchanges": 2,
+      "family": "D",
+      "format": "har",
+      "id": "D16",
+      "labels": {
+        "acceptable_first_steps": [
+          "review_duplicate",
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "duplicate",
+        "ideal_pair_types": [
+          "voucherbook"
+        ],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "voucherbook"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": "duplicate_candidate",
+      "tag": "repeated-candidate"
+    },
+    {
+      "captures": [
+        "captures/D17.har"
+      ],
+      "damaged_entries": 0,
+      "description": "All human controls attested; legitimate review case",
+      "exchanges": 2,
+      "family": "D",
+      "format": "har",
+      "id": "D17",
+      "labels": {
+        "acceptable_first_steps": [
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "none"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "deposit"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "deposit"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": "attest_all_controls",
+      "tag": "controls-complete"
+    },
+    {
+      "captures": [
+        "captures/D18.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Ownership+accounts attested, negative control missing",
+      "exchanges": 2,
+      "family": "D",
+      "format": "har",
+      "id": "D18",
+      "labels": {
+        "acceptable_first_steps": [
+          "identify_missing_negative_control"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "transfer"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "transfer"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": "attest_partial_controls",
+      "tag": "missing-negative"
+    },
+    {
+      "captures": [
+        "captures/E01.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Target pair hidden among 40 static asset/telemetry requests",
+      "exchanges": 42,
+      "family": "E",
+      "format": "har",
+      "id": "E01",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "estimates2",
+          "quotation"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": 3,
+        "novel_vs_dev": true,
+        "target_types": [
+          "estimates2",
+          "quotation"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "heavy-noise"
+    },
+    {
+      "captures": [
+        "captures/E02.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Locale id repeated in every response; target appears once each",
+      "exchanges": 14,
+      "family": "E",
+      "format": "har",
+      "id": "E02",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [
+          "locale"
+        ],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "appointment"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": 2,
+        "novel_vs_dev": true,
+        "target_types": [
+          "appointment"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "frequent-irrelevant"
+    },
+    {
+      "captures": [
+        "captures/E03.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Field called private_owner_id is a public category id",
+      "exchanges": 2,
+      "family": "E",
+      "format": "har",
+      "id": "E03",
+      "labels": {
+        "acceptable_first_steps": [
+          "abstain_insufficient_information",
+          "none",
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [
+          "category"
+        ],
+        "ideal_outcome": "abstain",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [],
+        "vulnerability_truth": "not_vulnerable"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "misleading-labels"
+    },
+    {
+      "captures": [
+        "captures/E04.har"
+      ],
+      "damaged_entries": 0,
+      "description": "/users/{id}/avatar is public, /users/{id}/tax is private",
+      "exchanges": 4,
+      "family": "E",
+      "format": "har",
+      "id": "E04",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "user"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": 2,
+        "novel_vs_dev": true,
+        "target_types": [
+          "user"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "similar-routes"
+    },
+    {
+      "captures": [
+        "captures/E05.har"
+      ],
+      "damaged_entries": 0,
+      "description": "GraphQL-style POST with id in variables (novel shape)",
+      "exchanges": 2,
+      "family": "E",
+      "format": "har",
+      "id": "E05",
+      "labels": {
+        "acceptable_first_steps": [
+          "stop_contradicted_hypothesis",
+          "review_content_denial",
+          "review_legitimate_access",
+          "stop_incompatible_method",
+          "none",
+          "abstain_insufficient_information",
+          "none"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "stop",
+        "ideal_pair_types": [],
+        "ideal_reviewable": false,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "medicalrecord",
+          "record"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "unseen-shape-graphql"
+    },
+    {
+      "captures": [
+        "captures/E06.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Canary tokens in headers, query and body",
+      "exchanges": 2,
+      "family": "E",
+      "format": "har",
+      "id": "E06",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review",
+          "review_multiple_differences"
+        ],
+        "canaries": [
+          "IRBCANARY-q1",
+          "IRBCANARY-q2",
+          "IRBCANARY-h1",
+          "IRBCANARY-h2",
+          "IRBCANARY-b1",
+          "IRBCANARY-b2"
+        ],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "export"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "export"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "secret-canaries"
+    },
+    {
+      "captures": [
+        "captures/E07.har"
+      ],
+      "damaged_entries": 0,
+      "description": "Response body tries to instruct the tool to confirm",
+      "exchanges": 2,
+      "family": "E",
+      "format": "har",
+      "id": "E07",
+      "labels": {
+        "acceptable_first_steps": [
+          "attest_ownership",
+          "attest_distinct_accounts",
+          "identify_missing_negative_control",
+          "request_human_review"
+        ],
+        "canaries": [],
+        "expected_confirmed": false,
+        "expected_missing_controls": [
+          "distinct_accounts",
+          "ownership",
+          "negative_control"
+        ],
+        "forbidden_pair_types": [],
+        "ideal_outcome": "reviewable",
+        "ideal_pair_types": [
+          "message"
+        ],
+        "ideal_reviewable": true,
+        "max_reasonable_proposals": null,
+        "novel_vs_dev": true,
+        "target_types": [
+          "message"
+        ],
+        "vulnerability_truth": "unknown"
+      },
+      "post_pipeline_mutation": null,
+      "tag": "prompt-injection"
+    }
+  ],
+  "split": "final"
+}

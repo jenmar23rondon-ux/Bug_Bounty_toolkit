@@ -1,0 +1,95 @@
+{
+  "scenarios": [
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [],
+        "must_not_confirm": true,
+        "validation_result": "human_validation_required"
+      },
+      "id": "complete_idor",
+      "package_candidate_id": "c-complete"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [],
+        "validation_result": "complete_for_review"
+      },
+      "id": "denied",
+      "package_candidate_id": "c-denied"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim"
+        ],
+        "validation_result": "unsupported_claim"
+      },
+      "id": "fp_http200",
+      "package_candidate_id": "c-fp"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "broken_evidence_ref"
+        ],
+        "validation_result": "missing_evidence"
+      },
+      "id": "missing_ref",
+      "package_candidate_id": "c-miss"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim"
+        ],
+        "validation_result": "unsupported_claim"
+      },
+      "id": "invented_impact",
+      "package_candidate_id": "c-imp"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim",
+          "human_validation_required"
+        ],
+        "must_not_confirm": true,
+        "validation_result": "unsupported_claim"
+      },
+      "id": "ai_unverified",
+      "package_candidate_id": "c-ai"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim"
+        ],
+        "reproducibility_status": "steps_invented",
+        "validation_result": "unsupported_claim"
+      },
+      "id": "invented_steps",
+      "package_candidate_id": "c-steps"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim"
+        ],
+        "must_not_confirm": true,
+        "validation_result": "unsupported_claim"
+      },
+      "id": "insufficient",
+      "package_candidate_id": "c-ins"
+    }
+  ],
+  "schema_version": "bbtk-verified-dossier-eval/1",
+  "split": "dev"
+}

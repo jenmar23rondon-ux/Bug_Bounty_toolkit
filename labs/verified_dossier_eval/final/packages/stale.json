@@ -1,0 +1,24 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "missing_evidence"
+    ],
+    "validation_result": "missing_evidence"
+  },
+  "id": "stale",
+  "package": {
+    "candidate_id": "c-stale",
+    "claims": [
+      {
+        "claim_id": "cl-obs",
+        "evidence_refs": [
+          "e-gone"
+        ],
+        "kind": "observed_behavior",
+        "text": "was there"
+      }
+    ],
+    "declared_ledger_state": "requires_validation"
+  }
+}

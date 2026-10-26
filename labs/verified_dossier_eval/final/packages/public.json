@@ -1,0 +1,35 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "validation_result": "complete_for_review"
+  },
+  "id": "public",
+  "package": {
+    "candidate_id": "c-pub",
+    "claims": [
+      {
+        "claim_id": "cl-state",
+        "evidence_refs": [
+          "e-pub"
+        ],
+        "kind": "ledger_state",
+        "text": "rejected"
+      },
+      {
+        "claim_id": "cl-obs",
+        "evidence_refs": [
+          "e-pub"
+        ],
+        "kind": "observed_behavior",
+        "text": "public"
+      }
+    ],
+    "declared_ledger_state": "rejected",
+    "expected_behavior": "Public catalog readable.",
+    "expected_behavior_source": "program_policy",
+    "observed_behavior": "Same body for owner and actor.",
+    "observed_behavior_refs": [
+      "e-pub"
+    ]
+  }
+}

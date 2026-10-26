@@ -1,0 +1,23 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "invalid_provenance"
+    ],
+    "validation_result": "invalid_provenance"
+  },
+  "id": "invalid_prov",
+  "package": {
+    "candidate_id": "c-p",
+    "claims": [
+      {
+        "claim_id": "cl-obs",
+        "evidence_refs": [
+          "e-p"
+        ],
+        "kind": "observed_behavior",
+        "text": "x"
+      }
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "validation_result": "complete_for_review"
+  },
+  "id": "shared",
+  "package": {
+    "candidate_id": "c-share",
+    "claims": [
+      {
+        "claim_id": "cl-state",
+        "evidence_refs": [
+          "e-share"
+        ],
+        "kind": "ledger_state",
+        "text": "rejected"
+      },
+      {
+        "claim_id": "cl-obs",
+        "evidence_refs": [
+          "e-share"
+        ],
+        "kind": "observed_behavior",
+        "text": "shared ok"
+      }
+    ],
+    "declared_ledger_state": "rejected",
+    "expected_behavior": "Shared ACL grants read.",
+    "expected_behavior_source": "explicit_declaration",
+    "observed_behavior": "Share grant present.",
+    "observed_behavior_refs": [
+      "e-share"
+    ]
+  }
+}

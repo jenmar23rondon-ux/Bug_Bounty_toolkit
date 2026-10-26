@@ -1,0 +1,28 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "shareable_must_redact": [
+      "super-secret-token-xyz",
+      "Bearer super-secret"
+    ],
+    "validation_result": "human_validation_required"
+  },
+  "id": "sensitive",
+  "package": {
+    "candidate_id": "c-sec",
+    "claims": [
+      {
+        "claim_id": "cl-obs",
+        "evidence_refs": [
+          "e-sec"
+        ],
+        "kind": "observed_behavior",
+        "text": "Authorization: Bearer super-secret-token-xyz"
+      }
+    ],
+    "observed_behavior": "Authorization: Bearer super-secret-token-xyz",
+    "observed_behavior_refs": [
+      "e-sec"
+    ]
+  }
+}
