@@ -10,6 +10,10 @@ Please do not publish exploit details, credentials, target data, or an unpatched
 
 Do not include live tokens, cookies, personal data, or third-party traffic captures in a report. Redaction is best effort; inspect attachments before sharing them.
 
+## External tools
+
+Legacy wrappers for third-party CLIs are supervised by `bugbounty_toolkit.core.secure_subprocess`: allowlisted executables, no shell, timeouts, output caps, and process-tree cleanup. Remote-facing invocations still require program authorization, in-scope targets, and an execution budget. See `docs/external-tool-policy.md`.
+
 ## Safe testing
 
 Use the local unit and loopback integration tests for development. Never use project test fixtures or examples as permission to probe a public service. The toolkit does not submit vulnerability reports automatically.

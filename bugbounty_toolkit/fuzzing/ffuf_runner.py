@@ -125,39 +125,55 @@ class FfufRunner:
         }
 
     @staticmethod
-    def _stop_process(process: subprocess.Popen[str]) -> None:
-        if process.poll() is None:
-            process.terminate()
-            try:
-                process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait(timeout=5)
+    def _stop_process(process: subprocess.Popen[bytes] | subprocess.Popen[str]) -> None:
+        from ..core.secure_subprocess import kill_process_tree
+
+        kill_process_tree(process)  # type: ignore[arg-type]
 
     def _run_process(self, command: list[str], environment: dict[str, str], log_path: Path, max_seconds: float) -> int:
-        kwargs: dict[str, object] = {
-            "stdout": None,
-            "stderr": subprocess.STDOUT,
-            "text": True,
-            "env": environment,
-        }
-        if os.name == "nt":
-            kwargs["creationflags"] = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
-        else:
-            kwargs["start_new_session"] = True
-        with log_path.open("w", encoding="utf-8") as output:
-            kwargs["stdout"] = output
-            process = subprocess.Popen(command, **kwargs)
-            try:
-                return process.wait(timeout=max_seconds)
-            except subprocess.TimeoutExpired as exc:
-                self._stop_process(process)
+        """Launch ffuf through the shared secure subprocess contract (no shell)."""
+        from ..core.secure_subprocess import (
+            CODE_TIMEOUT,
+            PolicyRejected,
+            SecureSubprocessError,
+            SecureToolLimits,
+            SecureToolRequest,
+            run_secure_subprocess,
+        )
+
+        if not command or Path(command[0]).name != "ffuf":
+            raise ExternalToolError("[policy_executable_not_allowed] ffuf runner only executes the ffuf binary.")
+        roots = (self.store.paths.program_dir.resolve(),)
+        # Temporary wordlist dirs are created under raw_dir; also allow the process cwd temp.
+        request = SecureToolRequest(
+            executable_name="ffuf",
+            argv=tuple(command),
+            output_path=log_path,
+            limits=SecureToolLimits(
+                timeout_seconds=float(max_seconds),
+                max_output_bytes=50_000_000,
+                max_output_file_bytes=50_000_000,
+            ),
+            env=environment,
+            allowed_path_roots=roots,
+            contact_external=True,
+            authorization_attested=True,
+            scope_attested=True,
+            budget_attested=True,
+        )
+        try:
+            result = run_secure_subprocess(request)
+        except PolicyRejected as exc:
+            raise ExternalToolError(str(exc)) from exc
+        except SecureSubprocessError as exc:
+            if exc.code == CODE_TIMEOUT:
                 raise ExternalToolError(
                     f"ffuf exceeded its {max_seconds:g}s wall-clock limit and was stopped."
                 ) from exc
-            except KeyboardInterrupt:
-                self._stop_process(process)
-                raise
+            raise ExternalToolError(str(exc)) from exc
+        except KeyboardInterrupt:
+            raise
+        return result.returncode
 
     def run(self, options: FfufOptions) -> tuple[Path, list[dict[str, object]]]:
         wordlist = self.validate(options)
