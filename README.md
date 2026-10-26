@@ -405,7 +405,8 @@ candidate states (`candidate`, `requires_validation`, `rejected`, `confirmed`). 
 automatically: confirmation needs an independent human reviewer, a human review method, an explicit
 `--i-reviewed-the-evidence` attestation and current evidence. `bbtk ledger validate` reports broken refs
 (including Evidence Graph nodes and Investigation Memory IDs), duplicates, stale or modified evidence and
-incompatible states. See [docs/evidence-ledger.md](docs/evidence-ledger.md); synthetic lab: `bbtk lab evidence-ledger`.
+incompatible states. See [docs/evidence-ledger.md
+- [Evidence-gap planner](docs/evidence-gap-planner.md)](docs/evidence-ledger.md); synthetic lab: `bbtk lab evidence-ledger`.
 
 ## Limits and Reports
 

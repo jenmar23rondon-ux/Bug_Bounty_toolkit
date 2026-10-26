@@ -84,6 +84,7 @@ from .analysis.investigation import investigate_evidence
 from .analysis.investigation_memory import InvestigationMemory
 from .analysis import evidence_ledger as ledger_mod
 from .analysis.evidence_ledger_lab import run_evidence_ledger_lab
+from .analysis.evidence_gap_planner import PLAN_SCHEMA, build_plan, dumps_plan, validate_plan
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
@@ -3197,6 +3198,44 @@ def cmd_investigation_status(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
+def cmd_investigation_next_steps(args: argparse.Namespace) -> None:
+    """Opt-in, read-only evidence-gap next-step plan. Never writes the ledger."""
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    plan = build_plan(paths, ledger_file=args.ledger)
+    problems = validate_plan(plan)
+    if problems:
+        raise ValueError("Plan failed contract validation: " + ", ".join(problems))
+    if args.schema:
+        print(json.dumps(PLAN_SCHEMA, indent=2, sort_keys=True))
+        return
+    body = dumps_plan(plan) if args.minimize else json.dumps(plan, indent=2, sort_keys=True)
+    if args.output:
+        destination = local_path(args.output)
+        if destination.exists() and not args.force:
+            raise ValueError(f"Output already exists: {destination}. Pass --force to replace it.")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(body + ("\n" if not body.endswith("\n") else ""), encoding="utf-8")
+        print(f"[+] Evidence-gap plan saved: {destination}")
+    else:
+        print(body)
+    if args.dry_run:
+        print(
+            "[i] Dry-run: plan is advisory only; execution_allowed=false and finding_confirmed=false on every step.",
+            file=sys.stderr,
+        )
+
+
+def cmd_lab_evidence_gap(args: argparse.Namespace) -> None:
+    from labs.evidence_gap_planner_eval.run_lab import main as lab_main
+
+    argv = ["--split", args.split]
+    if args.metrics_json:
+        argv.extend(["--output", str(local_path(args.metrics_json))])
+    code = lab_main(argv)
+    if code:
+        raise SystemExit(code)
+
+
 def cmd_dashboard(args: argparse.Namespace) -> None:
     try:
         from .dashboard import create_app, require_loopback_host
@@ -3767,6 +3806,13 @@ def build_parser() -> argparse.ArgumentParser:
     lab_ledger.add_argument("--force", action="store_true", help="Replace metrics JSON if it exists")
     lab_ledger.set_defaults(func=cmd_lab_evidence_ledger)
 
+    lab_egp = lab_sub.add_parser(
+        "evidence-gap", help="Run the synthetic offline evidence-gap planner evaluation lab (no network)"
+    )
+    lab_egp.add_argument("--split", choices=("dev", "final", "both"), default="both")
+    lab_egp.add_argument("--metrics-json", type=Path, help="Optional metrics JSON output path")
+    lab_egp.set_defaults(func=cmd_lab_evidence_gap)
+
     access = sub.add_parser(
         "access-check", help="Known-resource authorization comparison; bounded read and disposable JSON write modes"
     )
@@ -4313,7 +4359,7 @@ def build_parser() -> argparse.ArgumentParser:
     ledger_report.set_defaults(func=cmd_ledger_report)
 
     investigation_cli = sub.add_parser(
-        "investigation", help="Close or inspect a saved local investigation without deleting its history"
+        "investigation", help="Close, inspect, or plan next offline investigation steps without deleting history"
     )
     investigation_sub = investigation_cli.add_subparsers(dest="investigation_command", required=True)
     investigation_close = investigation_sub.add_parser("close", help="Close an active saved investigation")
@@ -4324,6 +4370,21 @@ def build_parser() -> argparse.ArgumentParser:
     investigation_status.add_argument("program")
     investigation_status.add_argument("--id", dest="investigation_id", required=True)
     investigation_status.set_defaults(func=cmd_investigation_status)
+
+    investigation_next = investigation_sub.add_parser(
+        "next-steps",
+        help="Opt-in evidence-gap next-step plan (read-only, offline, no AI, no execution)",
+    )
+    investigation_next.add_argument("program")
+    investigation_next.add_argument(
+        "--ledger", type=Path, help="Ledger path (default: <program>/ledger/evidence-ledger.json)"
+    )
+    investigation_next.add_argument("--dry-run", action="store_true", help="Emphasize that steps are not executable")
+    investigation_next.add_argument("--minimize", action="store_true", help="Emit minimized JSON")
+    investigation_next.add_argument("--schema", action="store_true", help="Print the plan JSON schema and exit")
+    investigation_next.add_argument("--output", type=Path, help="Write the plan JSON to this path")
+    investigation_next.add_argument("--force", action="store_true", help="Replace --output if it exists")
+    investigation_next.set_defaults(func=cmd_investigation_next_steps)
 
     dashboard = sub.add_parser(
         "dashboard", help="Open a loopback-only local dashboard for one program; no active checks are exposed"

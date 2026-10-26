@@ -1,0 +1,475 @@
+{
+  "frozen": true,
+  "network_requests_sent": 0,
+  "scenario_count": 20,
+  "scenarios": [
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "request_human_review"
+      ],
+      "blocked": false,
+      "expected_top_step": "request_human_review",
+      "forbidden_steps": [
+        "identify_missing_owner_response",
+        "identify_missing_actor_response"
+      ],
+      "ledger_sha256": "3a0849a300b4113f0127a4acf6562061a27c4db9c888c2822268611ed65ab4e1",
+      "manual_steps_baseline": 8,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [
+        "owner_response",
+        "actor_response",
+        "distinct_accounts",
+        "ownership",
+        "negative_control"
+      ],
+      "program": "01-ready-controls-final",
+      "scenario": "01_ready_controls-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "identify_missing_owner_response"
+      ],
+      "blocked": false,
+      "expected_top_step": "identify_missing_owner_response",
+      "forbidden_steps": [
+        "request_human_review",
+        "identify_missing_actor_response"
+      ],
+      "ledger_sha256": "db683295ac87407a6834aa544b60b4968f1c224f3ce232a9343e75cfc3be6a11",
+      "manual_steps_baseline": 6,
+      "manual_steps_planner": 2,
+      "missing_controls": [
+        "owner_response"
+      ],
+      "present_controls": [
+        "actor_response",
+        "distinct_accounts",
+        "ownership",
+        "negative_control"
+      ],
+      "program": "02-missing-owner-final",
+      "scenario": "02_missing_owner-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "attest_distinct_accounts"
+      ],
+      "blocked": false,
+      "expected_top_step": "attest_distinct_accounts",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "da902205736724df62875a3fe64209d503ee62adbf8291586b387483a7e108fc",
+      "manual_steps_baseline": 5,
+      "manual_steps_planner": 1,
+      "missing_controls": [
+        "distinct_accounts"
+      ],
+      "present_controls": [
+        "owner_response",
+        "actor_response",
+        "ownership",
+        "negative_control"
+      ],
+      "program": "03-cookies-not-accounts-final",
+      "scenario": "03_cookies_not_accounts-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "review_content_denial"
+      ],
+      "blocked": false,
+      "expected_top_step": "review_content_denial",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "72b648e45c8941b75c44e21128abcc753d7e75bc5cff46420dadb4aa216d5569",
+      "manual_steps_baseline": 4,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [
+        "owner_response",
+        "actor_response",
+        "distinct_accounts",
+        "ownership"
+      ],
+      "program": "04-content-denial-final",
+      "scenario": "04_content_denial-final",
+      "stop": true
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "review_legitimate_access"
+      ],
+      "blocked": false,
+      "expected_top_step": "review_legitimate_access",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "3082f7c53d5e06dec572db349ff89444f7d26fe249e4a09c6e1cd8cc509b9a60",
+      "manual_steps_baseline": 3,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [
+        "owner_response",
+        "ownership"
+      ],
+      "program": "05-public-resource-final",
+      "scenario": "05_public_resource-final",
+      "stop": true
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "review_legitimate_access"
+      ],
+      "blocked": false,
+      "expected_top_step": "review_legitimate_access",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "f75a1d3b8305bee1eb38c47ab4e6ef62a560fa5c4d1ac0cc927df39c7f6c2c73",
+      "manual_steps_baseline": 3,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [
+        "owner_response",
+        "ownership"
+      ],
+      "program": "06-shared-resource-final",
+      "scenario": "06_shared_resource-final",
+      "stop": true
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "review_multiple_differences"
+      ],
+      "blocked": false,
+      "expected_top_step": "review_multiple_differences",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "3f8d63007d8c9599325e44bfe3dd04c36940e4f14688bdc21d31c814b77db403",
+      "manual_steps_baseline": 5,
+      "manual_steps_planner": 1,
+      "missing_controls": [
+        "distinct_accounts",
+        "ownership",
+        "negative_control"
+      ],
+      "present_controls": [
+        "owner_response",
+        "actor_response"
+      ],
+      "program": "07-multi-diff-final",
+      "scenario": "07_multi_diff-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "stop_incompatible_method"
+      ],
+      "blocked": false,
+      "expected_top_step": "stop_incompatible_method",
+      "forbidden_steps": [
+        "request_human_review",
+        "identify_missing_owner_response"
+      ],
+      "ledger_sha256": "065cd45146355ba26353c8a7293ce93dc69d2e06139a805ae27edbf85cecdc98",
+      "manual_steps_baseline": 4,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [
+        "owner_response",
+        "actor_response"
+      ],
+      "program": "08-non-get-final",
+      "scenario": "08_non_get-final",
+      "stop": true
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "verify_evidence_digest"
+      ],
+      "blocked": false,
+      "expected_top_step": "verify_evidence_digest",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "integrity": true,
+      "ledger_sha256": "9bd79c9dfab3214eb226f8a57570a13e07fce565625173f843937533957d8904",
+      "manual_steps_baseline": 3,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [],
+      "program": "09-tampered-evidence-final",
+      "scenario": "09_tampered_evidence-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "review_stale_evidence"
+      ],
+      "blocked": false,
+      "expected_top_step": "review_stale_evidence",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "integrity": true,
+      "ledger_sha256": "4469135d454440a93e3396c09789063024fe4867f6a4975dc6360b1752147996",
+      "manual_steps_baseline": 3,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [],
+      "program": "10-expired-evidence-final",
+      "scenario": "10_expired_evidence-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "repair_broken_reference"
+      ],
+      "blocked": false,
+      "expected_top_step": "repair_broken_reference",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "integrity": true,
+      "ledger_sha256": "4ddc354e32f79ba1962d02499d6ce585eb9c9f3c55464bf997015f65ba366d4b",
+      "manual_steps_baseline": 3,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [
+        "owner_response"
+      ],
+      "program": "11-broken-reference-final",
+      "scenario": "11_broken_reference-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "review_duplicate"
+      ],
+      "blocked": false,
+      "duplicate": true,
+      "expected_top_step": "review_duplicate",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "72a840647112e41adb2614b3212397ba35274ac2df003544d545559e2a76031d",
+      "manual_steps_baseline": 4,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [],
+      "program": "12-duplicate-candidate-final",
+      "scenario": "12_duplicate_candidate-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "stop_contradicted_hypothesis"
+      ],
+      "blocked": false,
+      "expected_top_step": "stop_contradicted_hypothesis",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "2deb1863af0954c7ad00da56bc9ddef58cfc38b09681089ac6b98024e07956a0",
+      "manual_steps_baseline": 4,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [
+        "owner_response",
+        "actor_response",
+        "distinct_accounts",
+        "ownership",
+        "negative_control"
+      ],
+      "program": "13-contradicted-final",
+      "scenario": "13_contradicted-final",
+      "stop": true
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "request_human_review"
+      ],
+      "blocked": false,
+      "expected_top_step": "request_human_review",
+      "forbidden_steps": [
+        "identify_missing_owner_response",
+        "identify_missing_actor_response"
+      ],
+      "ledger_sha256": "a266b2548fdb980a485d9179db44fca93794b23f47dce5e2f948c8f56c468295",
+      "manual_steps_baseline": 8,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [
+        "owner_response",
+        "actor_response",
+        "distinct_accounts",
+        "ownership",
+        "negative_control"
+      ],
+      "program": "14-eligible-pending-review-final",
+      "scenario": "14_eligible_pending_review-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "complete_partial_capture"
+      ],
+      "blocked": false,
+      "expected_top_step": "complete_partial_capture",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "e778b5c2cadc5ecba11e7b3fcfeaafcd33b9de9c3ee4624ec1832dfaae75878c",
+      "manual_steps_baseline": 4,
+      "manual_steps_planner": 2,
+      "missing_controls": [
+        "negative_control"
+      ],
+      "present_controls": [
+        "owner_response",
+        "actor_response",
+        "distinct_accounts",
+        "ownership"
+      ],
+      "program": "15-partial-capture-final",
+      "scenario": "15_partial_capture-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "review_origin_difference"
+      ],
+      "blocked": false,
+      "expected_top_step": "review_origin_difference",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "237358da511b45eb161e0abf11fbe6a72c6d8072c7be37d9665dd28c685e5475",
+      "manual_steps_baseline": 4,
+      "manual_steps_planner": 1,
+      "missing_controls": [
+        "distinct_accounts",
+        "ownership",
+        "negative_control"
+      ],
+      "present_controls": [
+        "owner_response",
+        "actor_response"
+      ],
+      "program": "16-origin-difference-final",
+      "scenario": "16_origin_difference-final",
+      "stop": false
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "reuse_existing_control"
+      ],
+      "blocked": false,
+      "expected_top_step": "reuse_existing_control",
+      "forbidden_steps": [
+        "identify_missing_negative_control"
+      ],
+      "ledger_sha256": "406a87d54a850acd91e2929ccc4960da497d298b9d3c2568a0b6b0e9e62ee2b2",
+      "manual_steps_baseline": 6,
+      "manual_steps_planner": 1,
+      "missing_controls": [],
+      "present_controls": [
+        "owner_response",
+        "actor_response",
+        "distinct_accounts",
+        "ownership"
+      ],
+      "program": "17-reuse-negative-control-final",
+      "scenario": "17_reuse_negative_control-final",
+      "stop": false,
+      "target_candidate": "c-second"
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "blocked_missing_authorization"
+      ],
+      "blocked": true,
+      "expected_top_step": "blocked_missing_authorization",
+      "forbidden_steps": [
+        "request_human_review",
+        "identify_missing_owner_response"
+      ],
+      "ledger_sha256": "8aaef3aa747cc1fe037b8dcf9baf81fee272933332c6b1e6bb9ab3da2a10d7fb",
+      "manual_steps_baseline": 2,
+      "manual_steps_planner": 0,
+      "missing_controls": [],
+      "present_controls": [],
+      "program": "18-out-of-scope-blocked-final",
+      "scenario": "18_out_of_scope_blocked-final",
+      "stop": true,
+      "target_candidate": "c-blocked"
+    },
+    {
+      "abstain": false,
+      "allowed_steps": [
+        "blocked_missing_authorization"
+      ],
+      "blocked": true,
+      "expected_top_step": "blocked_missing_authorization",
+      "forbidden_steps": [
+        "request_human_review"
+      ],
+      "ledger_sha256": "d09634205efc621ff732babdd8d336871bd78465f821cc528156ca2b87866047",
+      "manual_steps_baseline": 2,
+      "manual_steps_planner": 0,
+      "missing_controls": [],
+      "present_controls": [],
+      "program": "19-blocked-authorization-final",
+      "scenario": "19_blocked_authorization-final",
+      "stop": true
+    },
+    {
+      "abstain": true,
+      "allowed_steps": [
+        "abstain_insufficient_information"
+      ],
+      "blocked": false,
+      "expected_top_step": "abstain_insufficient_information",
+      "forbidden_steps": [
+        "request_human_review",
+        "identify_missing_owner_response"
+      ],
+      "ledger_sha256": "f99f43fcbca6ac1ca7ca1f9399cbbf1c0761bd68148d496cbca505e9c35158ec",
+      "manual_steps_baseline": 5,
+      "manual_steps_planner": 0,
+      "missing_controls": [],
+      "present_controls": [],
+      "program": "20-insufficient-info-final",
+      "scenario": "20_insufficient_info-final",
+      "stop": true
+    }
+  ],
+  "schema_version": "bbtk-evidence-gap-lab/1",
+  "split": "final"
+}
