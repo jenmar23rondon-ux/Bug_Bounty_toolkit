@@ -4,17 +4,21 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ..core.redaction import redact_data
+from ..core.redaction import RedactionDestination, redact_data
 from .finding_report import build_evidence_finding_report, render_evidence_report_markdown
+
+
+def _shareable(value: object) -> object:
+    return redact_data(value, destination=RedactionDestination.SHAREABLE_REPORT)
 
 
 def _cell(value: Any) -> str:
     if value is None:
         text = "-"
     elif isinstance(value, (dict, list)):
-        text = json.dumps(redact_data(value), ensure_ascii=True, sort_keys=True)
+        text = json.dumps(_shareable(value), ensure_ascii=True, sort_keys=True)
     else:
-        text = str(redact_data(value))
+        text = str(_shareable(value))
     return text.replace("|", "\\|").replace("\r", " ").replace("\n", " ")
 
 
@@ -27,7 +31,7 @@ def render_evidence_review(
         program=program,
         source_name=source_name or destination.stem,
     )
-    safe = redact_data(data)
+    safe = _shareable(data)
     if not isinstance(safe, dict):
         raise ValueError("Evidence must be a JSON object.")
     lines = [render_evidence_report_markdown(report), "## Observed Result", ""]

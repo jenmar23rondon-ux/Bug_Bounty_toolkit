@@ -96,11 +96,11 @@ def chat_with_ollama(
     return content
 
 
-def review_with_ollama(packet: dict[str, Any], model: str, timeout: float = 120.0) -> dict[str, Any]:
-    validate_ollama_config(model, timeout)
+def review_messages(packet: dict[str, Any]) -> list[dict[str, str]]:
+    """Messages for the legacy minimized agent-review contract (shared by every provider)."""
     if not isinstance(packet, dict) or packet.get("type") != "agent-review":
         raise ValueError("Ollama review accepts only a minimized agent-review packet.")
-    messages = [
+    return [
         {
             "role": "system",
             "content": (
@@ -116,7 +116,10 @@ def review_with_ollama(packet: dict[str, Any], model: str, timeout: float = 120.
             "content": "Assess this minimized evidence packet: " + json.dumps(packet, ensure_ascii=True),
         },
     ]
-    content = chat_with_ollama(messages, model, timeout, REVIEW_SCHEMA, 512)
+
+
+def validate_review_assessment(content: str) -> dict[str, Any]:
+    """Strictly validate the legacy review JSON; raises ValueError on any deviation."""
     try:
         assessment = json.loads(content)
     except json.JSONDecodeError as exc:
@@ -135,6 +138,14 @@ def review_with_ollama(packet: dict[str, Any], model: str, timeout: float = 120.
             or any(not isinstance(item, str) or len(item) > 400 for item in values)
         ):
             raise ValueError("Local Ollama assessment lists were invalid or too long.")
+    return dict(assessment)
+
+
+def review_with_ollama(packet: dict[str, Any], model: str, timeout: float = 120.0) -> dict[str, Any]:
+    validate_ollama_config(model, timeout)
+    messages = review_messages(packet)
+    content = chat_with_ollama(messages, model, timeout, REVIEW_SCHEMA, 512)
+    assessment = validate_review_assessment(content)
     return {
         "provider": "ollama-local",
         "model": model,

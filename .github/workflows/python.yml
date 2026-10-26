@@ -25,6 +25,7 @@ jobs:
       - run: bbtk lab object-discover --dry-run --split eval
       - run: bash -n labs/idor_lab/run.sh
       - run: python scripts/ai_provider_benchmark.py > /dev/null
+      - run: python labs/unified_ai_eval/run.py > /dev/null
       - run: ruff check bugbounty_toolkit tests scripts skills labs
       - run: ruff format --check bugbounty_toolkit tests scripts skills labs
       - run: mypy --strict
@@ -33,7 +34,7 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/hunt.py,bugbounty_toolkit/ssrf_check.py,bugbounty_toolkit/csrf_audit.py,bugbounty_toolkit/jwt_forge.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/analysis/evidence_engine.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/analysis/api_workflow.py" --fail-under=80
-      - run: coverage report --include="bugbounty_toolkit/analysis/object_relationships.py,bugbounty_toolkit/analysis/object_handoff.py,bugbounty_toolkit/core/private_files.py" --fail-under=90
+      - run: coverage report --include="bugbounty_toolkit/analysis/object_relationships.py,bugbounty_toolkit/analysis/object_handoff.py,bugbounty_toolkit/core/private_files.py,bugbounty_toolkit/core/redaction.py" --fail-under=90
       - run: coverage report --include="bugbounty_toolkit/analysis/evidence_graph.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/web_vuln_lab_server.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/access_control/function_matrix.py" --fail-under=80
@@ -43,6 +44,7 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/reporting/finding_report.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/dashboard.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/analysis/ai_providers.py,bugbounty_toolkit/analysis/multi_review.py,bugbounty_toolkit/analysis/ai_review_eval.py" --fail-under=90
+      - run: coverage report --include="bugbounty_toolkit/analysis/ai_backend.py,bugbounty_toolkit/analysis/dual_review.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/fuzzing/wordlist_manager.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/fuzzing/context_planner.py,bugbounty_toolkit/fuzzing/capture_adapter.py,bugbounty_toolkit/context_fuzz_lab_server.py" --fail-under=80
       - run: coverage report

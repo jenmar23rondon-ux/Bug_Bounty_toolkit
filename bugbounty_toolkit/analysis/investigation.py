@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TypedDict
 
 from .access_assessment import assess_access_control
+from .ai_backend import AICallLog, AISelection
 from .hypotheses import SECOND_OPINION, analyze_hypotheses
 from .ollama_review import DEFAULT_OLLAMA_MODEL
 from .prioritization import prioritize_hypotheses
@@ -58,6 +59,7 @@ def investigate_evidence(
     dry_run: bool = False,
     case_file: Path | None = None,
     access_evidence: Path | None = None,
+    selection: AISelection | None = None,
 ) -> InvestigationResult:
     """Join correlation, optional local hypotheses, routing and triage without executing a check."""
     if not _PROGRAM.fullmatch(program):
@@ -73,6 +75,7 @@ def investigate_evidence(
         model=model,
         timeout=timeout,
         dry_run=not use_ollama,
+        selection=selection if use_ollama else None,
     )
     validated_result, reviewed = load_hypotheses_result(hypotheses_result)
     groups = hypotheses_result.get("groups")
@@ -90,6 +93,7 @@ def investigate_evidence(
         "observations_in_minimized_groups": observation_count,
     }
 
+    route_log = AICallLog()
     try:
         routing = route_hypotheses(
             validated_result,
@@ -99,6 +103,8 @@ def investigate_evidence(
             model=model,
             timeout=timeout,
             use_ollama=use_ollama,
+            selection=selection if use_ollama else None,
+            log=route_log,
         )
         routing_status = "plan_ready" if routing.get("plan") else "no_reviewed_hypotheses"
     except ValueError as exc:
@@ -111,6 +117,7 @@ def investigate_evidence(
         }
         routing_status = "deferred_over_budget"
     routing["status"] = routing_status
+    routing["ai_backend"] = route_log.summary()
 
     prioritization = prioritize_hypotheses(validated_result, reviewed, program, max_tests)
     access_assessment = (
@@ -118,7 +125,15 @@ def investigate_evidence(
         if case_file is not None and access_evidence is not None
         else None
     )
-    mode = "dry_run" if dry_run else "offline" if offline else "local_ollama"
+    mode = (
+        "dry_run"
+        if dry_run
+        else "offline"
+        if offline
+        else "local_ollama"
+        if selection is None
+        else f"local_{selection.provider}"
+    )
     hypothesis_statuses = _group_statuses(groups)
     stages = {
         "correlate": InvestigationStage(

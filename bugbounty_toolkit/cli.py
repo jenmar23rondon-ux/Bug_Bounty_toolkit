@@ -91,6 +91,7 @@ from .access_control.write_range import AccessWriteRangeTester
 from .access_control.function_matrix import AccessFunctionMatrixTester
 from .access_control.guards import is_loopback_url
 from .analysis.ollama_review import DEFAULT_OLLAMA_MODEL, review_with_ollama, validate_ollama_config
+from .analysis.ai_backend import AISelection, review_packet, selection_from_args
 from .analysis.artifact_review import (
     SECOND_OPINION,
     generate_ai_report,
@@ -100,6 +101,7 @@ from .analysis.artifact_review import (
 from .analysis.live_review import (
     add_ai_review_arguments,
     format_ai_review,
+    config_selection,
     resolve_ai_review_config,
     review_evidence_file,
 )
@@ -196,10 +198,12 @@ def client_for(args: argparse.Namespace, settings: ExecutorSettings, scope: Scop
     )
 
 
-def print_live_ai_review(path: Path, config: tuple[str, float] | None, toolkit_verdict: str) -> None:
+def print_live_ai_review(
+    path: Path, config: tuple[str, float] | tuple[str, float, AISelection] | None, toolkit_verdict: str
+) -> None:
     if config is None:
         return
-    ai_review = review_evidence_file(path, config[0], config[1])
+    ai_review = review_evidence_file(path, config[0], config[1], config_selection(config))
     print(format_ai_review(ai_review, toolkit_verdict))
 
 
@@ -411,8 +415,17 @@ def cmd_recon(args: argparse.Namespace) -> None:
     store, settings, scope = executor_context(args, automated=True)
     rate = external_rate(settings)
     ensure_in_scope(args.target, store.paths.scope_file)
-    subfinder = run_tool(store, "subfinder", args.target, ["subfinder", "-silent", "-d", args.target])
-    amass = run_tool(store, "amass", args.target, ["amass", "enum", "-passive", "-d", args.target])
+    budget = getattr(args, "_execution_budget", None)
+    tool_kwargs = {
+        "timeout_seconds": max(60.0, float(settings.timeout) * 20.0),
+        "max_output_bytes": max(settings.max_response_bytes * 20, 1_000_000),
+        "execution_budget": budget,
+        "contact_external": True,
+        "authorization_attested": True,
+        "scope_attested": True,
+    }
+    subfinder = run_tool(store, "subfinder", args.target, ["subfinder", "-silent", "-d", args.target], **tool_kwargs)
+    amass = run_tool(store, "amass", args.target, ["amass", "enum", "-passive", "-d", args.target], **tool_kwargs)
     merged = store.paths.raw_dir / "subdomains.txt"
     values = set()
     for path in [subfinder, amass]:
@@ -429,7 +442,13 @@ def cmd_recon(args: argparse.Namespace) -> None:
     if not authorized:
         raise ValueError("No discovered hosts are in scope. Add explicit subdomains or a permitted wildcard.")
     merged.write_text("\n".join(authorized) + "\n", encoding="utf-8")
-    httpx = run_tool(store, "httpx", args.target, ["httpx", "-silent", "-l", str(merged), "-rl", str(rate)])
+    httpx = run_tool(
+        store,
+        "httpx",
+        args.target,
+        ["httpx", "-silent", "-l", str(merged), "-rl", str(rate)],
+        **tool_kwargs,
+    )
     print(f"[+] Recon complete. Live host output: {httpx}")
 
 
@@ -440,6 +459,7 @@ def cmd_scan_nuclei(args: argparse.Namespace) -> None:
     if not hosts.exists():
         raise SystemExit("Run recon first; missing registros/<program>/raw/subdomains.txt")
     scope.require_all([line.strip() for line in hosts.read_text(encoding="utf-8").splitlines() if line.strip()])
+    budget = getattr(args, "_execution_budget", None)
     output = run_tool(
         store,
         "nuclei",
@@ -456,6 +476,12 @@ def cmd_scan_nuclei(args: argparse.Namespace) -> None:
             "-c",
             str(settings.max_concurrency),
         ],
+        timeout_seconds=max(60.0, float(settings.timeout) * 20.0),
+        max_output_bytes=max(settings.max_response_bytes * 20, 1_000_000),
+        execution_budget=budget,
+        contact_external=True,
+        authorization_attested=True,
+        scope_attested=True,
     )
     print(f"[+] Nuclei scan complete: {output}")
 
@@ -857,7 +883,13 @@ def cmd_wordlists(args: argparse.Namespace) -> None:
 
 
 def cmd_xss(args: argparse.Namespace) -> None:
-    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    ai_review_config = resolve_ai_review_config(
+        args.ai_review,
+        args.ai_model,
+        args.ai_timeout,
+        getattr(args, "ai_provider", None),
+        getattr(args, "ai_endpoint", None),
+    )
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -907,16 +939,31 @@ def cmd_xss(args: argparse.Namespace) -> None:
 
 
 def cmd_params(args: argparse.Namespace) -> None:
-    store, _, _ = executor_context(args, automated=True)
+    store, settings, _ = executor_context(args, automated=True)
     ensure_in_scope(args.url, store.paths.scope_file)
-    paramspider = run_tool(store, "paramspider", args.url, ["paramspider", "-d", args.url])
-    arjun = run_tool(store, "arjun", args.url, ["arjun", "-u", args.url])
+    budget = getattr(args, "_execution_budget", None)
+    tool_kwargs = {
+        "timeout_seconds": max(60.0, float(settings.timeout) * 20.0),
+        "max_output_bytes": max(settings.max_response_bytes * 20, 1_000_000),
+        "execution_budget": budget,
+        "contact_external": True,
+        "authorization_attested": True,
+        "scope_attested": True,
+    }
+    paramspider = run_tool(store, "paramspider", args.url, ["paramspider", "-d", args.url], **tool_kwargs)
+    arjun = run_tool(store, "arjun", args.url, ["arjun", "-u", args.url], **tool_kwargs)
     store.mark_reviewed("parameter-target", args.url, "paramspider and arjun executed")
     print(f"[+] Parameter analysis complete: {paramspider}, {arjun}")
 
 
 def cmd_sqli(args: argparse.Namespace) -> None:
-    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    ai_review_config = resolve_ai_review_config(
+        args.ai_review,
+        args.ai_model,
+        args.ai_timeout,
+        getattr(args, "ai_provider", None),
+        getattr(args, "ai_endpoint", None),
+    )
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     if args.cookie:
@@ -963,7 +1010,13 @@ def cmd_sqli(args: argparse.Namespace) -> None:
 
 
 def cmd_cors_check(args: argparse.Namespace) -> None:
-    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    ai_review_config = resolve_ai_review_config(
+        args.ai_review,
+        args.ai_model,
+        args.ai_timeout,
+        getattr(args, "ai_provider", None),
+        getattr(args, "ai_endpoint", None),
+    )
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -999,7 +1052,13 @@ def cmd_cors_check(args: argparse.Namespace) -> None:
 
 
 def cmd_ssrf_check(args: argparse.Namespace) -> None:
-    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    ai_review_config = resolve_ai_review_config(
+        args.ai_review,
+        args.ai_model,
+        args.ai_timeout,
+        getattr(args, "ai_provider", None),
+        getattr(args, "ai_endpoint", None),
+    )
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -1042,7 +1101,13 @@ def cmd_ssrf_check(args: argparse.Namespace) -> None:
 
 
 def cmd_csrf_audit(args: argparse.Namespace) -> None:
-    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    ai_review_config = resolve_ai_review_config(
+        args.ai_review,
+        args.ai_model,
+        args.ai_timeout,
+        getattr(args, "ai_provider", None),
+        getattr(args, "ai_endpoint", None),
+    )
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -1081,7 +1146,13 @@ def cmd_csrf_audit(args: argparse.Namespace) -> None:
 
 
 def cmd_apk_scan(args: argparse.Namespace) -> None:
-    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    ai_review_config = resolve_ai_review_config(
+        args.ai_review,
+        args.ai_model,
+        args.ai_timeout,
+        getattr(args, "ai_provider", None),
+        getattr(args, "ai_endpoint", None),
+    )
     paths = ProgramPaths(RECORDS_ROOT, args.program)
     scope = ScopeValidator(paths.scope_file)
     if not scope.summary()["allowed"]:
@@ -1173,7 +1244,13 @@ def cmd_takeover_check(args: argparse.Namespace) -> None:
 
 
 def cmd_open_redirect(args: argparse.Namespace) -> None:
-    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    ai_review_config = resolve_ai_review_config(
+        args.ai_review,
+        args.ai_model,
+        args.ai_timeout,
+        getattr(args, "ai_provider", None),
+        getattr(args, "ai_endpoint", None),
+    )
     store, settings, scope = executor_context(args, automated=True)
     headers = parse_header_items(args.header)
     cookies = parse_cookie_items(args.cookie)
@@ -1654,7 +1731,13 @@ def _execute_hunt_task(
 
 
 def cmd_hunt(args: argparse.Namespace) -> None:
-    ai_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    ai_config = resolve_ai_review_config(
+        args.ai_review,
+        args.ai_model,
+        args.ai_timeout,
+        getattr(args, "ai_provider", None),
+        getattr(args, "ai_endpoint", None),
+    )
     if args.resume and args.dry_run:
         raise ValueError("--resume cannot be combined with --dry-run.")
     selected = parse_module_selection(args.only, args.skip)
@@ -1931,7 +2014,13 @@ def cmd_hunt(args: argparse.Namespace) -> None:
 
 
 def cmd_access_check(args: argparse.Namespace) -> None:
-    ai_review_config = resolve_ai_review_config(args.ai_review, args.ai_model, args.ai_timeout)
+    ai_review_config = resolve_ai_review_config(
+        args.ai_review,
+        args.ai_model,
+        args.ai_timeout,
+        getattr(args, "ai_provider", None),
+        getattr(args, "ai_endpoint", None),
+    )
     if args.function_matrix:
         incompatible = (
             args.id_range
@@ -2192,8 +2281,12 @@ def cmd_analyze(args: argparse.Namespace) -> None:
             model = args.model or DEFAULT_OLLAMA_MODEL
             data["ollama_review"] = review_with_ollama(data, model, args.ai_timeout)
             data["network_requests_sent_by_review"] = 1
+        elif args.ai == "lmstudio":
+            selection = AISelection("lmstudio", args.model or DEFAULT_OLLAMA_MODEL, None, float(args.ai_timeout))
+            data["ai_review"] = review_packet(data, selection.model, selection.timeout, selection.validate())
+            data["network_requests_sent_by_review"] = 1
         elif args.model:
-            raise ValueError("--model requires --ai ollama.")
+            raise ValueError("--model requires --ai ollama or --ai lmstudio.")
     else:
         key = bounded_text(args.key_file, 65536).encode("utf-8") if args.key_file else None
         data = inspect_jwt(text.strip(), key, args.algorithm, args.issuer, args.audience)
@@ -2667,6 +2760,8 @@ def cmd_graph_search(args: argparse.Namespace) -> None:
 
 
 def _multi_provider_requested(args: argparse.Namespace) -> bool:
+    if args.artifact and not (args.structured or args.second_ai_provider or args.second_ai_model):
+        return False
     return bool(
         args.ai_provider != "ollama"
         or args.second_ai_provider
@@ -2681,7 +2776,7 @@ def cmd_ai_review_structured(args: argparse.Namespace) -> None:
     from .analysis.multi_review import build_evidence_bundle, review_evidence_multi
 
     if not args.evidence_file:
-        raise ValueError("Structured/multi-provider review requires --evidence-file (artifacts stay Ollama-only).")
+        raise ValueError("Structured/second-provider review requires --evidence-file; artifacts accept --ai-provider.")
     if bool(args.second_ai_provider) != bool(args.second_ai_model):
         raise ValueError("--second-ai-provider and --second-ai-model must be used together.")
     limits = GenerationLimits(timeout=args.ai_timeout, max_output_tokens=args.ai_max_tokens)
@@ -2716,6 +2811,48 @@ def cmd_ai_review_structured(args: argparse.Namespace) -> None:
     else:
         result = review_evidence_multi(data, reviewers, limits)
     print(f"[i] {SECOND_OPINION}")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+def _add_ai_provider_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--ai-provider",
+        choices=("ollama", "lmstudio"),
+        help="Allowlisted local provider via the AIProvider adapters (default: legacy Ollama client)",
+    )
+    parser.add_argument(
+        "--ai-endpoint", help="Optional restatement of the provider's authorized loopback host:port; others rejected"
+    )
+
+
+def cmd_ai_dual_review(args: argparse.Namespace) -> None:
+    from .analysis.dual_review import dual_review
+    from .analysis.multi_review import build_evidence_bundle
+
+    ProgramPaths(RECORDS_ROOT, args.program)
+    analyst = AISelection(args.analyst_provider, args.analyst_model, None, float(args.ai_timeout)).validate()
+    critic = AISelection(args.critic_provider, args.critic_model, None, float(args.ai_timeout)).validate()
+    try:
+        data = json.loads(bounded_text(args.evidence_file, 2_000_000))
+    except json.JSONDecodeError as exc:
+        raise ValueError("Evidence file must contain valid JSON.") from exc
+    if not isinstance(data, dict):
+        raise ValueError("Evidence file must contain a JSON object.")
+    if args.dry_run:
+        bundle = build_evidence_bundle(data)
+        result: dict[str, object] = {
+            "type": "ai-dual-review",
+            "status": "dry_run",
+            "evidence_bundle_id": bundle["evidence_bundle_id"],
+            "analyst": analyst.describe(),
+            "critic": critic.describe(),
+            "finding_confirmed": False,
+            "execution_performed": False,
+            "reason": "Evidence minimized locally; no AI provider was contacted.",
+        }
+    else:
+        result = dual_review(data, analyst, critic)
+    print(f"[i] {SECOND_OPINION} Consensus between models is not confirmation.")
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
@@ -2763,6 +2900,11 @@ def cmd_ai_review(args: argparse.Namespace) -> None:
     else:
         if args.kind is None:
             raise ValueError("--kind is required with --artifact (html, request or response).")
+        artifact_selection = (
+            AISelection(args.ai_provider, args.model, args.ai_endpoint, float(args.ai_timeout)).validate()
+            if args.ai_provider != "ollama" or args.ai_endpoint
+            else None
+        )
         result = review_artifact(
             args.artifact,
             args.kind,
@@ -2771,6 +2913,7 @@ def cmd_ai_review(args: argparse.Namespace) -> None:
             args.chunk_chars,
             args.max_chunks,
             args.dry_run,
+            selection=artifact_selection,
         )
     print(f"[i] {SECOND_OPINION}")
     print(json.dumps(result, indent=2, sort_keys=True))
@@ -2780,7 +2923,8 @@ def cmd_ai_hypotheses(args: argparse.Namespace) -> None:
     if args.access_evidence and not args.case_file:
         raise ValueError("--access-evidence requires --case-file.")
     paths = ProgramPaths(RECORDS_ROOT, args.program)
-    result = analyze_hypotheses(args.input, args.ai_model, args.ai_timeout, args.dry_run)
+    selection = selection_from_args(args.ai_provider, args.ai_model, args.ai_timeout, args.ai_endpoint)
+    result = analyze_hypotheses(args.input, args.ai_model, args.ai_timeout, args.dry_run, selection=selection)
     if args.case_file:
         result["access_control_assessment"] = assess_access_control(args.case_file, args.access_evidence)
     print(f"[i] {HYPOTHESES_SECOND_OPINION}")
@@ -2794,7 +2938,10 @@ def cmd_ai_hypotheses(args: argparse.Namespace) -> None:
 
 def cmd_ai_route(args: argparse.Namespace) -> None:
     ProgramPaths(RECORDS_ROOT, args.program)
-    result = route_hypotheses_file(args.input, args.program, args.max_tests, args.ai_model, args.ai_timeout)
+    selection = selection_from_args(args.ai_provider, args.ai_model, args.ai_timeout, args.ai_endpoint)
+    result = route_hypotheses_file(
+        args.input, args.program, args.max_tests, args.ai_model, args.ai_timeout, selection=selection
+    )
     print("[i] Route plan only. No skill command or target request was executed; review missing inputs before use.")
     print(json.dumps(result, indent=2, sort_keys=True))
 
@@ -2828,6 +2975,9 @@ def cmd_ai_investigate(args: argparse.Namespace) -> None:
         raise ValueError("--resume-session requires --session-id.")
     if args.session_id and args.output is not None:
         raise ValueError("--session-id uses the program's non-overwriting investigation history; omit --output.")
+    selection = selection_from_args(args.ai_provider, args.ai_model, args.ai_timeout, args.ai_endpoint)
+    if selection is not None and not args.with_ollama and not args.dry_run:
+        raise ValueError("--ai-provider requires --with-ai (alias --with-ollama) to opt in to a local model.")
     result = investigate_evidence(
         args.program,
         args.input,
@@ -2838,6 +2988,7 @@ def cmd_ai_investigate(args: argparse.Namespace) -> None:
         dry_run=args.dry_run,
         case_file=args.case_file,
         access_evidence=args.access_evidence,
+        selection=selection,
     )
     rendered: dict[str, object] = dict(result)
     history_path: Path | None = None
@@ -3069,6 +3220,9 @@ def cmd_ai_benchmark(args: argparse.Namespace) -> None:
         raise ValueError("--output is required unless --dry-run is used.")
     if args.force and args.output is None:
         raise ValueError("--force requires --output.")
+    selection = selection_from_args(args.ai_provider, args.ai_model, args.ai_timeout, args.ai_endpoint)
+    if selection is not None and not args.with_ollama:
+        raise ValueError("--ai-provider requires --with-ai (alias --with-ollama) to opt in to a local model.")
     result = run_idor_benchmark(
         args.dataset,
         split=args.split,
@@ -3076,6 +3230,7 @@ def cmd_ai_benchmark(args: argparse.Namespace) -> None:
         model=args.ai_model,
         timeout=args.ai_timeout,
         dry_run=args.dry_run,
+        selection=selection if not args.dry_run else None,
     )
     if args.dry_run:
         print("[dry-run] No Ollama call, target request or file write performed.")
@@ -3095,8 +3250,13 @@ def cmd_report(args: argparse.Namespace) -> None:
     store = store_for(args.program)
     if args.draft_with_ai and not args.evidence_file:
         raise ValueError("--draft-with-ai requires --evidence-file.")
-    if not args.draft_with_ai and (args.ai_model is not None or args.ai_timeout is not None):
-        raise ValueError("--ai-model and --ai-timeout require --draft-with-ai.")
+    if not args.draft_with_ai and (
+        args.ai_model is not None
+        or args.ai_timeout is not None
+        or args.ai_provider is not None
+        or args.ai_endpoint is not None
+    ):
+        raise ValueError("--ai-model, --ai-timeout, --ai-provider and --ai-endpoint require --draft-with-ai.")
     if args.force and not args.evidence_file and not args.finding_id:
         raise ValueError("--force applies to evidence and individual finding reports only.")
     if args.evidence_file:
@@ -3132,7 +3292,12 @@ def cmd_report(args: argparse.Namespace) -> None:
             model = args.ai_model or DEFAULT_OLLAMA_MODEL
             timeout = args.ai_timeout or 120.0
             try:
-                draft = generate_ai_report(data, model, timeout)
+                draft = generate_ai_report(
+                    data,
+                    model,
+                    timeout,
+                    selection=selection_from_args(args.ai_provider, model, timeout, args.ai_endpoint),
+                )
             except (OSError, RuntimeError, ValueError):
                 fallback = "> Ollama unavailable or returned an unusable draft. Deterministic template only; no AI confirmation.\n\n"
                 output.write_text(fallback + output.read_text(encoding="utf-8"), encoding="utf-8")
@@ -3716,7 +3881,7 @@ def build_parser() -> argparse.ArgumentParser:
     evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations with optional local Ollama review")
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)
-    evidence.add_argument("--ai", choices=("ollama",))
+    evidence.add_argument("--ai", choices=("ollama", "lmstudio"), help="Optional allowlisted local provider")
     evidence.add_argument(
         "--model",
         help=f"Installed local Ollama model name (default: {DEFAULT_OLLAMA_MODEL})",
@@ -3774,6 +3939,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     report.add_argument("--ai-model", help=f"Local Ollama model for --draft-with-ai (default: {DEFAULT_OLLAMA_MODEL})")
     report.add_argument("--ai-timeout", type=positive_float, help="Local Ollama timeout in seconds (default: 120)")
+    _add_ai_provider_arguments(report)
     report.set_defaults(func=cmd_report)
 
     import_parser = sub.add_parser("import", help="Import supported local artifacts into one program's inputs")
@@ -4218,6 +4384,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ai_hypotheses.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model")
     ai_hypotheses.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
+    _add_ai_provider_arguments(ai_hypotheses)
     ai_hypotheses.add_argument(
         "--dry-run", action="store_true", help="Validate and minimize locally without Ollama or file writes"
     )
@@ -4231,6 +4398,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model for ambiguous categories"
     )
     ai_route.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
+    _add_ai_provider_arguments(ai_route)
     ai_route.add_argument(
         "--dry-run", action="store_true", required=True, help="Required; the router never executes plans"
     )
@@ -4249,6 +4417,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ai_prioritize.set_defaults(func=cmd_ai_prioritize)
 
+    ai_dual = ai_sub.add_parser(
+        "dual-review", help="Analyst (A) + critic (B) local-model review with a deterministic comparator"
+    )
+    ai_dual.add_argument("program")
+    ai_dual.add_argument("--evidence-file", type=Path, required=True, help="Native JSON evidence (minimized first)")
+    ai_dual.add_argument("--analyst-provider", choices=("ollama", "lmstudio"), default="ollama")
+    ai_dual.add_argument("--analyst-model", default=DEFAULT_OLLAMA_MODEL, help="Model A (analysis)")
+    ai_dual.add_argument("--critic-provider", choices=("ollama", "lmstudio"), default="ollama")
+    ai_dual.add_argument("--critic-model", required=True, help="Model B (contradictions and missing controls)")
+    ai_dual.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Per-call timeout in seconds")
+    ai_dual.add_argument("--dry-run", action="store_true", help="Minimize locally without contacting any model")
+    ai_dual.set_defaults(func=cmd_ai_dual_review)
+
     ai_providers = ai_sub.add_parser("providers", help="List allowlisted local AI providers and capabilities")
     ai_providers.add_argument("--check", action="store_true", help="Probe availability on authorized loopback only")
     ai_providers.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Model to look for with --check")
@@ -4266,10 +4447,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ai_investigate.add_argument("--max-tests", type=positive_int, default=100, help="Maximum planned check budget")
     ai_investigate.add_argument(
-        "--with-ollama", action="store_true", help="Opt in to local Ollama hypotheses and ambiguous routing"
+        "--with-ollama",
+        "--with-ai",
+        dest="with_ollama",
+        action="store_true",
+        help="Opt in to local-model hypotheses and ambiguous routing (Ollama, or --ai-provider)",
     )
     ai_investigate.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model")
     ai_investigate.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
+    _add_ai_provider_arguments(ai_investigate)
     ai_investigate.add_argument("--output", type=Path, help="Optional JSON output path; refuses overwrite by default")
     ai_investigate.add_argument("--force", action="store_true", help="Replace an existing --output file")
     ai_investigate.add_argument(
@@ -4291,10 +4477,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--split", choices=("holdout", "development", "all"), default="holdout", help="Evaluation split"
     )
     ai_benchmark.add_argument(
-        "--with-ollama", action="store_true", help="Opt in to a local Ollama call for each selected case"
+        "--with-ollama",
+        "--with-ai",
+        dest="with_ollama",
+        action="store_true",
+        help="Opt in to a local-model call for each selected case (Ollama, or --ai-provider)",
     )
     ai_benchmark.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local Ollama model")
     ai_benchmark.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Ollama timeout in seconds")
+    _add_ai_provider_arguments(ai_benchmark)
     ai_benchmark.add_argument("--output", type=Path, help="Output JSON path; a sibling Markdown report is created")
     ai_benchmark.add_argument("--force", action="store_true", help="Replace existing JSON and Markdown reports")
     ai_benchmark.add_argument(

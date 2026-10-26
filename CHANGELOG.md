@@ -10,7 +10,41 @@
   never rewritten). New independent synthetic lab `labs/idor_e2e_research` (15 scenarios).
   Historical corpora untouched; ranking rules unchanged. Version stays 0.2.2.
 
-## [Unreleased]
+### Unified local AI investigation backend
+
+- New `analysis/ai_backend.py`: one `AISelection` (provider + model + loopback endpoint) that routes every
+  investigation AI call through the existing `AIProvider` adapters (Ollama, LM Studio/OpenAI-compatible).
+  Without `--ai-provider` the legacy Ollama client path is unchanged.
+- `--ai-provider` / `--ai-endpoint` on `ai hypotheses`, `ai route`, `ai investigate`, `ai benchmark`,
+  `ai-review --artifact`, `report --draft-with-ai`, every live `--ai-review` scanner and `analyze evidence --ai lmstudio`.
+- Prompts with residual secret-like content are refused before sending; telemetry stores only fingerprints.
+- New `bbtk ai dual-review`: independent analyst + critic models, strict JSON, evidence/hypothesis/opinion claims,
+  invented-ref, contradiction and unsupported-claim detection. Consensus is never confirmation.
+- `labs/unified_ai_eval/run.py`: deterministic mock benchmark (CI) plus optional `--live` hook for local GPUs.
+  Version remains 0.2.2.
+
+### Evidence privacy and redaction hardening
+
+- Destination-aware redaction policy (`private_evidence`, `minimized_artifact`, `console_summary`, `shareable_report`, `model_input`) in `core/redaction.py`.
+- Structured JSON / HTTP / URL / header / HTML parsing with regex as backstop; size, depth, and time bounds; linear large-body performance.
+- Provenance digests and pseudonymized identifiers without leaking preimages; AI-output scrub helper.
+- Synthetic canary laboratory `labs/evidence_redaction_lab/` and docs in `docs/evidence-redaction.md`.
+- Shareable reports use the shareable destination. Absolute privacy is **not** claimed; residual risks documented.
+- Version stays 0.2.2.
+
+### Hardened external tool policy gate
+
+- Add `bugbounty_toolkit.core.secure_subprocess` as the single contract for allowlisted
+  external binaries: structured argv only (never `shell=True`), wall-clock timeout,
+  stdout/file caps, optional RLIMIT memory/CPU/nproc, process-tree kill on cancel/limits,
+  stable error codes, redacted provenance logs, and private output under program dirs.
+- `core.runner.run_tool` routes recon/nuclei/params tools through the gate; invocations that
+  contact remote systems must attest authorization, scope, and execution budget or are
+  rejected before exec. Rate-limit flags are not treated as absolute safety guarantees.
+- `fuzzing.ffuf_runner` launches ffuf via the same contract without rewriting scanner internals.
+- Synthetic local-lab tests cover success, timeout, runaway output, child-tree kill,
+  allowlist/argv/path/policy rejections, cancellation, and budget exhaustion. No real
+  third-party tool installs and zero lab HTTP. Version stays 0.2.2.
 
 ### Content-aware wordlist ranking (opt-in)
 

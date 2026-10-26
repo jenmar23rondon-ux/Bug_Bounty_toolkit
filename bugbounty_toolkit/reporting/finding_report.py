@@ -7,8 +7,13 @@ from pathlib import Path
 import tempfile
 from typing import Any
 
-from ..core.redaction import redact_data
+from ..core.redaction import RedactionDestination, redact_data
 from ..core.reporting import render_pdf
+
+
+def _shareable(value: object) -> object:
+    return redact_data(value, destination=RedactionDestination.SHAREABLE_REPORT)
+
 
 PENDING = "Información pendiente"
 REPORT_NOTICE = (
@@ -63,7 +68,7 @@ _INCONCLUSIVE = {"error", "inconclusive", "insufficient_evidence", "unavailable"
 
 
 def _text(value: object, fallback: str = PENDING, limit: int = 4_000) -> str:
-    safe = redact_data(value)
+    safe = _shareable(value)
     if isinstance(safe, str):
         normalized = safe.strip()
     elif isinstance(safe, (int, float, bool)):
@@ -159,7 +164,7 @@ def _observation_rows(data: dict[str, Any]) -> list[dict[str, object]]:
     )
     output: list[dict[str, object]] = []
     for row in _rows(data, "steps") + _rows(data, "results"):
-        safe = {field: redact_data(row[field]) for field in fields if field in row}
+        safe = {field: _shareable(row[field]) for field in fields if field in row}
         if safe:
             output.append(safe)
     return output
@@ -169,7 +174,7 @@ def build_evidence_finding_report(
     data: dict[str, Any], program: str = PENDING, source_name: str | None = None
 ) -> dict[str, object]:
     """Build a redacted, schema-stable report draft without promoting model opinions."""
-    safe_data = redact_data(data)
+    safe_data = _shareable(data)
     if not isinstance(safe_data, dict):
         raise ValueError("Evidence must be a JSON object.")
 
@@ -293,7 +298,7 @@ def build_evidence_finding_report(
 def _display(value: object) -> str:
     if value is None:
         return PENDING
-    safe = redact_data(value)
+    safe = _shareable(value)
     if isinstance(safe, (dict, list)):
         return json.dumps(safe, ensure_ascii=True, sort_keys=True)
     return str(safe).replace("\r", " ").replace("\n", " ")
