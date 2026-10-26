@@ -1,0 +1,179 @@
+{
+  "confirmed": false,
+  "corpus_version": "request-variation-eval/1",
+  "metrics": {
+    "accidental_field_changes": 0,
+    "correctly_rejected_cases": 16,
+    "duplicates_generated": 0,
+    "duplicates_skipped": 1,
+    "network_requests_sent": 0,
+    "origin_rewrites": 0,
+    "secrets_in_plans": 0,
+    "structurally_correct_variations": 5,
+    "types_preserved": 5,
+    "unauthorized_variations": 0,
+    "unexpected_results": 0
+  },
+  "results": [
+    {
+      "codes": [],
+      "passed": true,
+      "scenario": "numeric_path",
+      "variants": 1
+    },
+    {
+      "codes": [],
+      "passed": true,
+      "scenario": "sensitive_cookie_preserved",
+      "variants": 1
+    },
+    {
+      "codes": [],
+      "passed": true,
+      "scenario": "uuid_path",
+      "variants": 1
+    },
+    {
+      "codes": [],
+      "passed": true,
+      "scenario": "query_parameter",
+      "variants": 1
+    },
+    {
+      "codes": [
+        "JSON_BODY_POINTER_INCOMPATIBLE_WITH_GET"
+      ],
+      "passed": true,
+      "scenario": "json_pointer",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "MULTIPLE_FIELDS_REQUESTED"
+      ],
+      "passed": true,
+      "scenario": "two_fields",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "SIGNED_OR_SENSITIVE_QUERY"
+      ],
+      "passed": true,
+      "scenario": "signed_url",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "SIGNED_REQUEST"
+      ],
+      "passed": true,
+      "scenario": "signed_header",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "NON_GET"
+      ],
+      "passed": true,
+      "scenario": "post",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "NON_GET"
+      ],
+      "passed": true,
+      "scenario": "delete",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "NON_GET"
+      ],
+      "passed": true,
+      "scenario": "patch",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "CAPTURE_OR_SCOPE_INCOMPATIBLE"
+      ],
+      "passed": true,
+      "scenario": "different_origin",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "CAPTURE_OR_SCOPE_INCOMPATIBLE"
+      ],
+      "passed": true,
+      "scenario": "partial_capture",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "JSON_TYPE_INCOMPATIBLE"
+      ],
+      "passed": true,
+      "scenario": "json_type",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "UNDECLARED_RESOURCE"
+      ],
+      "passed": true,
+      "scenario": "undeclared_resource",
+      "variants": 0
+    },
+    {
+      "codes": [],
+      "passed": true,
+      "scenario": "duplicate",
+      "variants": 1
+    },
+    {
+      "codes": [
+        "DUPLICATE_QUERY"
+      ],
+      "passed": true,
+      "scenario": "duplicate_query",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "PARTIAL_OR_AMBIGUOUS_FRAMING"
+      ],
+      "passed": true,
+      "scenario": "partial_body",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "GET_BODY_UNSUPPORTED"
+      ],
+      "passed": true,
+      "scenario": "get_body",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "SOURCE_VALUE_MISMATCH"
+      ],
+      "passed": true,
+      "scenario": "source_mismatch",
+      "variants": 0
+    },
+    {
+      "codes": [
+        "SIGNED_OR_SENSITIVE_QUERY"
+      ],
+      "passed": true,
+      "scenario": "sensitive_selector",
+      "variants": 0
+    }
+  ],
+  "scenarios": 21,
+  "schema_version": "bbtk-request-variation-eval/1"
+}
