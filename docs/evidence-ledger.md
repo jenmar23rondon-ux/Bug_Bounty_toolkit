@@ -75,3 +75,8 @@ when a ledger exists; otherwise output is unchanged.
 After the ledger is populated, `bbtk investigation next-steps PROGRAM --dry-run`
 reads it (without writing) and returns a versioned plan of human review steps for
 missing controls. See [evidence-gap-planner.md](evidence-gap-planner.md).
+
+## Related: semantic correlation
+
+`python -m bugbounty_toolkit.analysis.candidate_similarity registros/<program>` reports
+probable duplicates beyond exact keys, read-only. See [semantic-candidate-dedup.md](semantic-candidate-dedup.md).

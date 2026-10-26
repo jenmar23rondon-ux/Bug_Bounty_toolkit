@@ -1,0 +1,306 @@
+{
+  "canary": "CANARY-SEMDEDUP-7f3a",
+  "frozen": true,
+  "network_requests_sent": 0,
+  "scenario_count": 16,
+  "scenarios": [
+    {
+      "adversarial": false,
+      "cross_program": false,
+      "duplicate_pairs": [
+        [
+          "dup-1",
+          "dup-2"
+        ]
+      ],
+      "expected_reuse": [
+        [
+          "dup-2",
+          "reuse_negative_control"
+        ]
+      ],
+      "family": "true_duplicate",
+      "programs": [
+        {
+          "ledger_sha256": "2542a1adf50f3f7f8a042c54a048143184bc173bcdaf1cd60b62c441699461c9",
+          "program": "sem-final-true-duplicate"
+        }
+      ],
+      "scenario": "true_duplicate"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "same_path_different_vuln",
+      "programs": [
+        {
+          "ledger_sha256": "72dcef57c3300bdba33ae4c27873b44a39fab57e8df238c82831601e724cf0ed",
+          "program": "sem-final-same-path-diff-vuln"
+        }
+      ],
+      "scenario": "same_path_diff_vuln"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "same_category_different_objects",
+      "programs": [
+        {
+          "ledger_sha256": "436076cb0461554da528d26a074bae7ff37879a799c13353f1b2e5993eb086c8",
+          "program": "sem-final-same-category-diff-objects"
+        }
+      ],
+      "scenario": "same_category_diff_objects"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "same_id_different_namespace",
+      "programs": [
+        {
+          "ledger_sha256": "b5778ab0e15d18004e0b03ddebdd0a2126e90306772fe34a189535b2d0da6636",
+          "program": "sem-final-same-id-diff-namespace"
+        }
+      ],
+      "scenario": "same_id_diff_namespace"
+    },
+    {
+      "adversarial": false,
+      "cross_program": false,
+      "duplicate_pairs": [
+        [
+          "cap-burp",
+          "cap-har"
+        ]
+      ],
+      "expected_reuse": [],
+      "family": "same_object_different_captures",
+      "programs": [
+        {
+          "ledger_sha256": "830610888de548090f3b7fc1d8db0888ac6714a2bc46dee9b7fad9f70245edfa",
+          "program": "sem-final-same-object-diff-captures"
+        }
+      ],
+      "scenario": "same_object_diff_captures"
+    },
+    {
+      "adversarial": false,
+      "cross_program": false,
+      "duplicate_pairs": [
+        [
+          "t-mon",
+          "t-tue"
+        ]
+      ],
+      "expected_reuse": [
+        [
+          "t-tue",
+          "reuse_ownership_attestation"
+        ],
+        [
+          "t-tue",
+          "consult_prior_investigation"
+        ]
+      ],
+      "family": "same_request_different_times",
+      "programs": [
+        {
+          "ledger_sha256": "705c733b4adcc25feb934551fdf54131689318e3caf711d50dc350db11486102",
+          "program": "sem-final-same-request-diff-times"
+        }
+      ],
+      "scenario": "same_request_diff_times"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "legitimately_shared_resource",
+      "programs": [
+        {
+          "ledger_sha256": "4dc9224c4b2872d2521de575b81f68853c47e8b8637f672dd102764f09042fda",
+          "program": "sem-final-legitimately-shared"
+        }
+      ],
+      "scenario": "legitimately_shared"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "different_role_permission",
+      "programs": [
+        {
+          "ledger_sha256": "6d96067cdbceaf294f0ec73850097551cc3e0f367b2b9691fa8606000ff0bafe",
+          "program": "sem-final-different-role-permission"
+        }
+      ],
+      "scenario": "different_role_permission"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "rejected_and_new",
+      "programs": [
+        {
+          "ledger_sha256": "efdfd1b17496cd506d197a37a99b888c85d7d4502194cd37b1c73a691e0a9424",
+          "program": "sem-final-rejected-and-new"
+        }
+      ],
+      "scenario": "rejected_and_new"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "stale_or_invalid_evidence",
+      "programs": [
+        {
+          "ledger_sha256": "20b34f1c3befbb4fd60a1f5d5e7c9f2fe807e63df91554be0c9da53262a9ad9a",
+          "program": "sem-final-stale-or-invalid-evidence"
+        }
+      ],
+      "scenario": "stale_or_invalid_evidence"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "ambiguous_sessions",
+      "programs": [
+        {
+          "ledger_sha256": "919ab82a609639391b48b878ba1c6e47fa82c4bff4cb549d024ff05d0fadc66e",
+          "program": "sem-final-ambiguous-sessions"
+        }
+      ],
+      "scenario": "ambiguous_sessions"
+    },
+    {
+      "adversarial": true,
+      "cross_program": true,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "different_programs",
+      "programs": [
+        {
+          "ledger_sha256": "20a11653a0ee3184f510d764257b7fd585143b4e90dbb67f5da8a6a375b6e530",
+          "program": "sem-final-different-programs-left"
+        },
+        {
+          "ledger_sha256": "143a2b6a880ba1e1e5d0455af5f301b1f84ac0678a4cd74c04e38c1930662f5a",
+          "program": "sem-final-different-programs-right"
+        }
+      ],
+      "scenario": "different_programs"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "near_identical_different_cause",
+      "programs": [
+        {
+          "ledger_sha256": "0e2bfddc3680eba4e4936636aa10b3cdb2774dc7f936e853894fd3a235798d7d",
+          "program": "sem-final-near-identical-diff-cause"
+        }
+      ],
+      "scenario": "near_identical_diff_cause"
+    },
+    {
+      "adversarial": false,
+      "cross_program": false,
+      "duplicate_pairs": [
+        [
+          "aa-rx",
+          "zz-rx"
+        ]
+      ],
+      "expected_reuse": [],
+      "family": "duplicates_separated_by_noise",
+      "programs": [
+        {
+          "ledger_sha256": "dcd6336fb554e5de71880d2d4110ef9de5ee3f87c5221410d91d62182d0ab994",
+          "program": "sem-final-duplicates-separated-by-noise"
+        }
+      ],
+      "scenario": "duplicates_separated_by_noise"
+    },
+    {
+      "adversarial": false,
+      "cross_program": false,
+      "duplicate_pairs": [
+        [
+          "g1",
+          "g2"
+        ],
+        [
+          "g1",
+          "g3"
+        ],
+        [
+          "g1",
+          "g4"
+        ],
+        [
+          "g2",
+          "g3"
+        ],
+        [
+          "g2",
+          "g4"
+        ],
+        [
+          "g3",
+          "g4"
+        ]
+      ],
+      "expected_reuse": [],
+      "family": "multi_candidate_group",
+      "programs": [
+        {
+          "ledger_sha256": "458c635bdce03a31e97a34960c07543c5c0e4ee1401ea9b604ad2da324dd53bb",
+          "program": "sem-final-multi-candidate-group"
+        }
+      ],
+      "scenario": "multi_candidate_group"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [
+        [
+          "a1",
+          "a2"
+        ],
+        [
+          "b1",
+          "b2"
+        ]
+      ],
+      "expected_reuse": [],
+      "family": "groups_must_stay_separate",
+      "programs": [
+        {
+          "ledger_sha256": "6cb650d871b471a6da87f7480ced71622b4cace4cb2e694e8b75b048e4968b1d",
+          "program": "sem-final-groups-stay-separate"
+        }
+      ],
+      "scenario": "groups_stay_separate"
+    }
+  ],
+  "schema_version": "bbtk-semantic-candidate-lab/1",
+  "split": "final"
+}

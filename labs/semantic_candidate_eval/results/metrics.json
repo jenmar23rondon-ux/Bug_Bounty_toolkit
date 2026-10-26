@@ -1,0 +1,1502 @@
+{
+  "dev": {
+    "adversarial_false_merges": 0,
+    "auto_merges_or_confirmations": 0,
+    "baseline_exact_key": {
+      "f1": 0.0,
+      "false_merge_rate": 0.2,
+      "false_negative_rate": 1.0,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "baseline_surface_category": {
+      "f1": 0.6,
+      "false_merge_rate": 0.6,
+      "false_negative_rate": 0.25,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.5,
+      "recall": 0.75,
+      "tp": 3
+    },
+    "invalid_refs_accepted": 0,
+    "latency_ms": {
+      "max": 2.409,
+      "median": 1.368
+    },
+    "ledger_files_modified": 0,
+    "manifest_verified": true,
+    "negative_pairs": 5,
+    "neighbour_precision_at_1": 1.0,
+    "network_attempts": 0,
+    "peak_tracemalloc_bytes": 1107359,
+    "per_family": {
+      "different_programs": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "different_role_permission": {
+        "baseline": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "group": {
+        "baseline": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 3,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 3
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 3
+        }
+      },
+      "rejected_and_new": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "same_id_different_namespace": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "same_path_different_vuln": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "stale_evidence": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "true_duplicate": {
+        "baseline": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        }
+      }
+    },
+    "redundant_candidates_identified": 4,
+    "reuse": {
+      "expected": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "recommendations": 0,
+      "valid": 0
+    },
+    "scenario_count": 8,
+    "scenarios": [
+      {
+        "bands": {
+          "c1|c2": "strong"
+        },
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 0,
+        "family": "true_duplicate",
+        "gold": [
+          [
+            "c1",
+            "c2"
+          ]
+        ],
+        "scenario": "true_duplicate",
+        "sem_pred": [
+          [
+            "c1",
+            "c2"
+          ]
+        ]
+      },
+      {
+        "bands": {
+          "c1|c2": "distinct"
+        },
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 0,
+        "family": "same_path_different_vuln",
+        "gold": [],
+        "scenario": "same_path_diff_vuln",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "c1|c2": "distinct"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "c1",
+            "c2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "same_id_different_namespace",
+        "gold": [],
+        "scenario": "same_id_diff_namespace",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "c1|c2": "distinct"
+        },
+        "base_pred": [
+          [
+            "c1",
+            "c2"
+          ]
+        ],
+        "base_surface_pred": [
+          [
+            "c1",
+            "c2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "different_role_permission",
+        "gold": [],
+        "scenario": "different_role",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "c1|c2": "possible"
+        },
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 0,
+        "family": "rejected_and_new",
+        "gold": [],
+        "scenario": "rejected_and_new",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "c1|c2": "insufficient_evidence"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "c1",
+            "c2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "stale_evidence",
+        "gold": [],
+        "scenario": "stale_evidence",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "c1|c2": "strong",
+          "c1|c3": "strong",
+          "c2|c3": "strong"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "c1",
+            "c2"
+          ],
+          [
+            "c1",
+            "c3"
+          ],
+          [
+            "c2",
+            "c3"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "group",
+        "gold": [
+          [
+            "c1",
+            "c2"
+          ],
+          [
+            "c1",
+            "c3"
+          ],
+          [
+            "c2",
+            "c3"
+          ]
+        ],
+        "scenario": "group_of_three",
+        "sem_pred": [
+          [
+            "c1",
+            "c2"
+          ],
+          [
+            "c1",
+            "c3"
+          ],
+          [
+            "c2",
+            "c3"
+          ]
+        ]
+      },
+      {
+        "bands": {},
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 2,
+        "family": "different_programs",
+        "gold": [],
+        "scenario": "cross_program",
+        "sem_pred": []
+      }
+    ],
+    "secret_leaks": 0,
+    "semantic": {
+      "f1": 1.0,
+      "false_merge_rate": 0.0,
+      "false_negative_rate": 0.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 4
+    },
+    "split": "dev",
+    "synthetic": true
+  },
+  "final": {
+    "adversarial_false_merges": 0,
+    "auto_merges_or_confirmations": 0,
+    "baseline_exact_key": {
+      "f1": 0.0,
+      "false_merge_rate": 0.0,
+      "false_negative_rate": 1.0,
+      "fn": 12,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "baseline_surface_category": {
+      "f1": 0.4865,
+      "false_merge_rate": 0.3556,
+      "false_negative_rate": 0.25,
+      "fn": 3,
+      "fp": 16,
+      "precision": 0.36,
+      "recall": 0.75,
+      "tp": 9
+    },
+    "invalid_refs_accepted": 0,
+    "latency_ms": {
+      "max": 7.592,
+      "median": 1.512
+    },
+    "ledger_files_modified": 0,
+    "manifest_verified": true,
+    "negative_pairs": 45,
+    "neighbour_precision_at_1": 1.0,
+    "network_attempts": 0,
+    "peak_tracemalloc_bytes": 1174305,
+    "per_family": {
+      "ambiguous_sessions": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "different_programs": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "different_role_permission": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "duplicates_separated_by_noise": {
+        "baseline": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        }
+      },
+      "groups_must_stay_separate": {
+        "baseline": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 2,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.5,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 4,
+          "precision": 0.3333,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        }
+      },
+      "legitimately_shared_resource": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "multi_candidate_group": {
+        "baseline": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 6,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 6
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 6
+        }
+      },
+      "near_identical_different_cause": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "rejected_and_new": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "same_category_different_objects": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "same_id_different_namespace": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "same_object_different_captures": {
+        "baseline": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        }
+      },
+      "same_path_different_vuln": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "same_request_different_times": {
+        "baseline": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        }
+      },
+      "stale_or_invalid_evidence": {
+        "baseline": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 1.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 6,
+          "precision": 0.0,
+          "recall": 1.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 0
+        }
+      },
+      "true_duplicate": {
+        "baseline": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "baseline_surface_category": {
+          "f1": 0.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 1.0,
+          "fn": 1,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "semantic": {
+          "f1": 1.0,
+          "false_merge_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        }
+      }
+    },
+    "redundant_candidates_identified": 11,
+    "reuse": {
+      "expected": 3,
+      "precision": 0.6,
+      "recall": 1.0,
+      "recommendations": 5,
+      "valid": 3
+    },
+    "scenario_count": 16,
+    "scenarios": [
+      {
+        "bands": {
+          "dup-1|dup-2": "strong"
+        },
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 0,
+        "family": "true_duplicate",
+        "gold": [
+          [
+            "dup-1",
+            "dup-2"
+          ]
+        ],
+        "scenario": "true_duplicate",
+        "sem_pred": [
+          [
+            "dup-1",
+            "dup-2"
+          ]
+        ]
+      },
+      {
+        "bands": {
+          "x1|x2": "distinct"
+        },
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 0,
+        "family": "same_path_different_vuln",
+        "gold": [],
+        "scenario": "same_path_diff_vuln",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "d1|d2": "distinct"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "d1",
+            "d2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "same_category_different_objects",
+        "gold": [],
+        "scenario": "same_category_diff_objects",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "n1|n2": "distinct"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "n1",
+            "n2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "same_id_different_namespace",
+        "gold": [],
+        "scenario": "same_id_diff_namespace",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "cap-burp|cap-har": "strong"
+        },
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 0,
+        "family": "same_object_different_captures",
+        "gold": [
+          [
+            "cap-burp",
+            "cap-har"
+          ]
+        ],
+        "scenario": "same_object_diff_captures",
+        "sem_pred": [
+          [
+            "cap-burp",
+            "cap-har"
+          ]
+        ]
+      },
+      {
+        "bands": {
+          "t-mon|t-tue": "strong"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "t-mon",
+            "t-tue"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "same_request_different_times",
+        "gold": [
+          [
+            "t-mon",
+            "t-tue"
+          ]
+        ],
+        "scenario": "same_request_diff_times",
+        "sem_pred": [
+          [
+            "t-mon",
+            "t-tue"
+          ]
+        ]
+      },
+      {
+        "bands": {
+          "sh1|sh2": "weak"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "sh1",
+            "sh2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "legitimately_shared_resource",
+        "gold": [],
+        "scenario": "legitimately_shared",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "r1|r2": "distinct"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "r1",
+            "r2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "different_role_permission",
+        "gold": [],
+        "scenario": "different_role_permission",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "new|old": "possible"
+        },
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 0,
+        "family": "rejected_and_new",
+        "gold": [],
+        "scenario": "rejected_and_new",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "m-broken|m-ok": "insufficient_evidence",
+          "m-broken|m-stale": "insufficient_evidence",
+          "m-broken|m-tamp": "insufficient_evidence",
+          "m-ok|m-stale": "insufficient_evidence",
+          "m-ok|m-tamp": "insufficient_evidence",
+          "m-stale|m-tamp": "insufficient_evidence"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "m-broken",
+            "m-ok"
+          ],
+          [
+            "m-broken",
+            "m-stale"
+          ],
+          [
+            "m-broken",
+            "m-tamp"
+          ],
+          [
+            "m-ok",
+            "m-stale"
+          ],
+          [
+            "m-ok",
+            "m-tamp"
+          ],
+          [
+            "m-stale",
+            "m-tamp"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "stale_or_invalid_evidence",
+        "gold": [],
+        "scenario": "stale_or_invalid_evidence",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "a1|a2": "possible"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "a1",
+            "a2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "ambiguous_sessions",
+        "gold": [],
+        "scenario": "ambiguous_sessions",
+        "sem_pred": []
+      },
+      {
+        "bands": {},
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 2,
+        "family": "different_programs",
+        "gold": [],
+        "scenario": "different_programs",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "nx1|nx2": "distinct"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "nx1",
+            "nx2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "near_identical_different_cause",
+        "gold": [],
+        "scenario": "near_identical_diff_cause",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "aa-rx|noise-0": "distinct",
+          "aa-rx|noise-1": "distinct",
+          "aa-rx|noise-2": "distinct",
+          "aa-rx|noise-3": "distinct",
+          "aa-rx|noise-4": "distinct",
+          "aa-rx|noise-5": "distinct",
+          "aa-rx|zz-rx": "weak",
+          "noise-0|noise-1": "distinct",
+          "noise-0|noise-2": "distinct",
+          "noise-0|noise-3": "distinct",
+          "noise-0|noise-4": "distinct",
+          "noise-0|noise-5": "distinct",
+          "noise-0|zz-rx": "distinct",
+          "noise-1|noise-2": "distinct",
+          "noise-1|noise-3": "distinct",
+          "noise-1|noise-4": "distinct",
+          "noise-1|noise-5": "distinct",
+          "noise-1|zz-rx": "distinct",
+          "noise-2|noise-3": "distinct",
+          "noise-2|noise-4": "distinct",
+          "noise-2|noise-5": "distinct",
+          "noise-2|zz-rx": "distinct",
+          "noise-3|noise-4": "distinct",
+          "noise-3|noise-5": "distinct",
+          "noise-3|zz-rx": "distinct",
+          "noise-4|noise-5": "distinct",
+          "noise-4|zz-rx": "distinct",
+          "noise-5|zz-rx": "distinct"
+        },
+        "base_pred": [],
+        "base_surface_pred": [],
+        "cross_program_pairs_skipped": 0,
+        "family": "duplicates_separated_by_noise",
+        "gold": [
+          [
+            "aa-rx",
+            "zz-rx"
+          ]
+        ],
+        "scenario": "duplicates_separated_by_noise",
+        "sem_pred": []
+      },
+      {
+        "bands": {
+          "g1|g2": "strong",
+          "g1|g3": "strong",
+          "g1|g4": "strong",
+          "g2|g3": "strong",
+          "g2|g4": "strong",
+          "g3|g4": "strong"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "g1",
+            "g2"
+          ],
+          [
+            "g1",
+            "g3"
+          ],
+          [
+            "g1",
+            "g4"
+          ],
+          [
+            "g2",
+            "g3"
+          ],
+          [
+            "g2",
+            "g4"
+          ],
+          [
+            "g3",
+            "g4"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "multi_candidate_group",
+        "gold": [
+          [
+            "g1",
+            "g2"
+          ],
+          [
+            "g1",
+            "g3"
+          ],
+          [
+            "g1",
+            "g4"
+          ],
+          [
+            "g2",
+            "g3"
+          ],
+          [
+            "g2",
+            "g4"
+          ],
+          [
+            "g3",
+            "g4"
+          ]
+        ],
+        "scenario": "multi_candidate_group",
+        "sem_pred": [
+          [
+            "g1",
+            "g2"
+          ],
+          [
+            "g1",
+            "g3"
+          ],
+          [
+            "g1",
+            "g4"
+          ],
+          [
+            "g2",
+            "g3"
+          ],
+          [
+            "g2",
+            "g4"
+          ],
+          [
+            "g3",
+            "g4"
+          ]
+        ]
+      },
+      {
+        "bands": {
+          "a1|a2": "strong",
+          "a1|b1": "distinct",
+          "a1|b2": "distinct",
+          "a2|b1": "distinct",
+          "a2|b2": "distinct",
+          "b1|b2": "strong"
+        },
+        "base_pred": [],
+        "base_surface_pred": [
+          [
+            "a1",
+            "a2"
+          ],
+          [
+            "a1",
+            "b1"
+          ],
+          [
+            "a1",
+            "b2"
+          ],
+          [
+            "a2",
+            "b1"
+          ],
+          [
+            "a2",
+            "b2"
+          ],
+          [
+            "b1",
+            "b2"
+          ]
+        ],
+        "cross_program_pairs_skipped": 0,
+        "family": "groups_must_stay_separate",
+        "gold": [
+          [
+            "a1",
+            "a2"
+          ],
+          [
+            "b1",
+            "b2"
+          ]
+        ],
+        "scenario": "groups_stay_separate",
+        "sem_pred": [
+          [
+            "a1",
+            "a2"
+          ],
+          [
+            "b1",
+            "b2"
+          ]
+        ]
+      }
+    ],
+    "secret_leaks": 0,
+    "semantic": {
+      "f1": 0.9565,
+      "false_merge_rate": 0.0,
+      "false_negative_rate": 0.0833,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.9167,
+      "tp": 11
+    },
+    "split": "final",
+    "synthetic": true
+  }
+}
