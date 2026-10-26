@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import base64
 from collections import defaultdict
 from dataclasses import dataclass
 import hashlib
@@ -22,7 +21,8 @@ from ..core.records import ProgramPaths
 from ..core.redaction import JWT_TOKEN
 from ..idor_discovery import SENSITIVE_FIELD, json_scalar_fields
 from .api_workflow import graph_node_id, merge_relation
-from .evidence_engine import CaptureSource, har_capture_sources, resource_path_segments
+from .evidence_engine import CaptureSource, resource_path_segments
+from .har_import import HarImportError, import_har
 from .evidence_graph import MAX_GRAPH_EDGES, MAX_GRAPH_INPUT_BYTES, MAX_GRAPH_NODES
 
 SCHEMA_VERSION = "1.0"
@@ -139,53 +139,51 @@ def _json_fields(body: str, headers: dict[str, str] | None) -> dict[str, Any]:
     return json_scalar_fields(parse_json(body), include_sensitive=True)
 
 
-def _read_sources(path: Path, base_url: str | None) -> tuple[bytes, list[CaptureSource]]:
+def _read_sources(
+    path: Path, base_url: str | None, strict: bool = False, allow_truncate: bool = False
+) -> tuple[bytes, list[CaptureSource], dict[str, Any]]:
     data = read_private_input(path, MAX_ITEM_BYTES)
     if data.lstrip().startswith(b"{"):
-        document = parse_json(data.decode("utf-8"))
-        log = document.get("log") if isinstance(document, dict) else None
-        entries = log.get("entries") if isinstance(log, dict) else None
-        if not isinstance(entries, list) or not entries or len(entries) > MAX_EXCHANGES:
-            raise ValueError("Select a nonempty bounded HAR export, Burp XML or raw HTTP capture.")
-        for entry in entries:
-            if not isinstance(entry, dict):
-                raise ValueError("Malformed HAR entry.")
-            request, response = entry.get("request"), entry.get("response")
-            if not isinstance(request, dict) or not isinstance(response, dict):
-                raise ValueError("HAR entries must contain request and response objects.")
-            post = request.get("postData", {})
-            if not isinstance(post, dict) or not isinstance(post.get("text", ""), str):
-                raise ValueError("Malformed HAR request body.")
-            content = response.get("content", {})
-            if not isinstance(content, dict) or not isinstance(content.get("text", ""), str):
-                raise ValueError("Malformed HAR response content.")
-            if content.get("encoding") not in (None, "base64"):
-                raise ValueError("Unsupported HAR content encoding.")
-            if content.get("encoding") == "base64":
-                base64.b64decode(content.get("text", ""), validate=True).decode("utf-8")
-        sources = har_capture_sources(document, MAX_EXCHANGES)
-        if len(sources) != len(entries):
-            raise ValueError("Incomplete HAR capture.")
-    else:
-        sources = []
-        for index, exchange in enumerate(parse_captured_exchanges(data, base_url)):
-            response = captured_response(exchange)
-            request = exchange.request
-            body = request.body_bytes()
-            sources.append(
-                CaptureSource(
-                    "burp",
-                    f"/items/{index}",
-                    request.prepared_url(),
-                    request.method,
-                    request.headers,
-                    body.decode("utf-8") if body else "",
-                    response.headers if response else {},
-                    response.body_text if response else "",
-                    response.status_code if response else None,
-                    None,
-                )
+        result = import_har(
+            data,
+            strict=strict,
+            max_bytes=MAX_ITEM_BYTES,
+            max_message_bytes=MAX_EXCHANGE_BYTES,
+            max_entries=MAX_EXCHANGES,
+            allow_truncate=allow_truncate,
+        )
+        # Every per-entry check (URL, method, sizes, bodies) already ran in import_har.
+        return data, result.accepted, result.summary()
+    sources = []
+    for index, exchange in enumerate(parse_captured_exchanges(data, base_url)):
+        response = captured_response(exchange)
+        request = exchange.request
+        body = request.body_bytes()
+        sources.append(
+            CaptureSource(
+                "burp",
+                f"/items/{index}",
+                request.prepared_url(),
+                request.method,
+                request.headers,
+                body.decode("utf-8") if body else "",
+                response.headers if response else {},
+                response.body_text if response else "",
+                response.status_code if response else None,
+                None,
             )
+        )
+    summary = {
+        "format": "burp",
+        "mode": "strict",
+        "entries_total": len(sources),
+        "accepted": len(sources),
+        "rejected": 0,
+        "reasons": {},
+        "rejected_entries": [],
+        "truncated": False,
+        "duplicate_entries": 0,
+    }
     for source in sources:
         if not source.url or source.method not in {
             "GET",
@@ -206,7 +204,7 @@ def _read_sources(path: Path, base_url: str | None) -> tuple[bytes, list[Capture
             raise ValueError("Captured URL exceeds its structural limit.")
         if any(len(body.encode()) > MAX_EXCHANGE_BYTES for body in (source.request_body, source.response_body)):
             raise ValueError("Captured message exceeds the body byte limit.")
-    return data, sources
+    return data, sources, summary
 
 
 def _field_type(name: str, default: str) -> tuple[str, bool] | None:
@@ -432,28 +430,67 @@ def build_object_graph(
     *,
     authorized: bool,
     base_url: str | None = None,
+    strict: bool = False,
+    allow_truncate: bool = False,
 ) -> dict[str, Any]:
-    """Read captures only. No DB, network, model calls, output files or executable cases."""
+    """Read captures only. No DB, network, model calls, output files or executable cases.
+
+    HAR files default to partial recovery: invalid entries are isolated and reported in
+    ``capture_import``; ``strict=True`` keeps whole-file rejection for any invalid entry.
+    """
     ProgramPaths(Path("."), program)
     if not authorized:
         raise ValueError("Declare authorization to analyze these local captures; this does not authorize active tests.")
     if len(key) != 32 or not 1 <= len(inputs) <= MAX_FILES:
         raise ValueError("Use a 32-byte key and between one and sixteen capture files.")
+    if strict and allow_truncate:
+        raise ValueError("Choose either strict import or explicit truncation, not both.")
     try:
-        return _build(program, inputs, key, base_url)
+        return _build(program, inputs, key, base_url, strict, allow_truncate)
     except (ValueError, UnicodeError, TypeError, KeyError, OverflowError, RecursionError) as exc:
         # Parser exceptions can contain raw input. Never propagate their text to the CLI.
-        raise ValueError(
-            "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
-        ) from exc
+        raise ValueError(_safe_failure(exc)) from exc
 
 
-def _build(program: str, inputs: list[Path], key: bytes, base_url: str | None) -> dict[str, Any]:
+def _safe_failure(exc: BaseException) -> str:
+    """Generic message plus, for HAR, only the enumerated file-fatal reason code."""
+    message = "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+    if isinstance(exc, HarImportError):
+        return f"{message} (reason: {exc.reason})"
+    return message
+
+
+def _import_totals(rows: list[dict[str, Any]], mode: str) -> dict[str, Any]:
+    reasons: dict[str, int] = defaultdict(int)
+    for row in rows:
+        for reason, count in row["reasons"].items():
+            reasons[reason] += count
+    return {
+        "mode": mode,
+        "entries_total": sum(row["entries_total"] for row in rows),
+        "accepted": sum(row["accepted"] for row in rows),
+        "rejected": sum(row["rejected"] for row in rows),
+        "reasons": dict(sorted(reasons.items())),
+        "truncated": any(row["truncated"] for row in rows),
+        "duplicate_entries": sum(row["duplicate_entries"] for row in rows),
+        "network_validation": "none",
+    }
+
+
+def _build(
+    program: str,
+    inputs: list[Path],
+    key: bytes,
+    base_url: str | None,
+    strict: bool = False,
+    allow_truncate: bool = False,
+) -> dict[str, Any]:
     loaded: list[tuple[str, CaptureSource]] = []
     sources: dict[str, dict[str, Any]] = {}
+    imports: dict[str, dict[str, Any]] = {}
     total_bytes = 0
     for path in inputs:
-        data, captures = _read_sources(path, base_url)
+        data, captures, import_summary = _read_sources(path, base_url, strict, allow_truncate)
         total_bytes += len(data)
         if total_bytes > MAX_TOTAL_BYTES:
             raise ValueError("Capture set exceeds total byte limit.")
@@ -464,6 +501,7 @@ def _build(program: str, inputs: list[Path], key: bytes, base_url: str | None) -
             "captures": len(captures),
             "format": captures[0].tool,
         }
+        imports[source_id] = import_summary
         loaded.extend((source_id, capture) for capture in captures)
         if len(loaded) > MAX_CAPTURES:
             raise ValueError("Capture set exceeds observation limit.")
@@ -484,7 +522,24 @@ def _build(program: str, inputs: list[Path], key: bytes, base_url: str | None) -
             (parsed.hostname or "").lower(),
             parsed.port or (443 if parsed.scheme == "https" else 80),
         )
-        template, occurrences = _extract(capture, key, origin, credentials)
+        try:
+            template, occurrences = _extract(capture, key, origin, credentials)
+        except ValueError:
+            # Per-entry object-reference overflow: isolate the HAR entry unless strict.
+            row = imports[source_id]
+            if strict or row["format"] != "har":
+                raise
+            index = int(capture.locator.rsplit("[", 1)[1].rstrip("]"))
+            row["accepted"] -= 1
+            sources[source_id]["captures"] -= 1
+            row["rejected"] += 1
+            row["reasons"]["object_reference_limit"] = row["reasons"].get("object_reference_limit", 0) + 1
+            row["reasons"] = dict(sorted(row["reasons"].items()))
+            row["rejected_entries"] = sorted(
+                [*row["rejected_entries"], {"index": index, "reason": "object_reference_limit"}],
+                key=lambda item: int(item["index"]),
+            )
+            continue
         endpoint = graph_node_id("endpoint", origin, capture.method or "", template)
         nodes[endpoint] = {
             "id": endpoint,
@@ -584,6 +639,8 @@ def _build(program: str, inputs: list[Path], key: bytes, base_url: str | None) -
                 edge("PATH_CONTEXT", left, right, state="inferred", basis="nested_path_position_not_ownership")
         if len(nodes) > MAX_GRAPH_NODES or len(relations) > MAX_GRAPH_EDGES:
             raise ValueError("Object graph exceeds structural limits.")
+    if any(row["accepted"] < 1 for row in imports.values()):
+        raise HarImportError("no_valid_entries")
     for observation in observations.values():
         observation["provenance"].sort(key=_canonical)
     for relation in relations.values():
@@ -605,6 +662,11 @@ def _build(program: str, inputs: list[Path], key: bytes, base_url: str | None) -
             "observations": len(observations),
             "nodes": len(nodes),
             "relations": len(relations),
+        },
+        "capture_import": {
+            **_import_totals(list(imports.values()), "strict" if strict else "partial"),
+            "truncate_allowed": allow_truncate,
+            "sources": [{"source_ref": ref, **imports[ref]} for ref in sorted(imports)],
         },
         "network_requests_sent": 0,
         "vulnerabilities_confirmed": 0,
@@ -763,6 +825,8 @@ def discover_to_file(
     dry_run: bool = False,
     force: bool = False,
     base_url: str | None = None,
+    strict: bool = False,
+    allow_truncate: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """CLI orchestration: ephemeral key for a first dry-run; publish only after validation."""
     key_path, output = local_path(key_path), local_path(output)
@@ -772,7 +836,9 @@ def discover_to_file(
         raise ValueError("Offline output already exists; select a new path or explicitly replace it.")
     key_exists = key_path.exists()
     key = load_object_key(key_path) if key_exists else secrets.token_bytes(32)
-    graph = build_object_graph(program, inputs, key, authorized=authorized, base_url=base_url)
+    graph = build_object_graph(
+        program, inputs, key, authorized=authorized, base_url=base_url, strict=strict, allow_truncate=allow_truncate
+    )
     candidates = object_candidates(graph, program, key)
     if not dry_run:
         if not key_exists:
@@ -787,6 +853,8 @@ def indexed_capture_sources(
     key: bytes,
     *,
     base_url: str | None = None,
+    strict: bool = False,
+    allow_truncate: bool = False,
 ) -> dict[tuple[str, str], Any]:
     """Map (source_ref, locator) to CaptureSource for offline handoff. Read-only; no network."""
     ProgramPaths(Path("."), program)
@@ -797,7 +865,7 @@ def indexed_capture_sources(
         total_bytes = 0
         capture_count = 0
         for path in inputs:
-            data, captures = _read_sources(path, base_url)
+            data, captures, _ = _read_sources(path, base_url, strict, allow_truncate)
             total_bytes += len(data)
             if total_bytes > MAX_TOTAL_BYTES:
                 raise ValueError("Capture set exceeds total byte limit.")
@@ -809,6 +877,4 @@ def indexed_capture_sources(
                 index[(source_id, capture.locator)] = capture
         return index
     except (ValueError, UnicodeError, TypeError, KeyError, OverflowError, RecursionError) as exc:
-        raise ValueError(
-            "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
-        ) from exc
+        raise ValueError(_safe_failure(exc)) from exc

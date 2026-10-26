@@ -2397,14 +2397,18 @@ def cmd_object_discover(args: argparse.Namespace) -> None:
         dry_run=args.dry_run,
         force=args.force,
         base_url=args.base_url,
+        strict=args.strict,
+        allow_truncate=args.allow_truncate,
     )
     summary = graph["summary"]
+    capture_import = {k: v for k, v in graph["capture_import"].items() if k != "sources"}
     print(
         json.dumps(
             {
                 "dry_run": args.dry_run,
                 **summary,
                 "candidates": candidates["total_candidates"],
+                "capture_import": capture_import,
                 "network_requests_sent": 0,
                 "vulnerabilities_confirmed": 0,
             },
@@ -2412,6 +2416,11 @@ def cmd_object_discover(args: argparse.Namespace) -> None:
         )
     )
     print("[i] Offline object references only; ownership and permissions require researcher review.")
+    if capture_import["rejected"] or capture_import["truncated"]:
+        print(
+            f"[!] Partial HAR recovery: {capture_import['accepted']} entries accepted, "
+            f"{capture_import['rejected']} isolated (reason codes only; see capture_import). Use --strict to reject."
+        )
     if args.dry_run:
         print("[dry-run] No key, graph, database or other file was written.")
     else:
@@ -3544,6 +3553,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run", action="store_true", help="Summarize without creating a key, graph, DB or directories"
     )
     object_discover.add_argument("--force", action="store_true", help="Atomically replace the graph output only")
+    object_discover.add_argument(
+        "--strict",
+        action="store_true",
+        help="Reject a whole HAR file if any entry is invalid (default: isolate invalid entries)",
+    )
+    object_discover.add_argument(
+        "--allow-truncate",
+        action="store_true",
+        help="Analyze only the first 32 HAR entries of an over-cap file and flag truncated (default: reject file)",
+    )
     object_discover.set_defaults(func=cmd_object_discover)
 
     object_candidates_cli = sub.add_parser(

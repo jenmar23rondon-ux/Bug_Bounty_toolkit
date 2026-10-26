@@ -130,8 +130,12 @@ def probes(orel, captures: Path, tmp: Path) -> dict:
     out = {}
 
     def attempt(name, paths):
+        # Fail-closed probes measure whole-file rejection, i.e. strict import where available.
         try:
-            g = orel.build_object_graph(PROGRAM, paths, KEY, authorized=True)
+            try:
+                g = orel.build_object_graph(PROGRAM, paths, KEY, authorized=True, strict=True)
+            except TypeError:
+                g = orel.build_object_graph(PROGRAM, paths, KEY, authorized=True)
             out[name] = {"accepted": True, "observations": g["summary"]["observations"]}
         except ValueError as exc:
             out[name] = {"accepted": False, "error": str(exc)[:160]}
@@ -166,6 +170,56 @@ def probes(orel, captures: Path, tmp: Path) -> dict:
     trunc = tmp / "truncated.har"
     trunc.write_text(captures.read_text(encoding="utf-8")[:4000], encoding="utf-8")
     attempt("truncated_har_file", [trunc])
+    return out
+
+
+def recovery_probes(orel, captures: Path, tmp: Path) -> dict | None:
+    """Partial-recovery measurement on unmodified frozen entries (no ground-truth changes).
+
+    Every frozen entry, including the ones the primary run excludes, is sharded in original
+    order and imported in the default partial mode. Reports which global entries were accepted
+    or isolated (with reason codes). Returns None on checkouts without partial recovery.
+    """
+    try:
+        from bugbounty_toolkit.analysis import har_import  # noqa: F401
+    except ImportError:
+        return None
+    doc = json.loads(captures.read_text(encoding="utf-8"))
+    entries = doc["log"]["entries"]
+    files, gmap = [], {}
+    for fi, start in enumerate(range(0, len(entries), SHARD_SIZE)):
+        path = tmp / f"recover-{fi}.har"
+        chunk = list(range(start, min(start + SHARD_SIZE, len(entries))))
+        path.write_text(json.dumps({"log": {**doc["log"], "entries": [entries[i] for i in chunk]}}), encoding="utf-8")
+        files.append(path)
+        gmap[fi] = chunk
+    graph = orel.build_object_graph(PROGRAM, files, KEY, authorized=True)
+    refs = {orel._ref(KEY, "source", PROGRAM, f.read_bytes().hex()): fi for fi, f in enumerate(files)}
+    rejected = {}
+    for row in graph["capture_import"]["sources"]:
+        fi = refs[row["source_ref"]]
+        for item in row["rejected_entries"]:
+            rejected[gmap[fi][item["index"]]] = item["reason"]
+    primary_excluded = [i for i, e in enumerate(entries) if not _importable(e)]
+    out = {
+        "entries_total": len(entries),
+        "accepted": graph["capture_import"]["accepted"],
+        "rejected": dict(sorted((str(k), v) for k, v in rejected.items())),
+        "previously_excluded": primary_excluded,
+        "previously_excluded_recovered": sorted(i for i in primary_excluded if i not in rejected),
+        "observations": graph["summary"]["observations"],
+        "network_validation": graph["capture_import"]["network_validation"],
+    }
+    try:
+        g = orel.build_object_graph(PROGRAM, [captures], KEY, authorized=True, allow_truncate=True)
+        out["frozen_as_is_allow_truncate"] = {
+            "accepted": g["capture_import"]["accepted"],
+            "rejected": g["capture_import"]["rejected"],
+            "reasons": g["capture_import"]["reasons"],
+            "truncated": g["capture_import"]["truncated"],
+        }
+    except ValueError as exc:
+        out["frozen_as_is_allow_truncate"] = {"error": str(exc)[:160]}
     return out
 
 
@@ -268,6 +322,7 @@ def _evaluate(ks: tuple[int, ...]) -> dict:
     by_entry = scenario_of_entry(gt)
     work = Path(tempfile.mkdtemp(prefix="bbtk-adv-"))
     probe = probes(orel, captures, work)
+    recovery = recovery_probes(orel, captures, work)
     files, mapping, excluded = shard(captures, work)
     src_index = {orel._ref(KEY, "source", PROGRAM, f.read_bytes().hex()): fi for fi, f in enumerate(files)}
 
@@ -498,6 +553,7 @@ def _evaluate(ks: tuple[int, ...]) -> dict:
         "Not executed by this offline evaluation. Candidates and proposals are NOT confirmed findings.",
     }
     result["bounds_probes"] = probe
+    result["partial_recovery"] = recovery
     result["primary_run_input"] = {"shards": len(files), "shard_size": SHARD_SIZE, "excluded_entries": excluded}
     import shutil
 

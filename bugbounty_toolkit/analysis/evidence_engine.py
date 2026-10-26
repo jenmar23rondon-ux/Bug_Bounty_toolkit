@@ -578,70 +578,75 @@ def har_capture_sources(data: Any, max_records: int = MAX_RECORDS) -> list[Captu
         raise ValueError("HAR exceeds the selected entry limit.")
     sources = []
     for index, entry in enumerate(entries, start=1):
-        if not isinstance(entry, dict):
-            continue
-        request, response = entry.get("request", {}), entry.get("response", {})
-        if not isinstance(request, dict) or not isinstance(response, dict):
-            continue
-        request_headers = _header_map(request.get("headers"))
-        response_headers = _header_map(response.get("headers"))
-        cookies = request.get("cookies", [])
-        if isinstance(cookies, list) and cookies:
-            cookie_values = [f"{item.get('name')}={item.get('value')}" for item in cookies if isinstance(item, dict)]
-            if cookie_values:
-                request_headers["Cookie"] = "; ".join(cookie_values)
-        response_cookies = response.get("cookies", [])
-        if isinstance(response_cookies, list) and response_cookies:
-            response_headers["Set-Cookie"] = "; ".join(
-                f"{item.get('name')}={item.get('value')}" for item in response_cookies if isinstance(item, dict)
-            )
-        post_data = request.get("postData", {})
-        body = post_data.get("text", "") if isinstance(post_data, dict) else ""
-        if isinstance(post_data, dict) and isinstance(post_data.get("mimeType"), str):
-            if not any(name.lower() == "content-type" for name in request_headers):
-                request_headers["Content-Type"] = post_data["mimeType"]
-        content = response.get("content", {})
-        if isinstance(content, dict) and isinstance(content.get("mimeType"), str):
-            if not any(name.lower() == "content-type" for name in response_headers):
-                response_headers["Content-Type"] = content["mimeType"]
-        response_body = content.get("text", "") if isinstance(content, dict) else ""
-        if isinstance(content, dict) and content.get("encoding") == "base64" and isinstance(response_body, str):
-            try:
-                response_body = base64.b64decode(response_body, validate=True).decode("utf-8", errors="replace")
-            except (ValueError, TypeError):
-                response_body = ""
-        if not isinstance(body, str):
-            body = ""
-        if not isinstance(response_body, str):
-            response_body = ""
-        parameters = set(_parameter_names(request.get("url") if isinstance(request.get("url"), str) else None, body))
-        query = request.get("queryString", [])
-        if isinstance(query, list):
-            parameters.update(str(row["name"]) for row in query if isinstance(row, dict) and row.get("name"))
-        if isinstance(post_data, dict) and isinstance(post_data.get("params"), list):
-            parameters.update(
-                str(row["name"]) for row in post_data["params"] if isinstance(row, dict) and row.get("name")
-            )
-        technical = {
-            "format": "har",
-            "response_bytes": response_body.__len__(),
-        }
-        source = _Source(
-            "har",
-            f"/log/entries[{index - 1}]",
-            request.get("url") if isinstance(request.get("url"), str) else None,
-            request.get("method") if isinstance(request.get("method"), str) else None,
-            request_headers,
-            body,
-            response_headers,
-            response_body,
-            _status(response.get("status")),
-            entry.get("startedDateTime") if isinstance(entry.get("startedDateTime"), str) else None,
-            tuple(sorted(parameters)),
-            technical,
-        )
-        sources.append(source)
+        source = har_entry_source(entry, index - 1)
+        if source is not None:
+            sources.append(source)
     return sources
+
+
+def har_entry_source(entry: Any, index: int) -> CaptureSource | None:
+    """Decode exactly one HAR entry; request and response always come from this same entry."""
+    if not isinstance(entry, dict):
+        return None
+    request, response = entry.get("request", {}), entry.get("response", {})
+    if not isinstance(request, dict) or not isinstance(response, dict):
+        return None
+    request_headers = _header_map(request.get("headers"))
+    response_headers = _header_map(response.get("headers"))
+    cookies = request.get("cookies", [])
+    if isinstance(cookies, list) and cookies:
+        cookie_values = [f"{item.get('name')}={item.get('value')}" for item in cookies if isinstance(item, dict)]
+        if cookie_values:
+            request_headers["Cookie"] = "; ".join(cookie_values)
+    response_cookies = response.get("cookies", [])
+    if isinstance(response_cookies, list) and response_cookies:
+        response_headers["Set-Cookie"] = "; ".join(
+            f"{item.get('name')}={item.get('value')}" for item in response_cookies if isinstance(item, dict)
+        )
+    post_data = request.get("postData", {})
+    body = post_data.get("text", "") if isinstance(post_data, dict) else ""
+    if isinstance(post_data, dict) and isinstance(post_data.get("mimeType"), str):
+        if not any(name.lower() == "content-type" for name in request_headers):
+            request_headers["Content-Type"] = post_data["mimeType"]
+    content = response.get("content", {})
+    if isinstance(content, dict) and isinstance(content.get("mimeType"), str):
+        if not any(name.lower() == "content-type" for name in response_headers):
+            response_headers["Content-Type"] = content["mimeType"]
+    response_body = content.get("text", "") if isinstance(content, dict) else ""
+    if isinstance(content, dict) and content.get("encoding") == "base64" and isinstance(response_body, str):
+        try:
+            response_body = base64.b64decode(response_body, validate=True).decode("utf-8", errors="replace")
+        except (ValueError, TypeError):
+            response_body = ""
+    if not isinstance(body, str):
+        body = ""
+    if not isinstance(response_body, str):
+        response_body = ""
+    parameters = set(_parameter_names(request.get("url") if isinstance(request.get("url"), str) else None, body))
+    query = request.get("queryString", [])
+    if isinstance(query, list):
+        parameters.update(str(row["name"]) for row in query if isinstance(row, dict) and row.get("name"))
+    if isinstance(post_data, dict) and isinstance(post_data.get("params"), list):
+        parameters.update(str(row["name"]) for row in post_data["params"] if isinstance(row, dict) and row.get("name"))
+    technical = {
+        "format": "har",
+        "response_bytes": response_body.__len__(),
+    }
+    source = _Source(
+        "har",
+        f"/log/entries[{index}]",
+        request.get("url") if isinstance(request.get("url"), str) else None,
+        request.get("method") if isinstance(request.get("method"), str) else None,
+        request_headers,
+        body,
+        response_headers,
+        response_body,
+        _status(response.get("status")),
+        entry.get("startedDateTime") if isinstance(entry.get("startedDateTime"), str) else None,
+        tuple(sorted(parameters)),
+        technical,
+    )
+    return source
 
 
 def _har(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:

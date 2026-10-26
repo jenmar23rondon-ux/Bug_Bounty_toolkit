@@ -356,6 +356,8 @@ bbtk object-candidates object-demo --graph registros/object-demo/private/object-
 
 The synthetic example needs no running server. The [object discovery guide](docs/object-discovery.md) explains the graph, ranking, provenance, limits and POSIX secure-I/O requirement. Candidates have unknown ownership/privacy and cannot execute cases or confirm findings; use the existing reviewed IDOR proposal/approval flow separately.
 
+HAR inputs use [resilient partial recovery](docs/har-partial-recovery.md): an invalid entry is isolated with an enumerated reason code instead of rejecting the whole file, and the run reports `capture_import` (accepted, rejected, reasons, truncated). Use `--strict` to keep whole-file rejection, or `--allow-truncate` to analyze the first 32 entries of a larger export.
+
 ### Persistent Evidence Graph and Investigation Memory
 
 `bbtk graph ingest <program> --input <unified-evidence.json>` extends the existing API workflow graph into the program's local SQLite database. Optional `--hypotheses`, `--route`, `--case-file` plus `--access-evidence`, and `--openapi` inputs join AI hypotheses, registered skill suggestions, deterministic access assessments and documentation links. Relationships retain evidence references, provenance, observation time, epistemic state and limitations. Re-ingestion is idempotent for graph nodes/edges and adds a history row. `--dry-run` validates and counts the plan without creating the records directory or database.
