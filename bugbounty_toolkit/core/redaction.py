@@ -139,6 +139,26 @@ def detect_truncation(original_len: int, retained_len: int, *, claimed_complete:
     }
 
 
+
+def _looks_like_filesystem_path(value: str) -> bool:
+    """True for absolute/local artifact paths; false for URL paths or query fragments."""
+    if not value or any(ch.isspace() for ch in value) or "://" in value:
+        return False
+    lowered = value.replace("\\", "/").lower()
+    return bool(
+        lowered.startswith(
+            ("/home/", "/users/", "/var/", "/tmp/", "/workspace/", "registros/", "inputs/", "private/")
+        )
+        or (len(value) >= 3 and value[1:3] in (":\\", ":/"))
+        or (
+            lowered.endswith((".har", ".json", ".xml", ".txt", ".log"))
+            and ("/" in value or "\\" in value)
+        )
+    )        or (len(value) >= 3 and value[1:3] in (":\\", ":/"))
+        or lowered.endswith((".har", ".json", ".xml", ".txt", ".log"))
+        and ("/" in value or "\\" in value)
+    )
+
 def _strip_local_paths(value: str) -> str:
     return _PATH_HINT.sub(" [path-redacted]", value)
 
@@ -317,10 +337,12 @@ def redact_data(
             ):
                 result[key] = item
                 continue
-            if lowered in {"source_path", "path", "file_path", "local_path", "absolute_path"}:
+            if lowered in {"source_path", "path", "file_path", "local_path", "absolute_path"} and isinstance(
+                item, str
+            ) and _looks_like_filesystem_path(item):
                 if dest == RedactionDestination.PRIVATE_EVIDENCE:
                     result[key] = item
-                elif dest == RedactionDestination.MINIMIZED_ARTIFACT and isinstance(item, str):
+                elif dest == RedactionDestination.MINIMIZED_ARTIFACT:
                     result[key] = item.replace("\\", "/").rstrip("/").rsplit("/", 1)[-1] or REDACTED
                 else:
                     result[key] = "[path-redacted]"
@@ -384,6 +406,9 @@ def redact_text(value: str | None, *, destination: RedactionDestination | None =
         except RedactionLimitError:
             return REDACTED
 
+    if value.startswith(("http://", "https://")) and not any(char.isspace() for char in value):
+        return redact_url(value, destination=dest)
+
     if "=" in value and "\n" not in value and not any(char in value for char in "<>{}"):
         pairs = parse_qsl(value, keep_blank_values=True)
         if pairs and any(SENSITIVE_KEY.search(key) for key, _ in pairs):
@@ -391,9 +416,6 @@ def redact_text(value: str | None, *, destination: RedactionDestination | None =
             if dest != RedactionDestination.PRIVATE_EVIDENCE:
                 return _apply_secret_shapes(encoded)
             return encoded
-
-    if value.startswith(("http://", "https://")) and not any(char.isspace() for char in value):
-        return redact_url(value, destination=dest)
 
     lowered = value.lower()
     if "<input" in lowered or "<html" in lowered or "<form" in lowered:
