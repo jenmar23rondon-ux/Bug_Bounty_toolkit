@@ -27,6 +27,8 @@ from typing import Any
 
 HERE = Path(__file__).resolve().parent
 FROZEN = HERE / "frozen"
+# Independent frozen corpora. adv-1.1 is FINAL-evaluation only (never used for tuning).
+CORPORA = {"adv-1.0": HERE / "frozen", "adv-1.1": HERE / "frozen_adv11"}
 KEY = hashlib.sha256(b"bbtk-adversarial-eval-adv-1.0").digest()
 PROGRAM = "adv-eval"
 
@@ -75,6 +77,7 @@ def _entry(locator: str) -> int:
 
 
 def load_frozen() -> tuple[Path, dict]:
+    """Load the selected frozen corpus (adv-1.0 by default; see ``CORPORA``)."""
     return FROZEN / "captures.har", json.loads((FROZEN / "ground_truth.json").read_text(encoding="utf-8"))
 
 
@@ -136,20 +139,20 @@ def probes(orel, captures: Path, tmp: Path) -> dict:
     attempt("frozen_har_as_is_49_entries", [captures])
     doc = json.loads(captures.read_text(encoding="utf-8"))
     gt = json.loads((captures.parent / "ground_truth.json").read_text(encoding="utf-8"))
-    s16 = next(s for s in gt["scenarios"] if s["id"] == "S16")
-    inc = tmp / "incomplete.har"
-    inc.write_text(
-        json.dumps({"log": {**doc["log"], "entries": [doc["log"]["entries"][i] for i in s16["entries"]]}}),
-        encoding="utf-8",
-    )
-    attempt("incomplete_capture_entry_without_response", [inc])
-    s15 = next(s for s in gt["scenarios"] if s["id"] == "S15")
-    part = tmp / "partial.har"
-    part.write_text(
-        json.dumps({"log": {**doc["log"], "entries": [doc["log"]["entries"][i] for i in s15["entries"]]}}),
-        encoding="utf-8",
-    )
-    attempt("partial_response_truncated_json", [part])
+    for sid, name in (
+        ("S16", "incomplete_capture_entry_without_response"),
+        ("S15", "partial_response_truncated_json"),
+    ):
+        # adv-1.0 only: these probes replay scenarios that exist in that corpus.
+        scen = next((s for s in gt["scenarios"] if s["id"] == sid), None)
+        if scen is None:
+            continue
+        probe_file = tmp / f"{name}.har"
+        probe_file.write_text(
+            json.dumps({"log": {**doc["log"], "entries": [doc["log"]["entries"][i] for i in scen["entries"]]}}),
+            encoding="utf-8",
+        )
+        attempt(name, [probe_file])
     big = tmp / "oversize.har"
     ok = [e for e in doc["log"]["entries"] if _importable(e)]
     big.write_text(json.dumps({"log": {**doc["log"], "entries": (ok * 2)[:33]}}), encoding="utf-8")
@@ -246,9 +249,14 @@ class ObjectTyper:
         return _singular(last)
 
 
-def evaluate(ks: tuple[int, ...] = (1, 3, 5, 10)) -> dict:
-    with no_network() as attempts:
-        result = _evaluate(ks)
+def evaluate(ks: tuple[int, ...] = (1, 3, 5, 10), corpus: str = "adv-1.0") -> dict:
+    global FROZEN
+    saved, FROZEN = FROZEN, CORPORA[corpus]
+    try:
+        with no_network() as attempts:
+            result = _evaluate(ks)
+    finally:
+        FROZEN = saved
     result["safety"] = {"network_connect_attempts": attempts["count"]}
     return result
 
@@ -507,8 +515,9 @@ def strip_volatile(doc: dict) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--json", type=Path)
+    ap.add_argument("--corpus", choices=sorted(CORPORA), default="adv-1.0")
     a = ap.parse_args()
-    res = strip_volatile(evaluate())
+    res = strip_volatile(evaluate(corpus=a.corpus))
     text = json.dumps(res, indent=1, sort_keys=True)
     if a.json:
         a.json.write_text(text + "\n", encoding="utf-8")

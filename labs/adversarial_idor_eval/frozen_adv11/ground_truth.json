@@ -1,0 +1,432 @@
+{
+ "corpus_version": "adv-1.1",
+ "independent_of": [
+  "labs/object_discovery_lab/dev",
+  "labs/object_discovery_lab/eval",
+  "labs/adversarial_idor_eval/frozen (adv-1.0)"
+ ],
+ "origin": "http://127.0.0.1:8138",
+ "scenarios": [
+  {
+   "adversarial_tag": "numeric-path",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Numeric path ids, two sessions, distinct parcels",
+   "entries": [
+    0,
+    1
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "parcel"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T01",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "nested-objects",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Distinct parents and children per session (two kinds, two positions)",
+   "entries": [
+    2,
+    3
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "fleet",
+    "vehicle"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T02",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "camel-case",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "camelCase typed id in JSON request body",
+   "entries": [
+    4,
+    5
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "claim"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T03",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "cross-reference",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Bare id inside a named response collection vs path id in another session",
+   "entries": [
+    6,
+    7
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "lease"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T04",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "cross-reference",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Typed UUID in a nested response vs query UUID in another session",
+   "entries": [
+    8,
+    9
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "quote"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T05",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "numeric-collision",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Swapped numeric values across two kinds on one template",
+   "entries": [
+    10,
+    11
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "dataset",
+    "ledger"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T06",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "query",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Typed id in query string, two sessions",
+   "entries": [
+    12,
+    13
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "prescription"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T07",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "multi-session",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Three cookie sessions on a UUID path template",
+   "entries": [
+    14,
+    15,
+    16
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "certificate"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T08",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "mixed-positions",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Path child id with a shared typed parent id in the query",
+   "entries": [
+    17,
+    18
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "ward"
+   ],
+   "forbidden_pair_types": [
+    "hospital"
+   ],
+   "id": "T09",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "arrays",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Typed id array in JSON body, disjoint across sessions",
+   "entries": [
+    19,
+    20
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "campaign"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T10",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "shared-ids",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Both sessions request the same venue id",
+   "entries": [
+    21,
+    22
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "venue"
+   ],
+   "id": "T11",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "multi-session",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "One session reads two of its own badges",
+   "entries": [
+    23,
+    24
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "badge"
+   ],
+   "id": "T12",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "numeric-collision",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Response gift id equals another session's refund path id (different kinds)",
+   "entries": [
+    25,
+    26
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "gift",
+    "refund"
+   ],
+   "id": "T13",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "partial-responses",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Response-only own bundle ids, no request ids",
+   "entries": [
+    27,
+    28
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "bundle"
+   ],
+   "id": "T14",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "incomplete-captures",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Second request carries no credentials",
+   "entries": [
+    29,
+    30
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "track"
+   ],
+   "id": "T15",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "shared-ids",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Region id seen in two sessions' responses (shared context); third session requests another region",
+   "entries": [
+    31,
+    32,
+    33
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "region"
+   ],
+   "id": "T16",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "public-objects",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Sort/offset numbers differ across sessions (not object ids)",
+   "entries": [
+    34,
+    35
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "ranking",
+    "offset",
+    "size"
+   ],
+   "id": "T17",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "incomplete-captures",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Only one session ever captured for kiosks",
+   "entries": [
+    36
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "kiosk"
+   ],
+   "id": "T18",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "shared-ids",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Same bin id in the same position for both sessions on a two-level path",
+   "entries": [
+    37,
+    38
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "store",
+    "bin"
+   ],
+   "id": "T19",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "numeric-collision",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Two typed request fields on one endpoint; numeric values collide across kinds",
+   "entries": [
+    39,
+    40
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "editor",
+    "topic"
+   ],
+   "forbidden_pair_types": [],
+   "id": "T20",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "ambiguous",
+   "ambiguous_types": [
+    "note"
+   ],
+   "class": "ambiguous",
+   "description": "Bare id under generic `data` wrapper vs path id in another session",
+   "entries": [
+    41,
+    42
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "T21",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "ambiguous",
+   "ambiguous_types": [
+    "entity",
+    "resolve"
+   ],
+   "class": "ambiguous",
+   "description": "Generic `entity_id` parameter, kind unknown",
+   "entries": [
+    43,
+    44
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "T22",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "shared-ids",
+   "ambiguous_types": [
+    "tag"
+   ],
+   "class": "ambiguous",
+   "description": "Tag id arrays overlap partially across sessions",
+   "entries": [
+    45,
+    46
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "T23",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "hierarchical-permissions",
+   "ambiguous_types": [
+    "patient"
+   ],
+   "class": "ambiguous",
+   "description": "Clinician vs patient reading patient charts; policy unknown",
+   "entries": [
+    47,
+    48
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "T24",
+   "vulnerability_truth": "unknown"
+  }
+ ],
+ "split": "adversarial-frozen",
+ "tuning_policy": "FROZEN. Do not tune detection rules against this corpus. Authored before the open-vocabulary logic was run on it; final evaluation only."
+}
