@@ -72,6 +72,9 @@ def redact_data(value: Any) -> Any:
     return value
 
 
+_SECRET_KEYWORD = re.compile(r"(?i)password|passwd|secret|token|api[_-]?key|session[_-]?id")
+
+
 def redact_text(value: str | None) -> str | None:
     if value is None:
         return None
@@ -86,6 +89,10 @@ def redact_text(value: str | None) -> str | None:
         if any(SENSITIVE_KEY.search(key) for key, _ in pairs):
             return urlencode([(key, REDACTED if SENSITIVE_KEY.search(key) else item) for key, item in pairs])
     value = re.sub(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*", "Bearer [redacted]", value)
+    if not _SECRET_KEYWORD.search(value):
+        # Exact short-circuit: the pattern below cannot match without one of these literals, and
+        # scanning it over large keyword-free bodies is quadratic.
+        return value
     return re.sub(
         r"""(?i)(["']?(?:password|passwd|secret|[\w-]*token|api[_-]?key|session[_-]?id)["']?\s*[:=]\s*["']?)[^\s"'&<>,;}]+""",
         lambda match: match.group(1) + REDACTED,

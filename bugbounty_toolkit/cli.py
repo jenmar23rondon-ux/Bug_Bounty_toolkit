@@ -2422,7 +2422,7 @@ def _write_offline_json(path: Path, data: dict[str, object], force: bool) -> Non
 
 def cmd_evidence_import(args: argparse.Namespace) -> None:
     paths = ProgramPaths(RECORDS_ROOT, args.program)
-    bundle = import_evidence(args.input, args.format)
+    bundle = import_evidence(args.input, args.format, getattr(args, "har_mode", "compat"))
     default_path = paths.evidence_dir / "imports" / "unified-evidence.json"
     destination = args.output or default_path
     summary = bundle["summary"]
@@ -3786,6 +3786,13 @@ def build_parser() -> argparse.ArgumentParser:
     evidence_import.add_argument("program")
     evidence_import.add_argument(
         "--input", type=Path, nargs="+", required=True, help="One or more local artifact files"
+    )
+    evidence_import.add_argument(
+        "--har-mode",
+        choices=("compat", "partial", "strict"),
+        default="compat",
+        help="HAR handling: compat keeps historical records and only reports entries the resilient "
+        "importer would reject; partial emits only valid entries; strict rejects the file on any invalid entry",
     )
     evidence_import.add_argument(
         "--format",
