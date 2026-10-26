@@ -79,6 +79,7 @@ files = [
     "bugbounty_toolkit/core/private_files.py",
     "bugbounty_toolkit/core/redaction.py",
     "bugbounty_toolkit/core/runner.py",
+    "bugbounty_toolkit/dashboard_triage.py",
     "bugbounty_toolkit/core/secure_subprocess.py",
     "bugbounty_toolkit/cors_check.py",
     "bugbounty_toolkit/open_redirect.py",
