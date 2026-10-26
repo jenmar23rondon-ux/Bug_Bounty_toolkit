@@ -2658,9 +2658,77 @@ def cmd_graph_search(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
+def _multi_provider_requested(args: argparse.Namespace) -> bool:
+    return bool(
+        args.ai_provider != "ollama"
+        or args.second_ai_provider
+        or args.second_ai_model
+        or args.structured
+        or args.ai_endpoint
+    )
+
+
+def cmd_ai_review_structured(args: argparse.Namespace) -> None:
+    from .analysis.ai_providers import GenerationLimits, build_provider
+    from .analysis.multi_review import build_evidence_bundle, review_evidence_multi
+
+    if not args.evidence_file:
+        raise ValueError("Structured/multi-provider review requires --evidence-file (artifacts stay Ollama-only).")
+    if bool(args.second_ai_provider) != bool(args.second_ai_model):
+        raise ValueError("--second-ai-provider and --second-ai-model must be used together.")
+    limits = GenerationLimits(timeout=args.ai_timeout, max_output_tokens=args.ai_max_tokens)
+    limits.validate()
+    reviewers = [(build_provider(args.ai_provider, args.ai_endpoint, args.ai_concurrency), args.model)]
+    if args.second_ai_provider:
+        validate_ollama_config(args.second_ai_model, args.ai_timeout)
+        reviewers.append((build_provider(args.second_ai_provider, None, args.ai_concurrency), args.second_ai_model))
+    for _, model in reviewers:
+        validate_ollama_config(model, args.ai_timeout)
+    try:
+        data = json.loads(bounded_text(args.evidence_file, 2_000_000))
+    except json.JSONDecodeError as exc:
+        raise ValueError("Evidence file must contain valid JSON.") from exc
+    if not isinstance(data, dict):
+        raise ValueError("Evidence file must contain a JSON object.")
+    if args.dry_run:
+        bundle = build_evidence_bundle(data)
+        result: dict[str, object] = {
+            "type": "ai-evidence-review",
+            "status": "dry_run",
+            "decision": "inconclusive",
+            "evidence_bundle_id": bundle["evidence_bundle_id"],
+            "evidence_bundle": {key: value for key, value in bundle.items() if key != "minimized_packet"},
+            "reviewers": [{"provider": p.provider_id, "model": m, "endpoint": p.spec.endpoint()} for p, m in reviewers],
+            "execution_performed": False,
+            "finding_confirmed": False,
+            "raw_evidence_sent": False,
+            "reason": "Evidence minimized locally; no AI provider was contacted.",
+            "notice": SECOND_OPINION,
+        }
+    else:
+        result = review_evidence_multi(data, reviewers, limits)
+    print(f"[i] {SECOND_OPINION}")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+def cmd_ai_providers(args: argparse.Namespace) -> None:
+    from .analysis.ai_providers import build_provider, list_providers
+
+    rows = list_providers()
+    if args.check:
+        for row in rows:
+            if row["enabled"]:
+                provider = build_provider(str(row["provider"]))
+                row["availability"] = provider.check_availability(args.ai_model, args.ai_timeout).as_dict()
+    print(json.dumps({"type": "ai-providers", "providers": rows, "remote_providers_enabled": False}, indent=2))
+
+
 def cmd_ai_review(args: argparse.Namespace) -> None:
     ProgramPaths(RECORDS_ROOT, args.program)
     validate_ollama_config(args.model, args.ai_timeout)
+    if _multi_provider_requested(args):
+        cmd_ai_review_structured(args)
+        return
     if args.evidence_file:
         if args.kind is not None:
             raise ValueError("--kind is only valid with --artifact.")
@@ -4073,6 +4141,23 @@ def build_parser() -> argparse.ArgumentParser:
     ai_review.add_argument(
         "--dry-run", action="store_true", help="Validate and minimize locally without contacting Ollama"
     )
+    ai_review.add_argument(
+        "--ai-provider",
+        choices=("ollama", "lmstudio"),
+        default="ollama",
+        help="Allowlisted local provider (default: ollama). Non-default values use the structured v1 result.",
+    )
+    ai_review.add_argument(
+        "--ai-endpoint",
+        help="Optional restatement of the provider's authorized loopback host:port; others are rejected",
+    )
+    ai_review.add_argument(
+        "--structured", action="store_true", help="Return the versioned bbtk.ai-evidence-review.v1 result"
+    )
+    ai_review.add_argument("--second-ai-provider", choices=("ollama", "lmstudio"), help="Second independent review")
+    ai_review.add_argument("--second-ai-model", help="Model for the second review")
+    ai_review.add_argument("--ai-max-tokens", type=positive_int, default=512, help="Output token budget (max 4096)")
+    ai_review.add_argument("--ai-concurrency", type=positive_int, default=1, help="Per-provider concurrency (max 4)")
     ai_review.set_defaults(func=cmd_ai_review)
 
     ai_cli = sub.add_parser("ai", help="Analyze hypotheses or prepare a non-executing skill route")
@@ -4120,6 +4205,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run", action="store_true", help="Validate and print the plan without writing a report"
     )
     ai_prioritize.set_defaults(func=cmd_ai_prioritize)
+
+    ai_providers = ai_sub.add_parser("providers", help="List allowlisted local AI providers and capabilities")
+    ai_providers.add_argument("--check", action="store_true", help="Probe availability on authorized loopback only")
+    ai_providers.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Model to look for with --check")
+    ai_providers.add_argument("--ai-timeout", type=positive_float, default=5.0, help="Probe timeout in seconds")
+    ai_providers.set_defaults(func=cmd_ai_providers)
 
     ai_investigate = ai_sub.add_parser(
         "investigate", help="Join evidence review, access assessment, skill routing and prioritization"
