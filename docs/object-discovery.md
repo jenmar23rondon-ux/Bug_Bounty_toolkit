@@ -118,3 +118,32 @@ For a promising candidate, inspect the original local source items, confirm auth
 ## Validation
 
 `tests/test_object_relationships.py` covers ID separation, path/query/JSON correlation, typed/cross-origin boundaries, array isolation, observed vs inferred edges, deduplication, deterministic ranking, HMAC/source verification, malformed/oversized inputs, privacy, safe paths, atomic publication, CLI dry-runs and compatibility with paired Burp IDOR proposals. Socket, DNS, HTTP-opening and subprocess entry points are patched to fail during discovery. Existing loopback IDOR/access-check tests remain separate regressions. CI runs an offline CLI smoke example, strict mypy, Ruff and the complete suite, with a 90% combined coverage floor for the new correlation/private-I/O modules.
+
+
+## Offline handoff to discover-idor
+
+`object-handoff` turns ranked object references into **reproducible owner/actor capture-pair proposals**. It never writes access-check case JSON, never calls `access-check`, never approves, and never sends HTTP. Every proposal stays `confirmed: false` / `case_executable: false` and includes the human gate that still requires the existing `import discover-idor` → attestations → `approve-idor --approve` path.
+
+```bash
+bbtk object-handoff object-demo \
+  --graph registros/object-demo/private/object-relationships/graph.json \
+  --verify-input examples/object-discovery/captures.har \
+  --dry-run
+
+bbtk object-handoff object-demo \
+  --graph registros/object-demo/private/object-relationships/graph.json \
+  --verify-input examples/object-discovery/captures.har \
+  --materialize-dir registros/object-demo/private/object-handoff/pairs \
+  --output registros/object-demo/private/object-handoff/proposals.json
+```
+
+Proposals link each side back to HMAC `source_ref` + parser locator provenance. With `--materialize-dir` and verified inputs, BBTK writes private mode-0600 raw HTTP snapshots and prints a ready `import discover-idor ... --dry-run` command. Without materialization, the command references export placeholders for the locators. Candidates that lack two distinct sessions with different request-side object values return `status: insufficient_evidence` instead of inventing accounts.
+
+## Efficacy lab
+
+`bbtk lab object-discover` runs the versioned synthetic corpus under `labs/object_discovery_lab/` (`dev/` for iteration, `eval/` holdout — do not tune rules on eval). It reports Precision@1/3/5, recall, FP/FN, per-relation coverage, timing, and a before/after comparison against the prior `object-candidates` ranking. Metrics measure **candidate-pair ranking efficacy** only; `vulnerabilities_confirmed` is always 0 and synthetic scores are not real bug-bounty confirmation performance.
+
+```bash
+bbtk lab object-discover --dry-run
+bbtk lab object-discover --split eval --metrics-json /tmp/object-metrics.json
+```

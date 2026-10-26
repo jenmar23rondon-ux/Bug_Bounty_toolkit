@@ -4,6 +4,9 @@ Notable user-facing changes are recorded here.
 
 ## Unreleased
 
+- Add offline `object-handoff` to turn object-relationship candidates into reproducible owner/actor capture-pair proposals (locators, provenance, suggested `discover-idor` command) without writing cases, calling access-check, approving, or sending HTTP.
+- Add `bbtk lab object-discover` with a versioned synthetic labeled corpus (`dev`/`eval`), Precision@k/recall/FP/FN metrics, and before/after comparison against `object-candidates` ranking. Synthetic metrics do not claim real bug-bounty confirmation performance.
+
 ## 0.2.2 - 2026-10-25
 
 - Fix Playwright XSS confirmer shutdown for Playwright 1.64+ (`PlaywrightContextManager` no longer exposes `stop()`; use `__exit__`).

@@ -671,3 +671,36 @@ def discover_to_file(
             atomic_private_write(key_path, key)
         save_object_json(output, graph, force=force)
     return graph, candidates
+
+
+def indexed_capture_sources(
+    program: str,
+    inputs: list[Path],
+    key: bytes,
+    *,
+    base_url: str | None = None,
+) -> dict[tuple[str, str], Any]:
+    """Map (source_ref, locator) to CaptureSource for offline handoff. Read-only; no network."""
+    ProgramPaths(Path("."), program)
+    if len(key) != 32 or not 1 <= len(inputs) <= MAX_FILES:
+        raise ValueError("Use a 32-byte key and between one and sixteen capture files.")
+    try:
+        index: dict[tuple[str, str], Any] = {}
+        total_bytes = 0
+        capture_count = 0
+        for path in inputs:
+            data, captures = _read_sources(path, base_url)
+            total_bytes += len(data)
+            if total_bytes > MAX_TOTAL_BYTES:
+                raise ValueError("Capture set exceeds total byte limit.")
+            source_id = _ref(key, "source", program, data.hex())
+            for capture in captures:
+                capture_count += 1
+                if capture_count > MAX_CAPTURES:
+                    raise ValueError("Capture set exceeds observation limit.")
+                index[(source_id, capture.locator)] = capture
+        return index
+    except (ValueError, UnicodeError, TypeError, KeyError, OverflowError, RecursionError) as exc:
+        raise ValueError(
+            "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+        ) from exc
