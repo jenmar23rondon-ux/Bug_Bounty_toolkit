@@ -729,7 +729,17 @@ def propose_object_handoff(
     if materialize_dir is not None:
         if not inputs:
             raise ValueError("Materializing capture pairs requires --verify-input for every graph source.")
-        index = indexed_capture_sources(program, inputs, key, base_url=base_url)
+        # Re-read sources in the same import mode the graph was built with (legacy graphs: partial
+        # is equivalent, because a legacy graph only contains fully valid sources).
+        recorded = graph.get("capture_import") or {}
+        index = indexed_capture_sources(
+            program,
+            inputs,
+            key,
+            base_url=base_url,
+            strict=recorded.get("mode") == "strict",
+            allow_truncate=recorded.get("truncate_allowed") is True,
+        )
 
     # Explicit insufficient-evidence path when a candidate cannot form a pair.
     stats: dict[str, int] = defaultdict(int)

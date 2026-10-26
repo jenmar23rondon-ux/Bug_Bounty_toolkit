@@ -22,7 +22,7 @@ import build_corpus  # noqa: E402
 import evaluate  # noqa: E402
 
 # Baseline main@47c8a30 stays committed in results/v0.2.2-main-47c8a30.json for comparison.
-SNAPSHOT = LAB / "results" / "adv10-open-vocab-kind.json"
+SNAPSHOT = LAB / "results" / "adv10-resilient-har.json"
 
 
 class AdversarialCorpusFrozenTests(unittest.TestCase):
@@ -95,7 +95,14 @@ class AdversarialEvaluationTests(unittest.TestCase):
         again = evaluate.strip_volatile(evaluate.evaluate())
         self.assertEqual(self.result, again)
         snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
-        for stage in ("discovery", "pairing", "case_discovery", "bounds_probes", "primary_run_input"):
+        for stage in (
+            "discovery",
+            "pairing",
+            "case_discovery",
+            "bounds_probes",
+            "primary_run_input",
+            "partial_recovery",
+        ):
             self.assertEqual(self.result[stage], snapshot[stage], stage)
 
     def test_bounds_probes_fail_closed(self) -> None:
@@ -103,6 +110,18 @@ class AdversarialEvaluationTests(unittest.TestCase):
         self.assertTrue(probes)
         for name, outcome in probes.items():
             self.assertFalse(outcome["accepted"], name)
+
+    def test_partial_recovery_isolates_only_the_unreadable_entries(self) -> None:
+        r = self.result["partial_recovery"]
+        self.assertEqual((r["entries_total"], r["accepted"]), (48, 45))
+        self.assertEqual(
+            r["rejected"], {"29": "body_json_invalid", "30": "body_json_invalid", "32": "response_missing"}
+        )
+        self.assertEqual(r["previously_excluded"], [29, 30, 32])
+        self.assertEqual(r["previously_excluded_recovered"], [])
+        self.assertEqual(r["observations"], self.result["observations"])
+        self.assertEqual(r["network_validation"], "none")
+        self.assertTrue(r["frozen_as_is_allow_truncate"]["truncated"])
 
     def test_measured_numbers_pinned(self) -> None:
         d, p, c = self.result["discovery"], self.result["pairing"], self.result["case_discovery"]
