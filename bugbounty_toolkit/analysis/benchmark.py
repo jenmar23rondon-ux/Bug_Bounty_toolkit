@@ -10,6 +10,7 @@ from time import perf_counter
 from typing import Any
 
 from .access_assessment import assess_access_control_data
+from .ai_backend import AICallLog, AISelection, dispatch_chat
 from .ollama_review import DEFAULT_OLLAMA_MODEL, OllamaUnavailableError, chat_with_ollama, validate_ollama_config
 
 MAX_DATASET_BYTES = 5_000_000
@@ -189,7 +190,13 @@ def _minimized_packet(case: dict[str, Any], evidence: dict[str, Any]) -> dict[st
     return packet
 
 
-def _ollama_decision(packet: dict[str, object], model: str, timeout: float) -> tuple[str, str, int]:
+def _ollama_decision(
+    packet: dict[str, object],
+    model: str,
+    timeout: float,
+    selection: AISelection | None = None,
+    log: AICallLog | None = None,
+) -> tuple[str, str, int]:
     messages = [
         {
             "role": "system",
@@ -202,7 +209,14 @@ def _ollama_decision(packet: dict[str, object], model: str, timeout: float) -> t
         {"role": "user", "content": "Classify this synthetic IDOR benchmark observation: " + json.dumps(packet)},
     ]
     for attempt in range(2):
-        content = chat_with_ollama(messages, model, timeout, _AI_SCHEMA, 192)
+        content = dispatch_chat(
+            selection,
+            messages,
+            _AI_SCHEMA,
+            192,
+            lambda: chat_with_ollama(messages, model, timeout, _AI_SCHEMA, 192),
+            log,
+        )
         try:
             parsed = json.loads(content)
             if (
@@ -363,10 +377,20 @@ def run_idor_benchmark(
     model: str = DEFAULT_OLLAMA_MODEL,
     timeout: float = 120.0,
     dry_run: bool = False,
+    selection: AISelection | None = None,
 ) -> dict[str, object]:
-    """Compare the deterministic assessor, optional local Ollama and conservative fusion."""
+    """Compare the deterministic assessor, an optional local model and conservative fusion.
+
+    ``selection`` routes the optional model through an allowlisted local provider (Ollama or
+    LM Studio); it implies ``with_ollama``. The deterministic assessor stays the reference.
+    """
     if split not in {"holdout", "development", "all"}:
         raise ValueError("Benchmark split must be holdout, development or all.")
+    if selection is not None:
+        selection.validate()
+        with_ollama = True
+        model, timeout = selection.model, selection.timeout
+    log = AICallLog()
     if with_ollama:
         validate_ollama_config(model, timeout)
     dataset_name, cases = _load_dataset(path, split)
@@ -432,7 +456,7 @@ def run_idor_benchmark(
             ollama_calls += 1
             try:
                 ai_decision, reason, calls = _ollama_decision(
-                    _minimized_packet(item["case"], item["evidence"]), model, timeout
+                    _minimized_packet(item["case"], item["evidence"]), model, timeout, selection, log
                 )
                 ollama_calls += calls - 1
                 status = "reviewed" if calls < 2 or ai_decision != "inconclusive" else "unparsed"
@@ -520,6 +544,8 @@ def run_idor_benchmark(
         "ollama_model": model if with_ollama else None,
         "network_requests_sent": 0,
         "ollama_calls": ollama_calls,
+        "ai_provider": ("ollama" if selection is None else selection.provider) if with_ollama else None,
+        "ai_backend": log.summary(),
         "leakage_controls": [
             "Evaluation uses only the selected split.",
             "No model training or prompt fitting is performed on benchmark cases.",

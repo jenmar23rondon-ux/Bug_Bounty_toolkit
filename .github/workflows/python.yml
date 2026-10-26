@@ -25,6 +25,7 @@ jobs:
       - run: bbtk lab object-discover --dry-run --split eval
       - run: bash -n labs/idor_lab/run.sh
       - run: python scripts/ai_provider_benchmark.py > /dev/null
+      - run: python labs/unified_ai_eval/run.py > /dev/null
       - run: ruff check bugbounty_toolkit tests scripts skills labs
       - run: ruff format --check bugbounty_toolkit tests scripts skills labs
       - run: mypy --strict
@@ -43,6 +44,7 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/reporting/finding_report.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/dashboard.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/analysis/ai_providers.py,bugbounty_toolkit/analysis/multi_review.py,bugbounty_toolkit/analysis/ai_review_eval.py" --fail-under=90
+      - run: coverage report --include="bugbounty_toolkit/analysis/ai_backend.py,bugbounty_toolkit/analysis/dual_review.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/fuzzing/wordlist_manager.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/fuzzing/context_planner.py,bugbounty_toolkit/fuzzing/capture_adapter.py,bugbounty_toolkit/context_fuzz_lab_server.py" --fail-under=80
       - run: coverage report

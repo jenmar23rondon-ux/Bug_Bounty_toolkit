@@ -7,6 +7,7 @@ from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 from ..core.redaction import redact_headers, redact_html_secrets, redact_jwts, redact_text
+from .ai_backend import TEXT_SCHEMA, AICallLog, AISelection, destination, dispatch_chat, review_packet
 from .evidence_review import review_evidence
 from .ollama_review import (
     DEFAULT_OLLAMA_MODEL,
@@ -220,8 +221,14 @@ def review_artifact(
     chunk_chars: int = 6000,
     max_chunks: int = 20,
     dry_run: bool = False,
+    selection: AISelection | None = None,
 ) -> dict[str, Any]:
+    if selection is not None:
+        selection.validate()
+        model, timeout = selection.model, selection.timeout
     validate_ollama_config(model, timeout)
+    log = AICallLog()
+    provider = "ollama" if selection is None else selection.provider
     try:
         artifact = read_artifact(path, kind)
     except ArtifactTooLargeError as exc:
@@ -236,7 +243,8 @@ def review_artifact(
             "truncated": True,
             "notice": SECOND_OPINION,
             "model": model,
-            "request_destination": "127.0.0.1:11434",
+            "provider": provider,
+            "request_destination": destination(selection),
             "network_requests_sent": 0,
             "raw_credentials_sent": False,
             "reason": str(exc),
@@ -253,7 +261,8 @@ def review_artifact(
         "truncated": truncated,
         "notice": SECOND_OPINION,
         "model": model,
-        "request_destination": "127.0.0.1:11434",
+        "provider": provider,
+        "request_destination": destination(selection),
         "network_requests_sent": 0,
         "raw_credentials_sent": False,
     }
@@ -274,7 +283,15 @@ def review_artifact(
     for index, chunk in enumerate(chunks, start=1):
         ollama_calls += 1
         try:
-            content = chat_with_ollama(_messages(kind, chunk), model, timeout, ARTIFACT_JSON_SCHEMA, 1200)
+            first = _messages(kind, chunk)
+            content = dispatch_chat(
+                selection,
+                first,
+                ARTIFACT_JSON_SCHEMA,
+                1200,
+                lambda: chat_with_ollama(first, model, timeout, ARTIFACT_JSON_SCHEMA, 1200),
+                log,
+            )
         except (OllamaUnavailableError, OSError, TimeoutError):
             unavailable = True
             break
@@ -285,8 +302,14 @@ def review_artifact(
         except ValueError:
             ollama_calls += 1
             try:
-                content = chat_with_ollama(
-                    _messages(kind, chunk, retry=True), model, timeout, ARTIFACT_JSON_SCHEMA, 1200
+                retry = _messages(kind, chunk, retry=True)
+                content = dispatch_chat(
+                    selection,
+                    retry,
+                    ARTIFACT_JSON_SCHEMA,
+                    1200,
+                    lambda: chat_with_ollama(retry, model, timeout, ARTIFACT_JSON_SCHEMA, 1200),
+                    log,
                 )
                 chunk_suggestions = _validate_suggestions(content)
             except (OllamaUnavailableError, OSError, TimeoutError):
@@ -304,6 +327,7 @@ def review_artifact(
 
     result["suggestions"] = suggestions
     result["network_requests_sent"] = ollama_calls
+    result["ai_backend"] = log.summary()
     if unparsed_chunks:
         result["unparsed_chunks"] = unparsed_chunks
     if unavailable:
@@ -331,12 +355,23 @@ def review_artifact(
 
 
 def review_evidence_with_ollama(
-    data: dict[str, Any], model: str = DEFAULT_OLLAMA_MODEL, timeout: float = 120.0
+    data: dict[str, Any],
+    model: str = DEFAULT_OLLAMA_MODEL,
+    timeout: float = 120.0,
+    selection: AISelection | None = None,
 ) -> dict[str, Any]:
+    if selection is not None:
+        selection.validate()
+        model, timeout = selection.model, selection.timeout
     validate_ollama_config(model, timeout)
     packet = review_evidence(data)
+    provider = "ollama" if selection is None else selection.provider
     try:
-        response = review_with_ollama(packet, model, timeout)
+        response = (
+            review_with_ollama(packet, model, timeout)
+            if selection is None
+            else review_packet(packet, model, timeout, selection)
+        )
         assessment = response["assessment"]
         return {
             "type": "ai-evidence-review",
@@ -346,6 +381,8 @@ def review_evidence_with_ollama(
             "assessment": assessment,
             "notice": SECOND_OPINION,
             "model": model,
+            "provider": provider,
+            "finding_confirmed": False,
             "raw_evidence_sent": False,
             "minimized_packet": packet,
         }
@@ -357,13 +394,27 @@ def review_evidence_with_ollama(
             "reason": "Local Ollama did not return a usable assessment; no remote service was attempted.",
             "notice": SECOND_OPINION,
             "model": model,
+            "provider": provider,
+            "finding_confirmed": False,
             "raw_evidence_sent": False,
             "minimized_packet": packet,
         }
 
 
-def generate_ai_report(data: dict[str, Any], model: str = DEFAULT_OLLAMA_MODEL, timeout: float = 120.0) -> str:
-    """Generate an unconfirmed Markdown draft from the existing minimized evidence packet."""
+def generate_ai_report(
+    data: dict[str, Any],
+    model: str = DEFAULT_OLLAMA_MODEL,
+    timeout: float = 120.0,
+    selection: AISelection | None = None,
+) -> str:
+    """Generate an unconfirmed Markdown draft from the existing minimized evidence packet.
+
+    With ``selection`` the draft is requested as strict JSON ``{"markdown": ...}`` from the
+    selected local provider; the same section, size and redaction checks apply.
+    """
+    if selection is not None:
+        selection.validate()
+        model, timeout = selection.model, selection.timeout
     validate_ollama_config(model, timeout)
     packet = review_evidence(data)
     messages = [
@@ -382,7 +433,17 @@ def generate_ai_report(data: dict[str, Any], model: str = DEFAULT_OLLAMA_MODEL, 
         },
         {"role": "user", "content": json.dumps(packet, ensure_ascii=True)},
     ]
-    draft = chat_with_ollama(messages, model, timeout, num_predict=2500).strip()
+    if selection is None:
+        draft = chat_with_ollama(messages, model, timeout, num_predict=2500).strip()
+    else:
+        content = dispatch_chat(selection, messages, TEXT_SCHEMA, 2500, lambda: "")
+        try:
+            parsed = json.loads(content)
+        except json.JSONDecodeError as exc:
+            raise ValueError("Local model report draft was not strict JSON.") from exc
+        if not isinstance(parsed, dict) or set(parsed) != {"markdown"} or not isinstance(parsed["markdown"], str):
+            raise ValueError("Local model report draft did not match the required schema.")
+        draft = parsed["markdown"].strip()
     if not draft or len(draft) > 20_000:
         raise ValueError("Local Ollama report draft was empty or exceeded its size limit.")
     safe_draft = redact_jwts(redact_text(draft) or "")
