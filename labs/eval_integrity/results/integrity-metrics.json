@@ -1,0 +1,807 @@
+{
+ "clean_baseline": {
+  "capture_import": {
+   "accepted": 5,
+   "entries_total": 6,
+   "rejected": 1
+  },
+  "corpus_issues": [],
+  "deterministic": true,
+  "e2e_contract_issues": [],
+  "eligible_rejections": 2,
+  "false_confirmations": 0,
+  "network_connect_attempts": 0,
+  "reviewable_proposals": 2,
+  "secret_canaries_leaked": 0,
+  "stages": {
+   "eligibility": "ok",
+   "evidence_ledger": "ok",
+   "handoff": "ok",
+   "import": "ok",
+   "object_discovery": "ok",
+   "ranking": "ok",
+   "reviewable_proposal": "ok",
+   "structured_report": "ok"
+  }
+ },
+ "corpus_mutations": {
+  "detected": 58,
+  "total": 58
+ },
+ "elapsed_seconds": 1.19,
+ "frozen_untouched": true,
+ "legacy_corpus_checks": {
+  "detected": 17,
+  "note": "Pre-fix test logic (manifest-vs-bytes + regenerate-in-place) on the same temp mutations.",
+  "total": 58
+ },
+ "peak_traced_memory_mib": 32.3,
+ "pipeline_mutations": {
+  "detected": 16,
+  "total": 16
+ },
+ "rows": [
+  {
+   "codes": [
+    "hash_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-ranking-1.0:capture_byte_flip"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-1.0:ground_truth_label_changed_with_manifest"
+  },
+  {
+   "codes": [
+    "hash_mismatch",
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-ranking-1.0:manifest_line_altered"
+  },
+  {
+   "codes": [
+    "corpus_unreadable",
+    "file_removed",
+    "regenerated_file_extra"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-ranking-1.0:file_removed"
+  },
+  {
+   "codes": [
+    "file_added",
+    "regenerated_file_missing"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-1.0:file_added"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-1.0:entry_deleted_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift",
+    "scenario_without_entries"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-1.0:scenario_added_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-1.0:missing_entry_reference_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-1.0:hash_changed_same_semantics"
+  },
+  {
+   "codes": [
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-1.0:generator_drift"
+  },
+  {
+   "codes": [
+    "hash_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-ranking-dev:capture_byte_flip"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-dev:ground_truth_label_changed_with_manifest"
+  },
+  {
+   "codes": [
+    "hash_mismatch",
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-ranking-dev:manifest_line_altered"
+  },
+  {
+   "codes": [
+    "corpus_unreadable",
+    "file_removed",
+    "regenerated_file_extra"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-ranking-dev:file_removed"
+  },
+  {
+   "codes": [
+    "file_added",
+    "regenerated_file_missing"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-dev:file_added"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-dev:entry_deleted_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift",
+    "scenario_without_entries"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-dev:scenario_added_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-dev:missing_entry_reference_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-dev:hash_changed_same_semantics"
+  },
+  {
+   "codes": [
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-dev:generator_drift"
+  },
+  {
+   "codes": [
+    "hash_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-1.0:capture_byte_flip"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.0:ground_truth_label_changed_with_manifest"
+  },
+  {
+   "codes": [
+    "hash_mismatch",
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-1.0:manifest_line_altered"
+  },
+  {
+   "codes": [
+    "corpus_unreadable",
+    "file_removed",
+    "regenerated_file_extra"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-1.0:file_removed"
+  },
+  {
+   "codes": [
+    "file_added",
+    "regenerated_file_missing"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.0:file_added"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.0:entry_deleted_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift",
+    "scenario_without_entries"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.0:scenario_added_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.0:missing_entry_reference_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.0:hash_changed_same_semantics"
+  },
+  {
+   "codes": [
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.0:generator_drift"
+  },
+  {
+   "codes": [
+    "hash_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-1.1:capture_byte_flip"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.1:ground_truth_label_changed_with_manifest"
+  },
+  {
+   "codes": [
+    "hash_mismatch",
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-1.1:manifest_line_altered"
+  },
+  {
+   "codes": [
+    "corpus_unreadable",
+    "file_removed",
+    "regenerated_file_extra"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "adv-1.1:file_removed"
+  },
+  {
+   "codes": [
+    "file_added",
+    "regenerated_file_missing"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.1:file_added"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.1:entry_deleted_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift",
+    "scenario_without_entries"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.1:scenario_added_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.1:missing_entry_reference_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.1:hash_changed_same_semantics"
+  },
+  {
+   "codes": [
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "adv-1.1:generator_drift"
+  },
+  {
+   "codes": [
+    "hash_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "e2e-contract-1.0:capture_byte_flip"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "e2e-contract-1.0:ground_truth_label_changed_with_manifest"
+  },
+  {
+   "codes": [
+    "hash_mismatch",
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "e2e-contract-1.0:manifest_line_altered"
+  },
+  {
+   "codes": [
+    "corpus_unreadable",
+    "file_removed",
+    "regenerated_file_extra"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": true,
+   "mutation": "e2e-contract-1.0:file_removed"
+  },
+  {
+   "codes": [
+    "file_added",
+    "regenerated_file_missing"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "e2e-contract-1.0:file_added"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "e2e-contract-1.0:entry_deleted_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift",
+    "scenario_without_entries"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "e2e-contract-1.0:scenario_added_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "missing_entry_ref",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "e2e-contract-1.0:missing_entry_reference_with_manifest"
+  },
+  {
+   "codes": [
+    "manifest_pin_mismatch",
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "e2e-contract-1.0:hash_changed_same_semantics"
+  },
+  {
+   "codes": [
+    "regeneration_drift"
+   ],
+   "detected": true,
+   "family": "corpus",
+   "legacy_detected": false,
+   "mutation": "e2e-contract-1.0:generator_drift"
+  },
+  {
+   "codes": [
+    "shared_exchanges",
+    "shared_origin",
+    "shared_scenario_ids"
+   ],
+   "detected": true,
+   "family": "independence",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-1.0~adv-ranking-dev:scenario_shared"
+  },
+  {
+   "codes": [
+    "shared_exchanges",
+    "shared_origin",
+    "shared_scenario_ids"
+   ],
+   "detected": true,
+   "family": "independence",
+   "legacy_detected": true,
+   "mutation": "adv-ranking-1.0~adv-1.0:scenario_shared"
+  },
+  {
+   "codes": [
+    "shared_exchanges",
+    "shared_origin",
+    "shared_scenario_ids"
+   ],
+   "detected": true,
+   "family": "independence",
+   "legacy_detected": true,
+   "mutation": "adv-ranking-1.0~adv-1.1:scenario_shared"
+  },
+  {
+   "codes": [
+    "shared_exchanges",
+    "shared_origin",
+    "shared_scenario_ids"
+   ],
+   "detected": true,
+   "family": "independence",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-dev~adv-1.0:scenario_shared"
+  },
+  {
+   "codes": [
+    "shared_exchanges",
+    "shared_origin",
+    "shared_scenario_ids"
+   ],
+   "detected": true,
+   "family": "independence",
+   "legacy_detected": false,
+   "mutation": "adv-ranking-dev~adv-1.1:scenario_shared"
+  },
+  {
+   "codes": [
+    "shared_exchanges",
+    "shared_origin",
+    "shared_scenario_ids"
+   ],
+   "detected": true,
+   "family": "independence",
+   "legacy_detected": false,
+   "mutation": "adv-1.0~adv-1.1:scenario_shared"
+  },
+  {
+   "codes": [
+    "shared_exchanges",
+    "shared_origin",
+    "shared_scenario_ids"
+   ],
+   "detected": true,
+   "family": "independence",
+   "legacy_detected": false,
+   "mutation": "e2e-contract-1.0~adv-ranking-1.0:scenario_shared"
+  },
+  {
+   "codes": [
+    "shared_exchanges",
+    "shared_origin",
+    "shared_scenario_ids"
+   ],
+   "detected": true,
+   "family": "independence",
+   "legacy_detected": false,
+   "mutation": "e2e-contract-1.0~adv-1.0:scenario_shared"
+  },
+  {
+   "codes": [
+    "contract_drift",
+    "cross_scenario_pairing"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "captures_reordered"
+  },
+  {
+   "codes": [
+    "contract_drift"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "duplicate_capture"
+  },
+  {
+   "codes": [
+    "contract_drift"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "incomplete_capture"
+  },
+  {
+   "codes": [
+    "cross_scenario_pairing"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "ground_truth_manipulated"
+  },
+  {
+   "codes": [
+    "contract_drift"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "responses_swapped_between_scenarios"
+  },
+  {
+   "codes": [
+    "candidate_without_evidence"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "missing_observation_reference"
+  },
+  {
+   "codes": [
+    "contract_drift",
+    "cross_scenario_pairing"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "cross_scenario_pairing"
+  },
+  {
+   "codes": [
+    "broken_report_ref"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "candidate_without_evidence"
+  },
+  {
+   "codes": [
+    "auto_confirmation",
+    "contract_drift"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "auto_confirmation_in_report"
+  },
+  {
+   "codes": [
+    "broken_report_ref"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "report_broken_reference"
+  },
+  {
+   "codes": [
+    "request_response_mismatch"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "request_response_digest_mismatch"
+  },
+  {
+   "codes": [
+    "network_activity"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "network_attempt_recorded"
+  },
+  {
+   "codes": [
+    "contract_drift"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "parser_result_changed"
+  },
+  {
+   "codes": [
+    "contract_drift"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "ranking_score_modified"
+  },
+  {
+   "codes": [
+    "auto_confirmation_blocked",
+    "missing_field"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "ledger_auto_confirmation"
+  },
+  {
+   "codes": [
+    "nondeterministic"
+   ],
+   "detected": true,
+   "family": "pipeline",
+   "legacy_detected": null,
+   "mutation": "nondeterministic_run"
+  }
+ ],
+ "seeded_defects": {
+  "detected": 74,
+  "total": 74
+ },
+ "type": "bbtk-eval-integrity-metrics",
+ "undetected": []
+}
