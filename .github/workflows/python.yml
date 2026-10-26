@@ -19,6 +19,7 @@ jobs:
       - run: python -m pip check
       - run: bbtk --help
       - run: bbtk object-discover ci-object-discovery --input examples/object-discovery/captures.har --attest-authorized-captures --dry-run
+      - run: bbtk fuzz-plan ci-context-fuzz --har examples/context-fuzz/capture.har --dry-run
       - run: bbtk lab object-discover --dry-run --split eval
       - run: bash -n labs/idor_lab/run.sh
       - run: ruff check bugbounty_toolkit tests scripts skills labs
@@ -39,4 +40,5 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/reporting/finding_report.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/dashboard.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/fuzzing/wordlist_manager.py" --fail-under=80
+      - run: coverage report --include="bugbounty_toolkit/fuzzing/context_planner.py,bugbounty_toolkit/context_fuzz_lab_server.py" --fail-under=80
       - run: coverage report

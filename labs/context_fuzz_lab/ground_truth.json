@@ -1,0 +1,69 @@
+{
+  "lab": "context-fuzz-lab",
+  "version": "1.0",
+  "origin": "http://127.0.0.1:8191",
+  "known_routes": [
+    "/api/docs",
+    "/api/v1/health",
+    "/api/v1/orders",
+    "/api/v1/orders/lab-1",
+    "/api/v1/search",
+    "/api/v1/status",
+    "/api/v1/users",
+    "/healthz"
+  ],
+  "unknown_routes": [
+    "/api/v1/unknown-lab"
+  ],
+  "protected_routes": [
+    "/api/v1/admin",
+    "/api/v1/internal"
+  ],
+  "wildcard_prefix": "/api/v1/wildcard/",
+  "ambiguous_prefix": "/api/v1/ambiguous/",
+  "observed_parameters": [
+    "q",
+    "limit"
+  ],
+  "technologies": [
+    "api",
+    "json-api",
+    "nginx",
+    "versioned-api"
+  ],
+  "relevant_wordlist_names": {
+    "api": [
+      "api-endpoints.txt"
+    ],
+    "directories": [
+      "common.txt"
+    ],
+    "parameters": [
+      "param-names.txt"
+    ],
+    "technology": [
+      "nginx-paths.txt"
+    ]
+  },
+  "excluded_wordlist_names": [
+    "passwords.txt"
+  ],
+  "expected_categories": [
+    "api",
+    "endpoints",
+    "directories",
+    "files",
+    "parameters",
+    "extensions",
+    "technology"
+  ],
+  "metrics_notes": {
+    "before": "Generic category recommendation ignores capture prefixes, params and tech markers.",
+    "after": "Context-aware plan ranks API/param/tech lists from HAR evidence and scopes FUZZ URLs."
+  },
+  "irrelevant_wordlist_names": {
+    "api": [
+      "soap-rpc-methods.txt"
+    ]
+  }
+}

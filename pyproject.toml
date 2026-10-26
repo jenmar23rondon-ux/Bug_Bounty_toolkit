@@ -110,6 +110,8 @@ files = [
     "bugbounty_toolkit/dashboard.py",
     "bugbounty_toolkit/reporting/finding_report.py",
     "bugbounty_toolkit/fuzzing/wordlist_manager.py",
+    "bugbounty_toolkit/fuzzing/context_planner.py",
+    "bugbounty_toolkit/context_fuzz_lab_server.py",
 ]
 
 [tool.coverage.run]
