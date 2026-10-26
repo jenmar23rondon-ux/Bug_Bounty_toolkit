@@ -187,7 +187,7 @@ class AsymmetricPairingTests(unittest.TestCase):
     def test_untyped_resource_and_cross_origin_are_not_linked(self) -> None:
         graph, _ = self._graph(
             [
-                _entry("/api/things", "owner-a", {"data": {"widget_id": 5}}),
+                _entry("/api/things", "owner-a", {"data": {"ref_id": 5}}),
                 _entry("/api/projects", "owner-a", {"data": {"project_id": 41}}),
                 _entry("/api/projects/42", "actor-b", {"data": {}}, host="http://127.0.0.2:8099"),
             ]

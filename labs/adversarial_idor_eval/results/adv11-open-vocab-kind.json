@@ -1,0 +1,1002 @@
+{
+ "bounds_probes": {
+  "17_files_over_MAX_FILES": {
+   "accepted": false,
+   "error": "Use a 32-byte key and between one and sixteen capture files."
+  },
+  "33_entries_over_cap": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+  },
+  "frozen_har_as_is_49_entries": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+  },
+  "truncated_har_file": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+  }
+ },
+ "case_discovery": {
+  "case_yield_on_tp": 0.0,
+  "confirmed_flags": 0,
+  "errors": 20,
+  "non_tp_pairs_with_case": 0,
+  "note": "Case proposals are needs_review; accounts_authorized=False here, so nothing is executable.",
+  "pairs_evaluated": 20,
+  "rows": [
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 1,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 2,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 3,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 4,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 5,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 6,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 7,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 8,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 9,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 10,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 11,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 12,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 13,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 14,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 15,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 16,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 17,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 18,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 19,
+    "verdict": "TP"
+   },
+   {
+    "cases": null,
+    "error": "ValueError: Unsupported capture request or inconsistent origin; inspect it locally.",
+    "rank": 20,
+    "verdict": "TP"
+   }
+  ],
+  "tp_pairs": 16,
+  "tp_pairs_with_case": 0
+ },
+ "confirmation": {
+  "confirmed_by_pipeline": 0,
+  "designed_protected_scenarios": 0,
+  "designed_vulnerable_scenarios": 11,
+  "measurable_offline": false,
+  "note": "Vulnerability confirmation requires a human-gated, authorized live/lab access test (approve-idor + access-check). Not executed by this offline evaluation. Candidates and proposals are NOT confirmed findings."
+ },
+ "corpus_version": "adv-1.1",
+ "discovery": {
+  "candidates": 54,
+  "expected_found": 14,
+  "expected_objects": 14,
+  "exported_resource_types": [
+   "unknown"
+  ],
+  "missed": [],
+  "negative_objects_surfaced": [
+   "T09:hospital",
+   "T11:venue",
+   "T12:badge",
+   "T13:gift",
+   "T13:refund",
+   "T14:bundle",
+   "T15:track",
+   "T16:region",
+   "T18:kiosk",
+   "T19:bin",
+   "T19:store"
+  ],
+  "note": "Discovery candidates are leads for review, not vulnerabilities.",
+  "precision_at_k": {
+   "1": 0.0,
+   "10": 0.4,
+   "3": 0.0,
+   "5": 0.2
+  },
+  "recall": 1.0,
+  "recall_ci95": [
+   0.785,
+   1.0
+  ],
+  "rows": [
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "tag",
+    "scenarios": [
+     "T23"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "store",
+    "scenarios": [
+     "T19"
+    ],
+    "score": 50
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "hospital",
+    "scenarios": [
+     "T09"
+    ],
+    "score": 50
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "bin",
+    "scenarios": [
+     "T19"
+    ],
+    "score": 50
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "editor",
+    "scenarios": [
+     "T20"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "venue",
+    "scenarios": [
+     "T11"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "topic",
+    "scenarios": [
+     "T20"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "campaign",
+    "scenarios": [
+     "T10"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "tag",
+    "scenarios": [
+     "T23"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "campaign",
+    "scenarios": [
+     "T10"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "topic",
+    "scenarios": [
+     "T20"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "editor",
+    "scenarios": [
+     "T20"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "tag",
+    "scenarios": [
+     "T23"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "fleet",
+    "scenarios": [
+     "T02"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "dataset",
+    "scenarios": [
+     "T06"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "claim",
+    "scenarios": [
+     "T03"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "campaign",
+    "scenarios": [
+     "T10"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "vehicle",
+    "scenarios": [
+     "T02"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "entity",
+    "scenarios": [
+     "T22"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "dataset",
+    "scenarios": [
+     "T06"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "region",
+    "scenarios": [
+     "T16"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "vehicle",
+    "scenarios": [
+     "T02"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ledger",
+    "scenarios": [
+     "T06"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "prescription",
+    "scenarios": [
+     "T07"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "prescription",
+    "scenarios": [
+     "T07"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "claim",
+    "scenarios": [
+     "T03"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "fleet",
+    "scenarios": [
+     "T02"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ledger",
+    "scenarios": [
+     "T06"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "quote",
+    "scenarios": [
+     "T05"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "entity",
+    "scenarios": [
+     "T22"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "certificate",
+    "scenarios": [
+     "T08"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "note",
+    "scenarios": [
+     "T21"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "badge",
+    "scenarios": [
+     "T12"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "badge",
+    "scenarios": [
+     "T12"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "lease",
+    "scenarios": [
+     "T04"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "region",
+    "scenarios": [
+     "T16"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "refund",
+    "scenarios": [
+     "T13"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "parcel",
+    "scenarios": [
+     "T01"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "patient",
+    "scenarios": [
+     "T24"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ward",
+    "scenarios": [
+     "T09"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "certificate",
+    "scenarios": [
+     "T08"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ward",
+    "scenarios": [
+     "T09"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "kiosk",
+    "scenarios": [
+     "T18"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "track",
+    "scenarios": [
+     "T15"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "certificate",
+    "scenarios": [
+     "T08"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "parcel",
+    "scenarios": [
+     "T01"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "patient",
+    "scenarios": [
+     "T24"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "track",
+    "scenarios": [
+     "T15"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "bundle",
+    "scenarios": [
+     "T14"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "gift",
+    "scenarios": [
+     "T13"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "bundle",
+    "scenarios": [
+     "T14"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "quote",
+    "scenarios": [
+     "T05"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "lease",
+    "scenarios": [
+     "T04"
+    ],
+    "score": 0
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "",
+    "scenarios": [
+     "T21"
+    ],
+    "score": 0
+   }
+  ]
+ },
+ "entries": 49,
+ "observations": 49,
+ "pairing": {
+  "ambiguous_proposals": 4,
+  "ambiguous_types_proposed": [
+   "T22:entity",
+   "T23:tag",
+   "T24:patient"
+  ],
+  "ambiguous_types_total": 5,
+  "confirmed_flags": 0,
+  "expected_pairs": 14,
+  "exported_resource_types": [
+   "unknown"
+  ],
+  "false_negatives": [],
+  "false_positives": [],
+  "forbidden_types_proposed": [],
+  "fp_proposals": 0,
+  "insufficient_evidence_rate": 0.0,
+  "manual_review_rate": 1.0,
+  "network_requests_sent_reported": 0,
+  "pairs_found": 14,
+  "precision": 1.0,
+  "precision_at_k": {
+   "1": 1.0,
+   "10": 0.8,
+   "3": 0.6667,
+   "5": 0.6
+  },
+  "precision_ci95": [
+   0.806,
+   1.0
+  ],
+  "proposals": 20,
+  "recall": 1.0,
+  "recall_ci95": [
+   0.785,
+   1.0
+  ],
+  "review_burden_non_tp_rate": 0.2,
+  "rows": [
+   {
+    "actor_entry": 13,
+    "actor_type": "prescription",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 12,
+    "pair_kind": "request_request",
+    "rank": 1,
+    "resource_type": "prescription",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T07",
+    "score": 84,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 43,
+    "actor_type": "entity",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 44,
+    "pair_kind": "request_request",
+    "rank": 2,
+    "resource_type": "entity",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T22",
+    "score": 84,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 5,
+    "actor_type": "claim",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 4,
+    "pair_kind": "request_request",
+    "rank": 3,
+    "resource_type": "claim",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T03",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 40,
+    "actor_type": "editor",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 39,
+    "pair_kind": "request_request",
+    "rank": 4,
+    "resource_type": "editor",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T20",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 46,
+    "actor_type": "tag",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 45,
+    "pair_kind": "request_request",
+    "rank": 5,
+    "resource_type": "tag",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T23",
+    "score": 80,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 19,
+    "actor_type": "campaign",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 20,
+    "pair_kind": "request_request",
+    "rank": 6,
+    "resource_type": "campaign",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T10",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 40,
+    "actor_type": "topic",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 39,
+    "pair_kind": "request_request",
+    "rank": 7,
+    "resource_type": "topic",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T20",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 11,
+    "actor_type": "dataset",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 10,
+    "pair_kind": "request_request",
+    "rank": 8,
+    "resource_type": "dataset",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T06",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 10,
+    "actor_type": "ledger",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 11,
+    "pair_kind": "request_request",
+    "rank": 9,
+    "resource_type": "ledger",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T06",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 3,
+    "actor_type": "fleet",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 2,
+    "pair_kind": "request_request",
+    "rank": 10,
+    "resource_type": "fleet",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T02",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 2,
+    "actor_type": "vehicle",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 3,
+    "pair_kind": "request_request",
+    "rank": 11,
+    "resource_type": "vehicle",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T02",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 1,
+    "actor_type": "parcel",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 0,
+    "pair_kind": "request_request",
+    "rank": 12,
+    "resource_type": "parcel",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T01",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 14,
+    "actor_type": "certificate",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 16,
+    "pair_kind": "request_request",
+    "rank": 13,
+    "resource_type": "certificate",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T08",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 48,
+    "actor_type": "patient",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 47,
+    "pair_kind": "request_request",
+    "rank": 14,
+    "resource_type": "patient",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T24",
+    "score": 76,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 17,
+    "actor_type": "ward",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 18,
+    "pair_kind": "request_request",
+    "rank": 15,
+    "resource_type": "ward",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T09",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 9,
+    "actor_type": "quote",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 8,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 16,
+    "resource_type": "quote",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "T05",
+    "score": 56,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 7,
+    "actor_type": "lease",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 6,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 17,
+    "resource_type": "lease",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "T04",
+    "score": 48,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 45,
+    "actor_type": "tag",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 46,
+    "pair_kind": "request_request",
+    "rank": 18,
+    "resource_type": "tag",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T23",
+    "score": 80,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 16,
+    "actor_type": "certificate",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 15,
+    "pair_kind": "request_request",
+    "rank": 19,
+    "resource_type": "certificate",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T08",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 14,
+    "actor_type": "certificate",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 15,
+    "pair_kind": "request_request",
+    "rank": 20,
+    "resource_type": "certificate",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T08",
+    "score": 76,
+    "verdict": "TP"
+   }
+  ],
+  "tp_proposals": 16
+ },
+ "primary_run_input": {
+  "excluded_entries": [],
+  "shard_size": 25,
+  "shards": 2
+ },
+ "safety": {
+  "network_connect_attempts": 0
+ },
+ "scenarios": 24
+}

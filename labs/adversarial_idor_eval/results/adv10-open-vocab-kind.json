@@ -1,0 +1,1017 @@
+{
+ "bounds_probes": {
+  "17_files_over_MAX_FILES": {
+   "accepted": false,
+   "error": "Use a 32-byte key and between one and sixteen capture files."
+  },
+  "33_entries_over_cap": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+  },
+  "frozen_har_as_is_49_entries": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+  },
+  "incomplete_capture_entry_without_response": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+  },
+  "partial_response_truncated_json": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+  },
+  "truncated_har_file": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally."
+  }
+ },
+ "case_discovery": {
+  "case_yield_on_tp": 0.5,
+  "confirmed_flags": 0,
+  "errors": 0,
+  "non_tp_pairs_with_case": 1,
+  "note": "Case proposals are needs_review; accounts_authorized=False here, so nothing is executable.",
+  "pairs_evaluated": 19,
+  "rows": [
+   {
+    "cases": 1,
+    "confirmed": false,
+    "error": null,
+    "rank": 1,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 2,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 3,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 4,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 1,
+    "confirmed": false,
+    "error": null,
+    "rank": 5,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 6,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 7,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "cases": 1,
+    "confirmed": false,
+    "error": null,
+    "rank": 8,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 1,
+    "confirmed": false,
+    "error": null,
+    "rank": 9,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "cases": 1,
+    "confirmed": false,
+    "error": null,
+    "rank": 10,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 1,
+    "confirmed": false,
+    "error": null,
+    "rank": 11,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 1,
+    "confirmed": false,
+    "error": null,
+    "rank": 12,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 13,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 14,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 15,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "cases": 1,
+    "confirmed": false,
+    "error": null,
+    "rank": 16,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 1,
+    "confirmed": false,
+    "error": null,
+    "rank": 17,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 18,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "cases": 0,
+    "confirmed": false,
+    "error": null,
+    "rank": 19,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   }
+  ],
+  "tp_pairs": 16,
+  "tp_pairs_with_case": 8
+ },
+ "confirmation": {
+  "confirmed_by_pipeline": 0,
+  "designed_protected_scenarios": 2,
+  "designed_vulnerable_scenarios": 9,
+  "measurable_offline": false,
+  "note": "Vulnerability confirmation requires a human-gated, authorized live/lab access test (approve-idor + access-check). Not executed by this offline evaluation. Candidates and proposals are NOT confirmed findings."
+ },
+ "corpus_version": "adv-1.0",
+ "discovery": {
+  "candidates": 48,
+  "expected_found": 12,
+  "expected_objects": 12,
+  "exported_resource_types": [
+   "unknown"
+  ],
+  "missed": [],
+  "negative_objects_surfaced": [
+   "S06:department",
+   "S10:org",
+   "S12:channel",
+   "S13:article",
+   "S14:coupon",
+   "S16:license",
+   "S18:locker",
+   "S19:banner",
+   "S20:voucher"
+  ],
+  "note": "Discovery candidates are leads for review, not vulnerabilities.",
+  "precision_at_k": {
+   "1": 0.0,
+   "10": 0.4,
+   "3": 0.0,
+   "5": 0.2
+  },
+  "recall": 1.0,
+  "recall_ci95": [
+   0.757,
+   1.0
+  ],
+  "rows": [
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "folder",
+    "scenarios": [
+     "S23"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "org",
+    "scenarios": [
+     "S10"
+    ],
+    "score": 50
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "department",
+    "scenarios": [
+     "S06"
+    ],
+    "score": 50
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "folder",
+    "scenarios": [
+     "S23"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "shipment",
+    "scenarios": [
+     "S03"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "channel",
+    "scenarios": [
+     "S12"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "shipment",
+    "scenarios": [
+     "S03"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "folder",
+    "scenarios": [
+     "S23"
+    ],
+    "score": 40
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "employee",
+    "scenarios": [
+     "S06"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "shipment",
+    "scenarios": [
+     "S03"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "board",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "pipeline",
+    "scenarios": [
+     "S10"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "export",
+    "scenarios": [
+     "S07"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "preference",
+    "scenarios": [
+     "S08"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "workspace",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "preference",
+    "scenarios": [
+     "S08"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "workspace",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "export",
+    "scenarios": [
+     "S07"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "employee",
+    "scenarios": [
+     "S06"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "board",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "pipeline",
+    "scenarios": [
+     "S10"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "subscription",
+    "scenarios": [
+     "S11"
+    ],
+    "score": 30
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "payslip",
+    "scenarios": [
+     "S09"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "coupon",
+    "scenarios": [
+     "S14"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ticket",
+    "scenarios": [
+     "S04"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "license",
+    "scenarios": [
+     "S16"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "receipt",
+    "scenarios": [
+     "S01"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "member",
+    "scenarios": [
+     "S22"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "receipt",
+    "scenarios": [
+     "S01"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "payslip",
+    "scenarios": [
+     "S09"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "coupon",
+    "scenarios": [
+     "S14"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "statement",
+    "scenarios": [
+     "S05"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "article",
+    "scenarios": [
+     "S13"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "statement",
+    "scenarios": [
+     "S05"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "banner",
+    "scenarios": [
+     "S19"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "message",
+    "scenarios": [
+     "S24"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "statement",
+    "scenarios": [
+     "S05"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "member",
+    "scenarios": [
+     "S22"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "article",
+    "scenarios": [
+     "S13"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "voucher",
+    "scenarios": [
+     "S20"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ticket",
+    "scenarios": [
+     "S04"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "locker",
+    "scenarios": [
+     "S18"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "subscription",
+    "scenarios": [
+     "S11"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "locker",
+    "scenarios": [
+     "S18"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "board",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 0
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "",
+    "scenarios": [
+     "S24"
+    ],
+    "score": 0
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "board",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 0
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "",
+    "scenarios": [
+     "S24"
+    ],
+    "score": 0
+   }
+  ]
+ },
+ "entries": 48,
+ "observations": 45,
+ "pairing": {
+  "ambiguous_proposals": 3,
+  "ambiguous_types_proposed": [
+   "S22:member",
+   "S23:folder"
+  ],
+  "ambiguous_types_total": 5,
+  "confirmed_flags": 0,
+  "expected_pairs": 12,
+  "exported_resource_types": [
+   "unknown"
+  ],
+  "false_negatives": [],
+  "false_positives": [],
+  "forbidden_types_proposed": [],
+  "fp_proposals": 0,
+  "insufficient_evidence_rate": 0.0,
+  "manual_review_rate": 1.0,
+  "network_requests_sent_reported": 0,
+  "pairs_found": 12,
+  "precision": 1.0,
+  "precision_at_k": {
+   "1": 1.0,
+   "10": 0.8,
+   "3": 0.6667,
+   "5": 0.8
+  },
+  "precision_ci95": [
+   0.806,
+   1.0
+  ],
+  "proposals": 19,
+  "recall": 1.0,
+  "recall_ci95": [
+   0.757,
+   1.0
+  ],
+  "review_burden_non_tp_rate": 0.1579,
+  "rows": [
+   {
+    "actor_entry": 14,
+    "actor_type": "export",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 13,
+    "pair_kind": "request_request",
+    "rank": 1,
+    "resource_type": "export",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S07",
+    "score": 84,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 15,
+    "actor_type": "preference",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 16,
+    "pair_kind": "request_request",
+    "rank": 2,
+    "resource_type": "preference",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S08",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 44,
+    "actor_type": "folder",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 45,
+    "pair_kind": "request_request",
+    "rank": 3,
+    "resource_type": "folder",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S23",
+    "score": 80,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 4,
+    "actor_type": "shipment",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 5,
+    "pair_kind": "request_request",
+    "rank": 4,
+    "resource_type": "shipment",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S03",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 12,
+    "actor_type": "employee",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 11,
+    "pair_kind": "request_request",
+    "rank": 5,
+    "resource_type": "employee",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S06",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 3,
+    "actor_type": "board",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 2,
+    "pair_kind": "request_request",
+    "rank": 6,
+    "resource_type": "board",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S02",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 2,
+    "actor_type": "workspace",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 3,
+    "pair_kind": "request_request",
+    "rank": 7,
+    "resource_type": "workspace",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S02",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 20,
+    "actor_type": "pipeline",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 19,
+    "pair_kind": "request_request",
+    "rank": 8,
+    "resource_type": "pipeline",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S10",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 43,
+    "actor_type": "member",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 42,
+    "pair_kind": "request_request",
+    "rank": 9,
+    "resource_type": "member",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S22",
+    "score": 76,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 18,
+    "actor_type": "payslip",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 17,
+    "pair_kind": "request_request",
+    "rank": 10,
+    "resource_type": "payslip",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S09",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 10,
+    "actor_type": "statement",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 9,
+    "pair_kind": "request_request",
+    "rank": 11,
+    "resource_type": "statement",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S05",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 1,
+    "actor_type": "receipt",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 0,
+    "pair_kind": "request_request",
+    "rank": 12,
+    "resource_type": "receipt",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S01",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 22,
+    "actor_type": "subscription",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 21,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 13,
+    "resource_type": "subscription",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "S11",
+    "score": 56,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 7,
+    "actor_type": "ticket",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 6,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 14,
+    "resource_type": "ticket",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "S04",
+    "score": 52,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 45,
+    "actor_type": "folder",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 44,
+    "pair_kind": "request_request",
+    "rank": 15,
+    "resource_type": "folder",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S23",
+    "score": 80,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 8,
+    "actor_type": "statement",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 10,
+    "pair_kind": "request_request",
+    "rank": 16,
+    "resource_type": "statement",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S05",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 8,
+    "actor_type": "statement",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 9,
+    "pair_kind": "request_request",
+    "rank": 17,
+    "resource_type": "statement",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S05",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 2,
+    "actor_type": "board",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 3,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 18,
+    "resource_type": "board",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "S02",
+    "score": 48,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 3,
+    "actor_type": "board",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 2,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 19,
+    "resource_type": "board",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "S02",
+    "score": 48,
+    "verdict": "TP"
+   }
+  ],
+  "tp_proposals": 16
+ },
+ "primary_run_input": {
+  "excluded_entries": [
+   29,
+   30,
+   32
+  ],
+  "shard_size": 25,
+  "shards": 2
+ },
+ "safety": {
+  "network_connect_attempts": 0
+ },
+ "scenarios": 24
+}

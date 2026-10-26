@@ -100,6 +100,15 @@ RULES = (
     ("json_co_occurrence", 10),
     ("nested_path_context", 10),
 )
+# Open-vocabulary resource kinds (P1). Structural wrappers / generic names are never a kind:
+# an identifier whose only noun is one of these is INSUFFICIENT evidence and is not paired.
+GENERIC_KIND_NAMES = frozenset(
+    (SAFE_NAMES - set(COLLECTIONS))
+    | {"ref", "refs", "key", "keys", "lookup", "value", "values", "obj", "object", "objects", "node", "nodes"}
+    | {"meta", "info", "body", "content", "entry", "entries", "page", "pages", "limit"}
+)
+MAX_KIND_CHARS = 48
+KIND_BASES = ("known_vocabulary", "path_collection", "typed_field_name", "collection_container")
 LIMITATION = "References do not establish ownership, private data, account identity or unauthorized access."
 
 
@@ -215,6 +224,52 @@ def _field_type(name: str, default: str) -> tuple[str, bool] | None:
     return None
 
 
+def _singular(word: str) -> str:
+    if word.endswith("ies") and len(word) > 4:
+        return word[:-3] + "y"
+    if word.endswith(("sses", "xes", "ches", "shes", "zzes")):
+        return word[:-2]
+    if word.endswith("s") and not word.endswith(("ss", "us", "is")) and len(word) > 3:
+        return word[:-1]
+    return word
+
+
+def resource_kind_noun(word: str) -> tuple[str, str] | None:
+    """Open-vocabulary kind for one collection segment or typed-id stem, or None if insufficient.
+
+    Returns (kind, basis_hint). Known nouns keep their existing canonical name. Generic wrappers,
+    version tags, numbers, sensitive names and over-long tokens are INSUFFICIENT (None).
+    """
+    lower = re.sub(r"([a-z])([A-Z])", r"\1_\2", word).lower().strip("_")
+    if lower in COLLECTIONS:
+        return COLLECTIONS[lower], "known_vocabulary"
+    if (
+        not lower
+        or len(lower) > MAX_KIND_CHARS
+        or lower in GENERIC_KIND_NAMES
+        or SENSITIVE_FIELD.search(lower)
+        or not re.fullmatch(r"[a-z][a-z_]*[a-z]", lower)
+        or re.fullmatch(r"v\d+", lower)
+    ):
+        return None
+    noun = _singular(lower)
+    if noun in GENERIC_KIND_NAMES or len(noun) < 2:
+        return None
+    return noun, "open_vocabulary"
+
+
+def _field_kind(name: str) -> str | None:
+    """Kind from a typed identifier field name (`ticket_id`, `claimId`, `shipment_ids`); bare ids -> None."""
+    if SENSITIVE_FIELD.search(name):
+        return None
+    lower = re.sub(r"([a-z])([A-Z])", r"\1_\2", name).lower()
+    match = re.fullmatch(r"(.+?)_?(?:ids|uuid|uid|id)", lower)
+    if not match:
+        return None
+    found = resource_kind_noun(match[1].rstrip("_"))
+    return found[0] if found else None
+
+
 def _safe_name(name: str, key: bytes) -> str:
     lower = name.lower()
     typed = _field_type(name, "")
@@ -231,6 +286,13 @@ class _Occurrence:
     pointer: str
     container: str
     typed: bool = False
+    # Open-vocabulary kind (plain noun, internal only; exported keyed-hashed) and its evidence basis.
+    resource_kind: str | None = None
+    kind_basis: str | None = None
+
+
+def _is_dynamic(segment: tuple[str, bool]) -> bool:
+    return segment[1] and unquote(segment[0]).lower() not in SAFE_NAMES
 
 
 def _path_data(path: str, key: bytes, origin: str) -> tuple[str, str, list[_Occurrence]]:
@@ -248,7 +310,19 @@ def _path_data(path: str, key: bytes, origin: str) -> tuple[str, str, list[_Occu
         if dynamic:
             previous = unquote(segments[index - 1][0]).lower() if index else ""
             kind = COLLECTIONS.get(previous, "unknown:" + origin + ":" + "/".join(template[:-1]))
-            occurrences.append(_Occurrence(kind, segment, "path", f"/path/{index}", "/path"))
+            # The preceding segment names the collection only when it is itself a static segment.
+            noun = resource_kind_noun(previous) if index and not _is_dynamic(segments[index - 1]) else None
+            occurrences.append(
+                _Occurrence(
+                    kind,
+                    segment,
+                    "path",
+                    f"/path/{index}",
+                    "/path",
+                    resource_kind=noun[0] if noun else None,
+                    kind_basis="path_collection" if noun else None,
+                )
+            )
     return "/".join(template), context, occurrences
 
 
@@ -264,8 +338,18 @@ def _extract(source: CaptureSource, key: bytes, origin: str, credentials: set[st
         positions[name] += 1
         field = _field_type(name, default)
         if field:
+            noun = _field_kind(name)
             occurrences.append(
-                _Occurrence(field[0], value, "query", f"/query/{_safe_name(name, key)}/{index}", "/query", field[1])
+                _Occurrence(
+                    field[0],
+                    value,
+                    "query",
+                    f"/query/{_safe_name(name, key)}/{index}",
+                    "/query",
+                    field[1],
+                    noun,
+                    "typed_field_name" if noun else None,
+                )
             )
     for location, body, headers in (
         ("request_json", source.request_body, source.request_headers),
@@ -284,7 +368,17 @@ def _extract(source: CaptureSource, key: bytes, origin: str, credentials: set[st
                 # Numeric JSON keys may themselves be private IDs, not array indexes.
                 safe = "/" + "/".join(_safe_name(p, key) for p in parts)
                 container = pointer.rsplit("/", 1)[0]
-                occurrences.append(_Occurrence(field[0], str(value), location, safe, container, field[1]))
+                noun, basis = _field_kind(name), "typed_field_name"
+                if noun is None and not field[1]:
+                    # Bare `id`: only the IMMEDIATE named container may type it (`leases[*].id`).
+                    parents = [part for part in parts[:-1] if not part.isdigit()]
+                    found = resource_kind_noun(parents[-1]) if parents and parts[-1] == name else None
+                    noun, basis = (found[0], "collection_container") if found else (None, "")
+                occurrences.append(
+                    _Occurrence(
+                        field[0], str(value), location, safe, container, field[1], noun, basis if noun else None
+                    )
+                )
     occurrences = [
         o
         for o in occurrences
@@ -293,6 +387,15 @@ def _extract(source: CaptureSource, key: bytes, origin: str, credentials: set[st
     if len(occurrences) > MAX_OCCURRENCES:
         raise ValueError("Capture exceeds the per-message object-reference limit.")
     return template, occurrences
+
+
+def _kind_ref(key: bytes, program: str, origin: str, kind: str | None) -> str | None:
+    """Keyed, origin-scoped kind reference. Known nouns stay readable; open nouns are HMAC-only."""
+    if not kind:
+        return None
+    if kind in set(COLLECTIONS.values()):
+        return "kind:" + kind
+    return _ref(key, "kind", program, origin, kind)
 
 
 def _credentials(source: CaptureSource) -> set[str]:
@@ -407,6 +510,7 @@ def _build(program: str, inputs: list[Path], key: bytes, base_url: str | None) -
                 "ownership": "unknown",
                 "privacy": "unknown",
             }
+            kind_ref = _kind_ref(key, program, origin, occurrence.resource_kind)
             field_id = graph_node_id("field", endpoint, occurrence.location, occurrence.pointer)
             nodes[field_id] = {
                 "id": field_id,
@@ -421,6 +525,10 @@ def _build(program: str, inputs: list[Path], key: bytes, base_url: str | None) -
                     "field_ref": field_id,
                     "location": occurrence.location,
                     "typed": occurrence.typed,
+                    # Inferred open-vocabulary kind: keyed hash only (no new names leak), or null when
+                    # the evidence is insufficient (bare/generic/untyped ids). Never ownership.
+                    "kind_ref": kind_ref,
+                    "kind_basis": occurrence.kind_basis if kind_ref else "insufficient_evidence",
                 }
             )
             if occurrence.location in {"request_json", "response_json"}:
