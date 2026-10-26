@@ -139,25 +139,17 @@ def detect_truncation(original_len: int, retained_len: int, *, claimed_complete:
     }
 
 
-
 def _looks_like_filesystem_path(value: str) -> bool:
     """True for absolute/local artifact paths; false for URL paths or query fragments."""
     if not value or any(ch.isspace() for ch in value) or "://" in value:
         return False
     lowered = value.replace("\\", "/").lower()
     return bool(
-        lowered.startswith(
-            ("/home/", "/users/", "/var/", "/tmp/", "/workspace/", "registros/", "inputs/", "private/")
-        )
+        lowered.startswith(("/home/", "/users/", "/var/", "/tmp/", "/workspace/", "registros/", "inputs/", "private/"))
         or (len(value) >= 3 and value[1:3] in (":\\", ":/"))
-        or (
-            lowered.endswith((".har", ".json", ".xml", ".txt", ".log"))
-            and ("/" in value or "\\" in value)
-        )
-    )        or (len(value) >= 3 and value[1:3] in (":\\", ":/"))
-        or lowered.endswith((".har", ".json", ".xml", ".txt", ".log"))
-        and ("/" in value or "\\" in value)
+        or (lowered.endswith((".har", ".json", ".xml", ".txt", ".log")) and ("/" in value or "\\" in value))
     )
+
 
 def _strip_local_paths(value: str) -> str:
     return _PATH_HINT.sub(" [path-redacted]", value)
@@ -337,9 +329,11 @@ def redact_data(
             ):
                 result[key] = item
                 continue
-            if lowered in {"source_path", "path", "file_path", "local_path", "absolute_path"} and isinstance(
-                item, str
-            ) and _looks_like_filesystem_path(item):
+            if (
+                lowered in {"source_path", "path", "file_path", "local_path", "absolute_path"}
+                and isinstance(item, str)
+                and _looks_like_filesystem_path(item)
+            ):
                 if dest == RedactionDestination.PRIVATE_EVIDENCE:
                     result[key] = item
                 elif dest == RedactionDestination.MINIMIZED_ARTIFACT:
