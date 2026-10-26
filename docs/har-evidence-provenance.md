@@ -76,7 +76,8 @@ Separate concepts, never conflated:
 
 ## Related fix
 
-`core/redaction.redact_text` scanned keyword-free text with a quadratic regex; a 64 KiB HAR
-body took ~17 s and a 2 MiB body did not finish in 700 s. An exact keyword pre-check
-(the pattern cannot match without one of its literals) makes such bodies linear. Bodies that do
-contain a keyword are still scanned by the original pattern (residual risk).
+`core/redaction.redact_text` previously scanned keyword-bearing text with a quadratic
+`[\w-]*token` pattern (100 KiB ~40 s). Keyword pre-check plus a word-boundary lookbehind
+keeps large bodies linear. Destination-aware policy, structured JSON/HTTP parsing, and
+explicit size/time bounds are documented in [evidence-redaction.md](evidence-redaction.md).
+Unrecognized formats remain a residual risk; absolute privacy is not claimed.
