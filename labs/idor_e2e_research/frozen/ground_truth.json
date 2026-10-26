@@ -1,0 +1,310 @@
+{
+ "alt_origin": "http://127.0.0.1:8156",
+ "conversion_classes": [
+  "structural_valid",
+  "case_eligible",
+  "needs_more_evidence",
+  "security_rejected",
+  "technical_error"
+ ],
+ "corpus_version": "idor-e2e-research-1.0",
+ "independent_of": [
+  "adv-1.0",
+  "adv-1.1",
+  "adv-ranking-1.0",
+  "adv-handoff-case-1.0",
+  "e2e-contract-1.0"
+ ],
+ "origin": "http://127.0.0.1:8155",
+ "path_prefix": "/er",
+ "scenarios": [
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Classic GET path single-diff read IDOR candidate",
+   "entries": [
+    0,
+    1
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "memo"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R01",
+   "pipeline_focus": "eligibility",
+   "tag": "read-idor",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Actor control returns 403; denial is not a confirmed finding",
+   "entries": [
+    2,
+    3
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "brief"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R02",
+   "pipeline_focus": "control_review",
+   "tag": "access-denied",
+   "vulnerability_truth": "not_vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "REJECT_SESSION_ONLY",
+   "description": "Identical public URL; session-only difference",
+   "entries": [
+    4,
+    5
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "notice"
+   ],
+   "id": "R03",
+   "pipeline_focus": "eligibility",
+   "tag": "public-resource",
+   "vulnerability_truth": "not_vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "REJECT_MULTI_RESOURCE_DIFF",
+   "description": "Two path segments differ",
+   "entries": [
+    6,
+    7
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "folder",
+    "tenant"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R04",
+   "pipeline_focus": "eligibility",
+   "tag": "multi-diff",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_SECOND_SESSION",
+   "description": "One session reads two own tickets",
+   "entries": [
+    8,
+    9
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "ticket"
+   ],
+   "id": "R05",
+   "pipeline_focus": "eligibility",
+   "tag": "insufficient-session",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "REJECT_HEADER_DIFF",
+   "description": "Resource id differs and non-session role header differs",
+   "entries": [
+    10,
+    11
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "case"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R06",
+   "pipeline_focus": "eligibility",
+   "tag": "different-roles",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "REJECT_SESSION_ONLY",
+   "description": "Same object id for both sessions (shared workspace)",
+   "entries": [
+    12,
+    13
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "space"
+   ],
+   "id": "R07",
+   "pipeline_focus": "eligibility",
+   "tag": "shared-legit",
+   "vulnerability_truth": "not_vulnerable"
+  },
+  {
+   "ambiguous_types": [
+    "invoice",
+    "order"
+   ],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_MORE_EVIDENCE",
+   "description": "Same numeric id under different resource nouns must not cross-pair as one kind",
+   "entries": [
+    14,
+    15
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "R08",
+   "pipeline_focus": "pairing",
+   "tag": "ids-namespaces",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Nested JSON with arrays; single path diff still eligible",
+   "entries": [
+    16,
+    17
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "bundle"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R09",
+   "pipeline_focus": "eligibility",
+   "tag": "arrays-nested",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_RESPONSE",
+   "description": "Actor response absent",
+   "entries": [
+    18,
+    19
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "voucher"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R10",
+   "pipeline_focus": "eligibility",
+   "tag": "incomplete-responses",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "technical_error",
+   "conversion_code": "REJECT_ORIGIN_MISMATCH_SIDES",
+   "description": "Owner/actor origins disagree; must fail closed without rewriting",
+   "entries": [
+    20,
+    21
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "claim"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R11",
+   "pipeline_focus": "provenance",
+   "tag": "inconsistent-origin",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_SECOND_SESSION",
+   "description": "Unauthenticated health endpoint; not an IDOR pair",
+   "entries": [
+    22
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "healthz"
+   ],
+   "id": "R12",
+   "pipeline_focus": "ranking",
+   "tag": "discarded-candidate",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Both 200; HTTP status alone must not confirm ownership/IDOR",
+   "entries": [
+    23,
+    24
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "page"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R13",
+   "pipeline_focus": "control_review",
+   "tag": "fp-http-200",
+   "vulnerability_truth": "false_positive_risk"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Eligible pair used to verify ARTIFACT_MODIFIED / stale ledger detection",
+   "entries": [
+    25,
+    26
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "archive"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R14",
+   "pipeline_focus": "integrity",
+   "tag": "altered-evidence",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Synthetic expired token marker must surface as EVIDENCE_EXPIRED on integrity check",
+   "entries": [
+    27,
+    28
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "token"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R15",
+   "pipeline_focus": "integrity",
+   "tag": "expired-token",
+   "vulnerability_truth": "n/a"
+  }
+ ],
+ "split": "frozen",
+ "tuning_policy": "independent-measurement; do not retarget historical corpora"
+}

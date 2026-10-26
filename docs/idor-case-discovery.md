@@ -127,4 +127,5 @@ Stable codes live in `bugbounty_toolkit.analysis.handoff_case_eligibility` (for 
 `CASE_ELIGIBLE`, `TECH_ORIGIN_OVERRIDE`, `REJECT_MULTI_RESOURCE_DIFF`). Origins are never
 silently rewritten: materialized suggestions use the capture provenance origin; incompatible
 overrides fail closed. Measurement lab: `labs/idor_handoff_case_eval` (`adv-handoff-case-1.0`).
+Full end-to-end research contract lab: `labs/idor_e2e_research` (`idor-e2e-research-1.0`).
 The adversarial evaluator uses each corpus `ground_truth.origin` (adv-1.0 → `:8137`, adv-1.1 → `:8138`).

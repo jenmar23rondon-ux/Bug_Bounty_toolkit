@@ -1,0 +1,88 @@
+{
+  "control_reviews_require_human": true,
+  "corpus_version": "idor-e2e-research-1.0",
+  "eligibility": {
+    "case_eligible": 6,
+    "codes": {
+      "CASE_ELIGIBLE": 6,
+      "REJECT_HEADER_DIFF": 1,
+      "REJECT_MULTI_RESOURCE_DIFF": 4
+    },
+    "expected_case_eligible_scenarios": 6,
+    "expected_rejection_scenarios": 8,
+    "expected_technical_scenarios": 1,
+    "legitimate_rejections": 5,
+    "summary": {
+      "case_eligible": 6,
+      "legitimate_rejection": 5,
+      "structural_pairs": 6,
+      "technical_error": 0,
+      "total_classified": 11
+    },
+    "technical_errors": 0
+  },
+  "false_cases": 0,
+  "manual_steps_per_useful_case": {
+    "case_eligible": 6,
+    "estimated_manual_steps_per_eligible": 6,
+    "note": "Automated step count only; not a measured human time study."
+  },
+  "no_ownership_inference": true,
+  "note": "Candidates counted only when reviewable; raw candidate volume is not success.",
+  "object_recall_proxy": {
+    "note": "Proxy count of ranked object candidates; not tuned on this corpus.",
+    "ranked_candidates": 48
+  },
+  "origin": "http://127.0.0.1:8155",
+  "pairing": {
+    "classified": 11,
+    "structural_proposals": 11
+  },
+  "pending_contracts": [],
+  "provenance_integrity": {
+    "altered_evidence_detected": true,
+    "expired_evidence_flagged": true,
+    "expired_token_present": true,
+    "ledger_modified_detected": true,
+    "origin_count": 2,
+    "origin_refs": [
+      "origin-1b5b5daea94c34a669b6728a35042fb2",
+      "origin-6f49d79c6c4bb1d40e223e0e6b0b9366"
+    ]
+  },
+  "ranking_precision_at_k_note": "Ranking rules unchanged; Precision@k not retargeted on this corpus.",
+  "resume": {
+    "artifact_issues_on_clean_resume": [],
+    "reimport_skipped": true,
+    "resumed": true
+  },
+  "reviewable_cases": 6,
+  "safety": {
+    "access_checks_executed": 0,
+    "network_connect_attempts": 0,
+    "network_requests_sent": 0,
+    "pending_contracts_empty": true,
+    "vulnerabilities_confirmed": 0
+  },
+  "scenario_ids": [
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05",
+    "R06",
+    "R07",
+    "R08",
+    "R09",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15"
+  ],
+  "scenarios": 15,
+  "stages_ok": true,
+  "time_to_reviewable_ms": 64,
+  "type": "bbtk-idor-e2e-research-metrics"
+}
