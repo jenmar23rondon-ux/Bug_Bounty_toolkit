@@ -330,6 +330,9 @@ def analyze_capture_context(result: HarImportResult) -> CaptureContext:
         "duplicate_entries": summary["duplicate_entries"],
         "network_validation": "none",
     }
+    if summary["format"] != "har":
+        # Non-HAR adapters add content-free provenance; HAR output stays byte-identical.
+        capture_import["provenance"] = summary.get("provenance", {})
     return CaptureContext(
         hosts=tuple(sorted(hosts)),
         schemes=tuple(sorted(schemes)) or ("https",),
@@ -732,11 +735,30 @@ def build_fuzz_plan(
     strict: bool = False,
     allow_truncate: bool = False,
     ranking: str = "filename",
+    capture_format: str = "har",
+    response_path: Path | None = None,
+    origin: str | None = None,
 ) -> FuzzPlan:
-    """Create a fully offline discovery plan from a local HAR and registered wordlists."""
+    """Create a fully offline discovery plan from a local capture and registered wordlists.
+
+    ``capture_format`` defaults to ``"har"`` (historical behaviour); ``"auto"``, ``"burp-xml"``
+    and ``"raw-http"`` route through the common capture adapter, which reuses existing parsers.
+    """
     if max_tests < 2 or max_tests > 1_000_000:
         raise ValueError("max_tests must be between 2 and 1,000,000.")
-    result = load_har_for_planning(har_path, strict=strict, allow_truncate=allow_truncate)
+    if capture_format == "har" and response_path is None and origin is None:
+        result = load_har_for_planning(har_path, strict=strict, allow_truncate=allow_truncate)
+    else:
+        from .capture_adapter import load_capture_for_planning
+
+        result = load_capture_for_planning(
+            har_path,
+            capture_format=capture_format,
+            response_path=response_path,
+            origin=origin,
+            strict=strict,
+            allow_truncate=allow_truncate,
+        )
     context = analyze_capture_context(result)
     explanations: list[dict[str, Any]] | None = [] if ranking == "content" else None
     recommendations, discarded_lists = recommend_for_context(
@@ -762,7 +784,12 @@ def build_fuzz_plan(
     ]
     if not recommendations:
         notes.append("No local discovery wordlists matched; register SecLists/Assetnote/fuzzdb/custom collections.")
-    if context.capture_import.get("rejected"):
+    if context.capture_import.get("rejected") and context.capture_import.get("format") != "har":
+        notes.append(
+            f"Partial {context.capture_import['format']} recovery isolated {context.capture_import['rejected']} "
+            "items; see capture_import.reasons."
+        )
+    elif context.capture_import.get("rejected"):
         notes.append(
             f"Partial HAR recovery isolated {context.capture_import['rejected']} entries; see capture_import.reasons."
         )

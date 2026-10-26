@@ -237,6 +237,54 @@ def entry_reason(entry: Any, index: int, max_message_bytes: int) -> tuple[str | 
     return None, source
 
 
+def decode_har_document(text: str) -> Any:
+    """``json.loads`` with last-wins semantics plus duplicate-key markers (values identical)."""
+    return json.loads(text, object_pairs_hook=_pairs)
+
+
+def has_duplicate_keys(value: Any) -> bool:
+    """True when this object itself repeated a key (non-recursive)."""
+    return isinstance(value, _Ambiguous)
+
+
+def load_har_entries(data: bytes, *, max_bytes: int, reject_ambiguous_container: bool = True) -> list[Any]:
+    """Apply the file-fatal checks shared by every HAR consumer and return ``log.entries``.
+
+    Entries keep duplicate-key markers so per-entry validation (``entry_reason``) can isolate
+    them. ``reject_ambiguous_container=False`` is only for descriptive classification of files a
+    legacy importer already accepts; it never changes which entries are valid.
+    """
+    if len(data) > max_bytes:
+        raise HarImportError("file_too_large")
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeError as exc:
+        raise HarImportError("not_utf8") from exc
+    if json_depth(text) > MAX_FILE_JSON_DEPTH:
+        # Recursion/memory guard before decoding; deep but bounded entries are isolated per entry.
+        raise HarImportError("json_too_deep")
+    try:
+        document = decode_har_document(text)
+    except (ValueError, RecursionError) as exc:
+        raise HarImportError("json_invalid") from exc
+    log = document.get("log") if isinstance(document, dict) else None
+    entries = log.get("entries") if isinstance(log, dict) else None
+    if reject_ambiguous_container and (isinstance(document, _Ambiguous) or isinstance(log, _Ambiguous)):
+        raise HarImportError("duplicate_json_keys")
+    if not isinstance(entries, list):
+        raise HarImportError("log_entries_missing")
+    if not entries:
+        raise HarImportError("entries_empty")
+    if len(entries) > MAX_HAR_ENTRIES_DECLARED:
+        raise HarImportError("entries_over_hard_limit")
+    return entries
+
+
+def entry_fingerprint(entry: Any) -> str:
+    """Canonical serialization used for exact-duplicate detection (never stored or exported)."""
+    return json.dumps(entry, sort_keys=True)
+
+
 def import_har(
     data: bytes,
     *,
@@ -254,29 +302,7 @@ def import_har(
     """
     if strict and allow_truncate:
         raise ValueError("strict and allow_truncate are mutually exclusive.")
-    if len(data) > max_bytes:
-        raise HarImportError("file_too_large")
-    try:
-        text = data.decode("utf-8-sig")
-    except UnicodeError as exc:
-        raise HarImportError("not_utf8") from exc
-    if json_depth(text) > MAX_FILE_JSON_DEPTH:
-        # Recursion/memory guard before decoding; deep but bounded entries are isolated per entry.
-        raise HarImportError("json_too_deep")
-    try:
-        document = json.loads(text, object_pairs_hook=_pairs)
-    except (ValueError, RecursionError) as exc:
-        raise HarImportError("json_invalid") from exc
-    log = document.get("log") if isinstance(document, dict) else None
-    entries = log.get("entries") if isinstance(log, dict) else None
-    if isinstance(document, _Ambiguous) or isinstance(log, _Ambiguous):
-        raise HarImportError("duplicate_json_keys")
-    if not isinstance(entries, list):
-        raise HarImportError("log_entries_missing")
-    if not entries:
-        raise HarImportError("entries_empty")
-    if len(entries) > MAX_HAR_ENTRIES_DECLARED:
-        raise HarImportError("entries_over_hard_limit")
+    entries = load_har_entries(data, max_bytes=max_bytes)
     result = HarImportResult("strict" if strict else "partial", len(entries))
     if len(entries) > max_entries:
         if not allow_truncate:
@@ -294,7 +320,7 @@ def import_har(
             result.reject(index, reason)
             continue
         assert source is not None
-        fingerprint = json.dumps(entry, sort_keys=True)
+        fingerprint = entry_fingerprint(entry)
         if fingerprint in seen:
             # Duplicates are kept (as before) with their own locator; only counted.
             result.duplicates += 1

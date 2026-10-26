@@ -14,7 +14,7 @@ network validation.
 | `indexed_capture_sources` / `object-handoff --materialize-dir` | same reader | re-reads in the mode recorded in the signed graph |
 | `lab object-discover` | `build_object_graph` | clean synthetic corpus, identical results |
 | `labs/adversarial_idor_eval/evaluate.py` | `build_object_graph` | bounds probes run `strict=True`; new `partial_recovery` section |
-| `evidence_engine._har` (evidence import) | `har_capture_sources` | unchanged (already skipped non-object entries); shares `har_entry_source` |
+| `evidence_engine` (evidence import) | `har_capture_sources` + `entry_reason` / `import_har` | records unchanged by default (`--har-mode compat`); structured `capture_import` account; see har-evidence-provenance.md |
 | Burp XML / raw HTTP (`parse_captured_exchanges`) | `burp_import` | unchanged whole-file semantics; summary reports `format: burp`, `mode: strict` |
 
 ## Modes
@@ -133,3 +133,9 @@ Snapshots: `labs/adversarial_idor_eval/results/adv1{0,1}-resilient-har.json`.
 
 Regenerate fixtures with `python examples/har-recovery/build_fixtures.py` (deterministic; a test
 checks that the committed files match).
+
+## Evidence import
+
+`bbtk evidence import` reuses this importer for structured provenance; see
+[har-evidence-provenance.md](har-evidence-provenance.md) for the `compat` / `partial` / `strict`
+modes and the limit differences from Object Discovery.
