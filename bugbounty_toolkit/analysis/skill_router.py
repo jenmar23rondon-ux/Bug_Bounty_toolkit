@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from .hypotheses import _validate_hypothesis
+from .ai_backend import AICallLog, AISelection, dispatch_chat
 from .ollama_review import DEFAULT_OLLAMA_MODEL, OllamaUnavailableError, chat_with_ollama, validate_ollama_config
 from ..skill_data import resolve_skill_root
 
@@ -248,7 +249,11 @@ def _validate_ai_routes(value: object) -> tuple[list[dict[str, str]], list[str]]
 
 
 def _ollama_route(
-    ambiguous: list[tuple[str, dict[str, Any]]], model: str, timeout: float
+    ambiguous: list[tuple[str, dict[str, Any]]],
+    model: str,
+    timeout: float,
+    selection: AISelection | None = None,
+    log: AICallLog | None = None,
 ) -> tuple[list[dict[str, str]], list[str]]:
     items = [
         {
@@ -282,7 +287,14 @@ def _ollama_route(
     for attempt in range(2):
         if attempt:
             messages[1]["content"] += " Return valid JSON only and select only registered skill names."
-        content = chat_with_ollama(messages, model, timeout, _ROUTE_SCHEMA, 512)
+        content = dispatch_chat(
+            selection,
+            messages,
+            _ROUTE_SCHEMA,
+            512,
+            lambda: chat_with_ollama(messages, model, timeout, _ROUTE_SCHEMA, 512),
+            log,
+        )
         try:
             return _validate_ai_routes(json.loads(content))
         except (json.JSONDecodeError, ValueError):
@@ -337,10 +349,19 @@ def route_hypotheses(
     model: str = DEFAULT_OLLAMA_MODEL,
     timeout: float = 120.0,
     use_ollama: bool = True,
+    selection: AISelection | None = None,
+    log: AICallLog | None = None,
 ) -> dict[str, object]:
-    """Build a non-executing plan, using deterministic routes before local Ollama for ambiguity."""
+    """Build a non-executing plan, using deterministic routes before a local model for ambiguity.
+
+    The model may only pick names from the installed registry; commands always come from the
+    registry itself, so a model can never add, alter or execute a command.
+    """
     if type(max_tests) is not int or max_tests <= 0:
         raise ValueError("--max-tests must be a positive integer.")
+    if selection is not None:
+        selection.validate()
+        model, timeout = selection.model, selection.timeout
     validate_ollama_config(model, timeout)
     ambiguous: list[tuple[str, dict[str, Any]]] = []
     chosen: dict[str, dict[str, str]] = {}
@@ -367,7 +388,7 @@ def route_hypotheses(
     if ambiguous:
         if use_ollama:
             try:
-                ai_selected, ai_missing = _ollama_route(ambiguous, model, timeout)
+                ai_selected, ai_missing = _ollama_route(ambiguous, model, timeout, selection, log)
             except OllamaUnavailableError:
                 ai_selected = []
                 ai_missing = ["Ollama unavailable; ambiguous categories used the deterministic executor fallback."]
@@ -431,7 +452,8 @@ def route_hypotheses_file(
     model: str = DEFAULT_OLLAMA_MODEL,
     timeout: float = 120.0,
     use_ollama: bool = True,
+    selection: AISelection | None = None,
 ) -> dict[str, object]:
     """Read a saved hypotheses result and route it without writing files or executing its plan."""
     data, hypotheses = load_hypotheses_file(path)
-    return route_hypotheses(data, hypotheses, program, max_tests, model, timeout, use_ollama)
+    return route_hypotheses(data, hypotheses, program, max_tests, model, timeout, use_ollama, selection)

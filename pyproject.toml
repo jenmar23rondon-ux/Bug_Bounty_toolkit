@@ -103,6 +103,8 @@ files = [
     "bugbounty_toolkit/analysis/ai_review_eval.py",
     "bugbounty_toolkit/ai_mock_server.py",
     "bugbounty_toolkit/analysis/artifact_review.py",
+    "bugbounty_toolkit/analysis/ai_backend.py",
+    "bugbounty_toolkit/analysis/dual_review.py",
     "bugbounty_toolkit/analysis/evidence_engine.py",
     "bugbounty_toolkit/analysis/api_workflow.py",
     "bugbounty_toolkit/analysis/object_relationships.py",

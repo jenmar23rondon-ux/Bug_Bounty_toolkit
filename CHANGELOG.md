@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+### Unified local AI investigation backend
+
+- New `analysis/ai_backend.py`: one `AISelection` (provider + model + loopback endpoint) that routes every
+  investigation AI call through the existing `AIProvider` adapters (Ollama, LM Studio/OpenAI-compatible).
+  Without `--ai-provider` the legacy Ollama client path is unchanged.
+- `--ai-provider` / `--ai-endpoint` on `ai hypotheses`, `ai route`, `ai investigate`, `ai benchmark`,
+  `ai-review --artifact`, `report --draft-with-ai`, every live `--ai-review` scanner and `analyze evidence --ai lmstudio`.
+- Prompts with residual secret-like content are refused before sending; telemetry stores only fingerprints.
+- New `bbtk ai dual-review`: independent analyst + critic models, strict JSON, evidence/hypothesis/opinion claims,
+  invented-ref, contradiction and unsupported-claim detection. Consensus is never confirmation.
+- `labs/unified_ai_eval/run.py`: deterministic mock benchmark (CI) plus optional `--live` hook for local GPUs.
+  Version remains 0.2.2.
+
 ### Content-aware wordlist ranking (opt-in)
 
 - Add bounded, deterministic content profiling for local wordlists (`bugbounty_toolkit.fuzzing.content_ranking`).

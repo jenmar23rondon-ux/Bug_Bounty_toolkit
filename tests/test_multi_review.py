@@ -350,7 +350,7 @@ class CliStructuredReviewTests(unittest.TestCase):
         artifact.write_text("<p>x</p>", encoding="utf-8")
         base = ["ai-review", "p", "--evidence-file", str(self.evidence)]
         for argv in (
-            ["ai-review", "p", "--artifact", str(artifact), "--kind", "html", "--ai-provider", "lmstudio"],
+            ["ai-review", "p", "--artifact", str(artifact), "--kind", "html", "--structured"],
             base + ["--second-ai-provider", "ollama"],
             base + ["--ai-provider", "lmstudio", "--ai-endpoint", "192.168.0.2:1234"],
             base + ["--ai-provider", "lmstudio", "--ai-endpoint", "localhost:1234"],
