@@ -375,7 +375,11 @@ def _record(source: _Source, path: Path, salt: bytes) -> EvidenceRecord:
         or bool(all_session_values)
         or any(_SENSITIVE_NAME.search(name) for name in parameter_names)
         or url_contains_credentials
-        or bool(re.search(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", source.response_body, re.I))
+        # The "@" pre-check is exact (the pattern requires it) and avoids quadratic scans of huge bodies.
+        or (
+            "@" in source.response_body
+            and bool(re.search(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", source.response_body, re.I))
+        )
     )
     content_type = next(
         (
@@ -651,6 +655,47 @@ def har_entry_source(entry: Any, index: int) -> CaptureSource | None:
 
 def _har(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
     return [_record(source, path, salt) for source in har_capture_sources(data)]
+
+
+def _har_with_account(
+    path: Path, raw: bytes, salt: bytes, har_mode: str
+) -> tuple[list[EvidenceRecord], dict[str, object]]:
+    """HAR evidence import plus a content-free per-entry account from the resilient importer.
+
+    ``compat`` (default) emits exactly the records of the historical importer and only
+    *describes* entries the resilient validator would reject. ``partial``/``strict`` delegate
+    entirely to ``har_import.import_har`` (no second parser) with evidence-import limits.
+    """
+    from .har_import import HarImportError, decode_har_document, import_har, load_har_entries
+    from .har_provenance import account_compat, account_resilient, locator_index
+
+    limits = {"max_input_bytes": MAX_INPUT_BYTES, "max_entries": MAX_RECORDS, "max_message_bytes": MAX_INPUT_BYTES}
+    if har_mode == "compat":
+        try:
+            data = decode_har_document(raw.decode("utf-8-sig"))
+        except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exc:
+            raise ValueError("har input is not valid UTF-8 JSON.") from exc
+        sources = har_capture_sources(data)
+        entries = data["log"]["entries"]
+        emitted = [index for index in (locator_index(source.locator) for source in sources) if index is not None]
+        account = account_compat(data, entries, emitted, raw, limits=limits, max_message_bytes=MAX_INPUT_BYTES)
+    else:
+        from .har_import import MAX_HAR_ENTRIES_DECLARED
+
+        limits["max_entries"] = min(MAX_RECORDS, MAX_HAR_ENTRIES_DECLARED)
+        try:
+            result = import_har(
+                raw,
+                strict=har_mode == "strict",
+                max_bytes=MAX_INPUT_BYTES,
+                max_message_bytes=MAX_INPUT_BYTES,
+                max_entries=limits["max_entries"],
+            )
+        except HarImportError as exc:
+            raise ValueError(f"HAR capture rejected: {exc.reason}") from exc
+        sources = result.accepted
+        account = account_resilient(result, load_har_entries(raw, max_bytes=MAX_INPUT_BYTES), raw, limits=limits)
+    return [_record(source, path, salt) for source in sources], account.summary()
 
 
 def _ffuf(path: Path, data: Any, salt: bytes) -> list[EvidenceRecord]:
@@ -934,7 +979,9 @@ def _detect_format(path: Path, raw: bytes) -> str:
     return "text"
 
 
-def _load_input(path: Path, format_name: str, salt: bytes) -> tuple[str, list[EvidenceRecord]]:
+def _load_input(
+    path: Path, format_name: str, salt: bytes, har_mode: str = "compat"
+) -> tuple[str, list[EvidenceRecord], dict[str, object] | None]:
     try:
         with path.open("rb") as handle:
             raw = handle.read(MAX_INPUT_BYTES + 1)
@@ -943,6 +990,9 @@ def _load_input(path: Path, format_name: str, salt: bytes) -> tuple[str, list[Ev
     if len(raw) > MAX_INPUT_BYTES:
         raise ValueError(f"Evidence input exceeds the {MAX_INPUT_BYTES}-byte limit: {path.name}.")
     detected = _detect_format(path, raw) if format_name == "auto" else format_name
+    if detected == "har":
+        records, account = _har_with_account(path, raw, salt, har_mode)
+        return detected, records, account
     if detected == "burp-xml":
         records = _burp_xml(path, raw, salt)
     elif detected in {"nuclei-json", "nuclei-jsonl"}:
@@ -958,18 +1008,12 @@ def _load_input(path: Path, format_name: str, salt: bytes) -> tuple[str, list[Ev
             records = _nuclei_jsonl(path, text, salt, parsed)
         else:
             records = _nuclei_jsonl(path, text, salt)
-    elif detected in {"har", "ffuf-json", "toolkit-json"}:
+    elif detected in {"ffuf-json", "toolkit-json"}:
         try:
             parsed = json.loads(raw.decode("utf-8-sig"))
         except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exc:
             raise ValueError(f"{detected} input is not valid UTF-8 JSON.") from exc
-        records = (
-            _har(path, parsed, salt)
-            if detected == "har"
-            else _ffuf(path, parsed, salt)
-            if detected == "ffuf-json"
-            else _toolkit_json(path, parsed, salt)
-        )
+        records = _ffuf(path, parsed, salt) if detected == "ffuf-json" else _toolkit_json(path, parsed, salt)
     else:
         try:
             text = raw.decode("utf-8-sig")
@@ -1012,7 +1056,7 @@ def _load_input(path: Path, format_name: str, salt: bytes) -> tuple[str, list[Ev
                 raise ValueError("Raw HTTP input is neither a recognized request nor response.")
         else:
             records = _csv(path, text, salt) if detected == "csv" else _documents(path, text, detected, salt)
-    return detected, records
+    return detected, records, None
 
 
 def _semantic_key(record: EvidenceRecord) -> tuple[object, ...]:
@@ -1144,8 +1188,15 @@ def correlate_evidence(records: Iterable[EvidenceRecord | dict[str, Any]]) -> li
     return correlated
 
 
-def import_evidence(paths: list[Path], format_name: str = "auto") -> dict[str, object]:
-    """Normalize supported local artifacts, deduplicate them and add descriptive correlations."""
+def import_evidence(paths: list[Path], format_name: str = "auto", har_mode: str = "compat") -> dict[str, object]:
+    """Normalize supported local artifacts, deduplicate them and add descriptive correlations.
+
+    HAR inputs also get a content-free ``capture_import`` account (see docs/har-evidence-provenance.md).
+    """
+    from .har_provenance import HAR_MODES, capture_origin_summary
+
+    if har_mode not in HAR_MODES:
+        raise ValueError("Unsupported HAR import mode.")
     allowed = {
         "auto",
         "burp-xml",
@@ -1168,16 +1219,23 @@ def import_evidence(paths: list[Path], format_name: str = "auto") -> dict[str, o
     all_records: list[EvidenceRecord] = []
     inputs: list[dict[str, object]] = []
     for path in paths:
-        detected, records = _load_input(path, format_name, salt)
+        detected, records, account = _load_input(path, format_name, salt, har_mode)
         if len(all_records) + len(records) > MAX_RECORDS:
             raise ValueError(f"Combined inputs exceed the {MAX_RECORDS}-record import limit.")
         all_records.extend(records)
-        inputs.append({"source_path": str(path.resolve()), "format": detected, "records_parsed": len(records)})
+        row: dict[str, object] = {
+            "source_path": str(path.resolve()),
+            "format": detected,
+            "records_parsed": len(records),
+        }
+        if account is not None:
+            row["capture_import"] = account
+        inputs.append(row)
     unique = deduplicate(all_records)
     record_rows = json.loads(json.dumps([asdict(record) for record in unique]))
     correlations = correlate_evidence(unique)
     canonical = json.dumps(record_rows, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-    return {
+    bundle: dict[str, object] = {
         "schema_version": "1.1",
         "type": "unified-evidence-bundle",
         "bundle_id": hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:24],
@@ -1194,6 +1252,9 @@ def import_evidence(paths: list[Path], format_name: str = "auto") -> dict[str, o
         "network_requests_sent": 0,
         "vulnerabilities_confirmed": 0,
     }
+    if any("capture_import" in row for row in inputs):
+        bundle["capture_origin"] = capture_origin_summary(bundle)
+    return bundle
 
 
 def correlations_from_bundle(path: Path) -> dict[str, object]:
@@ -1218,7 +1279,9 @@ def correlations_from_bundle(path: Path) -> dict[str, object]:
     if len(records) > MAX_RECORDS or any(not isinstance(row, dict) for row in records):
         raise ValueError("Evidence bundle records are malformed or exceed the import limit.")
     correlations = correlate_evidence(records)
-    return {
+    from .har_provenance import validate_capture_provenance
+
+    result: dict[str, object] = {
         "schema_version": "1.0",
         "type": "evidence-correlations",
         "bundle_id": data.get("bundle_id"),
@@ -1227,3 +1290,13 @@ def correlations_from_bundle(path: Path) -> dict[str, object]:
         "network_requests_sent": 0,
         "vulnerabilities_confirmed": 0,
     }
+    provenance = validate_capture_provenance(data)
+    if provenance["status"] != "absent":
+        # Content-free: only the validation verdict, issue codes and the bundle's own origin counts.
+        result["capture_provenance"] = {
+            "status": provenance["status"],
+            "valid": provenance["valid"],
+            "issue_codes": sorted({issue["code"] for issue in provenance["issues"]}),
+            "capture_origin": data.get("capture_origin"),
+        }
+    return result

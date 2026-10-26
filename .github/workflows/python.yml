@@ -20,8 +20,11 @@ jobs:
       - run: bbtk --help
       - run: bbtk object-discover ci-object-discovery --input examples/object-discovery/captures.har --attest-authorized-captures --dry-run
       - run: bbtk fuzz-plan ci-context-fuzz --har examples/context-fuzz/capture.har --dry-run
+      - run: bbtk fuzz-plan ci-context-fuzz --capture labs/context_fuzz_lab/fixtures/capture.burp.xml --dry-run
+      - run: python labs/context_fuzz_lab/multi_capture_benchmark.py
       - run: bbtk lab object-discover --dry-run --split eval
       - run: bash -n labs/idor_lab/run.sh
+      - run: python scripts/ai_provider_benchmark.py > /dev/null
       - run: ruff check bugbounty_toolkit tests scripts skills labs
       - run: ruff format --check bugbounty_toolkit tests scripts skills labs
       - run: mypy --strict
@@ -39,6 +42,25 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/analysis/investigation.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/reporting/finding_report.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/dashboard.py" --fail-under=80
+      - run: coverage report --include="bugbounty_toolkit/analysis/ai_providers.py,bugbounty_toolkit/analysis/multi_review.py,bugbounty_toolkit/analysis/ai_review_eval.py" --fail-under=90
       - run: coverage report --include="bugbounty_toolkit/fuzzing/wordlist_manager.py" --fail-under=80
-      - run: coverage report --include="bugbounty_toolkit/fuzzing/context_planner.py,bugbounty_toolkit/context_fuzz_lab_server.py" --fail-under=80
+      - run: coverage report --include="bugbounty_toolkit/fuzzing/context_planner.py,bugbounty_toolkit/fuzzing/capture_adapter.py,bugbounty_toolkit/context_fuzz_lab_server.py" --fail-under=80
       - run: coverage report
+
+  offline-lab:
+    # Optional reproducible offline lab: build (networked) then verify with --network none.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash -n scripts/offline_lab/common.sh scripts/offline_lab/build.sh scripts/offline_lab/run.sh scripts/offline_lab/verify.sh
+      - run: scripts/offline_lab/build.sh --playwright
+      - run: scripts/offline_lab/verify.sh --playwright
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-lab-results
+          path: offline-lab-results/
+          if-no-files-found: ignore

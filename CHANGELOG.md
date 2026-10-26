@@ -1,3 +1,12 @@
+## [Unreleased]
+
+### Content-aware wordlist ranking (opt-in)
+
+- Add bounded, deterministic content profiling for local wordlists (`bugbounty_toolkit.fuzzing.content_ranking`).
+- Opt-in via `bbtk fuzz-plan --ranking content`; default filename ranking unchanged.
+- Synthetic DEV/FINAL evaluation corpus under `labs/content_wordlist_eval/` with frozen hashes.
+- Explanations include category/content signals, coverage, duplication, request cost, uncertainty, and sample SHA-256; no full payloads in reports.
+
 # Changelog
 
 Notable user-facing changes are recorded here.
@@ -11,6 +20,13 @@ Notable user-facing changes are recorded here.
   rejections; materialize suggestions preserve capture provenance origin. Frozen FINAL
   corpus `adv-handoff-case-1.0` (+ DEV) authored before the fix. No discovery/ranking/fuzz
   changes, no auto access-check/approve/confirm. Version stays 0.2.2.
+
+- Add optional reproducible offline lab environment (`docker/offline-lab`, `scripts/offline_lab`):
+  digest-pinned base, hash-locked deps, checksum-verified ffuf, optional Playwright image; non-root,
+  read-only, cap-drop ALL, no-new-privileges, resource limits, `--network none`; build separated
+  from run; `doctor` reports Playwright browser and offline-lab state without installing anything;
+  `verify.sh` runs the labs/tests with a connection audit and in-container isolation checks.
+  venv install and scope/approval controls unchanged. Version stays 0.2.2.
 
 - Add offline evidence verification & coverage ledger (`bbtk ledger ...`, schema `bbtk-evidence-ledger/1`):
   surface coverage states, digest-verified evidence with provenance, distinct candidate states,

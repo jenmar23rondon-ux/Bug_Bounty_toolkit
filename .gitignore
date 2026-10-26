@@ -19,3 +19,6 @@ reports/*
 !reports/.gitkeep
 logs/*
 !logs/.gitkeep
+
+# Offline lab verification output (scripts/offline_lab/verify.sh)
+offline-lab-results/

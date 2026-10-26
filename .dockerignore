@@ -1,0 +1,33 @@
+# Allowlist: the offline lab image receives ONLY these tracked source paths.
+# Everything else (venvs, .git, records, logs, reports, inputs, caches, .env,
+# keys, host files) is excluded so no host secret or private data can enter it.
+*
+!bugbounty_toolkit/
+!tests/
+!labs/
+!examples/
+!docs/
+!skills/
+!wordlists/
+!config/
+!templates/
+!scripts/
+!docker/offline-lab/
+!pyproject.toml
+!README.md
+!LICENSE
+!.dockerignore
+
+# Re-exclude generated or sensitive material inside allowlisted paths.
+**/__pycache__/
+**/*.py[cod]
+**/.test-tmp/
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/id_rsa*
+**/id_ed25519*
+**/.netrc
+**/*.sqlite
+**/*.db

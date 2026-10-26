@@ -673,9 +673,13 @@ def cmd_fuzz_plan(args: argparse.Namespace) -> None:
         from .analysis.object_relationships import load_object_key
 
         object_key = load_object_key(Path(args.object_key))
+    capture_path = args.capture if args.capture is not None else args.har
+    capture_format = args.capture_format if args.capture is not None else "har"
+    if args.capture is None and (args.response is not None or args.origin is not None):
+        raise ValueError("--response and --origin require --capture.")
     plan = build_fuzz_plan(
         args.program,
-        Path(args.har),
+        Path(capture_path),
         collections=collections,
         scope=scope,
         category=args.category,
@@ -685,6 +689,10 @@ def cmd_fuzz_plan(args: argparse.Namespace) -> None:
         object_key=object_key,
         strict=args.strict,
         allow_truncate=args.allow_truncate,
+        ranking=getattr(args, "ranking", "filename"),
+        capture_format=capture_format,
+        response_path=Path(args.response) if args.response is not None else None,
+        origin=args.origin,
     )
     print(
         json.dumps(
@@ -2422,7 +2430,7 @@ def _write_offline_json(path: Path, data: dict[str, object], force: bool) -> Non
 
 def cmd_evidence_import(args: argparse.Namespace) -> None:
     paths = ProgramPaths(RECORDS_ROOT, args.program)
-    bundle = import_evidence(args.input, args.format)
+    bundle = import_evidence(args.input, args.format, getattr(args, "har_mode", "compat"))
     default_path = paths.evidence_dir / "imports" / "unified-evidence.json"
     destination = args.output or default_path
     summary = bundle["summary"]
@@ -2658,9 +2666,77 @@ def cmd_graph_search(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
+def _multi_provider_requested(args: argparse.Namespace) -> bool:
+    return bool(
+        args.ai_provider != "ollama"
+        or args.second_ai_provider
+        or args.second_ai_model
+        or args.structured
+        or args.ai_endpoint
+    )
+
+
+def cmd_ai_review_structured(args: argparse.Namespace) -> None:
+    from .analysis.ai_providers import GenerationLimits, build_provider
+    from .analysis.multi_review import build_evidence_bundle, review_evidence_multi
+
+    if not args.evidence_file:
+        raise ValueError("Structured/multi-provider review requires --evidence-file (artifacts stay Ollama-only).")
+    if bool(args.second_ai_provider) != bool(args.second_ai_model):
+        raise ValueError("--second-ai-provider and --second-ai-model must be used together.")
+    limits = GenerationLimits(timeout=args.ai_timeout, max_output_tokens=args.ai_max_tokens)
+    limits.validate()
+    reviewers = [(build_provider(args.ai_provider, args.ai_endpoint, args.ai_concurrency), args.model)]
+    if args.second_ai_provider:
+        validate_ollama_config(args.second_ai_model, args.ai_timeout)
+        reviewers.append((build_provider(args.second_ai_provider, None, args.ai_concurrency), args.second_ai_model))
+    for _, model in reviewers:
+        validate_ollama_config(model, args.ai_timeout)
+    try:
+        data = json.loads(bounded_text(args.evidence_file, 2_000_000))
+    except json.JSONDecodeError as exc:
+        raise ValueError("Evidence file must contain valid JSON.") from exc
+    if not isinstance(data, dict):
+        raise ValueError("Evidence file must contain a JSON object.")
+    if args.dry_run:
+        bundle = build_evidence_bundle(data)
+        result: dict[str, object] = {
+            "type": "ai-evidence-review",
+            "status": "dry_run",
+            "decision": "inconclusive",
+            "evidence_bundle_id": bundle["evidence_bundle_id"],
+            "evidence_bundle": {key: value for key, value in bundle.items() if key != "minimized_packet"},
+            "reviewers": [{"provider": p.provider_id, "model": m, "endpoint": p.spec.endpoint()} for p, m in reviewers],
+            "execution_performed": False,
+            "finding_confirmed": False,
+            "raw_evidence_sent": False,
+            "reason": "Evidence minimized locally; no AI provider was contacted.",
+            "notice": SECOND_OPINION,
+        }
+    else:
+        result = review_evidence_multi(data, reviewers, limits)
+    print(f"[i] {SECOND_OPINION}")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+def cmd_ai_providers(args: argparse.Namespace) -> None:
+    from .analysis.ai_providers import build_provider, list_providers
+
+    rows = list_providers()
+    if args.check:
+        for row in rows:
+            if row["enabled"]:
+                provider = build_provider(str(row["provider"]))
+                row["availability"] = provider.check_availability(args.ai_model, args.ai_timeout).as_dict()
+    print(json.dumps({"type": "ai-providers", "providers": rows, "remote_providers_enabled": False}, indent=2))
+
+
 def cmd_ai_review(args: argparse.Namespace) -> None:
     ProgramPaths(RECORDS_ROOT, args.program)
     validate_ollama_config(args.model, args.ai_timeout)
+    if _multi_provider_requested(args):
+        cmd_ai_review_structured(args)
+        return
     if args.evidence_file:
         if args.kind is not None:
             raise ValueError("--kind is only valid with --artifact.")
@@ -3226,7 +3302,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="Offline context-aware discovery plan from a local HAR (no downloads, no fuzz execution)",
     )
     fuzz_plan.add_argument("program")
-    fuzz_plan.add_argument("--har", type=Path, required=True, help="Local HAR capture to analyze offline")
+    capture_source = fuzz_plan.add_mutually_exclusive_group(required=True)
+    capture_source.add_argument("--har", type=Path, help="Local HAR capture to analyze offline")
+    capture_source.add_argument(
+        "--capture",
+        type=Path,
+        help="Local HAR, Burp XML, or raw HTTP request capture (format auto-detected or set with --format)",
+    )
+    fuzz_plan.add_argument(
+        "--format",
+        dest="capture_format",
+        choices=["auto", "har", "burp-xml", "raw-http"],
+        default="auto",
+        help="Capture format for --capture (default: auto-detect; mismatches are rejected)",
+    )
+    fuzz_plan.add_argument(
+        "--response",
+        type=Path,
+        help="Raw HTTP response explicitly paired with a single --capture raw request (never inferred)",
+    )
+    fuzz_plan.add_argument(
+        "--origin",
+        help="Explicit http(s)://host[:port] origin for a raw HTTP request; must agree with its Host header",
+    )
     fuzz_plan.add_argument(
         "--category",
         choices=list(DISCOVERY_CATEGORIES),
@@ -3240,6 +3338,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum planned FUZZ targets (default 40)",
     )
     fuzz_plan.add_argument("--registry", type=Path, help="Override the per-user wordlist collection registry")
+    fuzz_plan.add_argument(
+        "--ranking",
+        choices=["filename", "content"],
+        default="filename",
+        help="Wordlist ranking: filename (default, historical) or opt-in bounded content sampling",
+    )
     fuzz_plan.add_argument(
         "--object-candidates",
         type=Path,
@@ -3788,6 +3892,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--input", type=Path, nargs="+", required=True, help="One or more local artifact files"
     )
     evidence_import.add_argument(
+        "--har-mode",
+        choices=("compat", "partial", "strict"),
+        default="compat",
+        help="HAR handling: compat keeps historical records and only reports entries the resilient "
+        "importer would reject; partial emits only valid entries; strict rejects the file on any invalid entry",
+    )
+    evidence_import.add_argument(
         "--format",
         choices=(
             "auto",
@@ -4073,6 +4184,23 @@ def build_parser() -> argparse.ArgumentParser:
     ai_review.add_argument(
         "--dry-run", action="store_true", help="Validate and minimize locally without contacting Ollama"
     )
+    ai_review.add_argument(
+        "--ai-provider",
+        choices=("ollama", "lmstudio"),
+        default="ollama",
+        help="Allowlisted local provider (default: ollama). Non-default values use the structured v1 result.",
+    )
+    ai_review.add_argument(
+        "--ai-endpoint",
+        help="Optional restatement of the provider's authorized loopback host:port; others are rejected",
+    )
+    ai_review.add_argument(
+        "--structured", action="store_true", help="Return the versioned bbtk.ai-evidence-review.v1 result"
+    )
+    ai_review.add_argument("--second-ai-provider", choices=("ollama", "lmstudio"), help="Second independent review")
+    ai_review.add_argument("--second-ai-model", help="Model for the second review")
+    ai_review.add_argument("--ai-max-tokens", type=positive_int, default=512, help="Output token budget (max 4096)")
+    ai_review.add_argument("--ai-concurrency", type=positive_int, default=1, help="Per-provider concurrency (max 4)")
     ai_review.set_defaults(func=cmd_ai_review)
 
     ai_cli = sub.add_parser("ai", help="Analyze hypotheses or prepare a non-executing skill route")
@@ -4120,6 +4248,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run", action="store_true", help="Validate and print the plan without writing a report"
     )
     ai_prioritize.set_defaults(func=cmd_ai_prioritize)
+
+    ai_providers = ai_sub.add_parser("providers", help="List allowlisted local AI providers and capabilities")
+    ai_providers.add_argument("--check", action="store_true", help="Probe availability on authorized loopback only")
+    ai_providers.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Model to look for with --check")
+    ai_providers.add_argument("--ai-timeout", type=positive_float, default=5.0, help="Probe timeout in seconds")
+    ai_providers.set_defaults(func=cmd_ai_providers)
 
     ai_investigate = ai_sub.add_parser(
         "investigate", help="Join evidence review, access assessment, skill routing and prioritization"

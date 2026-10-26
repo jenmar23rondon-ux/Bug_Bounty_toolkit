@@ -1,0 +1,95 @@
+{
+ "capture_import": {
+  "accepted": 5,
+  "duplicate_entries": 0,
+  "entries_total": 6,
+  "reasons": {
+   "method_invalid": 1
+  },
+  "rejected": 1
+ },
+ "eligibility": [
+  [
+   "insufficient_evidence",
+   0
+  ],
+  [
+   "insufficient_evidence",
+   0
+  ],
+  [
+   "proposals_ready",
+   1
+  ],
+  [
+   "proposals_ready",
+   1
+  ],
+  [
+   "proposals_ready",
+   1
+  ],
+  [
+   "proposals_ready",
+   1
+  ]
+ ],
+ "ledger_states": [
+  "candidate",
+  "candidate"
+ ],
+ "origin_count": 1,
+ "proposals": [
+  [
+   "invoice",
+   120,
+   "/log/entries[1]",
+   "/log/entries[0]"
+  ],
+  [
+   "project",
+   120,
+   "/log/entries[3]",
+   "/log/entries[4]"
+  ]
+ ],
+ "ranking": [
+  [
+   "project",
+   80
+  ],
+  [
+   "invoice",
+   80
+  ],
+  [
+   "project",
+   80
+  ],
+  [
+   "invoice",
+   80
+  ],
+  [
+   "unknown",
+   55
+  ],
+  [
+   "unknown",
+   25
+  ]
+ ],
+ "source_refs": [
+  "source-cbac8316f4bdd305621c58e3aeff4cda"
+ ],
+ "stages": {
+  "eligibility": "ok",
+  "evidence_ledger": "ok",
+  "handoff": "ok",
+  "import": "ok",
+  "object_discovery": "ok",
+  "ranking": "ok",
+  "reviewable_proposal": "ok",
+  "structured_report": "ok"
+ }
+}
