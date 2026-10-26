@@ -11,6 +11,15 @@ HAR → object_candidates (discovery) → propose_object_handoff (pairing)
     → discover_idor (IDOR case proposal, needs_review) → [human approve-idor + authorized access-check: NOT run]
 ```
 
+## Case conversion measurement note
+
+`evaluate.py` passes `ground_truth.origin` into `discover_idor` (adv-1.0: `:8137`,
+adv-1.1: `:8138`). A previous hardcoded `:8137` made every adv-1.1 conversion raise
+`Unsupported capture request or inconsistent origin` — an evaluator-only bug; the engine
+correctly refuses to override capture Host. Pair eligibility codes come from
+`handoff_case_eligibility` (technical vs legitimate rejection). See also
+`labs/idor_handoff_case_eval`.
+
 ## Independence and freezing
 
 - Separate from `labs/object_discovery_lab/{dev,eval}`: different origin/port, no shared URL

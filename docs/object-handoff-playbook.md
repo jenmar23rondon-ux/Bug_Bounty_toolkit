@@ -10,3 +10,12 @@
 7. Run the suggested `import discover-idor ... --attest-authorized-accounts` command.
 8. Complete **all** approve-idor attestations, then `approve-idor --approve` only after human ownership/privacy review.
 9. Never treat handoff scores as confirmed vulnerabilities. Use `bbtk lab object-discover` for synthetic ranking metrics only.
+
+
+## Provenance origin for discover-idor
+
+When `--materialize-dir` writes raw pairs, each proposal records `provenance_origin` from
+the capture URL (scheme/host/port) and the suggested `discover-idor` command uses that
+origin. A caller `--base-url` that disagrees with capture Host is **not** written into the
+suggestion and must not be used to silently remap authorities. Classify conversion with
+`handoff_case_eligibility` before review; insufficient pairs stay hypotheses.

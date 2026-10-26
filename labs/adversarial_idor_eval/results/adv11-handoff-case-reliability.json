@@ -1,0 +1,1430 @@
+{
+ "bounds_probes": {
+  "17_files_over_MAX_FILES": {
+   "accepted": false,
+   "error": "Use a 32-byte key and between one and sixteen capture files."
+  },
+  "33_entries_over_cap": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: entries_over_limit)"
+  },
+  "frozen_har_as_is_49_entries": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: entries_over_limit)"
+  },
+  "truncated_har_file": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: json_invalid)"
+  }
+ },
+ "case_discovery": {
+  "case_eligible_pairs": 8,
+  "case_yield_on_eligible_tp": 1.0,
+  "case_yield_on_tp": 0.375,
+  "classification_codes": [
+   "CASE_ELIGIBLE",
+   "REJECT_MULTI_RESOURCE_DIFF",
+   "REJECT_NON_GET"
+  ],
+  "confirmed_flags": 0,
+  "corpus_origin": "http://127.0.0.1:8138",
+  "errors": 0,
+  "legitimate_rejections": 12,
+  "non_tp_pairs_with_case": 2,
+  "note": "Case proposals are needs_review; accounts_authorized=False here, so nothing is executable. Technical errors (e.g. caller origin override) are counted separately from legitimate read-case rejections (non-GET, multi-diff, session-only, missing responses).",
+  "pairs_evaluated": 20,
+  "rows": [
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "a6f667836377aec155413c15f076363eb684edabb81ad3f3bef6a1549a873614",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8138",
+     "owner_request_sha256": "ee0a820a9a5c10421ece0ad17cf5b70341e83a56be256c0091f21785f5c746cc",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 1,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "5f06ea1277583ab83ae2b8604cfbc0510875f13196ae9ef46b9d20892ff74689",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8138",
+     "owner_request_sha256": "8f755699df01be1d07e3bc84172487d1970577659d6c7b579a95f2803880942b",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 2,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "ea6d2df02ba2d54d261d96cdf8bfa7881ab22b836ec446909d276914cd76006d",
+     "actor_response_sha256": "5b4db8dd43eb6b6d8f368d30710add9c08054a601797896304c50039230e5ccc",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "f1a1a09fc185f3c1a74d6b7bbaf4481018c4aa5960b0f635c3e7b03cd4efba1e",
+     "owner_response_sha256": "5b4db8dd43eb6b6d8f368d30710add9c08054a601797896304c50039230e5ccc",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 3,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "44134955436977bf42d3ab9227aacb6ec90adf9cfe6ebaeba3b5c984efda35fa",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "6b34d7089a2ffc4f8587af3b99bc3346b098d9036a895f80629a51e0dd374c2a",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 4,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "aedff3d2c1486b9a6796c1be56d02f5ed44b2c8de92af16c6fe26d4f99dc50be",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "f3325b6411d26b819113e9b4058ddd89e93f1b37ae4797ffa86a9092f184a741",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 5,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "eb9232e561764066866e00ec8186e55e41297fcd88e7b4624319ae3eb0028c5c",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "d6463191acd2fdbe6de8942314ef3d34387b6c1048d91ed31acc361a074aa148",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 6,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "44134955436977bf42d3ab9227aacb6ec90adf9cfe6ebaeba3b5c984efda35fa",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "6b34d7089a2ffc4f8587af3b99bc3346b098d9036a895f80629a51e0dd374c2a",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 7,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "0251cb003fb91796199a436a5530b8cfbf41361819cdf7361b71956ec6881552",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "6f6efbda5efdd6222372fd24770b674d88af9847a56462c9856976b8b2a928a1",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 8,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "6f6efbda5efdd6222372fd24770b674d88af9847a56462c9856976b8b2a928a1",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "0251cb003fb91796199a436a5530b8cfbf41361819cdf7361b71956ec6881552",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 9,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "09fbb53a9f4db1fd93683c4ba2f83f36a371f715362e40301d99698c49bcec9b",
+     "actor_response_sha256": "5d6a66c2d94cffe0496316a016799abf2ad2fcecbcef4bce8c857e96bab087ce",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "b5560877b4505830fc6bae626e784732b0d306f5c845f5daa2f6f514ea5eeb51",
+     "owner_response_sha256": "7c55714e653205da020ab645f8da39074b0424ced648d1148531731a293be6aa",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 10,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "b5560877b4505830fc6bae626e784732b0d306f5c845f5daa2f6f514ea5eeb51",
+     "actor_response_sha256": "7c55714e653205da020ab645f8da39074b0424ced648d1148531731a293be6aa",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "09fbb53a9f4db1fd93683c4ba2f83f36a371f715362e40301d99698c49bcec9b",
+     "owner_response_sha256": "5d6a66c2d94cffe0496316a016799abf2ad2fcecbcef4bce8c857e96bab087ce",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 11,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "47e56c93119b380f25014e51aafc6a3a7644b420fb4ed0b057334aa9fd28f2bc",
+     "actor_response_sha256": "62c2fa6803ba90b5dddf76ea35045c5001064c9d4ada80df262dc2ec7eec79d1",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8138",
+     "owner_request_sha256": "3a9a8b776a530d0f3f5acdda6331ca3cb4df76392f0af1e2bea278eb166c8574",
+     "owner_response_sha256": "b142eedc217c84637f1b1304b4daa849119b8932e2814e892e48545a05e0f6ee",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 12,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "466d82e5a6b328f632e4c848346a9babd1f569d2ae7c8314533b9f57d05f8700",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8138",
+     "owner_request_sha256": "2edfa352f115014dbb5b98a219b63abc5f3424362af66824772dc606ad74cdbf",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 13,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "5a443d29105bc3b04e68fce1712cb5295a5851114838190d053bd7ca571bc619",
+     "actor_response_sha256": "0f569c5f4a400e611e340e5721749a9022711882c5bd4a57d9d4c0c0cd1fa83e",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8138",
+     "owner_request_sha256": "4ad3c888b76a1e45edeae15ae8425bd813a82c8c148744cd62ee169ef5111083",
+     "owner_response_sha256": "a71c0235e75fd4bba7b80d4e0ed52fe7d8f4d455daa768eb1d016d9df3efedfa",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 14,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "e792e9a6f8a4965d023a90b04324428893cb936f61c822160b83e57f7d46d026",
+     "actor_response_sha256": "1ac09be586ff5026f63ab46c56215c4139b3cb3725f7da3bb1107f30fe7f07ad",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8138",
+     "owner_request_sha256": "bac96bfc650e607a3296447e0b20c3a8fe5081454a0a0db29e4495faf76b88be",
+     "owner_response_sha256": "df907b508c3ba1edcfe52b37a8d034bbd9fbd3945ee66a755b39a3459ec0bdb5",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 15,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "7720a4dc86224bab244c816a051560939b1edca508b97b4e1772c4f1d058211e",
+     "actor_response_sha256": "5b4db8dd43eb6b6d8f368d30710add9c08054a601797896304c50039230e5ccc",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 1, query parameter 'quote_uuid'.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "0276c3c400b397048a7bdc095d82fdfba17b3648b62e538bdb2aed75ad869251",
+     "owner_response_sha256": "8f61c7388352919a3be7cca83ffa9346bfb5597ca79e52800ec6bb46c926b90e",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 16,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "42c88034cc15403fd3bdda8ef079ba28bd51dd85bbc25356501923bdac0f18e1",
+     "actor_response_sha256": "6f10d5ee8b623ba54481defa1aecd5b3f7815d3ce8e326c875caf6fadf354bd0",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 1, path segment 2.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "8e7e91abfbd5861f43d28dd442f7747f2c50fa1a2fc3873ade16f7e3ca6de486",
+     "owner_response_sha256": "62f7eb5c8fe41054aaa4951df0f678013b524a642a8363a508d10e4a16d6cb5e",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 17,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "f3325b6411d26b819113e9b4058ddd89e93f1b37ae4797ffa86a9092f184a741",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "aedff3d2c1486b9a6796c1be56d02f5ed44b2c8de92af16c6fe26d4f99dc50be",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 18,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "2edfa352f115014dbb5b98a219b63abc5f3424362af66824772dc606ad74cdbf",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8138",
+     "owner_request_sha256": "b6f9cd640d6d9b132357b9191c8f7ba0c745d3554dac2a6b778389e233d41e74",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 19,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8138",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "466d82e5a6b328f632e4c848346a9babd1f569d2ae7c8314533b9f57d05f8700",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8138",
+     "owner_request_sha256": "b6f9cd640d6d9b132357b9191c8f7ba0c745d3554dac2a6b778389e233d41e74",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 20,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   }
+  ],
+  "technical_errors": 0,
+  "tp_case_eligible": 6,
+  "tp_pairs": 16,
+  "tp_pairs_with_case": 6
+ },
+ "confirmation": {
+  "confirmed_by_pipeline": 0,
+  "designed_protected_scenarios": 0,
+  "designed_vulnerable_scenarios": 11,
+  "measurable_offline": false,
+  "note": "Vulnerability confirmation requires a human-gated, authorized live/lab access test (approve-idor + access-check). Not executed by this offline evaluation. Candidates and proposals are NOT confirmed findings."
+ },
+ "corpus_version": "adv-1.1",
+ "discovery": {
+  "candidates": 54,
+  "expected_found": 14,
+  "expected_objects": 14,
+  "exported_resource_types": [
+   "unknown"
+  ],
+  "missed": [],
+  "negative_objects_surfaced": [
+   "T09:hospital",
+   "T11:venue",
+   "T12:badge",
+   "T13:gift",
+   "T13:refund",
+   "T14:bundle",
+   "T15:track",
+   "T16:region",
+   "T18:kiosk",
+   "T19:bin",
+   "T19:store"
+  ],
+  "note": "Discovery candidates are leads for review, not vulnerabilities.",
+  "precision_at_k": {
+   "1": 1.0,
+   "10": 0.8,
+   "3": 1.0,
+   "5": 0.8
+  },
+  "recall": 1.0,
+  "recall_ci95": [
+   0.785,
+   1.0
+  ],
+  "rows": [
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "vehicle",
+    "scenarios": [
+     "T02"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "editor",
+    "scenarios": [
+     "T20"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "topic",
+    "scenarios": [
+     "T20"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "tag",
+    "scenarios": [
+     "T23"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "vehicle",
+    "scenarios": [
+     "T02"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "campaign",
+    "scenarios": [
+     "T10"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ledger",
+    "scenarios": [
+     "T06"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "tag",
+    "scenarios": [
+     "T23"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "campaign",
+    "scenarios": [
+     "T10"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "topic",
+    "scenarios": [
+     "T20"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "editor",
+    "scenarios": [
+     "T20"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ledger",
+    "scenarios": [
+     "T06"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "tag",
+    "scenarios": [
+     "T23"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "certificate",
+    "scenarios": [
+     "T08"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "badge",
+    "scenarios": [
+     "T12"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "claim",
+    "scenarios": [
+     "T03"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "campaign",
+    "scenarios": [
+     "T10"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "badge",
+    "scenarios": [
+     "T12"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "lease",
+    "scenarios": [
+     "T04"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "region",
+    "scenarios": [
+     "T16"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "entity",
+    "scenarios": [
+     "T22"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "parcel",
+    "scenarios": [
+     "T01"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "patient",
+    "scenarios": [
+     "T24"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ward",
+    "scenarios": [
+     "T09"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "prescription",
+    "scenarios": [
+     "T07"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "certificate",
+    "scenarios": [
+     "T08"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ward",
+    "scenarios": [
+     "T09"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "prescription",
+    "scenarios": [
+     "T07"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "claim",
+    "scenarios": [
+     "T03"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "certificate",
+    "scenarios": [
+     "T08"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "parcel",
+    "scenarios": [
+     "T01"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "patient",
+    "scenarios": [
+     "T24"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "bin",
+    "scenarios": [
+     "T19"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "quote",
+    "scenarios": [
+     "T05"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "entity",
+    "scenarios": [
+     "T22"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "venue",
+    "scenarios": [
+     "T11"
+    ],
+    "score": 50
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "fleet",
+    "scenarios": [
+     "T02"
+    ],
+    "score": 45
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "dataset",
+    "scenarios": [
+     "T06"
+    ],
+    "score": 45
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "dataset",
+    "scenarios": [
+     "T06"
+    ],
+    "score": 45
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "fleet",
+    "scenarios": [
+     "T02"
+    ],
+    "score": 45
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "note",
+    "scenarios": [
+     "T21"
+    ],
+    "score": 35
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "refund",
+    "scenarios": [
+     "T13"
+    ],
+    "score": 35
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "kiosk",
+    "scenarios": [
+     "T18"
+    ],
+    "score": 35
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "hospital",
+    "scenarios": [
+     "T09"
+    ],
+    "score": 35
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "track",
+    "scenarios": [
+     "T15"
+    ],
+    "score": 35
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "bundle",
+    "scenarios": [
+     "T14"
+    ],
+    "score": 25
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "region",
+    "scenarios": [
+     "T16"
+    ],
+    "score": 25
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "bundle",
+    "scenarios": [
+     "T14"
+    ],
+    "score": 25
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "quote",
+    "scenarios": [
+     "T05"
+    ],
+    "score": 25
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "track",
+    "scenarios": [
+     "T15"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "lease",
+    "scenarios": [
+     "T04"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "gift",
+    "scenarios": [
+     "T13"
+    ],
+    "score": 5
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "",
+    "scenarios": [
+     "T21"
+    ],
+    "score": 0
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "store",
+    "scenarios": [
+     "T19"
+    ],
+    "score": 0
+   }
+  ]
+ },
+ "entries": 49,
+ "observations": 49,
+ "pairing": {
+  "ambiguous_proposals": 4,
+  "ambiguous_types_proposed": [
+   "T22:entity",
+   "T23:tag",
+   "T24:patient"
+  ],
+  "ambiguous_types_total": 5,
+  "confirmed_flags": 0,
+  "expected_pairs": 14,
+  "exported_resource_types": [
+   "unknown"
+  ],
+  "false_negatives": [],
+  "false_positives": [],
+  "forbidden_types_proposed": [],
+  "fp_proposals": 0,
+  "insufficient_evidence_rate": 0.0,
+  "manual_review_rate": 1.0,
+  "network_requests_sent_reported": 0,
+  "pairs_found": 14,
+  "precision": 1.0,
+  "precision_at_k": {
+   "1": 1.0,
+   "10": 0.8,
+   "3": 0.6667,
+   "5": 0.6
+  },
+  "precision_ci95": [
+   0.806,
+   1.0
+  ],
+  "proposals": 20,
+  "recall": 1.0,
+  "recall_ci95": [
+   0.785,
+   1.0
+  ],
+  "review_burden_non_tp_rate": 0.2,
+  "rows": [
+   {
+    "actor_entry": 13,
+    "actor_type": "prescription",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 12,
+    "pair_kind": "request_request",
+    "rank": 1,
+    "resource_type": "prescription",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T07",
+    "score": 84,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 43,
+    "actor_type": "entity",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 44,
+    "pair_kind": "request_request",
+    "rank": 2,
+    "resource_type": "entity",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T22",
+    "score": 84,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 5,
+    "actor_type": "claim",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 4,
+    "pair_kind": "request_request",
+    "rank": 3,
+    "resource_type": "claim",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T03",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 40,
+    "actor_type": "editor",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 39,
+    "pair_kind": "request_request",
+    "rank": 4,
+    "resource_type": "editor",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T20",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 46,
+    "actor_type": "tag",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 45,
+    "pair_kind": "request_request",
+    "rank": 5,
+    "resource_type": "tag",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T23",
+    "score": 80,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 19,
+    "actor_type": "campaign",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 20,
+    "pair_kind": "request_request",
+    "rank": 6,
+    "resource_type": "campaign",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T10",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 40,
+    "actor_type": "topic",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 39,
+    "pair_kind": "request_request",
+    "rank": 7,
+    "resource_type": "topic",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T20",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 11,
+    "actor_type": "dataset",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 10,
+    "pair_kind": "request_request",
+    "rank": 8,
+    "resource_type": "dataset",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T06",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 10,
+    "actor_type": "ledger",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 11,
+    "pair_kind": "request_request",
+    "rank": 9,
+    "resource_type": "ledger",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T06",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 3,
+    "actor_type": "fleet",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 2,
+    "pair_kind": "request_request",
+    "rank": 10,
+    "resource_type": "fleet",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T02",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 2,
+    "actor_type": "vehicle",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 3,
+    "pair_kind": "request_request",
+    "rank": 11,
+    "resource_type": "vehicle",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T02",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 1,
+    "actor_type": "parcel",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 0,
+    "pair_kind": "request_request",
+    "rank": 12,
+    "resource_type": "parcel",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T01",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 14,
+    "actor_type": "certificate",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 16,
+    "pair_kind": "request_request",
+    "rank": 13,
+    "resource_type": "certificate",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T08",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 48,
+    "actor_type": "patient",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 47,
+    "pair_kind": "request_request",
+    "rank": 14,
+    "resource_type": "patient",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T24",
+    "score": 76,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 17,
+    "actor_type": "ward",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 18,
+    "pair_kind": "request_request",
+    "rank": 15,
+    "resource_type": "ward",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T09",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 9,
+    "actor_type": "quote",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 8,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 16,
+    "resource_type": "quote",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "T05",
+    "score": 56,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 7,
+    "actor_type": "lease",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 6,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 17,
+    "resource_type": "lease",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "T04",
+    "score": 48,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 45,
+    "actor_type": "tag",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 46,
+    "pair_kind": "request_request",
+    "rank": 18,
+    "resource_type": "tag",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T23",
+    "score": 80,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 16,
+    "actor_type": "certificate",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 15,
+    "pair_kind": "request_request",
+    "rank": 19,
+    "resource_type": "certificate",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T08",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 14,
+    "actor_type": "certificate",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 15,
+    "pair_kind": "request_request",
+    "rank": 20,
+    "resource_type": "certificate",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "T08",
+    "score": 76,
+    "verdict": "TP"
+   }
+  ],
+  "tp_proposals": 16
+ },
+ "partial_recovery": {
+  "accepted": 49,
+  "entries_total": 49,
+  "frozen_as_is_allow_truncate": {
+   "accepted": 32,
+   "reasons": {
+    "over_entry_limit": 17
+   },
+   "rejected": 17,
+   "truncated": true
+  },
+  "network_validation": "none",
+  "observations": 49,
+  "previously_excluded": [],
+  "previously_excluded_recovered": [],
+  "rejected": {}
+ },
+ "primary_run_input": {
+  "excluded_entries": [],
+  "shard_size": 25,
+  "shards": 2
+ },
+ "safety": {
+  "network_connect_attempts": 0
+ },
+ "scenarios": 24
+}

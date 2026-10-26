@@ -1,0 +1,1358 @@
+{
+ "bounds_probes": {
+  "17_files_over_MAX_FILES": {
+   "accepted": false,
+   "error": "Use a 32-byte key and between one and sixteen capture files."
+  },
+  "33_entries_over_cap": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: entries_over_limit)"
+  },
+  "frozen_har_as_is_49_entries": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: entries_over_limit)"
+  },
+  "incomplete_capture_entry_without_response": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: strict_entry_rejected)"
+  },
+  "partial_response_truncated_json": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: strict_entry_rejected)"
+  },
+  "truncated_har_file": {
+   "accepted": false,
+   "error": "Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: json_invalid)"
+  }
+ },
+ "case_discovery": {
+  "case_eligible_pairs": 9,
+  "case_yield_on_eligible_tp": 1.0,
+  "case_yield_on_tp": 0.5,
+  "classification_codes": [
+   "CASE_ELIGIBLE",
+   "REJECT_MULTI_RESOURCE_DIFF",
+   "REJECT_NON_GET"
+  ],
+  "confirmed_flags": 0,
+  "corpus_origin": "http://127.0.0.1:8137",
+  "errors": 0,
+  "legitimate_rejections": 10,
+  "non_tp_pairs_with_case": 1,
+  "note": "Case proposals are needs_review; accounts_authorized=False here, so nothing is executable. Technical errors (e.g. caller origin override) are counted separately from legitimate read-case rejections (non-GET, multi-diff, session-only, missing responses).",
+  "pairs_evaluated": 19,
+  "rows": [
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "b1d2ead7c68f2f3a617038fde9f259c3b98f897c74a8f3b4857c75d14f8c392f",
+     "actor_response_sha256": "79e053a4385b534c2c1b6eba523ee6774c1c02cdd2320e625ec22af69112f57d",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8137",
+     "owner_request_sha256": "f3792af80df5e684b8259b5132f597a38a916d4b8b94ef430249882f110c28d4",
+     "owner_response_sha256": "79e053a4385b534c2c1b6eba523ee6774c1c02cdd2320e625ec22af69112f57d",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 1,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "c7bccbc1b619d076749555393901ca8bb8a083a00a897a665506b3f72856e3e9",
+     "actor_response_sha256": "5b4db8dd43eb6b6d8f368d30710add9c08054a601797896304c50039230e5ccc",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use PUT). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "8cf701e2e39823b729ae70732821ea0ea39229e6c1e6687d34452f604eb1e539",
+     "owner_response_sha256": "5b4db8dd43eb6b6d8f368d30710add9c08054a601797896304c50039230e5ccc",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 2,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "99874ca469937817870b9e2461f9630a8d90783186ecdabb9ec1ad20c180e604",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "56b3bbbd3f023fa1359e84e0fcea7360bd9d1d2bfd72ef8f9e37faed77edb993",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 3,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "6b14db2acee7b1f64e226fbacc13041b785be967429627baaad317c2f57c008a",
+     "actor_response_sha256": "5b4db8dd43eb6b6d8f368d30710add9c08054a601797896304c50039230e5ccc",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "16f0d172a1fa8efbc1a44ac29a5237fac2ed79ed6e56f5aa6170fab927952801",
+     "owner_response_sha256": "5b4db8dd43eb6b6d8f368d30710add9c08054a601797896304c50039230e5ccc",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 4,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "6fece296ef62531d8cb9eeae288a17ab3eddb880b7e14549ada060f8f546ec53",
+     "actor_response_sha256": "933e80af0a08479f5f7645453084e27ff4775c0df21e8cbb892c1ea28071e302",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8137",
+     "owner_request_sha256": "b33bf623f15e3ef6a4ae31c41722572018dd64a5daf70dde3e17cc9096e16015",
+     "owner_response_sha256": "ab0d3bf08d6170e7b17ca681f7bdbc92d1a18e432c4da917aad09478340a8bf1",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 5,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "3b47c6e3efccbdbd0103e06e57b3320281a69ecb15f6d32d2564652d313672b6",
+     "actor_response_sha256": "65ff05f610e8721c9bb57e791a7d0770b53a865319c45addd972afc4efab1b46",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "eb2565d5e80725ec48ee2374b72c5643f02fb7791a5e0a8fddeeaa75ba20f393",
+     "owner_response_sha256": "bb06e4755702b47716e34f38ca462e4e2912da1690b8bab69f2757aa238e746f",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 6,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "eb2565d5e80725ec48ee2374b72c5643f02fb7791a5e0a8fddeeaa75ba20f393",
+     "actor_response_sha256": "bb06e4755702b47716e34f38ca462e4e2912da1690b8bab69f2757aa238e746f",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "3b47c6e3efccbdbd0103e06e57b3320281a69ecb15f6d32d2564652d313672b6",
+     "owner_response_sha256": "65ff05f610e8721c9bb57e791a7d0770b53a865319c45addd972afc4efab1b46",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 7,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "e1db9f2ef68b4fe3c90e1a311aecf87fa522fdf3e76e8529e8773cd456f3ca05",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8137",
+     "owner_request_sha256": "e262a5637051003dea8739647fd5ff79404611ce34c8f8244c0fc2065caa4cfb",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 8,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "6618da776b08ca2990b96dce760cffa8213d4feaef551343c141d3f69f379f2f",
+     "actor_response_sha256": "8d2f0c9eb955729a090623df33cce3e4af7770d71430ba18e85f1a3d2a7ee391",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8137",
+     "owner_request_sha256": "2abba1576041feb3a8e40b78dfe1467f5c5138c04b7b6c7f705226d34f07e3c6",
+     "owner_response_sha256": "2c19f27a915b3f41d98b5f80aaaf7d7f9b4f8f677d6f78999e2b922c51eb1f3a",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 9,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "9a8bef57bbbfdde4bf8b62c81577327f7472480f2ce58759999223c24e4bed17",
+     "actor_response_sha256": "c570649871301082182a8f3756e640de285303b044fd9bb146e788b3ae4e019c",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8137",
+     "owner_request_sha256": "b4a43ef3766354d16bc88c6460313c30420e6299a09868af486746712ef565e9",
+     "owner_response_sha256": "c54483aa833a27a2d11697f52e04d945c9cf93f759e75c15c95600fe767a9e7b",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 10,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "e0ea6446e82f1f470aaceb6380fb5acb58b7f5ea8fd7ac354bbfc68233417c66",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8137",
+     "owner_request_sha256": "2050e04517897d2fc7511399de03fc3aa65dc262fc729d47e2b6e387232537c1",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 11,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "7c632a4c6f449d66fe7ec93ed2d6dcff8800380f2e584425815a17f5562ba806",
+     "actor_response_sha256": "f83fd61eae83ac8526cee8c3e72db045a6e93fd40683eaee49505c9b5c35bc32",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8137",
+     "owner_request_sha256": "df4dd95a09f61768f4372b70b287bb5874680cbbc2c3e03594f16e358c1d450f",
+     "owner_response_sha256": "ee00c40e6ce7c02ccfa7ccbf259f5278d400a1f315a2fc428c7e65c17cedf1e6",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 12,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "8de5ae4c11c08655e59f413cf22827bf96e7a5efa67d9192c9b39ea8452dfefe",
+     "actor_response_sha256": "5b4db8dd43eb6b6d8f368d30710add9c08054a601797896304c50039230e5ccc",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 1, query parameter 'subscription_id'.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "f4a8ba3b3df585a0206214fc5610f58597775d5012124ea0f799675f8c901b07",
+     "owner_response_sha256": "6fcbb9777e5b725d2c0a25418e02342e7ce4a9b469b9c399ee41c69ade074ed7",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 13,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "92409f086582983b0d925f21d49e8b235d22c7a626ddefd678dda862ec984187",
+     "actor_response_sha256": "a3ea66509dae57f12099715668e09379d237ac9fa74aa647369c04d5d5657e0b",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 1, path segment 2.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "c3a884d24f462710f0b6f021a4540237306a6cb425849ef9efc7c0bebf54e735",
+     "owner_response_sha256": "43f90d0e1ecc235b0a2a50da8db64f4f0f205e5fa3458ba1644fce719b9c1940",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 14,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "56b3bbbd3f023fa1359e84e0fcea7360bd9d1d2bfd72ef8f9e37faed77edb993",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": false,
+     "code": "REJECT_NON_GET",
+     "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "99874ca469937817870b9e2461f9630a8d90783186ecdabb9ec1ad20c180e604",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "security_rejected",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 15,
+    "session_only_pairs": 1,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "3a4a09975903652dc3a03ffda7d5296a1937aa2c880712a1aaecf268f01c7459",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8137",
+     "owner_request_sha256": "e0ea6446e82f1f470aaceb6380fb5acb58b7f5ea8fd7ac354bbfc68233417c66",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 16,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 1,
+    "classification": {
+     "actor_request_sha256": "3a4a09975903652dc3a03ffda7d5296a1937aa2c880712a1aaecf268f01c7459",
+     "actor_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "case_eligible": true,
+     "code": "CASE_ELIGIBLE",
+     "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": false,
+     "origin": "http://127.0.0.1:8137",
+     "owner_request_sha256": "2050e04517897d2fc7511399de03fc3aa65dc262fc729d47e2b6e387232537c1",
+     "owner_response_sha256": "7adb4bc58ad7d53dedee172aa04b4cf8c8ee4232287fb8fc68e129131a775f72",
+     "status": "case_eligible",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 17,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 0,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "eb2565d5e80725ec48ee2374b72c5643f02fb7791a5e0a8fddeeaa75ba20f393",
+     "actor_response_sha256": "bb06e4755702b47716e34f38ca462e4e2912da1690b8bab69f2757aa238e746f",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "3b47c6e3efccbdbd0103e06e57b3320281a69ecb15f6d32d2564652d313672b6",
+     "owner_response_sha256": "65ff05f610e8721c9bb57e791a7d0770b53a865319c45addd972afc4efab1b46",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 18,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   },
+   {
+    "base_url_used": "http://127.0.0.1:8137",
+    "cases": 0,
+    "classification": {
+     "actor_request_sha256": "3b47c6e3efccbdbd0103e06e57b3320281a69ecb15f6d32d2564652d313672b6",
+     "actor_response_sha256": "65ff05f610e8721c9bb57e791a7d0770b53a865319c45addd972afc4efab1b46",
+     "case_eligible": false,
+     "code": "REJECT_MULTI_RESOURCE_DIFF",
+     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+     "has_actor_response": true,
+     "has_owner_response": true,
+     "legitimate_rejection": true,
+     "origin": null,
+     "owner_request_sha256": "eb2565d5e80725ec48ee2374b72c5643f02fb7791a5e0a8fddeeaa75ba20f393",
+     "owner_response_sha256": "bb06e4755702b47716e34f38ca462e4e2912da1690b8bab69f2757aa238e746f",
+     "status": "needs_more_evidence",
+     "technical_error": false
+    },
+    "confirmed": false,
+    "error": null,
+    "rank": 19,
+    "session_only_pairs": 0,
+    "state": "needs_review",
+    "unsupported_pairs": 1,
+    "verdict": "TP"
+   }
+  ],
+  "technical_errors": 0,
+  "tp_case_eligible": 8,
+  "tp_pairs": 16,
+  "tp_pairs_with_case": 8
+ },
+ "confirmation": {
+  "confirmed_by_pipeline": 0,
+  "designed_protected_scenarios": 2,
+  "designed_vulnerable_scenarios": 9,
+  "measurable_offline": false,
+  "note": "Vulnerability confirmation requires a human-gated, authorized live/lab access test (approve-idor + access-check). Not executed by this offline evaluation. Candidates and proposals are NOT confirmed findings."
+ },
+ "corpus_version": "adv-1.0",
+ "discovery": {
+  "candidates": 48,
+  "expected_found": 12,
+  "expected_objects": 12,
+  "exported_resource_types": [
+   "unknown"
+  ],
+  "missed": [],
+  "negative_objects_surfaced": [
+   "S06:department",
+   "S10:org",
+   "S12:channel",
+   "S13:article",
+   "S14:coupon",
+   "S16:license",
+   "S18:locker",
+   "S19:banner",
+   "S20:voucher"
+  ],
+  "note": "Discovery candidates are leads for review, not vulnerabilities.",
+  "precision_at_k": {
+   "1": 1.0,
+   "10": 0.7,
+   "3": 0.6667,
+   "5": 0.8
+  },
+  "recall": 1.0,
+  "recall_ci95": [
+   0.757,
+   1.0
+  ],
+  "rows": [
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "employee",
+    "scenarios": [
+     "S06"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "folder",
+    "scenarios": [
+     "S23"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "shipment",
+    "scenarios": [
+     "S03"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "board",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "pipeline",
+    "scenarios": [
+     "S10"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "employee",
+    "scenarios": [
+     "S06"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "board",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "shipment",
+    "scenarios": [
+     "S03"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "folder",
+    "scenarios": [
+     "S23"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "folder",
+    "scenarios": [
+     "S23"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "pipeline",
+    "scenarios": [
+     "S10"
+    ],
+    "score": 60
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "payslip",
+    "scenarios": [
+     "S09"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "shipment",
+    "scenarios": [
+     "S03"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "coupon",
+    "scenarios": [
+     "S14"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ticket",
+    "scenarios": [
+     "S04"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "export",
+    "scenarios": [
+     "S07"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "receipt",
+    "scenarios": [
+     "S01"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "member",
+    "scenarios": [
+     "S22"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "preference",
+    "scenarios": [
+     "S08"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "receipt",
+    "scenarios": [
+     "S01"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "payslip",
+    "scenarios": [
+     "S09"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "coupon",
+    "scenarios": [
+     "S14"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "statement",
+    "scenarios": [
+     "S05"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "preference",
+    "scenarios": [
+     "S08"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "statement",
+    "scenarios": [
+     "S05"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "export",
+    "scenarios": [
+     "S07"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "statement",
+    "scenarios": [
+     "S05"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "member",
+    "scenarios": [
+     "S22"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "subscription",
+    "scenarios": [
+     "S11"
+    ],
+    "score": 55
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "channel",
+    "scenarios": [
+     "S12"
+    ],
+    "score": 50
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "workspace",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 45
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "workspace",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 45
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "license",
+    "scenarios": [
+     "S16"
+    ],
+    "score": 35
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "banner",
+    "scenarios": [
+     "S19"
+    ],
+    "score": 35
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "message",
+    "scenarios": [
+     "S24"
+    ],
+    "score": 35
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "voucher",
+    "scenarios": [
+     "S20"
+    ],
+    "score": 35
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "ticket",
+    "scenarios": [
+     "S04"
+    ],
+    "score": 25
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "locker",
+    "scenarios": [
+     "S18"
+    ],
+    "score": 25
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "subscription",
+    "scenarios": [
+     "S11"
+    ],
+    "score": 25
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "locker",
+    "scenarios": [
+     "S18"
+    ],
+    "score": 25
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "article",
+    "scenarios": [
+     "S13"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "article",
+    "scenarios": [
+     "S13"
+    ],
+    "score": 20
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "board",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "board",
+    "scenarios": [
+     "S02"
+    ],
+    "score": 10
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "org",
+    "scenarios": [
+     "S10"
+    ],
+    "score": 0
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "",
+    "scenarios": [
+     "S24"
+    ],
+    "score": 0
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "",
+    "scenarios": [
+     "S24"
+    ],
+    "score": 0
+   },
+   {
+    "exported_resource_type": "unknown",
+    "resource_type": "department",
+    "scenarios": [
+     "S06"
+    ],
+    "score": 0
+   }
+  ]
+ },
+ "entries": 48,
+ "observations": 45,
+ "pairing": {
+  "ambiguous_proposals": 3,
+  "ambiguous_types_proposed": [
+   "S22:member",
+   "S23:folder"
+  ],
+  "ambiguous_types_total": 5,
+  "confirmed_flags": 0,
+  "expected_pairs": 12,
+  "exported_resource_types": [
+   "unknown"
+  ],
+  "false_negatives": [],
+  "false_positives": [],
+  "forbidden_types_proposed": [],
+  "fp_proposals": 0,
+  "insufficient_evidence_rate": 0.0,
+  "manual_review_rate": 1.0,
+  "network_requests_sent_reported": 0,
+  "pairs_found": 12,
+  "precision": 1.0,
+  "precision_at_k": {
+   "1": 1.0,
+   "10": 0.8,
+   "3": 0.6667,
+   "5": 0.8
+  },
+  "precision_ci95": [
+   0.806,
+   1.0
+  ],
+  "proposals": 19,
+  "recall": 1.0,
+  "recall_ci95": [
+   0.757,
+   1.0
+  ],
+  "review_burden_non_tp_rate": 0.1579,
+  "rows": [
+   {
+    "actor_entry": 14,
+    "actor_type": "export",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 13,
+    "pair_kind": "request_request",
+    "rank": 1,
+    "resource_type": "export",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S07",
+    "score": 84,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 15,
+    "actor_type": "preference",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 16,
+    "pair_kind": "request_request",
+    "rank": 2,
+    "resource_type": "preference",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S08",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 44,
+    "actor_type": "folder",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 45,
+    "pair_kind": "request_request",
+    "rank": 3,
+    "resource_type": "folder",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S23",
+    "score": 80,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 4,
+    "actor_type": "shipment",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 5,
+    "pair_kind": "request_request",
+    "rank": 4,
+    "resource_type": "shipment",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S03",
+    "score": 80,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 12,
+    "actor_type": "employee",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 11,
+    "pair_kind": "request_request",
+    "rank": 5,
+    "resource_type": "employee",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S06",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 3,
+    "actor_type": "board",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 2,
+    "pair_kind": "request_request",
+    "rank": 6,
+    "resource_type": "board",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S02",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 2,
+    "actor_type": "workspace",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 3,
+    "pair_kind": "request_request",
+    "rank": 7,
+    "resource_type": "workspace",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S02",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 20,
+    "actor_type": "pipeline",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 19,
+    "pair_kind": "request_request",
+    "rank": 8,
+    "resource_type": "pipeline",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S10",
+    "score": 78,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 43,
+    "actor_type": "member",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 42,
+    "pair_kind": "request_request",
+    "rank": 9,
+    "resource_type": "member",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S22",
+    "score": 76,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 18,
+    "actor_type": "payslip",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 17,
+    "pair_kind": "request_request",
+    "rank": 10,
+    "resource_type": "payslip",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S09",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 10,
+    "actor_type": "statement",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 9,
+    "pair_kind": "request_request",
+    "rank": 11,
+    "resource_type": "statement",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S05",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 1,
+    "actor_type": "receipt",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 0,
+    "pair_kind": "request_request",
+    "rank": 12,
+    "resource_type": "receipt",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S01",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 22,
+    "actor_type": "subscription",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 21,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 13,
+    "resource_type": "subscription",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "S11",
+    "score": 56,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 7,
+    "actor_type": "ticket",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 6,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 14,
+    "resource_type": "ticket",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "S04",
+    "score": 52,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 45,
+    "actor_type": "folder",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 44,
+    "pair_kind": "request_request",
+    "rank": 15,
+    "resource_type": "folder",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S23",
+    "score": 80,
+    "verdict": "AMBIGUOUS"
+   },
+   {
+    "actor_entry": 8,
+    "actor_type": "statement",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 10,
+    "pair_kind": "request_request",
+    "rank": 16,
+    "resource_type": "statement",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S05",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 8,
+    "actor_type": "statement",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 9,
+    "pair_kind": "request_request",
+    "rank": 17,
+    "resource_type": "statement",
+    "review_required": true,
+    "rule": "request-side-identifiers",
+    "scenario": "S05",
+    "score": 76,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 2,
+    "actor_type": "board",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 3,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 18,
+    "resource_type": "board",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "S02",
+    "score": 48,
+    "verdict": "TP"
+   },
+   {
+    "actor_entry": 3,
+    "actor_type": "board",
+    "confirmed": false,
+    "exported_resource_type": "unknown",
+    "insufficient_evidence": false,
+    "owner_entry": 2,
+    "pair_kind": "asymmetric_response_request",
+    "rank": 19,
+    "resource_type": "board",
+    "review_required": true,
+    "rule": "response-identifier-v1",
+    "scenario": "S02",
+    "score": 48,
+    "verdict": "TP"
+   }
+  ],
+  "tp_proposals": 16
+ },
+ "partial_recovery": {
+  "accepted": 45,
+  "entries_total": 48,
+  "frozen_as_is_allow_truncate": {
+   "accepted": 30,
+   "reasons": {
+    "body_json_invalid": 2,
+    "over_entry_limit": 16
+   },
+   "rejected": 18,
+   "truncated": true
+  },
+  "network_validation": "none",
+  "observations": 45,
+  "previously_excluded": [
+   29,
+   30,
+   32
+  ],
+  "previously_excluded_recovered": [],
+  "rejected": {
+   "29": "body_json_invalid",
+   "30": "body_json_invalid",
+   "32": "response_missing"
+  }
+ },
+ "primary_run_input": {
+  "excluded_entries": [
+   29,
+   30,
+   32
+  ],
+  "shard_size": 25,
+  "shards": 2
+ },
+ "safety": {
+  "network_connect_attempts": 0
+ },
+ "scenarios": 24
+}
