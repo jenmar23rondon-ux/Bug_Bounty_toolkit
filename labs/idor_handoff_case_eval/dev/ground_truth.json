@@ -1,0 +1,141 @@
+{
+ "alt_origin": "http://127.0.0.1:8143",
+ "corpus_version": "adv-handoff-case-dev",
+ "format_notes": {
+  "burp_xml": "generated beside DEV by tests from raw snapshots",
+  "har": "primary frozen/dev HAR",
+  "raw": "materialized by object_handoff / tests",
+  "relative": "raw requests without absolute URL use Host + optional --base-url"
+ },
+ "independent_of": [
+  "adv-handoff-case-1.0",
+  "adv-1.0",
+  "adv-1.1"
+ ],
+ "origin": "http://127.0.0.1:8142",
+ "path_prefix": "/hd",
+ "scenarios": [
+  {
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Matching http origin both sides",
+   "entries": [
+    0,
+    1
+   ],
+   "id": "D01",
+   "notes": "",
+   "tag": "compatible-origin"
+  },
+  {
+   "conversion_class": "technical_error",
+   "conversion_code": "REJECT_ORIGIN_MISMATCH_SIDES",
+   "description": "Owner 8142 vs actor 8143",
+   "entries": [
+    2,
+    3
+   ],
+   "id": "D02",
+   "notes": "Sides disagree; never rewrite",
+   "tag": "incompatible-ports"
+  },
+  {
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "REJECT_MULTI_RESOURCE_DIFF",
+   "description": "Parent+child path diffs",
+   "entries": [
+    4,
+    5
+   ],
+   "id": "D03",
+   "notes": "",
+   "tag": "multiple-diffs"
+  },
+  {
+   "conversion_class": "security_rejected",
+   "conversion_code": "REJECT_NON_GET",
+   "description": "PUT write captures",
+   "entries": [
+    6,
+    7
+   ],
+   "id": "D04",
+   "notes": "",
+   "tag": "unsupported-method"
+  },
+  {
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_RESPONSE",
+   "description": "No responses",
+   "entries": [
+    8,
+    9
+   ],
+   "id": "D05",
+   "notes": "",
+   "tag": "missing-responses"
+  },
+  {
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_SECOND_SESSION",
+   "description": "Single session",
+   "entries": [
+    10,
+    11
+   ],
+   "id": "D06",
+   "notes": "",
+   "tag": "insufficient-sessions"
+  },
+  {
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Nested JSON with UUID path",
+   "entries": [
+    12,
+    13
+   ],
+   "id": "D07",
+   "notes": "",
+   "tag": "nested-uuid"
+  },
+  {
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Synthetic secrets must stay out of summaries",
+   "entries": [
+    14,
+    15
+   ],
+   "id": "D08",
+   "notes": "Count-only summary / redaction surfaces must not echo sk_live_ or API keys",
+   "tag": "synthetic-secrets"
+  },
+  {
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_RESPONSE",
+   "description": "Incomplete actor capture",
+   "entries": [
+    16,
+    17
+   ],
+   "id": "D09",
+   "notes": "",
+   "tag": "incomplete"
+  },
+  {
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Duplicate widget pair",
+   "entries": [
+    18,
+    19
+   ],
+   "id": "D10",
+   "notes": "",
+   "tag": "duplicates"
+  }
+ ],
+ "split": "dev",
+ "tuning_policy": "DEV fixtures for unit tests; not FINAL metrics"
+}

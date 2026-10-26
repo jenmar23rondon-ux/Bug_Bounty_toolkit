@@ -1,0 +1,260 @@
+{
+ "conversion_classes": [
+  "structural_valid",
+  "case_eligible",
+  "needs_more_evidence",
+  "security_rejected",
+  "technical_error"
+ ],
+ "corpus_version": "adv-handoff-case-1.0",
+ "independent_of": [
+  "adv-1.0",
+  "adv-1.1",
+  "adv-ranking-1.0"
+ ],
+ "origin": "http://127.0.0.1:8141",
+ "path_prefix": "/hc",
+ "scenarios": [
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Single path-segment GET resource diff",
+   "entries": [
+    0,
+    1
+   ],
+   "expected_pair_types": [
+    "parcel"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H01",
+   "tag": "valid-get-path",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Single query-parameter GET resource diff",
+   "entries": [
+    2,
+    3
+   ],
+   "expected_pair_types": [
+    "roster"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H02",
+   "tag": "valid-get-query",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "UUID path identifiers",
+   "entries": [
+    4,
+    5
+   ],
+   "expected_pair_types": [
+    "ledger"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H03",
+   "tag": "uuid-path",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Nested JSON control bodies with single path diff",
+   "entries": [
+    6,
+    7
+   ],
+   "expected_pair_types": [
+    "docket"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H04",
+   "tag": "nested-json",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "REJECT_MULTI_RESOURCE_DIFF",
+   "description": "Two path segments differ (parent and child)",
+   "entries": [
+    8,
+    9
+   ],
+   "expected_pair_types": [
+    "board",
+    "workspace"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H05",
+   "tag": "multi-diff",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "security_rejected",
+   "conversion_code": "REJECT_NON_GET",
+   "description": "POST body resource; read-case generator rejects",
+   "entries": [
+    10,
+    11
+   ],
+   "expected_pair_types": [
+    "shipment"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H06",
+   "tag": "non-get",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "REJECT_SESSION_ONLY",
+   "description": "Identical URL; only session header differs",
+   "entries": [
+    12,
+    13
+   ],
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "profile"
+   ],
+   "id": "H07",
+   "tag": "session-only",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_RESPONSE",
+   "description": "Actor response absent",
+   "entries": [
+    14,
+    15
+   ],
+   "expected_pair_types": [
+    "voucher"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H08",
+   "tag": "missing-response",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_SECOND_SESSION",
+   "description": "One session reads two own coupons",
+   "entries": [
+    16,
+    17
+   ],
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "coupon"
+   ],
+   "id": "H09",
+   "tag": "insufficient-sessions",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "REJECT_SESSION_ONLY",
+   "description": "Same object id for both sessions",
+   "entries": [
+    18,
+    19
+   ],
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "channel"
+   ],
+   "id": "H10",
+   "tag": "shared-id",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Numeric path ids",
+   "entries": [
+    20,
+    21
+   ],
+   "expected_pair_types": [
+    "filing"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H11",
+   "tag": "numeric-id",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "case_eligible",
+   "conversion_code": "CASE_ELIGIBLE",
+   "description": "Duplicate of H01 exchanges (determinism / dedup pressure)",
+   "entries": [
+    22,
+    23
+   ],
+   "expected_pair_types": [
+    "parcel"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H12",
+   "tag": "duplicate",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_RESPONSE",
+   "description": "Truncated JSON responses",
+   "entries": [
+    24,
+    25
+   ],
+   "expected_pair_types": [
+    "contract"
+   ],
+   "forbidden_pair_types": [],
+   "id": "H13",
+   "tag": "truncated-json",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "ambiguous_types": [],
+   "conversion_class": "needs_more_evidence",
+   "conversion_code": "NEEDS_SECOND_SESSION",
+   "description": "Unauthenticated public articles",
+   "entries": [
+    26,
+    27
+   ],
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "article"
+   ],
+   "id": "H14",
+   "tag": "public",
+   "vulnerability_truth": "n/a"
+  }
+ ],
+ "split": "frozen",
+ "tuning_policy": "FINAL-evaluation-only; never tune on this corpus"
+}
