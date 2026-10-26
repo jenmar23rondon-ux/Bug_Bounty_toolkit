@@ -67,6 +67,10 @@ python_version = "3.10"
 strict = true
 follow_imports = "silent"
 files = [
+    "labs/local_llm_quality_eval/corpus.py",
+    "labs/local_llm_quality_eval/harness.py",
+    "labs/local_llm_quality_eval/run.py",
+    "tests/test_local_llm_quality_eval.py",
     "labs/eval_integrity/corpus_integrity.py",
     "labs/eval_integrity/pipeline.py",
     "labs/eval_integrity/mutations.py",

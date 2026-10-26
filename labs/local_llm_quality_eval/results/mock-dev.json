@@ -1,0 +1,852 @@
+{
+ "configs": {
+  "A": {
+   "decision_stability_across_repeats": 1.0,
+   "name": "deterministic (no AI)",
+   "per_family": {
+    "access_denied": {
+     "correct": "1/1",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 1
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "1/1",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 1
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "0/1",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 1
+     }
+    },
+    "http200_false_positive": {
+     "correct": "1/1",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 1
+     }
+    },
+    "idor_true": {
+     "correct": "1/1",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 1
+     }
+    },
+    "insufficient_data": {
+     "correct": "1/1",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 1
+     }
+    },
+    "invalid_evidence": {
+     "correct": "1/1",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 1
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "1/1",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 1
+     }
+    },
+    "public_resource": {
+     "correct": "1/1",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 1
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "1/1",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 1
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "1/1",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 1
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "1/1",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 1
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": "not_measured",
+    "estimated_output_tokens": "not_measured",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": null,
+    "latency_ms_p95": null,
+    "model_calls": 0,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 0.4167,
+    "accuracy": 0.9167,
+    "accuracy_ci95": [
+     0.6461,
+     0.9851
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 1,
+    "contradictions_handled": "0/1",
+    "f1": 0.8,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.1,
+    "invented_citations": 0,
+    "missing_control_recall": 0.3333,
+    "precision": 0.6667,
+    "precision_ci95": null,
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": null,
+    "rejected_outputs": 0,
+    "runs": 12,
+    "valid_structured_output_rate": 1.0
+   },
+   "stage_wall_ms": 3.944
+  },
+  "B": {
+   "decision_stability_across_repeats": 1.0,
+   "name": "cautious-sim",
+   "per_family": {
+    "access_denied": {
+     "correct": "3/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 3
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "0/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "http200_false_positive": {
+     "correct": "3/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 3
+     }
+    },
+    "idor_true": {
+     "correct": "3/3",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "insufficient_data": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "invalid_evidence": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "public_resource": {
+     "correct": "3/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "not_observed": 3
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "3/3",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": 15759,
+    "estimated_output_tokens": 4266,
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": 2.301,
+    "latency_ms_p95": 2.785,
+    "model_calls": 36,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 0.5,
+    "accuracy": 0.8333,
+    "accuracy_ci95": [
+     0.6811,
+     0.9213
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 3,
+    "contradictions_handled": "0/3",
+    "f1": 0.8,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.1,
+    "invented_citations": 0,
+    "missing_control_recall": 0.3333,
+    "precision": 0.6667,
+    "precision_ci95": [
+     0.3542,
+     0.8794
+    ],
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": [
+     0.6097,
+     1.0
+    ],
+    "rejected_outputs": 0,
+    "runs": 36,
+    "valid_structured_output_rate": 1.0
+   },
+   "stage_wall_ms": 108.357
+  },
+  "C": {
+   "decision_stability_across_repeats": 1.0,
+   "name": "eager-sim",
+   "per_family": {
+    "access_denied": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "0/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "0/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "http200_false_positive": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "idor_true": {
+     "correct": "3/3",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "insufficient_data": {
+     "correct": "0/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "invalid_evidence": {
+     "correct": "0/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "public_resource": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "0/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "3/3",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "0/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "candidate": 3
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": 15759,
+    "estimated_output_tokens": 3726,
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": 2.243,
+    "latency_ms_p95": 2.549,
+    "model_calls": 36,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 0.0,
+    "accuracy": 0.1667,
+    "accuracy_ci95": [
+     0.0787,
+     0.3189
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 30,
+    "contradictions_handled": "0/3",
+    "f1": 0.2858,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 1.0,
+    "invented_citations": 0,
+    "missing_control_recall": 0.0,
+    "precision": 0.1667,
+    "precision_ci95": [
+     0.0787,
+     0.3189
+    ],
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": [
+     0.6097,
+     1.0
+    ],
+    "rejected_outputs": 0,
+    "runs": 36,
+    "valid_structured_output_rate": 1.0
+   },
+   "stage_wall_ms": 108.008
+  },
+  "D": {
+   "decision_stability_across_repeats": 1.0,
+   "dual_vs_analyst_single_consensus_rule": {
+    "correct_agreements": 6,
+    "correctly_converted_to_inconclusive": 0,
+    "disagreements": 27,
+    "extra_calls_per_net_improvement": null,
+    "extra_model_calls": 36,
+    "improved": 0,
+    "incorrect_agreements": 3,
+    "worsened": 9
+   },
+   "dual_vs_analyst_single_production_rule": {
+    "correct_agreements": 6,
+    "correctly_converted_to_inconclusive": 3,
+    "disagreements": 27,
+    "extra_calls_per_net_improvement": null,
+    "extra_model_calls": 36,
+    "improved": 3,
+    "incorrect_agreements": 3,
+    "worsened": 15
+   },
+   "independent_models": true,
+   "name": "dual cautious-sim -> eager-sim",
+   "per_family": {
+    "access_denied": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "http200_false_positive": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "idor_true": {
+     "correct": "0/3",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "insufficient_data": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "invalid_evidence": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "public_resource": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "0/3",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": "not_measured",
+    "estimated_output_tokens": "not_measured",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": 4.442,
+    "latency_ms_p95": 5.006,
+    "model_calls": 72,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 1.0,
+    "accuracy": 0.5,
+    "accuracy_ci95": [
+     0.3447,
+     0.6553
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 0,
+    "contradictions_handled": "3/3",
+    "f1": 0.0,
+    "false_negative_rate": 1.0,
+    "false_positive_rate": 0.0,
+    "invented_citations": 0,
+    "missing_control_recall": 0.3333,
+    "precision": null,
+    "precision_ci95": null,
+    "provider_errors": 0,
+    "recall": 0.0,
+    "recall_ci95": [
+     0.0,
+     0.3903
+    ],
+    "rejected_outputs": 0,
+    "runs": 36,
+    "valid_structured_output_rate": 1.0
+   },
+   "quality_consensus_rule": {
+    "abstention_rate": 0.75,
+    "accuracy": 0.5833,
+    "accuracy_ci95": [
+     0.422,
+     0.7286
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 3,
+    "contradictions_handled": "0/3",
+    "f1": 0.8,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.1,
+    "invented_citations": 0,
+    "missing_control_recall": 0.3333,
+    "precision": 0.6667,
+    "precision_ci95": [
+     0.3542,
+     0.8794
+    ],
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": [
+     0.6097,
+     1.0
+    ],
+    "rejected_outputs": 0,
+    "runs": 36,
+    "valid_structured_output_rate": 1.0
+   },
+   "stage_wall_ms": 202.681
+  },
+  "E": {
+   "decision_stability_across_repeats": 1.0,
+   "dual_vs_analyst_single_consensus_rule": {
+    "correct_agreements": 6,
+    "correctly_converted_to_inconclusive": 15,
+    "disagreements": 27,
+    "extra_calls_per_net_improvement": 2.4,
+    "extra_model_calls": 36,
+    "improved": 15,
+    "incorrect_agreements": 3,
+    "worsened": 0
+   },
+   "dual_vs_analyst_single_production_rule": {
+    "correct_agreements": 6,
+    "correctly_converted_to_inconclusive": 18,
+    "disagreements": 27,
+    "extra_calls_per_net_improvement": 3.0,
+    "extra_model_calls": 36,
+    "improved": 18,
+    "incorrect_agreements": 3,
+    "worsened": 6
+   },
+   "independent_models": true,
+   "name": "dual eager-sim -> cautious-sim",
+   "per_family": {
+    "access_denied": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "ambiguous_authorization": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "contradictory_evidence": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "http200_false_positive": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "idor_true": {
+     "correct": "0/3",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "insufficient_data": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "invalid_evidence": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "prompt_injection_in_source": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "public_resource": {
+     "correct": "0/3",
+     "expected": "not_observed",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "sqli_unconfirmed": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "synthetic_secrets": {
+     "correct": "0/3",
+     "expected": "candidate",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    },
+    "xss_reflection_no_execution": {
+     "correct": "3/3",
+     "expected": "inconclusive",
+     "held_out_family": false,
+     "predicted": {
+      "inconclusive": 3
+     }
+    }
+   },
+   "performance": {
+    "estimated_input_tokens": "not_measured",
+    "estimated_output_tokens": "not_measured",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "latency_ms_median": 4.243,
+    "latency_ms_p95": 4.565,
+    "model_calls": 72,
+    "timeouts": 0,
+    "token_method": "chars/4 estimate, not tokenizer counts",
+    "tokens_per_second": "not_measured"
+   },
+   "quality": {
+    "abstention_rate": 1.0,
+    "accuracy": 0.5,
+    "accuracy_ci95": [
+     0.3447,
+     0.6553
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 0,
+    "contradictions_handled": "3/3",
+    "f1": 0.0,
+    "false_negative_rate": 1.0,
+    "false_positive_rate": 0.0,
+    "invented_citations": 0,
+    "missing_control_recall": 0.3333,
+    "precision": null,
+    "precision_ci95": null,
+    "provider_errors": 0,
+    "recall": 0.0,
+    "recall_ci95": [
+     0.0,
+     0.3903
+    ],
+    "rejected_outputs": 0,
+    "runs": 36,
+    "valid_structured_output_rate": 1.0
+   },
+   "quality_consensus_rule": {
+    "abstention_rate": 0.75,
+    "accuracy": 0.5833,
+    "accuracy_ci95": [
+     0.422,
+     0.7286
+    ],
+    "automatic_confirmations": 0,
+    "candidates_without_support": 3,
+    "contradictions_handled": "0/3",
+    "f1": 0.8,
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.1,
+    "invented_citations": 0,
+    "missing_control_recall": 0.3333,
+    "precision": 0.6667,
+    "precision_ci95": [
+     0.3542,
+     0.8794
+    ],
+    "provider_errors": 0,
+    "recall": 1.0,
+    "recall_ci95": [
+     0.6097,
+     1.0
+    ],
+    "rejected_outputs": 0,
+    "runs": 36,
+    "valid_structured_output_rate": 1.0
+   },
+   "stage_wall_ms": 195.978
+  }
+ },
+ "corpus_manifest": [
+  "205f30eee340332b247edc203b13205587d6aa09bdb8079bef26587d71978dd7  dev.labels.json",
+  "ac4bcfff83b1a5bd0284e65334ed045b22e8a2836ac4dc146b28f040be46bec4  dev.scenarios.json",
+  "89280c4d97c68d676124efb9bba2cdad635af2f00c20e1d45b68abf11bbe8e91  final.labels.json",
+  "5e42a8063eff864ed4140ae6323ec7214ddd5f75ef739adc201906f37ceac937  final.scenarios.json"
+ ],
+ "harness_python_peak_bytes": 3177574,
+ "held_out_families": [],
+ "mode": "mock",
+ "models": {
+  "B": {
+   "model": "cautious-sim",
+   "simulated": true
+  },
+  "C": {
+   "model": "eager-sim",
+   "simulated": true
+  }
+ },
+ "notice": "SIMULATED profiles (cautious-sim, eager-sim). These are NOT Qwen or DeepSeek scores.",
+ "order_effect": {
+  "scenario_runs_with_different_consensus": 0
+ },
+ "privacy": {
+  "commands_executed": 0,
+  "ground_truth_strings_in_prompts": 0,
+  "payloads_with_tools": 0,
+  "prompt_injection_text_sent": 0,
+  "requests_observed": 216,
+  "secrets_or_canaries_sent": 0,
+  "tool_calls_accepted": 0,
+  "unauthorized_destinations": 0
+ },
+ "repeats": 3,
+ "scenarios": 12,
+ "schema_version": "bbtk.local-llm-quality-result.v1",
+ "split": "dev",
+ "vram": "not_measured"
+}

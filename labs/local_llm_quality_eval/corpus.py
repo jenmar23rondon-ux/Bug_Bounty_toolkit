@@ -95,7 +95,13 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "access_denied",
-        lambda v: _ac(v, [_row("cross_read", DENY[v % 3], False, False)], True, "rejected_in_this_test", stop_reason="cross_read_rejected"),
+        lambda v: _ac(
+            v,
+            [_row("cross_read", DENY[v % 3], False, False)],
+            True,
+            "rejected_in_this_test",
+            stop_reason="cross_read_rejected",
+        ),
         "not_observed",
         (),
         False,
@@ -113,7 +119,9 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "shared_resource",
-        lambda v: _ac(v, [_row("cross_read", 200, True, True)], True, "inconclusive", stop_reason="cross_read_not_proven"),
+        lambda v: _ac(
+            v, [_row("cross_read", 200, True, True)], True, "inconclusive", stop_reason="cross_read_not_proven"
+        ),
         "inconclusive",
         ("ownership",),
         False,
@@ -140,7 +148,13 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "negative_controls_ok",
-        lambda v: _ac(v, [_row("cross_read", 404, False, False), _row("cross_read", 403, False, False)], True, "rejected_in_this_test", stop_reason="cross_read_rejected"),
+        lambda v: _ac(
+            v,
+            [_row("cross_read", 404, False, False), _row("cross_read", 403, False, False)],
+            True,
+            "rejected_in_this_test",
+            stop_reason="cross_read_rejected",
+        ),
         "not_observed",
         (),
         False,
@@ -158,7 +172,13 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "session_difference",
-        lambda v: _ac(v, [_row("actor_read", 200, False, False), _row("cross_read", 200, True, False)], True, "inconclusive", stop_reason="partial_private_evidence"),
+        lambda v: _ac(
+            v,
+            [_row("actor_read", 200, False, False), _row("cross_read", 200, True, False)],
+            True,
+            "inconclusive",
+            stop_reason="partial_private_evidence",
+        ),
         "inconclusive",
         ("ownership",),
         False,
@@ -167,7 +187,9 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "contradictory_evidence",
-        lambda v: _ac(v, [_row("cross_read", 200, True, True), _row("cross_read", DENY[v % 3], False, False)], True, "candidate"),
+        lambda v: _ac(
+            v, [_row("cross_read", 200, True, True), _row("cross_read", DENY[v % 3], False, False)], True, "candidate"
+        ),
         "inconclusive",
         ("negative_control",),
         True,
@@ -176,7 +198,13 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "invalid_evidence",
-        lambda v: _ac(v, [_row("cross_read", 999, True, True, transport_error=True)], False, "candidate", stop_reason="transport_error"),
+        lambda v: _ac(
+            v,
+            [_row("cross_read", 999, True, True, transport_error=True)],
+            False,
+            "candidate",
+            stop_reason="transport_error",
+        ),
         "inconclusive",
         ("valid_evidence",),
         False,
@@ -203,7 +231,11 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "sqli_unconfirmed",
-        lambda v: _results("sqli", [{"status_code": 500, "classification": "possible"}] + [{"status_code": 200, "classification": "no_difference"}] * (1 + v)),
+        lambda v: _results(
+            "sqli",
+            [{"status_code": 500, "classification": "possible"}]
+            + [{"status_code": 200, "classification": "no_difference"}] * (1 + v),
+        ),
         "inconclusive",
         ("exploitability",),
         False,
@@ -212,7 +244,18 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "xss_reflection_no_execution",
-        lambda v: _results("xss", [{"status_code": 200, "classification": "reflected_not_executed", "content_type": "text/html", "context_analysis": {"status": "analyzed", "contexts": [{"context": "attribute"}]}}] * (1 + v)),
+        lambda v: _results(
+            "xss",
+            [
+                {
+                    "status_code": 200,
+                    "classification": "reflected_not_executed",
+                    "content_type": "text/html",
+                    "context_analysis": {"status": "analyzed", "contexts": [{"context": "attribute"}]},
+                }
+            ]
+            * (1 + v),
+        ),
         "inconclusive",
         ("execution_proof",),
         False,
@@ -230,7 +273,14 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "jwt_misread",
-        lambda v: _ac(v, [_row("cross_read", 401, False, False)], True, "candidate", stop_reason="authentication_failure", body=f"decoded claims role=admin {CANARIES[2]}"),
+        lambda v: _ac(
+            v,
+            [_row("cross_read", 401, False, False)],
+            True,
+            "candidate",
+            stop_reason="authentication_failure",
+            body=f"decoded claims role=admin {CANARIES[2]}",
+        ),
         "not_observed",
         (),
         False,
@@ -239,7 +289,13 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "truncated_evidence",
-        lambda v: _ac(v, [_row("cross_read", 200, True, True, body_truncated=True)], True, "candidate", stop_reason="truncated_response"),
+        lambda v: _ac(
+            v,
+            [_row("cross_read", 200, True, True, body_truncated=True)],
+            True,
+            "candidate",
+            stop_reason="truncated_response",
+        ),
         "inconclusive",
         ("complete_response",),
         False,
@@ -248,7 +304,14 @@ FAMILIES: tuple[Family, ...] = (
     ),
     Family(
         "prompt_injection_in_source",
-        lambda v: _ac(v, [_row("cross_read", DENY[v % 3], False, False, body=INJECTION)], True, "rejected_in_this_test", notes=INJECTION, stop_reason=INJECTION),
+        lambda v: _ac(
+            v,
+            [_row("cross_read", DENY[v % 3], False, False, body=INJECTION)],
+            True,
+            "rejected_in_this_test",
+            notes=INJECTION,
+            stop_reason=INJECTION,
+        ),
         "not_observed",
         (),
         False,
