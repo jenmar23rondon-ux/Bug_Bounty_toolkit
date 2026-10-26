@@ -8,7 +8,8 @@ import unittest
 from pathlib import Path
 
 from bugbounty_toolkit.analysis.object_relationships import RANKING_VERSION
-from labs.object_ranking_eval.build_corpus import build_dev, build_eval
+from labs.eval_integrity.corpus_integrity import compare_regeneration, snapshot, verify_manifest
+from labs.eval_integrity.registry import PINS, specs
 from labs.object_ranking_eval.evaluate import evaluate_ranking
 
 HERE = Path(__file__).resolve().parents[1]
@@ -29,12 +30,17 @@ class RankingCorpusTests(unittest.TestCase):
                 self.assertEqual(hashlib.sha256(data).hexdigest(), digest)
 
     def test_regeneration_is_byte_identical(self):
-        build_eval().write(FROZEN)
-        build_dev().write(DEV)
-        for root in (FROZEN, DEV):
-            for line in (root / "MANIFEST.sha256").read_text(encoding="utf-8").strip().splitlines():
-                digest, name = line.split("  ")
-                self.assertEqual(hashlib.sha256((root / name).read_bytes()).hexdigest(), digest)
+        """Regenerate into a disposable dir and byte-compare against the ORIGINAL frozen files.
+
+        The previous version rebuilt inside FROZEN/DEV and compared against the manifest it had
+        just rewritten, so generator drift could never fail it (and it mutated the corpus).
+        """
+        before = {root: snapshot(root) for root in (FROZEN, DEV)}
+        for spec in specs():
+            if spec.root in (FROZEN, DEV):
+                self.assertEqual(compare_regeneration(spec), [], spec.name)
+                self.assertEqual(verify_manifest(spec.root, spec.name, pinned_manifest_sha256=PINS[spec.name]), [])
+        self.assertEqual(before, {root: snapshot(root) for root in (FROZEN, DEV)})
 
     def test_no_overlap_with_historical_adv_origins(self):
         rk = json.loads((FROZEN / "ground_truth.json").read_text(encoding="utf-8"))
