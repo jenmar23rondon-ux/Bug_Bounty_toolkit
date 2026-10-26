@@ -1,0 +1,60 @@
+{
+  "benchmark": "independent-research-benchmark FINAL (45 scenarios, labels frozen)",
+  "base_sha": "a12299dbbe07c6b0cf467f577a2947c0cbcd034b",
+  "before": {
+    "outcome_accuracy": 0.6667,
+    "false_reviewable_cases": 13,
+    "false_reviewable_after_planner": 9,
+    "false_reviewable_rate": 0.5417,
+    "missed_eligible_cases": 2,
+    "abstention_recall": 0.5625,
+    "false_reviewable_ids": [
+      "A02",
+      "A03",
+      "A05",
+      "A08",
+      "A09",
+      "C05",
+      "D11",
+      "D12",
+      "D13",
+      "D14",
+      "D15",
+      "D16",
+      "E03"
+    ]
+  },
+  "after": {
+    "outcome_accuracy": 0.7556,
+    "false_reviewable_cases": 6,
+    "false_reviewable_after_planner": 2,
+    "false_reviewable_rate": 0.25,
+    "missed_eligible_cases": 2,
+    "abstention_recall": 1.0,
+    "false_reviewable_ids": [
+      "D11",
+      "D12",
+      "D13",
+      "D14",
+      "D15",
+      "D16"
+    ]
+  },
+  "denied_false_reviewable_reduction": {
+    "before_ids": [
+      "A02",
+      "A03",
+      "A05",
+      "A08",
+      "A09",
+      "C05",
+      "E03"
+    ],
+    "after_ids": [],
+    "note": "All denial/visibility false-reviewables cleared; D11\u2013D16 are integrity_block family (out of scope)."
+  },
+  "preserved_true_reviewables": [
+    "A01",
+    "A06"
+  ]
+}

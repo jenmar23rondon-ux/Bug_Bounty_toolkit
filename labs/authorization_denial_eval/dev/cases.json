@@ -1,0 +1,63 @@
+[
+  {
+    "id": "D01_403_forbidden",
+    "expected_outcome": "cross_account_denied",
+    "expect_negative_control": true,
+    "expect_not_reviewable_signal": true,
+    "owner_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"ok\":true,\"statement\":{\"id\":1,\"marker\":\"own\",\"owner_label\":\"owner\"}}",
+    "actor_raw": "HTTP/1.1 403 X\r\nContent-Type: application/json\r\n\r\n{\"error\":\"forbidden\",\"ok\":false}"
+  },
+  {
+    "id": "D02_401_unauth",
+    "expected_outcome": "cross_account_denied",
+    "expect_negative_control": true,
+    "expect_not_reviewable_signal": true,
+    "owner_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"ok\":true,\"statement\":{\"id\":1,\"marker\":\"own\",\"owner_label\":\"owner\"}}",
+    "actor_raw": "HTTP/1.1 401 X\r\nContent-Type: application/json\r\n\r\n{\"error\":\"unauthenticated\",\"ok\":false}"
+  },
+  {
+    "id": "D03_404_not_found",
+    "expected_outcome": "cross_account_denied",
+    "expect_negative_control": true,
+    "expect_not_reviewable_signal": true,
+    "owner_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"ok\":true,\"statement\":{\"id\":1,\"marker\":\"own\",\"owner_label\":\"owner\"}}",
+    "actor_raw": "HTTP/1.1 404 X\r\nContent-Type: application/json\r\n\r\n{\"error\":\"not_found\",\"ok\":false}"
+  },
+  {
+    "id": "D04_200_content_denial",
+    "expected_outcome": "cross_account_denied",
+    "expect_negative_control": true,
+    "expect_not_reviewable_signal": true,
+    "owner_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"ok\":true,\"statement\":{\"id\":1,\"marker\":\"own\",\"owner_label\":\"owner\"}}",
+    "actor_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"contract\":null,\"error\":\"not_authorized\",\"ok\":false}"
+  },
+  {
+    "id": "D05_302_login",
+    "expected_outcome": "cross_account_denied",
+    "expect_negative_control": true,
+    "expect_not_reviewable_signal": true,
+    "owner_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"ok\":true,\"statement\":{\"id\":1,\"marker\":\"own\",\"owner_label\":\"owner\"}}",
+    "actor_raw": "HTTP/1.1 302 X\r\nContent-Type: application/json\r\nLocation: https://lab.example/login\r\n\r\n"
+  },
+  {
+    "id": "D06_possible_access",
+    "expected_outcome": "possible_access",
+    "expect_negative_control": false,
+    "owner_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"ok\":true,\"statement\":{\"id\":1,\"marker\":\"own\",\"owner_label\":\"owner\"}}",
+    "actor_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"ok\":true,\"statement\":{\"id\":1,\"marker\":\"own\",\"owner_label\":\"owner\"}}"
+  },
+  {
+    "id": "D07_contradictory_403_body",
+    "expected_outcome": "possible_access",
+    "expect_negative_control": false,
+    "owner_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"ok\":true,\"statement\":{\"id\":1,\"marker\":\"own\",\"owner_label\":\"owner\"}}",
+    "actor_raw": "HTTP/1.1 403 X\r\nContent-Type: application/json\r\n\r\n{\"claim\":{\"id\":9,\"marker\":\"leak\",\"owner_label\":\"owner\"},\"ok\":true}"
+  },
+  {
+    "id": "D08_public_visibility",
+    "expected_outcome": "inconclusive",
+    "expect_not_reviewable_signal": true,
+    "owner_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"item\":{\"id\":1,\"visibility\":\"public\"},\"ok\":true}",
+    "actor_raw": "HTTP/1.1 200 X\r\nContent-Type: application/json\r\n\r\n{\"item\":{\"id\":1,\"visibility\":\"public\"},\"ok\":true}"
+  }
+]

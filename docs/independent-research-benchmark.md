@@ -66,7 +66,7 @@ outcome mismatch against the frozen `integrity_block` label; arguably a spec/lab
 
 ## Recommended future fixes (ranked by measured impact; separate PRs)
 
-1. **Emit control annotations from the e2e pipeline** (status class, denial body, visibility, redirect,
+1. **Emit control annotations from the e2e pipeline** (addressed by authorization denial-aware assessment — see `docs/authorization-denial-aware-assessment.md`) (status class, denial body, visibility, redirect,
    cross-account control present) into ledger evidence so existing planner stop rules apply. Targets
    7 of 15 FINAL errors; no new heuristics in the planner needed.
 2. **Bounded partial discovery instead of whole-capture failure, plus explicit technical signals** for
