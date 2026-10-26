@@ -4,6 +4,12 @@ Notable user-facing changes are recorded here.
 
 ## Unreleased
 
+- Add offline evidence verification & coverage ledger (`bbtk ledger ...`, schema `bbtk-evidence-ledger/1`):
+  surface coverage states, digest-verified evidence with provenance, distinct candidate states,
+  blocked auto-confirmation, rejection reasons/blockers, broken-ref/duplicate/stale-evidence detection,
+  Evidence Graph / Investigation Memory / report integration and a synthetic `lab evidence-ledger`.
+  Version stays 0.2.2.
+
 - Evidence-based Object Discovery ranking v2.0: structural signals demote shared path-parents
   and unauthenticated/response-only noise, boost path-leaf specificity and cross-session kind
   peers; explainable positive/negative breakdown + uncertainty; never discards shared/public

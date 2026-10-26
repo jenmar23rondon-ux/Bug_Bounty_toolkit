@@ -381,6 +381,16 @@ Search accepts exact endpoint, case account label, resource ID/opaque fingerprin
 
 Investigation lifecycle is opt-in and uses the same program database. `ai investigate --session-id <id>` saves a non-overwriting JSON history and indexes its bundle ID, relative snapshot path and stage statuses. Close it with `bbtk investigation close <program> --id <id>`, then resume by rerunning the review with the same evidence bundle and `--resume-session`. `bbtk investigation status` shows the saved state and append-only lifecycle events. This resumes the local review record, not a live scan; it sends no target traffic and never replays saved commands.
 
+### Evidence Verification & Coverage Ledger
+
+`bbtk ledger` keeps an offline, schema-versioned (`bbtk-evidence-ledger/1`) record of surface coverage
+(investigated / reviewed / pending / blocked / out_of_scope), digest-verified evidence with provenance, and
+candidate states (`candidate`, `requires_validation`, `rejected`, `confirmed`). Nothing is confirmed
+automatically: confirmation needs an independent human reviewer, a human review method, an explicit
+`--i-reviewed-the-evidence` attestation and current evidence. `bbtk ledger validate` reports broken refs
+(including Evidence Graph nodes and Investigation Memory IDs), duplicates, stale or modified evidence and
+incompatible states. See [docs/evidence-ledger.md](docs/evidence-ledger.md); synthetic lab: `bbtk lab evidence-ledger`.
+
 ## Limits and Reports
 
 `init --config` copies limits into `registros/<program>/settings.yaml`. The included defaults are 1 request/second, 5 ffuf threads, a 15-second timeout, at most 100 XSS HTTP probes and a 1 MB captured response. Raise `max_tests` in the program's `settings.yaml` only when its policy allows the additional requests; per-command `--max-tests` cannot exceed that configured limit. Range mode defaults to 25 IDs in public scope; the separate reviewed public opt-in raises its hard cap to 100, while loopback tests can configure up to 100.

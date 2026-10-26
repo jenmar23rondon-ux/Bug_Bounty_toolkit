@@ -82,6 +82,8 @@ from .analysis.benchmark import run_idor_benchmark, write_benchmark_reports
 from .analysis.prioritization import prioritize_hypotheses_file, write_prioritization_report
 from .analysis.investigation import investigate_evidence
 from .analysis.investigation_memory import InvestigationMemory
+from .analysis import evidence_ledger as ledger_mod
+from .analysis.evidence_ledger_lab import run_evidence_ledger_lab
 from .access_control.comparison import AccessControlTester
 from .access_control.range_checker import AccessRangeOptions, AccessRangeTester, MAX_RANGE_REQUESTS
 from .access_control.write_lab import AccessWriteLabTester
@@ -2798,6 +2800,152 @@ def cmd_ai_investigate(args: argparse.Namespace) -> None:
     print(json.dumps(rendered, indent=2, sort_keys=True))
 
 
+def _ledger_location(args: argparse.Namespace) -> tuple[Path, Path]:
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    ledger_path = args.ledger or (paths.program_dir / "ledger" / "evidence-ledger.json")
+    return paths.program_dir, ledger_path
+
+
+def _ledger_load(args: argparse.Namespace) -> tuple[Path, Path, dict[str, object]]:
+    program_dir, ledger_path = _ledger_location(args)
+    return program_dir, ledger_path, ledger_mod.load_ledger(ledger_path)
+
+
+def cmd_ledger_schema(args: argparse.Namespace) -> None:
+    print(json.dumps(ledger_mod.LEDGER_SCHEMA, indent=2, sort_keys=True))
+
+
+def cmd_ledger_init(args: argparse.Namespace) -> None:
+    program_dir, ledger_path = _ledger_location(args)
+    if ledger_path.exists():
+        raise ValueError(f"Ledger already exists: {ledger_path}")
+    ledger_mod.save_ledger(ledger_path, ledger_mod.new_ledger(args.program))
+    print(f"[+] Evidence ledger created: {ledger_path}")
+
+
+def cmd_ledger_surface(args: argparse.Namespace) -> None:
+    program_dir, ledger_path, ledger = _ledger_load(args)
+    row = {
+        "surface_id": args.id,
+        "kind": args.kind,
+        "ref": args.ref,
+        "status": args.status,
+        "blocker": args.blocker,
+        "reason": args.reason,
+        "fingerprint": args.fingerprint,
+        "investigation_id": args.investigation_id,
+        "notes": args.notes,
+    }
+    ledger_mod.upsert_surface(ledger, row)
+    ledger_mod.save_ledger(ledger_path, ledger, program_dir=program_dir)
+    print(f"[+] Surface {args.id} recorded as {args.status}.")
+
+
+def cmd_ledger_evidence(args: argparse.Namespace) -> None:
+    program_dir, ledger_path, ledger = _ledger_load(args)
+    row = ledger_mod.add_evidence(
+        ledger,
+        program_dir,
+        args.id,
+        args.path,
+        tool=args.tool,
+        surface_fingerprint=args.surface_fingerprint,
+        bundle_id=args.bundle_id,
+        investigation_id=args.investigation_id,
+        graph_node_ids=args.graph_node or None,
+    )
+    ledger_mod.save_ledger(ledger_path, ledger, program_dir=program_dir)
+    print(f"[+] Evidence {args.id} recorded (sha256 {row['sha256'][:16]}...).")
+
+
+def cmd_ledger_candidate(args: argparse.Namespace) -> None:
+    program_dir, ledger_path, ledger = _ledger_load(args)
+    ledger_mod.add_candidate(
+        ledger,
+        args.id,
+        args.surface,
+        args.category,
+        args.raised_by,
+        args.evidence or [],
+        title=args.title,
+        dedup_key=args.dedup_key,
+        finding_id=args.finding_id,
+    )
+    ledger_mod.save_ledger(ledger_path, ledger, program_dir=program_dir)
+    print(f"[+] Candidate {args.id} recorded in state 'candidate' (never auto-confirmed).")
+
+
+def cmd_ledger_import(args: argparse.Namespace) -> None:
+    program_dir, ledger_path, ledger = _ledger_load(args)
+    result = ledger_mod.import_native_evidence(
+        ledger, program_dir, args.evidence_path, args.surface, raised_by=args.raised_by
+    )
+    ledger_mod.save_ledger(ledger_path, ledger, program_dir=program_dir)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[i] Tool labels are kept as notes only; imported candidates require human review.")
+
+
+def cmd_ledger_review(args: argparse.Namespace) -> None:
+    program_dir, ledger_path, ledger = _ledger_load(args)
+    cand = ledger_mod.review_candidate(
+        ledger,
+        args.id,
+        args.state,
+        args.reviewer,
+        method=args.method,
+        basis=args.basis,
+        rejection_reason=args.reason,
+        rejection_detail=args.detail,
+        blockers=args.blocker or None,
+        duplicate_of=args.duplicate_of,
+        human_attestation=args.i_reviewed_the_evidence,
+    )
+    ledger_mod.save_ledger(ledger_path, ledger, program_dir=program_dir)
+    print(f"[+] Candidate {args.id} -> {cand['state']} by {args.reviewer}.")
+
+
+def cmd_ledger_validate(args: argparse.Namespace) -> None:
+    program_dir = ProgramPaths(RECORDS_ROOT, args.program).program_dir
+    ledger_path = args.ledger or (program_dir / "ledger" / "evidence-ledger.json")
+    result = ledger_mod.validate_ledger(ledger_mod.load_ledger(ledger_path), program_dir=program_dir)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    if not result["valid"]:
+        raise SystemExit(1)
+
+
+def cmd_ledger_report(args: argparse.Namespace) -> None:
+    program_dir, ledger_path, ledger = _ledger_load(args)
+    validation = ledger_mod.validate_ledger(ledger, program_dir=program_dir)
+    text = ledger_mod.render_markdown(ledger, validation)
+    if args.output:
+        destination = local_path(args.output)
+        if destination.exists() and not args.force:
+            raise ValueError(f"Report already exists: {destination}. Pass --force to replace it.")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(text, encoding="utf-8")
+        print(f"[+] Ledger report saved: {destination}")
+    else:
+        print(text)
+
+
+def cmd_lab_evidence_ledger(args: argparse.Namespace) -> None:
+    result = run_evidence_ledger_lab()
+    print(json.dumps(result["metrics"], indent=2, sort_keys=True))
+    print("[i] Synthetic offline lab; measures ledger integrity checks, not vulnerability detection.")
+    if args.metrics_json:
+        destination = local_path(args.metrics_json)
+        if destination.exists() and not args.force:
+            raise ValueError(f"Metrics output already exists: {destination}. Pass --force to replace it.")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(f"[+] Metrics saved: {destination}")
+    if (
+        result["metrics"]["false_confirmations"]
+        or result["metrics"]["scenarios_passed"] != result["metrics"]["scenarios"]
+    ):
+        raise SystemExit(1)
+
+
 def cmd_investigation_close(args: argparse.Namespace) -> None:
     store = store_for(args.program)
     try:
@@ -3343,6 +3491,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     lab_object.set_defaults(func=cmd_lab_object_discover)
 
+    lab_ledger = lab_sub.add_parser(
+        "evidence-ledger", help="Run the synthetic offline evidence-ledger integrity lab (no network)"
+    )
+    lab_ledger.add_argument("--metrics-json", type=Path, help="Optional metrics JSON output path")
+    lab_ledger.add_argument("--force", action="store_true", help="Replace metrics JSON if it exists")
+    lab_ledger.set_defaults(func=cmd_lab_evidence_ledger)
+
     access = sub.add_parser(
         "access-check", help="Known-resource authorization comparison; bounded read and disposable JSON write modes"
     )
@@ -3801,6 +3956,84 @@ def build_parser() -> argparse.ArgumentParser:
     graph_search.add_argument("--finding-id", help="Exact toolkit finding ID")
     graph_search.add_argument("--limit", type=positive_int, default=50, help="Maximum matching nodes (1-100)")
     graph_search.set_defaults(func=cmd_graph_search)
+
+    ledger_cli = sub.add_parser(
+        "ledger", help="Offline evidence verification and coverage ledger for human review (no network)"
+    )
+    ledger_sub = ledger_cli.add_subparsers(dest="ledger_command", required=True)
+
+    def _ledger_parser(name: str, help_text: str) -> argparse.ArgumentParser:
+        parser_ = ledger_sub.add_parser(name, help=help_text)
+        if name != "schema":
+            parser_.add_argument("program")
+            parser_.add_argument(
+                "--ledger", type=Path, help="Ledger path (default: <program>/ledger/evidence-ledger.json)"
+            )
+        return parser_
+
+    ledger_schema = _ledger_parser("schema", "Print the versioned ledger JSON schema")
+    ledger_schema.set_defaults(func=cmd_ledger_schema)
+    ledger_init = _ledger_parser("init", "Create an empty ledger for a program")
+    ledger_init.set_defaults(func=cmd_ledger_init)
+    ledger_surface = _ledger_parser("surface", "Record or update a surface's coverage status")
+    ledger_surface.add_argument("--id", required=True)
+    ledger_surface.add_argument(
+        "--kind", required=True, choices=("endpoint", "workflow", "source_file", "component", "asset")
+    )
+    ledger_surface.add_argument("--ref", required=True, help="Path, workflow or file reference")
+    ledger_surface.add_argument("--status", required=True, choices=ledger_mod.SURFACE_STATUSES)
+    ledger_surface.add_argument("--blocker", help="Required for pending/blocked")
+    ledger_surface.add_argument("--reason", help="Required for out_of_scope")
+    ledger_surface.add_argument("--fingerprint", help="Code/surface revision; changes invalidate older evidence")
+    ledger_surface.add_argument("--investigation-id")
+    ledger_surface.add_argument("--notes")
+    ledger_surface.set_defaults(func=cmd_ledger_surface)
+    ledger_evidence = _ledger_parser("evidence", "Register a local evidence file with digest and provenance")
+    ledger_evidence.add_argument("--id", required=True)
+    ledger_evidence.add_argument("--path", required=True, help="Program-relative evidence path")
+    ledger_evidence.add_argument("--tool", required=True, help="Producing tool or manual source")
+    ledger_evidence.add_argument("--surface-fingerprint")
+    ledger_evidence.add_argument("--bundle-id")
+    ledger_evidence.add_argument("--investigation-id")
+    ledger_evidence.add_argument("--graph-node", action="append", help="Evidence Graph node ID (repeatable)")
+    ledger_evidence.set_defaults(func=cmd_ledger_evidence)
+    ledger_candidate = _ledger_parser("candidate", "Raise a candidate (always starts as 'candidate')")
+    ledger_candidate.add_argument("--id", required=True)
+    ledger_candidate.add_argument("--surface", required=True)
+    ledger_candidate.add_argument("--category", required=True)
+    ledger_candidate.add_argument("--raised-by", required=True)
+    ledger_candidate.add_argument("--evidence", action="append", help="Evidence ID (repeatable)")
+    ledger_candidate.add_argument("--title")
+    ledger_candidate.add_argument("--dedup-key")
+    ledger_candidate.add_argument("--finding-id", help="Existing toolkit finding ID")
+    ledger_candidate.set_defaults(func=cmd_ledger_candidate)
+    ledger_import = _ledger_parser("import", "Register native tool evidence; positive labels become candidates only")
+    ledger_import.add_argument("--evidence-path", required=True, help="Program-relative native evidence JSON")
+    ledger_import.add_argument("--surface", required=True)
+    ledger_import.add_argument("--raised-by", default="bbtk-import")
+    ledger_import.set_defaults(func=cmd_ledger_import)
+    ledger_review = _ledger_parser("review", "Apply one human review decision to a candidate")
+    ledger_review.add_argument("--id", required=True)
+    ledger_review.add_argument("--state", required=True, choices=ledger_mod.CANDIDATE_STATES)
+    ledger_review.add_argument(
+        "--reviewer", required=True, help="Human reviewer; must differ from raised_by to confirm"
+    )
+    ledger_review.add_argument("--method", choices=ledger_mod.REVIEW_METHODS)
+    ledger_review.add_argument("--basis", help="Observed, reproducible basis for the decision")
+    ledger_review.add_argument("--reason", choices=ledger_mod.REJECTION_REASONS, help="Rejection reason")
+    ledger_review.add_argument("--detail", help="Rejection detail")
+    ledger_review.add_argument("--blocker", action="append", help="Unresolved fact (requires_validation)")
+    ledger_review.add_argument("--duplicate-of")
+    ledger_review.add_argument(
+        "--i-reviewed-the-evidence", action="store_true", help="Explicit human attestation; required to confirm"
+    )
+    ledger_review.set_defaults(func=cmd_ledger_review)
+    ledger_validate = _ledger_parser("validate", "Validate schema, references, states and evidence digests")
+    ledger_validate.set_defaults(func=cmd_ledger_validate)
+    ledger_report = _ledger_parser("report", "Render a Markdown coverage and review report")
+    ledger_report.add_argument("--output", type=Path)
+    ledger_report.add_argument("--force", action="store_true")
+    ledger_report.set_defaults(func=cmd_ledger_report)
 
     investigation_cli = sub.add_parser(
         "investigation", help="Close or inspect a saved local investigation without deleting its history"
