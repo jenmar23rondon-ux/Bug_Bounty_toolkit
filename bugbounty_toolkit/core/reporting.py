@@ -3,7 +3,12 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 
-from .redaction import redact_data
+from .redaction import RedactionDestination, redact_data
+
+
+def _shareable(value: object) -> object:
+    return redact_data(value, destination=RedactionDestination.SHAREABLE_REPORT)
+
 
 REPORT_TEMPLATE = """# {id} - {title}
 
@@ -37,7 +42,7 @@ Describe the expected authorization, validation, configuration, or business-rule
 
 def render_markdown(finding, destination: Path) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    data = redact_data(dict(finding))
+    data = _shareable(dict(finding))
     if not data.get("evidence_path"):
         data["evidence_path"] = "Evidence path not attached yet."
     destination.write_text(REPORT_TEMPLATE.format(**data), encoding="utf-8")

@@ -424,7 +424,7 @@ Create a reviewer-ready, redacted report from a native JSON evidence file with `
 
 Validation state is derived from the recorded technical predicates, not AI output or HTTP status. `validated` is reserved for an XSS result that records a confirmed classification, browser execution, and an observed harmless marker or alert; this verifies script execution in that browser run only, not authorization, scope or impact. Other candidate classifications remain `candidate`, explicit no-signal results are `not_observed`, and incomplete or unsupported evidence is `inconclusive`.
 
-Authorization headers, cookies and common password/token fields are redacted from structured evidence. Redaction is best effort: unusual secret formats, user-written findings and third-party raw logs can contain private data. Keep `registros/` local and inspect evidence before sharing it. Raw ffuf output and its isolated history remain in `raw/` for debugging. They are not embedded into reports.
+Authorization headers, cookies and common password/token fields are redacted from structured evidence using a **destination-aware** policy (`private_evidence`, minimized artifacts, console, shareable reports, model input). JSON/HTTP/URL/header parsing is preferred over regex-only scans; see [evidence redaction](docs/evidence-redaction.md). Redaction is best effort: unusual secret formats, user-written findings and third-party raw logs can contain private data. Do not claim absolute privacy. Keep `registros/` local and inspect evidence before sharing it. Raw ffuf output and its isolated history remain in `raw/` for debugging. They are not embedded into reports.
 
 ### Known Limitations
 

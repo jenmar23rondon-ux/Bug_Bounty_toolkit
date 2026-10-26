@@ -5,8 +5,12 @@ from pathlib import Path
 
 from ..analysis.evidence_ledger import load_ledger, validate_ledger
 from ..core.records import RecordStore
-from ..core.redaction import redact_data
+from ..core.redaction import RedactionDestination, redact_data
 from ..core.scope_validator import ScopeValidator
+
+
+def _shareable(value: object) -> object:
+    return redact_data(value, destination=RedactionDestination.SHAREABLE_REPORT)
 
 
 def build_program_report(store: RecordStore) -> dict[str, object]:
@@ -23,14 +27,14 @@ def build_program_report(store: RecordStore) -> dict[str, object]:
         except (OSError, ValueError):
             evidence.append({"run_id": run["id"], "path": str(path), "error": "Evidence unavailable or invalid JSON"})
             continue
-        evidence.append({"run_id": run["id"], "path": str(path), "data": redact_data(data)})
+        evidence.append({"run_id": run["id"], "path": str(path), "data": _shareable(data)})
     report: dict[str, object] = {
         "program": store.paths.program,
         "records_path": str(store.paths.program_dir),
         "counts": store.counts(),
         "scope": ScopeValidator(store.paths.scope_file).summary(),
-        "runs": redact_data(runs),
-        "reviewed": redact_data(store.reviewed()),
+        "runs": _shareable(runs),
+        "reviewed": _shareable(store.reviewed()),
         "findings": store.findings(),
         "evidence": evidence,
     }

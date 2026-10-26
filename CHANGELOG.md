@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+### Evidence privacy and redaction hardening
+
+- Destination-aware redaction policy (`private_evidence`, `minimized_artifact`, `console_summary`, `shareable_report`, `model_input`) in `core/redaction.py`.
+- Structured JSON / HTTP / URL / header / HTML parsing with regex as backstop; size, depth, and time bounds; linear large-body performance.
+- Provenance digests and pseudonymized identifiers without leaking preimages; AI-output scrub helper.
+- Synthetic canary laboratory `labs/evidence_redaction_lab/` and docs in `docs/evidence-redaction.md`.
+- Shareable reports use the shareable destination. Absolute privacy is **not** claimed; residual risks documented.
+- Version stays 0.2.2.
+
+
 ### Content-aware wordlist ranking (opt-in)
 
 - Add bounded, deterministic content profiling for local wordlists (`bugbounty_toolkit.fuzzing.content_ranking`).
