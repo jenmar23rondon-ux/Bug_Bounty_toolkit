@@ -1,0 +1,62 @@
+{
+ "corpus_version": "e2e-contract-1.0",
+ "origin": "http://127.0.0.1:8141",
+ "scenarios": [
+  {
+   "ambiguous_types": [],
+   "description": "Same invoice endpoint template seen from two synthetic sessions.",
+   "entries": [
+    0,
+    1
+   ],
+   "expected_confirmed": false,
+   "expected_eligibility": "proposals_ready",
+   "expected_pair_types": [
+    "invoice"
+   ],
+   "forbidden_pair_types": [],
+   "id": "E01"
+  },
+  {
+   "ambiguous_types": [],
+   "description": "Single-session report view: not eligible for a pair, must be a structured rejection.",
+   "entries": [
+    2
+   ],
+   "expected_confirmed": false,
+   "expected_eligibility": "insufficient_evidence",
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "report"
+   ],
+   "id": "E02"
+  },
+  {
+   "ambiguous_types": [],
+   "description": "Project endpoint template seen from two other sessions (cross-pairing guard).",
+   "entries": [
+    3,
+    4
+   ],
+   "expected_confirmed": false,
+   "expected_eligibility": "proposals_ready",
+   "expected_pair_types": [
+    "project"
+   ],
+   "forbidden_pair_types": [],
+   "id": "E03"
+  },
+  {
+   "ambiguous_types": [],
+   "description": "Incomplete request (no method): importer must reject it, not repair it.",
+   "entries": [
+    5
+   ],
+   "expected_confirmed": false,
+   "expected_eligibility": "rejected_at_import",
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "E04"
+  }
+ ]
+}
