@@ -139,9 +139,30 @@ bbtk object-handoff object-demo \
 
 Proposals link each side back to HMAC `source_ref` + parser locator provenance. With `--materialize-dir` and verified inputs, BBTK writes private mode-0600 raw HTTP snapshots and prints a ready `import discover-idor ... --dry-run` command. Without materialization, the command references export placeholders for the locators. Candidates that lack two distinct sessions with different request-side object values return `status: insufficient_evidence` instead of inventing accounts.
 
+### Response-observed identifiers (asymmetric pairing)
+
+Offline capture analysis often sees an object identifier first in one session's **response JSON** (for example a listing or nested object) and only later in another session's **request**. Since handoff 1.1, such identifiers can form human-review proposals with `pair_kind: asymmetric_response_request`. Symmetric request/request proposals are labeled `pair_kind: request_request` and are unchanged.
+
+Every asymmetric proposal separates what was **observed** from what is **inferred**:
+
+- `observed_identifiers[]` lists each side with `observed_in` (`response_json` or `request`), the type basis for response identifiers and `ownership: unknown`.
+- `relation.state` is always `inferred` with `rule: response-identifier-v1`. A response containing an ID is **not** evidence of ownership, privacy or access. The owner side is only "the session whose response showed this identifier".
+- Both sides keep HMAC `source_ref`, parser `locator`, `observation_ref` and `session_ref` provenance, and materialize exactly like request/request pairs.
+
+Rule `response-identifier-v1` (guards against false links):
+
+1. Same known `resource_type` on both sides, from **different** authorized session contexts, on the same origin; different object values.
+2. The response identifier needs its **own** type evidence: a typed field name (`project_id`, `address_id`) or a collection-named JSON container (`addresses[*].id`). Bare wrapper ids such as `{"data":{"id":N}}` that are typed only by the endpoint path are observed but never linked.
+3. Identifiers observed by more than one session context are treated as **shared context** (for example a common tenant) and excluded.
+4. Equal numeric tokens of different types never link, because object references are HMAC(origin, type, value).
+5. At least one side must be request-side; response-only on both sides stays insufficient evidence. Captures without session context are ignored.
+6. Asymmetric scores are capped at 79 so they never outrank an equally evidenced request/request pair. Response sides (512) and asymmetric pairs (256) are bounded; truncation is reported.
+
+The document's `response_identifiers` block reports observed counts, exclusions by guard, and how many asymmetric proposals were selected. Use `--request-only` to reproduce the earlier request-side-only behavior.
+
 ## Efficacy lab
 
-`bbtk lab object-discover` runs the versioned synthetic corpus under `labs/object_discovery_lab/` (`dev/` for iteration, `eval/` holdout — do not tune rules on eval). It reports Precision@1/3/5, recall, FP/FN, per-relation coverage, timing, and a before/after comparison against the prior `object-candidates` ranking. Metrics measure **candidate-pair ranking efficacy** only; `vulnerabilities_confirmed` is always 0 and synthetic scores are not real bug-bounty confirmation performance.
+`bbtk lab object-discover` runs the versioned synthetic corpus under `labs/object_discovery_lab/` (`dev/` for iteration, `eval/` holdout — do not tune rules on eval). It reports Precision@1/3/5, recall, FP/FN, per-relation coverage, timing, and a before/after comparison against the prior `object-candidates` ranking. Each split also reports `request_only_comparison` (the same corpus with response identifiers disabled) so the asymmetric rule's effect is measured in the same run. Corpus 1.1 adds response-observed, response-nested, response-collision, shared-context and incomplete-capture scenarios to both splits. Metrics measure **candidate-pair ranking efficacy** only; `vulnerabilities_confirmed` is always 0 and synthetic scores are not real bug-bounty confirmation performance.
 
 ```bash
 bbtk lab object-discover --dry-run

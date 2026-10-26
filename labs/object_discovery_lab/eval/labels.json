@@ -1,5 +1,5 @@
 {
-  "corpus_version": "1.0",
+  "corpus_version": "1.1",
   "split": "eval",
   "labels": [
     {
@@ -80,6 +80,51 @@
       "relation": "path",
       "cross_session_candidate": false,
       "resource_type": "wishlist",
+      "expected_handoff": false,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "response-observed",
+      "category": "response-observed",
+      "relation": "response_json",
+      "cross_session_candidate": true,
+      "resource_type": "project",
+      "expected_handoff": true,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "response-nested",
+      "category": "response-nested",
+      "relation": "response_json",
+      "cross_session_candidate": true,
+      "resource_type": "address",
+      "expected_handoff": true,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "response-collision",
+      "category": "response-collision",
+      "relation": "response_json",
+      "cross_session_candidate": false,
+      "resource_type": "team",
+      "expected_handoff": false,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "response-shared",
+      "category": "ambiguous-shared",
+      "relation": "response_json",
+      "cross_session_candidate": false,
+      "resource_type": "tenant",
+      "expected_handoff": false,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "incomplete-capture",
+      "category": "incomplete-capture",
+      "relation": "response_json",
+      "cross_session_candidate": false,
+      "resource_type": "customer",
       "expected_handoff": false,
       "expected_confirmed": false
     }

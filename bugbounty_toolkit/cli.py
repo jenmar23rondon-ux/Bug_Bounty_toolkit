@@ -312,6 +312,9 @@ def cmd_lab_object_discover(args: argparse.Namespace) -> None:
         "fn_count": metrics["fn_count"],
         "vulnerable_in_top3": metrics["vulnerable_in_top3"],
         "baseline_precision_at_3": metrics["baseline_precision_at_3"],
+        "asymmetric_selected": primary["asymmetric_selected"],
+        "request_only_recall": primary["request_only_comparison"]["recall"],
+        "request_only_fn_count": primary["request_only_comparison"]["fn_count"],
         "processing_ms": metrics["processing_ms"],
         "network_requests_sent": 0,
         "vulnerabilities_confirmed": 0,
@@ -2461,6 +2464,7 @@ def cmd_object_handoff(args: argparse.Namespace) -> None:
         force=args.force,
         base_url=args.base_url,
         limit=args.limit,
+        include_response_identifiers=not args.request_only,
     )
     if args.dry_run:
         print(
@@ -2469,6 +2473,7 @@ def cmd_object_handoff(args: argparse.Namespace) -> None:
                     "dry_run": True,
                     "status": document["status"],
                     "total_proposals": document["total_proposals"],
+                    "asymmetric_selected": document["response_identifiers"]["asymmetric_selected"],
                     "materialized_pairs": document["materialized_pairs"],
                     "network_requests_sent": 0,
                     "vulnerabilities_confirmed": 0,
@@ -3597,6 +3602,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run",
         action="store_true",
         help="Validate and summarize without writing proposal JSON or capture snapshots",
+    )
+    object_handoff_cli.add_argument(
+        "--request-only",
+        action="store_true",
+        help="Disable inferred pairing from typed response-only identifiers (request-side pairs only)",
     )
     object_handoff_cli.add_argument("--force", action="store_true", help="Replace existing outputs")
     object_handoff_cli.set_defaults(func=cmd_object_handoff)
