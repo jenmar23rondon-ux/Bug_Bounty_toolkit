@@ -7,7 +7,9 @@ Stages (stable order):
 Uses real ``handoff_case_eligibility`` codes (PR #34 on main). Never sends HTTP,
 never runs access-check, never auto-confirms, never rewrites capture origins,
 never converts incompatible pairs, never infers ownership from cookies / HTTP 200 /
-ID coincidence.
+ID coincidence. Structural eligibility is differentiated from authorization
+outcome: denied actor responses (401/403/404/200-denial/auth-redirect) emit a
+``bbtk-control-annotation/1`` negative control and do not become reviewable.
 
 Confirmed candidates require sufficient evidence digests *and* explicit human review
 (``review_candidate(..., human_attestation=True)``). Resume reuses valid artifacts
@@ -30,6 +32,7 @@ from ..reporting.json_report import build_program_report
 from ..utils.exceptions import ToolkitError
 from . import evidence_ledger as ledger_mod
 from .access_assessment import assess_access_control_data
+from .authorization_denial import assess_pair_authorization
 from .handoff_case_eligibility import (
     CODE_CASE_ELIGIBLE,
     PairClassification,
@@ -438,10 +441,28 @@ def run_e2e_research(
     store = RecordStore(program_paths)
     try:
         ledger = ledger_mod.new_ledger(program)
-        for proposal, clf_row, review in zip(handoff.get("proposals") or [], classifications, review_rows, strict=True):
+        # Two-pass: assess every materialized pair first so a demonstrated denial
+        # (even on a structurally non-eligible same-URL session pair) can suppress
+        # false "requires_validation" on sibling positive-control pairs.
+        prepared: list[dict[str, Any]] = []
+        for index, (proposal, clf_row, review) in enumerate(
+            zip(handoff.get("proposals") or [], classifications, review_rows, strict=True)
+        ):
             pid = str(proposal["id"])
-            rel = f"evidence/{pid}.json"
-            payload = {
+            owner_resp_path = pairs_dir / f"{pid}-owner-response.http"
+            actor_resp_path = pairs_dir / f"{pid}-actor-response.http"
+            owner_raw = owner_resp_path.read_bytes() if owner_resp_path.is_file() else None
+            actor_raw = actor_resp_path.read_bytes() if actor_resp_path.is_file() else None
+            authz = assess_pair_authorization(owner_raw, actor_raw)
+            review = {
+                **review,
+                "authorization_outcome": authz.outcome,
+                "authorization_reasons": list(authz.reasons),
+                "actor_response_class": authz.actor.response_class,
+                "owner_response_class": authz.owner.response_class,
+            }
+            review_rows[index] = review
+            payload: dict[str, Any] = {
                 "proposal": {
                     k: proposal[k]
                     for k in (
@@ -461,8 +482,56 @@ def run_e2e_research(
                 },
                 "classification": clf_row,
                 "control_review": review,
+                "authorization_assessment": {
+                    "outcome": authz.outcome,
+                    "reasons": list(authz.reasons),
+                    "owner": authz.owner.as_dict(),
+                    "actor": authz.actor.as_dict(),
+                    "cross_account_denied": authz.outcome == "cross_account_denied",
+                    "confirmed": False,
+                },
             }
-            (program_dir / rel).write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+            if authz.annotation is not None:
+                payload["control"] = authz.annotation
+            prepared.append(
+                {
+                    "proposal": proposal,
+                    "clf_row": clf_row,
+                    "review": review,
+                    "authz": authz,
+                    "payload": payload,
+                    "pid": pid,
+                }
+            )
+
+        denial_pids = [row["pid"] for row in prepared if row["authz"].outcome == "cross_account_denied"]
+        program_denied = bool(denial_pids)
+
+        for row in prepared:
+            proposal = row["proposal"]
+            clf_row = row["clf_row"]
+            authz = row["authz"]
+            pid = row["pid"]
+            rel = f"evidence/{pid}.json"
+            # Sibling positive-control pairs inherit the denial annotation so the
+            # planner can stop without treating them as successful access evidence.
+            if (
+                program_denied
+                and authz.outcome != "cross_account_denied"
+                and pid not in denial_pids
+                and not isinstance(row["payload"].get("control"), dict)
+            ):
+                # Point at the first denial annotation; do not fabricate a new one.
+                donor = next(r for r in prepared if r["pid"] == denial_pids[0])
+                inherited = dict(donor["authz"].annotation or {})
+                inherited["inherited_from"] = f"ev-{denial_pids[0]}"
+                row["payload"]["control"] = inherited
+                row["payload"]["authorization_assessment"] = {
+                    **row["payload"]["authorization_assessment"],
+                    "sibling_denial_observed": True,
+                    "sibling_denial_evidence": f"ev-{denial_pids[0]}",
+                }
+            (program_dir / rel).write_text(json.dumps(row["payload"], sort_keys=True), encoding="utf-8")
             ledger_mod.upsert_surface(
                 ledger,
                 {
@@ -472,6 +541,9 @@ def run_e2e_research(
                     "status": "investigated",
                 },
             )
+            evidence_refs = [f"ev-{pid}"]
+            if program_denied and authz.outcome != "cross_account_denied":
+                evidence_refs.append(f"ev-{denial_pids[0]}")
             ledger_mod.add_evidence(ledger, program_dir, f"ev-{pid}", rel, tool="idor-e2e-research")
             ledger_mod.add_candidate(
                 ledger,
@@ -479,10 +551,16 @@ def run_e2e_research(
                 proposal["endpoint_ref"],
                 "idor",
                 reviewer,
-                [f"ev-{pid}"],
+                evidence_refs,
                 dedup_key=f"idor-e2e:{pid}",
             )
-            # Eligible but unconfirmed: mark requires_validation with blockers naming missing human steps.
+            visibility = authz.actor.resource_visibility or authz.owner.resource_visibility
+            denied = authz.outcome == "cross_account_denied"
+            public_or_shared = visibility in {"public", "shared"}
+            # Demonstrated denial (this pair or a sibling in the same capture run)
+            # must never become requires_validation / positive IDOR evidence.
+            if denied or public_or_shared or (clf_row.get("case_eligible") and program_denied):
+                continue
             if clf_row.get("case_eligible"):
                 ledger_mod.review_candidate(
                     ledger,
@@ -511,6 +589,7 @@ def run_e2e_research(
                     rejection_reason=reason,
                     rejection_detail=f"{code}: {str(clf_row.get('detail', ''))[:120]}",
                 )
+
         ledger_path = program_dir / "ledger" / "evidence-ledger.json"
         validation = ledger_mod.save_ledger(ledger_path, ledger, program_dir=program_dir)
         integrity = detect_ledger_integrity(program_dir, ledger)

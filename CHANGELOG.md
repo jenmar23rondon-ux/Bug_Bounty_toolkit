@@ -1,5 +1,24 @@
 ## [Unreleased]
 
+### Authorization denial-aware case assessment
+
+- New deterministic classifier `analysis/authorization_denial.py` separates
+  structural case eligibility from evidence of successful cross-account access.
+  Recognizes HTTP 401/403/404, HTTP 200 content denials, and auth redirects;
+  contradictory denial-status + resource body (A06-style) stays inconclusive /
+  reviewable. Status alone is never enough.
+- `run_e2e_research` emits `bbtk-control-annotation/1` negative controls for
+  demonstrated denials, suppresses false `requires_validation` on sibling
+  positive-control pairs, and keeps public/shared resources out of the
+  reviewable path. Positive vs negative controls stay differentiated; nothing
+  is auto-confirmed.
+- Synthetic lab `labs/authorization_denial_eval/` (DEV 8 / FINAL 12) plus
+  before/after metrics on the frozen IRB FINAL 45-scenario bench (labels
+  untouched): false reviewable 13→6, false reviewable after planner 9→2;
+  denial/visibility false-reviewables cleared; missed eligible unchanged (2).
+  Version stays 0.2.2; `v0.2.1` untouched.
+
+
 ### Evidence-gap guided investigation planner
 
 - Opt-in offline planner (`bbtk investigation next-steps PROGRAM [--dry-run]`) that names
