@@ -1,0 +1,428 @@
+{
+ "corpus_version": "adv-1.0",
+ "independent_of": [
+  "labs/object_discovery_lab/dev",
+  "labs/object_discovery_lab/eval"
+ ],
+ "origin": "http://127.0.0.1:8137",
+ "scenarios": [
+  {
+   "adversarial_tag": "uuid",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "UUID path ids, two sessions, distinct objects",
+   "entries": [
+    0,
+    1
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "receipt"
+   ],
+   "forbidden_pair_types": [],
+   "id": "S01",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "nested-objects",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Child object under per-session parent",
+   "entries": [
+    2,
+    3
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "board",
+    "workspace"
+   ],
+   "forbidden_pair_types": [],
+   "id": "S02",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "arrays",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Array of ids in JSON request body",
+   "entries": [
+    4,
+    5
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "shipment"
+   ],
+   "forbidden_pair_types": [],
+   "id": "S03",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "cross-reference",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Id observed in session A listing response, requested by B",
+   "entries": [
+    6,
+    7
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "ticket"
+   ],
+   "forbidden_pair_types": [],
+   "id": "S04",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "multi-session",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Three sessions on the same template",
+   "entries": [
+    8,
+    9,
+    10
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "statement"
+   ],
+   "forbidden_pair_types": [],
+   "id": "S05",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "hierarchical-permissions",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Manager and report both reach employee records; manager access is LEGITIMATE (hierarchy)",
+   "entries": [
+    11,
+    12
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "employee"
+   ],
+   "forbidden_pair_types": [
+    "department"
+   ],
+   "id": "S06",
+   "vulnerability_truth": "protected-by-hierarchy"
+  },
+  {
+   "adversarial_tag": "uuid",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "UUID in query parameter",
+   "entries": [
+    13,
+    14
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "export"
+   ],
+   "forbidden_pair_types": [],
+   "id": "S07",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "nested-objects",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Deeply nested typed id in JSON request body",
+   "entries": [
+    15,
+    16
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "preference"
+   ],
+   "forbidden_pair_types": [],
+   "id": "S08",
+   "vulnerability_truth": "protected"
+  },
+  {
+   "adversarial_tag": "multi-session",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Cookie-based sessions instead of bearer tokens",
+   "entries": [
+    17,
+    18
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "payslip"
+   ],
+   "forbidden_pair_types": [],
+   "id": "S09",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "shared-ids",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Shared parent org, distinct child pipelines",
+   "entries": [
+    19,
+    20
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "pipeline"
+   ],
+   "forbidden_pair_types": [
+    "org"
+   ],
+   "id": "S10",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "cross-reference",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Nested response object id vs query parameter in another session",
+   "entries": [
+    21,
+    22
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "subscription"
+   ],
+   "forbidden_pair_types": [],
+   "id": "S11",
+   "vulnerability_truth": "vulnerable"
+  },
+  {
+   "adversarial_tag": "shared-ids",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Same object id requested by both sessions (shared resource)",
+   "entries": [
+    23,
+    24
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "channel"
+   ],
+   "id": "S12",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "public-objects",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Public catalogue, no credentials",
+   "entries": [
+    25,
+    26
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "article"
+   ],
+   "id": "S13",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "multi-session",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Single session reads two own objects",
+   "entries": [
+    27,
+    28
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "coupon"
+   ],
+   "id": "S14",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "partial-responses",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Truncated JSON responses only; ids never in requests",
+   "entries": [
+    29,
+    30
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "contract"
+   ],
+   "id": "S15",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "incomplete-captures",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Second capture missing credentials and response",
+   "entries": [
+    31,
+    32
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "license"
+   ],
+   "id": "S16",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "public-objects",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Pagination/limit numbers differ across sessions (not object ids)",
+   "entries": [
+    33,
+    34
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "report",
+    "page",
+    "limit"
+   ],
+   "id": "S17",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "partial-responses",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Response echoes own id only; request has no id",
+   "entries": [
+    35,
+    36
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "locker"
+   ],
+   "id": "S18",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "public-objects",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Public object accessed with and without auth, same id",
+   "entries": [
+    37,
+    38
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "banner"
+   ],
+   "id": "S19",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "incomplete-captures",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Only one session captured at all for a resource",
+   "entries": [
+    39
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "voucher"
+   ],
+   "id": "S20",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "ambiguous",
+   "ambiguous_types": [
+    "ref",
+    "lookup"
+   ],
+   "class": "ambiguous",
+   "description": "Opaque generic `ref` parameter, unclear if object id",
+   "entries": [
+    40,
+    41
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "S21",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "hierarchical-permissions",
+   "ambiguous_types": [
+    "member"
+   ],
+   "class": "ambiguous",
+   "description": "Admin vs member reading member records; policy unknown",
+   "entries": [
+    42,
+    43
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "S22",
+   "vulnerability_truth": "unknown"
+  },
+  {
+   "adversarial_tag": "shared-ids",
+   "ambiguous_types": [
+    "folder"
+   ],
+   "class": "ambiguous",
+   "description": "Ids overlap partially in arrays across sessions",
+   "entries": [
+    44,
+    45
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "S23",
+   "vulnerability_truth": "n/a"
+  },
+  {
+   "adversarial_tag": "cross-reference",
+   "ambiguous_types": [
+    "message"
+   ],
+   "class": "ambiguous",
+   "description": "Bare `id` in response vs typed id in other session path",
+   "entries": [
+    46,
+    47
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "S24",
+   "vulnerability_truth": "n/a"
+  }
+ ],
+ "split": "adversarial-frozen",
+ "tuning_policy": "FROZEN. Do not tune detection rules against this corpus. Authored before any pipeline run."
+}
