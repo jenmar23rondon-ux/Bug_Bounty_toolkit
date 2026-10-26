@@ -1,0 +1,294 @@
+{
+  "$id": "https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/docs/schemas/evidence-ledger-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "candidates": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "blockers": {
+            "items": {
+              "maxLength": 500,
+              "type": "string"
+            },
+            "maxItems": 20,
+            "type": "array"
+          },
+          "candidate_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "category": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "dedup_key": {
+            "maxLength": 300,
+            "type": "string"
+          },
+          "duplicate_of": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "type": "array"
+          },
+          "finding_id": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "history": {
+            "items": {
+              "type": "object"
+            },
+            "maxItems": 200,
+            "type": "array"
+          },
+          "raised_by": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "rejection": {
+            "additionalProperties": false,
+            "properties": {
+              "detail": {
+                "maxLength": 1000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "reason": {
+                "enum": [
+                  "not_reproducible",
+                  "expected_behavior",
+                  "control_invalid",
+                  "insufficient_impact",
+                  "out_of_scope",
+                  "duplicate",
+                  "evidence_invalidated",
+                  "false_positive",
+                  "other"
+                ]
+              }
+            },
+            "required": [
+              "reason",
+              "detail"
+            ],
+            "type": "object"
+          },
+          "review": {
+            "additionalProperties": false,
+            "properties": {
+              "basis": {
+                "maxLength": 1000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "method": {
+                "maxLength": 40,
+                "type": "string"
+              },
+              "reviewed_at": {
+                "maxLength": 40,
+                "type": "string"
+              },
+              "reviewer": {
+                "maxLength": 80,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "reviewer",
+              "method",
+              "basis",
+              "reviewed_at"
+            ],
+            "type": "object"
+          },
+          "state": {
+            "enum": [
+              "candidate",
+              "requires_validation",
+              "rejected",
+              "confirmed"
+            ]
+          },
+          "surface_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "candidate_id",
+          "surface_id",
+          "category",
+          "state",
+          "evidence_refs",
+          "raised_by"
+        ],
+        "type": "object"
+      },
+      "maxItems": 5000,
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 240,
+            "type": "string"
+          },
+          "provenance": {
+            "additionalProperties": false,
+            "properties": {
+              "bundle_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+                "type": "string"
+              },
+              "captured_at": {
+                "maxLength": 40,
+                "type": "string"
+              },
+              "graph_node_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 100,
+                "type": "array"
+              },
+              "investigation_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+                "type": "string"
+              },
+              "tool": {
+                "maxLength": 80,
+                "type": "string"
+              }
+            },
+            "required": [
+              "tool",
+              "captured_at"
+            ],
+            "type": "object"
+          },
+          "sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "surface_fingerprint": {
+            "maxLength": 128,
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "path",
+          "sha256",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "maxItems": 5000,
+      "type": "array"
+    },
+    "program": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "bbtk-evidence-ledger/1"
+    },
+    "surfaces": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "blocker": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "fingerprint": {
+            "maxLength": 128,
+            "type": "string"
+          },
+          "investigation_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "endpoint",
+              "workflow",
+              "source_file",
+              "component",
+              "asset"
+            ]
+          },
+          "notes": {
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "ref": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "investigated",
+              "reviewed",
+              "pending",
+              "blocked",
+              "out_of_scope"
+            ]
+          },
+          "surface_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "surface_id",
+          "kind",
+          "ref",
+          "status"
+        ],
+        "type": "object"
+      },
+      "maxItems": 5000,
+      "type": "array"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "program",
+    "surfaces",
+    "evidence",
+    "candidates"
+  ],
+  "title": "bbtk evidence verification and coverage ledger",
+  "type": "object"
+}
