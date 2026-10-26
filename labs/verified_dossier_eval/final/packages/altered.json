@@ -1,0 +1,28 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "stale_evidence"
+    ],
+    "validation_result": "stale_evidence"
+  },
+  "id": "altered",
+  "package": {
+    "candidate_id": "c-alt",
+    "claims": [
+      {
+        "claim_id": "cl-obs",
+        "evidence_refs": [
+          "e-alt"
+        ],
+        "kind": "observed_behavior",
+        "text": "seen"
+      }
+    ],
+    "declared_ledger_state": "candidate",
+    "observed_behavior": "candidate signal",
+    "observed_behavior_refs": [
+      "e-alt"
+    ]
+  }
+}

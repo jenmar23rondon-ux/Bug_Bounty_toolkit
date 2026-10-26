@@ -1,0 +1,21 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "unsupported_claim"
+    ],
+    "validation_result": "unsupported_claim"
+  },
+  "id": "missing_ownership",
+  "package": {
+    "candidate_id": "c-own",
+    "claims": [
+      {
+        "claim_id": "cl-own",
+        "evidence_refs": [],
+        "kind": "ownership",
+        "text": "user A owns order 5"
+      }
+    ]
+  }
+}
