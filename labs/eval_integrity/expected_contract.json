@@ -8,6 +8,10 @@
   },
   "rejected": 1
  },
+ "case_eligibility_codes": [
+  "CASE_ELIGIBLE",
+  "CASE_ELIGIBLE"
+ ],
  "eligibility": [
   [
    "insufficient_evidence",
@@ -39,6 +43,7 @@
   "candidate"
  ],
  "origin_count": 1,
+ "pending_contracts": [],
  "proposals": [
   [
    "invoice",

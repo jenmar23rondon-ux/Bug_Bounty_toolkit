@@ -1,5 +1,17 @@
 ## [Unreleased]
 
+### IDOR/BOLA end-to-end research quality
+
+- Wire the full offline research contract (capture→import→discovery→ranking→handoff→
+  real eligibility codes→IDOR proposal→control review→evidence→ledger→report) in
+  `analysis/idor_e2e_research.py`; resume via digest-checked artifacts; detect modified /
+  expired evidence; never auto-convert, access-check, or confirm without human review.
+- Align `labs/eval_integrity` with PR #34 eligibility (`pending_contracts` cleared; origins
+  never rewritten). New independent synthetic lab `labs/idor_e2e_research` (15 scenarios).
+  Historical corpora untouched; ranking rules unchanged. Version stays 0.2.2.
+
+## [Unreleased]
+
 ### Content-aware wordlist ranking (opt-in)
 
 - Add bounded, deterministic content profiling for local wordlists (`bugbounty_toolkit.fuzzing.content_ranking`).

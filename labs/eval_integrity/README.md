@@ -13,12 +13,13 @@ change ranking, and never rewrites a frozen corpus.
   independence between sets (shared origin, scenario IDs or identical exchanges) and
   **regeneration into a disposable temp dir**, byte-compared against the originals.
 * `pipeline.py` — an offline end-to-end contract over public interfaces on `main`:
-  synthetic capture → import → object discovery → ranking → handoff → eligibility →
-  reviewable proposal → Evidence Ledger → structured program report. Sockets are hard
-  blocked; checks cover req/resp correspondence (entry digests), origin preservation,
-  provenance (source/observation/locator), cross-scenario pairing, no confirmation,
-  ledger validity, report references and determinism (two runs, canonical digest).
-  PR #34 is **not** used; its eligibility contract is listed in `pending_contracts`.
+  synthetic capture → import → object discovery → ranking → handoff → eligibility
+  (real `handoff_case_eligibility` codes from PR #34) → reviewable proposal → Evidence
+  Ledger → structured program report. Sockets are hard blocked; checks cover req/resp
+  correspondence (entry digests), origin preservation, provenance
+  (source/observation/locator), cross-scenario pairing, no confirmation, ledger validity,
+  report references and determinism (two runs, canonical digest).
+  `pending_contracts` is empty: PR #34 is on main and origins are never rewritten.
 * `mutations.py` — seeded, reversible mutations on temp copies / in-memory reports.
   Every one must make a validator fail. It also replays the **pre-fix test logic** on the
   same mutations for a before/after comparison.

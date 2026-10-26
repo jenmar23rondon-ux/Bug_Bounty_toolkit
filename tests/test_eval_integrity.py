@@ -120,7 +120,10 @@ class EndToEndContractTests(unittest.TestCase):
         self.assertEqual(report["capture_import"]["rejected"], 1)
         statuses = {e["status"] for e in report["eligibility"]}
         self.assertEqual(statuses, {"proposals_ready", "insufficient_evidence"})
-        self.assertTrue(report["pending_contracts"])
+        self.assertEqual(report["pending_contracts"], [])
+        codes = {c["code"] for c in report["case_classifications"]}
+        self.assertEqual(codes, {"CASE_ELIGIBLE"})
+        self.assertTrue(all(c["case_eligible"] and not c["executed"] for c in report["case_classifications"]))
         rendered = json.dumps(report)
         for canary in CANARIES:
             self.assertNotIn(canary, rendered)

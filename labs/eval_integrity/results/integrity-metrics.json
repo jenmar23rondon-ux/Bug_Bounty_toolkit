@@ -28,14 +28,14 @@
   "detected": 58,
   "total": 58
  },
- "elapsed_seconds": 1.19,
+ "elapsed_seconds": 1.43,
  "frozen_untouched": true,
  "legacy_corpus_checks": {
   "detected": 17,
   "note": "Pre-fix test logic (manifest-vs-bytes + regenerate-in-place) on the same temp mutations.",
   "total": 58
  },
- "peak_traced_memory_mib": 32.3,
+ "peak_traced_memory_mib": 32.4,
  "pipeline_mutations": {
   "detected": 16,
   "total": 16
