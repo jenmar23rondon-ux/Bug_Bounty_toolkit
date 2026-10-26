@@ -18,4 +18,5 @@ When `--materialize-dir` writes raw pairs, each proposal records `provenance_ori
 the capture URL (scheme/host/port) and the suggested `discover-idor` command uses that
 origin. A caller `--base-url` that disagrees with capture Host is **not** written into the
 suggestion and must not be used to silently remap authorities. Classify conversion with
-`handoff_case_eligibility` before review; insufficient pairs stay hypotheses.
+`handoff_case_eligibility` (PR #34 on main; real eligibility codes, never pending)
+before review; insufficient pairs stay hypotheses. Origins are never rewritten.
