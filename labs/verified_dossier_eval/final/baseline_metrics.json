@@ -1,0 +1,476 @@
+{
+  "after": {
+    "false_confirmations_accepted": 0,
+    "manifest_sha256": "5ae469d8602e05e43770f24d0053521db7db2b01e52bbd73c4cab183ca28558e",
+    "mean_verifiable_claim_ratio": 0.4035,
+    "note": "Synthetic documentary-verification metrics; not vulnerability-detection accuracy.",
+    "pass_rate": 1.0,
+    "performance": {
+      "max_peak_bytes": 1055601,
+      "total_elapsed_ms": 13.173
+    },
+    "scenario_count": 19,
+    "scenarios": [
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 0,
+        "elapsed_ms": 0.771,
+        "expected_validation_result": "human_validation_required",
+        "finding_confirmed": false,
+        "id": "complete_idor",
+        "issue_codes": [],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055601,
+        "validation_result": "human_validation_required",
+        "verifiable_claim_ratio": 1.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 0,
+        "elapsed_ms": 0.658,
+        "expected_validation_result": "complete_for_review",
+        "finding_confirmed": false,
+        "id": "denied",
+        "issue_codes": [],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055331,
+        "validation_result": "complete_for_review",
+        "verifiable_claim_ratio": 1.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 0,
+        "elapsed_ms": 0.639,
+        "expected_validation_result": "complete_for_review",
+        "finding_confirmed": false,
+        "id": "public",
+        "issue_codes": [],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055317,
+        "validation_result": "complete_for_review",
+        "verifiable_claim_ratio": 1.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 0,
+        "elapsed_ms": 0.681,
+        "expected_validation_result": "complete_for_review",
+        "finding_confirmed": false,
+        "id": "shared",
+        "issue_codes": [],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055321,
+        "validation_result": "complete_for_review",
+        "verifiable_claim_ratio": 1.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.653,
+        "expected_validation_result": "unsupported_claim",
+        "finding_confirmed": false,
+        "id": "fp_http200",
+        "issue_codes": [
+          "unsupported_claim"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055179,
+        "validation_result": "unsupported_claim",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.665,
+        "expected_validation_result": "stale_evidence",
+        "finding_confirmed": false,
+        "id": "altered",
+        "issue_codes": [
+          "stale_evidence"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055251,
+        "validation_result": "stale_evidence",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.63,
+        "expected_validation_result": "missing_evidence",
+        "finding_confirmed": false,
+        "id": "missing_ref",
+        "issue_codes": [
+          "broken_evidence_ref"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055155,
+        "validation_result": "missing_evidence",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.599,
+        "expected_validation_result": "missing_evidence",
+        "finding_confirmed": false,
+        "id": "stale",
+        "issue_codes": [
+          "missing_evidence"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 3649,
+        "validation_result": "missing_evidence",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.891,
+        "expected_validation_result": "unsupported_claim",
+        "finding_confirmed": false,
+        "id": "invented_impact",
+        "issue_codes": [
+          "unsupported_claim"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055156,
+        "validation_result": "unsupported_claim",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.765,
+        "expected_validation_result": "unsupported_claim",
+        "finding_confirmed": false,
+        "id": "missing_ownership",
+        "issue_codes": [
+          "unsupported_claim"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055158,
+        "validation_result": "unsupported_claim",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 2,
+        "elapsed_ms": 0.695,
+        "expected_validation_result": "unsupported_claim",
+        "finding_confirmed": false,
+        "id": "ai_unverified",
+        "issue_codes": [
+          "human_validation_required",
+          "unsupported_claim"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055157,
+        "validation_result": "unsupported_claim",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 2,
+        "elapsed_ms": 0.709,
+        "expected_validation_result": "contradictory_evidence",
+        "finding_confirmed": false,
+        "id": "rejected_as_confirmed",
+        "issue_codes": [
+          "human_validation_required",
+          "ledger_state_mismatch"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055294,
+        "validation_result": "contradictory_evidence",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.655,
+        "expected_validation_result": "unsupported_claim",
+        "finding_confirmed": false,
+        "id": "invented_steps",
+        "issue_codes": [
+          "unsupported_claim"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055155,
+        "validation_result": "unsupported_claim",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 0,
+        "elapsed_ms": 0.648,
+        "expected_validation_result": "human_validation_required",
+        "finding_confirmed": false,
+        "id": "duplicate_report",
+        "issue_codes": [],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055157,
+        "validation_result": "human_validation_required",
+        "verifiable_claim_ratio": 1.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 0,
+        "elapsed_ms": 0.651,
+        "expected_validation_result": "human_validation_required",
+        "finding_confirmed": false,
+        "id": "sensitive",
+        "issue_codes": [],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055189,
+        "validation_result": "human_validation_required",
+        "verifiable_claim_ratio": 1.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.682,
+        "expected_validation_result": "contradictory_evidence",
+        "finding_confirmed": false,
+        "id": "contradictory",
+        "issue_codes": [
+          "contradictory_evidence",
+          "unsupported_claim"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055166,
+        "validation_result": "contradictory_evidence",
+        "verifiable_claim_ratio": 0.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.674,
+        "expected_validation_result": "unsupported_claim",
+        "finding_confirmed": false,
+        "id": "insufficient",
+        "issue_codes": [
+          "unsupported_claim"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055156,
+        "validation_result": "unsupported_claim",
+        "verifiable_claim_ratio": 0.6667
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 0,
+        "elapsed_ms": 0.819,
+        "expected_validation_result": "complete_for_review",
+        "finding_confirmed": true,
+        "id": "human_confirmed",
+        "issue_codes": [],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055361,
+        "validation_result": "complete_for_review",
+        "verifiable_claim_ratio": 1.0
+      },
+      {
+        "auto_confirmations": 0,
+        "checks": {
+          "confirmed_ok": true,
+          "detected_ok": true,
+          "redact_ok": true,
+          "repro_ok": true,
+          "state_ok": true
+        },
+        "claims_unsupported": 1,
+        "elapsed_ms": 0.688,
+        "expected_validation_result": "invalid_provenance",
+        "finding_confirmed": false,
+        "id": "invalid_prov",
+        "issue_codes": [
+          "invalid_provenance"
+        ],
+        "ledger_mutated": false,
+        "network_requests_sent": 0,
+        "passed": true,
+        "peak_bytes": 1055153,
+        "validation_result": "invalid_provenance",
+        "verifiable_claim_ratio": 0.0
+      }
+    ],
+    "scenarios_passed": 19,
+    "security": {
+      "auto_confirmations": 0,
+      "ledger_mutations": 0,
+      "network_requests_sent": 0
+    },
+    "split": "final",
+    "unsupported_detection_recall": 1.0
+  },
+  "before": {
+    "claim_to_evidence_verifier": false,
+    "dossier_review_states": [],
+    "false_confirmations_guard": "ledger-only"
+  },
+  "head": "40a28b4c904c841c4af1f957894e5ec287307f9a",
+  "note": "Before this PR, finding_report drafts had no claim-to-evidence dossier states; unsupported claims were not rejected by a dossier validator."
+}

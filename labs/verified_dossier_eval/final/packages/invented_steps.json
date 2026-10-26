@@ -1,0 +1,24 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "unsupported_claim"
+    ],
+    "reproducibility_status": "steps_invented",
+    "validation_result": "unsupported_claim"
+  },
+  "id": "invented_steps",
+  "package": {
+    "candidate_id": "c-steps",
+    "claims": [
+      {
+        "claim_id": "cl-step",
+        "evidence_refs": [],
+        "invented": true,
+        "kind": "reproduction_step",
+        "text": "Send crafted payload=../etc/passwd"
+      }
+    ],
+    "invented_reproduction": true
+  }
+}

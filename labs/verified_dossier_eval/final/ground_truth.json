@@ -1,0 +1,207 @@
+{
+  "scenarios": [
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [],
+        "must_not_confirm": true,
+        "validation_result": "human_validation_required"
+      },
+      "id": "complete_idor",
+      "package_candidate_id": "c-complete"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [],
+        "validation_result": "complete_for_review"
+      },
+      "id": "denied",
+      "package_candidate_id": "c-denied"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "validation_result": "complete_for_review"
+      },
+      "id": "public",
+      "package_candidate_id": "c-pub"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "validation_result": "complete_for_review"
+      },
+      "id": "shared",
+      "package_candidate_id": "c-share"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim"
+        ],
+        "validation_result": "unsupported_claim"
+      },
+      "id": "fp_http200",
+      "package_candidate_id": "c-fp"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "stale_evidence"
+        ],
+        "validation_result": "stale_evidence"
+      },
+      "id": "altered",
+      "package_candidate_id": "c-alt"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "broken_evidence_ref"
+        ],
+        "validation_result": "missing_evidence"
+      },
+      "id": "missing_ref",
+      "package_candidate_id": "c-miss"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "missing_evidence"
+        ],
+        "validation_result": "missing_evidence"
+      },
+      "id": "stale",
+      "package_candidate_id": "c-stale"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim"
+        ],
+        "validation_result": "unsupported_claim"
+      },
+      "id": "invented_impact",
+      "package_candidate_id": "c-imp"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim"
+        ],
+        "validation_result": "unsupported_claim"
+      },
+      "id": "missing_ownership",
+      "package_candidate_id": "c-own"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim",
+          "human_validation_required"
+        ],
+        "must_not_confirm": true,
+        "validation_result": "unsupported_claim"
+      },
+      "id": "ai_unverified",
+      "package_candidate_id": "c-ai"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "ledger_state_mismatch"
+        ],
+        "must_not_confirm": true,
+        "validation_result": "contradictory_evidence"
+      },
+      "id": "rejected_as_confirmed",
+      "package_candidate_id": "c-rej"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim"
+        ],
+        "reproducibility_status": "steps_invented",
+        "validation_result": "unsupported_claim"
+      },
+      "id": "invented_steps",
+      "package_candidate_id": "c-steps"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "validation_result": "human_validation_required"
+      },
+      "id": "duplicate_report",
+      "package_candidate_id": "c-dup"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "shareable_must_redact": [
+          "super-secret-token-xyz",
+          "Bearer super-secret"
+        ],
+        "validation_result": "human_validation_required"
+      },
+      "id": "sensitive",
+      "package_candidate_id": "c-sec"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "contradictory_evidence"
+        ],
+        "validation_result": "contradictory_evidence"
+      },
+      "id": "contradictory",
+      "package_candidate_id": "c-con"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "unsupported_claim"
+        ],
+        "must_not_confirm": true,
+        "validation_result": "unsupported_claim"
+      },
+      "id": "insufficient",
+      "package_candidate_id": "c-ins"
+    },
+    {
+      "expect": {
+        "finding_confirmed": true,
+        "reproducibility_status": "reproducible_with_recorded_evidence",
+        "validation_result": "complete_for_review"
+      },
+      "id": "human_confirmed",
+      "package_candidate_id": "c-human"
+    },
+    {
+      "expect": {
+        "finding_confirmed": false,
+        "must_detect": [
+          "invalid_provenance"
+        ],
+        "validation_result": "invalid_provenance"
+      },
+      "id": "invalid_prov",
+      "package_candidate_id": "c-p"
+    }
+  ],
+  "schema_version": "bbtk-verified-dossier-eval/1",
+  "split": "final"
+}

@@ -1,0 +1,139 @@
+{
+  "$id": "https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/docs/schemas/verified-dossier-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "auto_confirmations": {
+      "const": 0
+    },
+    "candidate_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "type": "string"
+    },
+    "category": {
+      "maxLength": 80,
+      "type": "string"
+    },
+    "claim_audit": {
+      "maxItems": 500,
+      "type": "array"
+    },
+    "comparison": {
+      "type": "object"
+    },
+    "contradictions": {
+      "maxItems": 100,
+      "type": "array"
+    },
+    "control_summary": {
+      "type": "object"
+    },
+    "evidence_inventory": {
+      "maxItems": 200,
+      "type": "array"
+    },
+    "expected_behavior": {
+      "type": "object"
+    },
+    "finding_confirmed": {
+      "type": "boolean"
+    },
+    "ledger_mutated": {
+      "const": false
+    },
+    "ledger_state": {
+      "enum": [
+        "candidate",
+        "requires_validation",
+        "rejected",
+        "confirmed",
+        "unknown"
+      ]
+    },
+    "limitations": {
+      "maxItems": 50,
+      "type": "array"
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "missing_evidence": {
+      "maxItems": 100,
+      "type": "array"
+    },
+    "network_requests_sent": {
+      "const": 0
+    },
+    "notice": {
+      "maxLength": 1000,
+      "type": "string"
+    },
+    "observed_behavior": {
+      "type": "object"
+    },
+    "private": {
+      "type": "boolean"
+    },
+    "reproducibility_status": {
+      "enum": [
+        "reproducible_with_recorded_evidence",
+        "partial_evidence",
+        "not_demonstrated",
+        "steps_invented",
+        "blocked"
+      ]
+    },
+    "reviewer_requirements": {
+      "maxItems": 50,
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "bbtk-verified-dossier/1"
+    },
+    "source_refs": {
+      "maxItems": 100,
+      "type": "array"
+    },
+    "unsupported_claims": {
+      "maxItems": 100,
+      "type": "array"
+    },
+    "validation_result": {
+      "enum": [
+        "complete_for_review",
+        "missing_evidence",
+        "stale_evidence",
+        "contradictory_evidence",
+        "unsupported_claim",
+        "human_validation_required",
+        "invalid_provenance"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "category",
+    "ledger_state",
+    "evidence_inventory",
+    "source_refs",
+    "control_summary",
+    "expected_behavior",
+    "observed_behavior",
+    "comparison",
+    "contradictions",
+    "unsupported_claims",
+    "missing_evidence",
+    "reviewer_requirements",
+    "reproducibility_status",
+    "limitations",
+    "validation_result",
+    "finding_confirmed",
+    "ledger_mutated",
+    "network_requests_sent",
+    "auto_confirmations"
+  ],
+  "title": "bbtk verified research dossier",
+  "type": "object"
+}

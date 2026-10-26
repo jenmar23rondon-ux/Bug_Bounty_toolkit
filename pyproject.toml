@@ -124,6 +124,8 @@ files = [
     "bugbounty_toolkit/analysis/investigation_memory.py",
     "bugbounty_toolkit/dashboard.py",
     "bugbounty_toolkit/reporting/finding_report.py",
+    "bugbounty_toolkit/reporting/dossier_schema.py",
+    "bugbounty_toolkit/reporting/dossier_verifier.py",
     "bugbounty_toolkit/fuzzing/wordlist_manager.py",
     "bugbounty_toolkit/fuzzing/content_ranking.py",
     "bugbounty_toolkit/fuzzing/content_eval.py",

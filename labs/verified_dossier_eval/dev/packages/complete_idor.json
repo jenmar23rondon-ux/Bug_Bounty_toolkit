@@ -1,0 +1,61 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [],
+    "must_not_confirm": true,
+    "validation_result": "human_validation_required"
+  },
+  "id": "complete_idor",
+  "package": {
+    "candidate_id": "c-complete",
+    "claims": [
+      {
+        "claim_id": "cl-state",
+        "evidence_refs": [
+          "e-complete"
+        ],
+        "kind": "ledger_state",
+        "text": "requires_validation"
+      },
+      {
+        "claim_id": "cl-obs",
+        "evidence_refs": [
+          "e-complete"
+        ],
+        "kind": "observed_behavior",
+        "text": "private marker seen"
+      },
+      {
+        "claim_id": "cl-ctrl",
+        "evidence_refs": [
+          "e-complete"
+        ],
+        "kind": "control_result",
+        "text": "owner control valid"
+      },
+      {
+        "claim_id": "cl-exp",
+        "evidence_refs": [],
+        "kind": "expected_behavior",
+        "source": "lab_spec",
+        "text": "deny cross-account private read"
+      }
+    ],
+    "control_evidence_refs": [
+      "e-complete"
+    ],
+    "declared_ledger_state": "requires_validation",
+    "deterministic_result": {
+      "classification": "candidate"
+    },
+    "expected_behavior": "Cross-account read of private order must be denied.",
+    "expected_behavior_source": "lab_spec",
+    "negative_controls": [
+      "public_negative_control"
+    ],
+    "observed_behavior": "Actor session retrieved owner private marker.",
+    "observed_behavior_refs": [
+      "e-complete"
+    ]
+  }
+}

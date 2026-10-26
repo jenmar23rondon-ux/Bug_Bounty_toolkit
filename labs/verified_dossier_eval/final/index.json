@@ -1,0 +1,80 @@
+{
+  "scenarios": [
+    {
+      "id": "complete_idor",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/complete_idor.json"
+    },
+    {
+      "id": "denied",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/denied.json"
+    },
+    {
+      "id": "public",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/public.json"
+    },
+    {
+      "id": "shared",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/shared.json"
+    },
+    {
+      "id": "fp_http200",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/fp_http200.json"
+    },
+    {
+      "id": "altered",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/altered.json"
+    },
+    {
+      "id": "missing_ref",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/missing_ref.json"
+    },
+    {
+      "id": "stale",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/stale.json"
+    },
+    {
+      "id": "invented_impact",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/invented_impact.json"
+    },
+    {
+      "id": "missing_ownership",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/missing_ownership.json"
+    },
+    {
+      "id": "ai_unverified",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/ai_unverified.json"
+    },
+    {
+      "id": "rejected_as_confirmed",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/rejected_as_confirmed.json"
+    },
+    {
+      "id": "invented_steps",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/invented_steps.json"
+    },
+    {
+      "id": "duplicate_report",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/duplicate_report.json"
+    },
+    {
+      "id": "sensitive",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/sensitive.json"
+    },
+    {
+      "id": "contradictory",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/contradictory.json"
+    },
+    {
+      "id": "insufficient",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/insufficient.json"
+    },
+    {
+      "id": "human_confirmed",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/human_confirmed.json"
+    },
+    {
+      "id": "invalid_prov",
+      "package": "labs/verified_dossier_eval/results/freeze-final/packages/invalid_prov.json"
+    }
+  ]
+}
