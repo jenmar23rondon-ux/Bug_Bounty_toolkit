@@ -57,3 +57,15 @@ bbtk fuzz-plan my-program --har captures.har --output plan.json
 ```
 
 The planner reuses resilient HAR import, the offline wordlist registry and Investigation Memory. It never downloads lists or starts fuzzing. Approved targets still go through `bbtk fuzz --dry-run` then `--confirm`. See [context-aware fuzzing](context-aware-fuzzing.md).
+
+## Opt-in content-aware ranking
+
+By default `bbtk fuzz-plan` still ranks local lists by filename category and size. Pass `--ranking content` to also sample a bounded head of each registered list and prefer content fit over merely smaller files:
+
+```bash
+bbtk fuzz-plan my-program --har captures.har --ranking content --dry-run
+```
+
+Content mode is offline and deterministic. It never executes list entries, never downloads files, never follows symlinks, and never recommends credential or injection-payload lists. When a list cannot be inspected safely it falls back to the filename heuristic. Explanations (category fit, matched tokens, estimated coverage/duplication/request cost, sample SHA-256, uncertainty) are attached under `content_ranking` in the plan JSON. Filename mode remains the default until measured FINAL metrics justify a default change.
+
+See `labs/content_wordlist_eval/` for the synthetic DEV/FINAL corpus and frozen ground truth.

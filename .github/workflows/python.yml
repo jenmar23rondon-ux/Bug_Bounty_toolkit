@@ -20,6 +20,8 @@ jobs:
       - run: bbtk --help
       - run: bbtk object-discover ci-object-discovery --input examples/object-discovery/captures.har --attest-authorized-captures --dry-run
       - run: bbtk fuzz-plan ci-context-fuzz --har examples/context-fuzz/capture.har --dry-run
+      - run: bbtk fuzz-plan ci-context-fuzz --capture labs/context_fuzz_lab/fixtures/capture.burp.xml --dry-run
+      - run: python labs/context_fuzz_lab/multi_capture_benchmark.py
       - run: bbtk lab object-discover --dry-run --split eval
       - run: bash -n labs/idor_lab/run.sh
       - run: python scripts/ai_provider_benchmark.py > /dev/null
@@ -42,7 +44,7 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/dashboard.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/analysis/ai_providers.py,bugbounty_toolkit/analysis/multi_review.py,bugbounty_toolkit/analysis/ai_review_eval.py" --fail-under=90
       - run: coverage report --include="bugbounty_toolkit/fuzzing/wordlist_manager.py" --fail-under=80
-      - run: coverage report --include="bugbounty_toolkit/fuzzing/context_planner.py,bugbounty_toolkit/context_fuzz_lab_server.py" --fail-under=80
+      - run: coverage report --include="bugbounty_toolkit/fuzzing/context_planner.py,bugbounty_toolkit/fuzzing/capture_adapter.py,bugbounty_toolkit/context_fuzz_lab_server.py" --fail-under=80
       - run: coverage report
 
   offline-lab:

@@ -1,0 +1,86 @@
+{
+  "scenarios": {
+    "api_capture": {
+      "categories": [
+        "api",
+        "endpoints",
+        "parameters"
+      ],
+      "description": "JSON API with /api/v1 paths and userId/orderId params",
+      "forbidden": [
+        "Passwords/common.txt",
+        "Discovery/Web-Content/api/api-secrets-passwords.txt",
+        "Fuzzing/xss-endpoints.txt",
+        "Fuzzing/sqli-payloads.txt"
+      ],
+      "params": [
+        "userId",
+        "orderId",
+        "limit",
+        "page"
+      ],
+      "paths": [
+        "/api/v1/users/1",
+        "/api/v1/orders/42",
+        "/api/v2/products"
+      ],
+      "relevant": {
+        "api": [
+          "Discovery/Web-Content/api/api-endpoints.txt",
+          "Discovery/Web-Content/raft-large-directories.txt",
+          "Discovery/Web-Content/common-dir-names.txt"
+        ],
+        "endpoints": [
+          "Discovery/Web-Content/api/api-endpoints.txt",
+          "Discovery/Web-Content/raft-large-directories.txt",
+          "Discovery/Web-Content/common-dir-names.txt"
+        ],
+        "parameters": [
+          "Discovery/Web-Content/params/param-names.txt",
+          "misc/json-params-as-dirs.txt"
+        ]
+      },
+      "technologies": [
+        "json-api",
+        "versioned-api",
+        "api"
+      ]
+    },
+    "wordpress_capture": {
+      "categories": [
+        "technology",
+        "directories",
+        "files"
+      ],
+      "description": "WordPress site paths",
+      "forbidden": [
+        "Passwords/common.txt",
+        "Discovery/Web-Content/api/api-secrets-passwords.txt",
+        "Fuzzing/xss-endpoints.txt",
+        "Fuzzing/sqli-payloads.txt"
+      ],
+      "params": [],
+      "paths": [
+        "/wp-admin/",
+        "/wp-json/wp/v2/posts",
+        "/wp-content/uploads"
+      ],
+      "relevant": {
+        "directories": [
+          "Discovery/Web-Content/common-dir-names.txt",
+          "Discovery/Web-Content/tiny-dirs.txt"
+        ],
+        "files": [
+          "Discovery/Web-Content/filenames/common-files.txt"
+        ],
+        "technology": [
+          "Discovery/Web-Content/CMS/WordPress/wp-paths.txt"
+        ]
+      },
+      "technologies": [
+        "wordpress"
+      ]
+    }
+  },
+  "set": "DEV"
+}

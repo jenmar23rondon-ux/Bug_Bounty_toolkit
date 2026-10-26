@@ -67,6 +67,11 @@ python_version = "3.10"
 strict = true
 follow_imports = "silent"
 files = [
+    "labs/eval_integrity/corpus_integrity.py",
+    "labs/eval_integrity/pipeline.py",
+    "labs/eval_integrity/mutations.py",
+    "labs/eval_integrity/build_fixture.py",
+    "labs/eval_integrity/registry.py",
     "bugbounty_toolkit/access_control/comparison.py",
     "bugbounty_toolkit/access_control/write_lab.py",
     "bugbounty_toolkit/access_control/function_matrix.py",
@@ -102,6 +107,7 @@ files = [
     "bugbounty_toolkit/analysis/api_workflow.py",
     "bugbounty_toolkit/analysis/object_relationships.py",
     "bugbounty_toolkit/analysis/har_import.py",
+    "bugbounty_toolkit/analysis/har_provenance.py",
     "bugbounty_toolkit/analysis/object_handoff.py",
     "bugbounty_toolkit/analysis/evidence_graph.py",
     "bugbounty_toolkit/analysis/hypotheses.py",
@@ -114,7 +120,10 @@ files = [
     "bugbounty_toolkit/dashboard.py",
     "bugbounty_toolkit/reporting/finding_report.py",
     "bugbounty_toolkit/fuzzing/wordlist_manager.py",
+    "bugbounty_toolkit/fuzzing/content_ranking.py",
+    "bugbounty_toolkit/fuzzing/content_eval.py",
     "bugbounty_toolkit/fuzzing/context_planner.py",
+    "bugbounty_toolkit/fuzzing/capture_adapter.py",
     "bugbounty_toolkit/context_fuzz_lab_server.py",
 ]
 
