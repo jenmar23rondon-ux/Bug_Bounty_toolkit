@@ -1,0 +1,33 @@
+# Optional Compose front-end for the bbtk offline lab. Mirrors the hardened run
+# profile in scripts/offline_lab/common.sh. It has no `build:` section on
+# purpose: build first with scripts/offline_lab/build.sh [--playwright], then
+#   docker compose -f docker/offline-lab/compose.yaml run --rm lab lab idor
+#   docker compose -f docker/offline-lab/compose.yaml --profile playwright run --rm lab-playwright doctor
+x-hardened: &hardened
+  pull_policy: never
+  network_mode: none
+  read_only: true
+  user: "10001:10001"
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  pids_limit: 256
+  cpus: 1.0
+  stop_grace_period: 10s
+  tmpfs:
+    - /tmp:rw,nosuid,nodev,uid=10001,gid=10001,mode=0700,size=256m
+    - /opt/bbtk/.test-tmp:rw,nosuid,nodev,uid=10001,gid=10001,mode=0700,size=128m
+    - /opt/bbtk/registros:rw,nosuid,nodev,uid=10001,gid=10001,mode=0700,size=32m
+
+services:
+  lab:
+    <<: *hardened
+    image: bbtk-offline-lab:local
+    mem_limit: 768m
+    memswap_limit: 768m
+  lab-playwright:
+    <<: *hardened
+    image: bbtk-offline-lab-playwright:local
+    profiles: [playwright]
+    mem_limit: 1536m
+    memswap_limit: 1536m
+    shm_size: 256m

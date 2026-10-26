@@ -42,3 +42,21 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/fuzzing/wordlist_manager.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/fuzzing/context_planner.py,bugbounty_toolkit/context_fuzz_lab_server.py" --fail-under=80
       - run: coverage report
+
+  offline-lab:
+    # Optional reproducible offline lab: build (networked) then verify with --network none.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash -n scripts/offline_lab/common.sh scripts/offline_lab/build.sh scripts/offline_lab/run.sh scripts/offline_lab/verify.sh
+      - run: scripts/offline_lab/build.sh --playwright
+      - run: scripts/offline_lab/verify.sh --playwright
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-lab-results
+          path: offline-lab-results/
+          if-no-files-found: ignore

@@ -26,6 +26,52 @@ OPTIONAL_MODULES = {
 }
 
 
+def _module_available(module: str) -> bool:
+    try:
+        return importlib.util.find_spec(module) is not None
+    except (ImportError, ValueError):
+        return False
+
+
+def playwright_browsers_root(environ: dict[str, str] | None = None, platform: str | None = None) -> Path | None:
+    """Return the directory Playwright uses for downloaded browsers, without importing Playwright."""
+    env = os.environ if environ is None else environ
+    configured = env.get("PLAYWRIGHT_BROWSERS_PATH", "").strip()
+    if configured == "0":
+        return None  # browsers live inside the Playwright package; location is version specific
+    if configured:
+        return Path(configured)
+    current = platform or sys.platform
+    if current.startswith("win"):
+        local = env.get("LOCALAPPDATA")
+        return Path(local) / "ms-playwright" if local else None
+    if current == "darwin":
+        return Path(env.get("HOME", str(Path.home()))) / "Library" / "Caches" / "ms-playwright"
+    cache = env.get("XDG_CACHE_HOME") or str(Path(env.get("HOME", str(Path.home()))) / ".cache")
+    return Path(cache) / "ms-playwright"
+
+
+def playwright_browser_check(library_available: bool, browsers_root: Path | None) -> tuple[str, str]:
+    """Report whether a Chromium build is present for Playwright. Never downloads or launches a browser."""
+    if not library_available:
+        return "warning", "Playwright library not installed; optional browser confirmation unavailable"
+    if browsers_root is None:
+        return "warning", "Playwright browser location is package-local or unknown; not inspected"
+    try:
+        builds = sorted(
+            entry.name for entry in browsers_root.iterdir() if entry.is_dir() and entry.name.startswith("chromium")
+        )
+    except OSError:
+        builds = []
+    if builds:
+        return "ok", f"Chromium build(s) at {browsers_root}: {', '.join(builds)}"
+    return (
+        "warning",
+        f"Playwright installed but no Chromium build at {browsers_root}; install it during setup with "
+        "'python -m playwright install chromium' (bbtk never downloads browsers automatically)",
+    )
+
+
 def diagnose(
     records_root: Path,
     program: str | None = None,
@@ -73,6 +119,16 @@ def diagnose(
         "ok" if shutil.which("ffuf") else "warning",
         "available on PATH" if shutil.which("ffuf") else "not installed; ffuf adapter unavailable",
     )
+    browser_status, browser_detail = playwright_browser_check(
+        _module_available("playwright"), playwright_browsers_root()
+    )
+    add("tool:playwright-browser", browser_status, browser_detail)
+    if os.environ.get("BBTK_OFFLINE_LAB") == "1":
+        add(
+            "environment:offline-lab",
+            "ok",
+            "bbtk offline lab image; external network is expected to be disabled by the container runtime",
+        )
     ollama_path = shutil.which("ollama")
     add(
         "tool:ollama",

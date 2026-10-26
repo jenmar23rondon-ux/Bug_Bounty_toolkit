@@ -75,6 +75,22 @@ bugbounty hunt my-program --base-url "https://target-autorizado.example" --route
 bugbounty tool-plan my-program --tool sqlmap --url "http://localhost:3000/search?q=1" --parameter q --dry-run
 ```
 
+### Optional Reproducible Offline Lab (Docker)
+
+The synthetic labs and tests can also run in a hardened, network-less container: pinned base,
+hash-locked deps, non-root, read-only FS, no capabilities, resource limits, `--network none`.
+Build (networked, once) is separate from run (offline). This is optional; the venv install above
+stays the default, and scope/approval controls are unchanged.
+
+```bash
+scripts/offline_lab/build.sh [--playwright]
+scripts/offline_lab/run.sh lab idor
+scripts/offline_lab/verify.sh [--playwright]
+```
+
+See [docs/offline-lab.md](docs/offline-lab.md) for the verified-vs-unverified isolation matrix and
+residual risks.
+
 ## Shared Run Budget
 
 Native HTTP commands (`request`, `xss`, `sqli`, `cors-check`, `ssrf-check`, `csrf-audit`, `open-redirect`, `access-check`, and `hunt`) accept a shared per-invocation budget:
