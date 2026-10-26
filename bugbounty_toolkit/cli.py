@@ -67,6 +67,7 @@ from .analysis.object_relationships import (
     save_object_json,
     verify_object_sources,
 )
+from .analysis.object_handoff import default_lab_root, handoff_to_file, run_object_discovery_lab
 from .core.private_files import local_path
 from .analysis.evidence_graph import EvidenceGraphStore, preview_graph_ingest
 from .analysis.hypotheses import SECOND_OPINION as HYPOTHESES_SECOND_OPINION, analyze_hypotheses
@@ -291,6 +292,48 @@ def cmd_lab_web_vuln(args: argparse.Namespace) -> None:
     )
     if completed.returncode:
         raise RuntimeError(f"The end-to-end web vulnerability lab failed with exit code {completed.returncode}.")
+
+
+def cmd_lab_object_discover(args: argparse.Namespace) -> None:
+    """Run the offline object-discovery efficacy lab (synthetic labeled corpus)."""
+    root = args.corpus_root or default_lab_root()
+    result = run_object_discovery_lab(root, split=args.split, limit=args.limit, dry_run=args.dry_run)
+    primary = result["primary"]
+    metrics = primary["metrics"]
+    summary = {
+        "split": result["split"],
+        "dry_run": args.dry_run,
+        "handoff_proposals": primary["handoff_proposals"],
+        "precision_at_1": metrics["precision_at_1"],
+        "precision_at_3": metrics["precision_at_3"],
+        "precision_at_5": metrics["precision_at_5"],
+        "recall": metrics["recall"],
+        "fp_count": metrics["fp_count"],
+        "fn_count": metrics["fn_count"],
+        "vulnerable_in_top3": metrics["vulnerable_in_top3"],
+        "baseline_precision_at_3": metrics["baseline_precision_at_3"],
+        "processing_ms": metrics["processing_ms"],
+        "network_requests_sent": 0,
+        "vulnerabilities_confirmed": 0,
+        "confirmed": False,
+    }
+    print(json.dumps(summary, indent=2, sort_keys=True))
+    print("[i] Synthetic ranking metrics only; not real bug-bounty confirmation performance.")
+    print("[i] " + result["human_gate"])
+    if args.metrics_json:
+        destination = local_path(args.metrics_json)
+        if destination.exists() and not args.force:
+            raise ValueError(f"Metrics output already exists: {destination}. Pass --force to replace it.")
+        rendered = json.dumps(result, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if args.force:
+            destination.write_text(rendered, encoding="utf-8")
+        else:
+            with destination.open("x", encoding="utf-8", newline="") as handle:
+                handle.write(rendered)
+        print(f"[+] Metrics saved: {destination}")
+    if args.dry_run:
+        print("[dry-run] Lab computed in memory only; metrics file written solely if --metrics-json was set.")
 
 
 def cmd_scope_add(args: argparse.Namespace) -> None:
@@ -2404,6 +2447,45 @@ def cmd_object_candidates(args: argparse.Namespace) -> None:
         print(json.dumps(result, indent=2, sort_keys=True))
 
 
+def cmd_object_handoff(args: argparse.Namespace) -> None:
+    """Propose offline owner/actor capture pairs from object-relationship candidates."""
+    document = handoff_to_file(
+        args.program,
+        args.graph,
+        _object_key_path(args),
+        candidate=args.candidate,
+        verify_inputs=args.verify_input or None,
+        output=None if args.dry_run else args.output,
+        materialize_dir=None if args.dry_run else args.materialize_dir,
+        dry_run=args.dry_run,
+        force=args.force,
+        base_url=args.base_url,
+        limit=args.limit,
+    )
+    if args.dry_run:
+        print(
+            json.dumps(
+                {
+                    "dry_run": True,
+                    "status": document["status"],
+                    "total_proposals": document["total_proposals"],
+                    "materialized_pairs": document["materialized_pairs"],
+                    "network_requests_sent": 0,
+                    "vulnerabilities_confirmed": 0,
+                    "confirmed": False,
+                },
+                sort_keys=True,
+            )
+        )
+        print("[dry-run] No proposal JSON, captures or cases were written.")
+    else:
+        if args.output:
+            print(f"[+] Handoff proposals saved: {args.output}")
+        print(json.dumps(document, indent=2, sort_keys=True))
+    print("[i] " + document["human_gate"])
+    print("[i] Offline handoff only; no HTTP requests sent and no cases approved.")
+
+
 def cmd_graph_ingest(args: argparse.Namespace) -> None:
     paths = ProgramPaths(RECORDS_ROOT, args.program)
     preview = preview_graph_ingest(
@@ -3077,6 +3159,30 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run", action="store_true", help="Print the workflow without starting the fixture server"
     )
     lab_web.set_defaults(func=cmd_lab_web_vuln)
+    lab_object = lab_sub.add_parser(
+        "object-discover",
+        help="Run the synthetic offline object-discovery efficacy lab (ranking metrics only)",
+    )
+    lab_object.add_argument(
+        "--split",
+        choices=("dev", "eval", "all"),
+        default="eval",
+        help="Corpus split; eval is the holdout and must not be used to tune rules",
+    )
+    lab_object.add_argument("--limit", type=positive_int, default=10, help="Max handoff proposals ranked, 1-64")
+    lab_object.add_argument(
+        "--corpus-root",
+        type=Path,
+        help="Override labs/object_discovery_lab path (tests only)",
+    )
+    lab_object.add_argument("--metrics-json", type=Path, help="Optional metrics JSON output path")
+    lab_object.add_argument("--force", action="store_true", help="Replace metrics JSON if it exists")
+    lab_object.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Compute metrics in memory; write metrics only if --metrics-json is set",
+    )
+    lab_object.set_defaults(func=cmd_lab_object_discover)
 
     access = sub.add_parser(
         "access-check", help="Known-resource authorization comparison; bounded read and disposable JSON write modes"
@@ -3459,6 +3565,42 @@ def build_parser() -> argparse.ArgumentParser:
     object_candidates_cli.add_argument("--force", action="store_true", help="Atomically replace candidate output")
     object_candidates_cli.set_defaults(func=cmd_object_candidates)
 
+    object_handoff_cli = sub.add_parser(
+        "object-handoff",
+        help="Propose offline owner/actor capture pairs from object candidates; never approves or sends HTTP",
+    )
+    object_handoff_cli.add_argument("program")
+    object_handoff_cli.add_argument(
+        "--graph", type=Path, required=True, help="Versioned signed graph from object-discover"
+    )
+    object_handoff_cli.add_argument("--key-file", type=Path, help="Same local HMAC key used for discovery")
+    object_handoff_cli.add_argument(
+        "--candidate",
+        help="Optional object_ref to filter proposals; without it, rank all pairable candidates",
+    )
+    object_handoff_cli.add_argument(
+        "--verify-input",
+        type=Path,
+        action="append",
+        default=[],
+        help="Verify exact source commitments; required to materialize capture pairs",
+    )
+    object_handoff_cli.add_argument("--base-url", help="Captured origin for raw relative requests")
+    object_handoff_cli.add_argument("--limit", type=positive_int, default=20, help="Proposal count, 1-64")
+    object_handoff_cli.add_argument("--output", type=Path, help="Optional private handoff proposal JSON destination")
+    object_handoff_cli.add_argument(
+        "--materialize-dir",
+        type=Path,
+        help="Private directory for raw HTTP owner/actor snapshots used by discover-idor",
+    )
+    object_handoff_cli.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and summarize without writing proposal JSON or capture snapshots",
+    )
+    object_handoff_cli.add_argument("--force", action="store_true", help="Replace existing outputs")
+    object_handoff_cli.set_defaults(func=cmd_object_handoff)
+
     graph_cli = sub.add_parser("graph", help="Persist and search minimized local investigation evidence")
     graph_sub = graph_cli.add_subparsers(dest="graph_command", required=True)
     graph_ingest = graph_sub.add_parser(
@@ -3691,7 +3833,10 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
     RECORDS_ROOT = args.records_root
-    offline_dry_run = args.func in {cmd_object_discover, cmd_object_candidates} and args.dry_run
+    offline_dry_run = (
+        args.func in {cmd_object_discover, cmd_object_candidates, cmd_object_handoff, cmd_lab_object_discover}
+        and args.dry_run
+    )
     logger = setup_logger(args.log_file) if args.log_file and not offline_dry_run else None
     try:
         if logger:

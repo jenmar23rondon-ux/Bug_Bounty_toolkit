@@ -1,0 +1,89 @@
+{
+  "corpus_version": "1.0",
+  "split": "dev",
+  "labels": [
+    {
+      "scenario": "vuln-order",
+      "category": "vulnerable",
+      "relation": "path",
+      "cross_session_candidate": true,
+      "resource_type": "order",
+      "expected_handoff": true,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "protected-document",
+      "category": "protected",
+      "relation": "path",
+      "cross_session_candidate": true,
+      "resource_type": "document",
+      "expected_handoff": true,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "cross-tenant",
+      "category": "cross-tenant",
+      "relation": "nested_path",
+      "cross_session_candidate": true,
+      "resource_type": "organization",
+      "expected_handoff": true,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "nested-json",
+      "category": "nested-json",
+      "relation": "request_json",
+      "cross_session_candidate": true,
+      "resource_type": "account",
+      "expected_handoff": true,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "query-id",
+      "category": "query",
+      "relation": "query",
+      "cross_session_candidate": true,
+      "resource_type": "invoice",
+      "expected_handoff": true,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "public",
+      "category": "public",
+      "relation": "path",
+      "cross_session_candidate": false,
+      "resource_type": "product",
+      "expected_handoff": false,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "single-session",
+      "category": "single-session",
+      "relation": "path",
+      "cross_session_candidate": false,
+      "resource_type": "cart",
+      "expected_handoff": false,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "ambiguous",
+      "category": "ambiguous",
+      "relation": "none",
+      "cross_session_candidate": false,
+      "resource_type": "unknown",
+      "expected_handoff": false,
+      "expected_confirmed": false
+    },
+    {
+      "scenario": "session-only",
+      "category": "session-only",
+      "relation": "path",
+      "cross_session_candidate": false,
+      "resource_type": "wishlist",
+      "expected_handoff": false,
+      "expected_confirmed": false
+    }
+  ],
+  "disclaimer": "Synthetic labeled fixtures for ranking efficacy only. Not a claim of real bug-bounty vulnerability confirmation performance.",
+  "tuning_policy": "DEV may be inspected while developing rules; EVAL must not be used to tune ranking rules."
+}
