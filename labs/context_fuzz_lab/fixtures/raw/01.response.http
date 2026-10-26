@@ -1,0 +1,6 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+Server: nginx
+Content-Length: 28
+
+{"items": [{"id": "lab-1"}]}

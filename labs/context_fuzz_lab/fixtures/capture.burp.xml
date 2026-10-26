@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<items burpVersion="synthetic-lab">
+  <item>
+    <url><![CDATA[http://127.0.0.1:8191/api/v1/health]]></url>
+    <host>127.0.0.1</host>
+    <port>8191</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <request base64="true">R0VUIC9hcGkvdjEvaGVhbHRoIEhUVFAvMS4xDQpIb3N0OiAxMjcuMC4wLjE6ODE5MQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIFNZTlRILVNFQ1JFVC10b2tlbi1sYWINCkNvb2tpZTogc2lkPVNZTlRILVNFQ1JFVC1jb29raWUtbGFiDQpBY2NlcHQ6IGFwcGxpY2F0aW9uL2pzb24NCg0K</request>
+    <status>200</status>
+    <response base64="true">SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24NClNlcnZlcjogbmdpbngNCkNvbnRlbnQtTGVuZ3RoOiAxNg0KDQp7InN0YXR1cyI6ICJvayJ9</response>
+  </item>
+  <item>
+    <url><![CDATA[http://127.0.0.1:8191/api/v1/orders]]></url>
+    <host>127.0.0.1</host>
+    <port>8191</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <request base64="true">R0VUIC9hcGkvdjEvb3JkZXJzIEhUVFAvMS4xDQpIb3N0OiAxMjcuMC4wLjE6ODE5MQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIFNZTlRILVNFQ1JFVC10b2tlbi1sYWINCkNvb2tpZTogc2lkPVNZTlRILVNFQ1JFVC1jb29raWUtbGFiDQpBY2NlcHQ6IGFwcGxpY2F0aW9uL2pzb24NCg0K</request>
+    <status>200</status>
+    <response base64="true">SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24NClNlcnZlcjogbmdpbngNCkNvbnRlbnQtTGVuZ3RoOiAyOA0KDQp7Iml0ZW1zIjogW3siaWQiOiAibGFiLTEifV19</response>
+  </item>
+  <item>
+    <url><![CDATA[http://127.0.0.1:8191/api/v1/orders/lab-1]]></url>
+    <host>127.0.0.1</host>
+    <port>8191</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <request base64="true">R0VUIC9hcGkvdjEvb3JkZXJzL2xhYi0xIEhUVFAvMS4xDQpIb3N0OiAxMjcuMC4wLjE6ODE5MQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIFNZTlRILVNFQ1JFVC10b2tlbi1sYWINCkNvb2tpZTogc2lkPVNZTlRILVNFQ1JFVC1jb29raWUtbGFiDQpBY2NlcHQ6IGFwcGxpY2F0aW9uL2pzb24NCg0K</request>
+    <status>200</status>
+    <response base64="true">SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24NClNlcnZlcjogbmdpbngNCkNvbnRlbnQtTGVuZ3RoOiAzNQ0KDQp7ImlkIjogImxhYi0xIiwgIm93bmVyIjogImZpeHR1cmUifQ==</response>
+  </item>
+  <item>
+    <url><![CDATA[http://127.0.0.1:8191/api/v1/users]]></url>
+    <host>127.0.0.1</host>
+    <port>8191</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <request base64="true">R0VUIC9hcGkvdjEvdXNlcnMgSFRUUC8xLjENCkhvc3Q6IDEyNy4wLjAuMTo4MTkxDQpBdXRob3JpemF0aW9uOiBCZWFyZXIgU1lOVEgtU0VDUkVULXRva2VuLWxhYg0KQ29va2llOiBzaWQ9U1lOVEgtU0VDUkVULWNvb2tpZS1sYWINCkFjY2VwdDogYXBwbGljYXRpb24vanNvbg0KDQo=</request>
+    <status>200</status>
+    <response base64="true">SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24NClNlcnZlcjogbmdpbngNCkNvbnRlbnQtTGVuZ3RoOiAyOQ0KDQp7Iml0ZW1zIjogW3siaWQiOiAibGFiLXUxIn1dfQ==</response>
+  </item>
+  <item>
+    <url><![CDATA[http://127.0.0.1:8191/api/v1/search?q=demo&limit=10]]></url>
+    <host>127.0.0.1</host>
+    <port>8191</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <request base64="true">R0VUIC9hcGkvdjEvc2VhcmNoP3E9ZGVtbyZsaW1pdD0xMCBIVFRQLzEuMQ0KSG9zdDogMTI3LjAuMC4xOjgxOTENCkF1dGhvcml6YXRpb246IEJlYXJlciBTWU5USC1TRUNSRVQtdG9rZW4tbGFiDQpDb29raWU6IHNpZD1TWU5USC1TRUNSRVQtY29va2llLWxhYg0KQWNjZXB0OiBhcHBsaWNhdGlvbi9qc29uDQoNCg==</request>
+    <status>200</status>
+    <response base64="true">SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24NClNlcnZlcjogbmdpbngNCkNvbnRlbnQtTGVuZ3RoOiAyNg0KDQp7Iml0ZW1zIjogW10sICJxIjogImRlbW8ifQ==</response>
+  </item>
+  <item>
+    <url><![CDATA[http://127.0.0.1:8191/api/v1/status]]></url>
+    <host>127.0.0.1</host>
+    <port>8191</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <request base64="true">R0VUIC9hcGkvdjEvc3RhdHVzIEhUVFAvMS4xDQpIb3N0OiAxMjcuMC4wLjE6ODE5MQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIFNZTlRILVNFQ1JFVC10b2tlbi1sYWINCkNvb2tpZTogc2lkPVNZTlRILVNFQ1JFVC1jb29raWUtbGFiDQpBY2NlcHQ6IGFwcGxpY2F0aW9uL2pzb24NCg0K</request>
+    <status>200</status>
+    <response base64="true">SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24NClNlcnZlcjogbmdpbngNCkNvbnRlbnQtTGVuZ3RoOiAxNQ0KDQp7InJlYWR5IjogdHJ1ZX0=</response>
+  </item>
+  <item>
+    <url><![CDATA[http://127.0.0.1:8191/api/docs]]></url>
+    <host>127.0.0.1</host>
+    <port>8191</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <request base64="true">R0VUIC9hcGkvZG9jcyBIVFRQLzEuMQ0KSG9zdDogMTI3LjAuMC4xOjgxOTENCkF1dGhvcml6YXRpb246IEJlYXJlciBTWU5USC1TRUNSRVQtdG9rZW4tbGFiDQpDb29raWU6IHNpZD1TWU5USC1TRUNSRVQtY29va2llLWxhYg0KQWNjZXB0OiBhcHBsaWNhdGlvbi9qc29uDQoNCg==</request>
+    <status>200</status>
+    <response base64="true">SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24NClNlcnZlcjogbmdpbngNCkNvbnRlbnQtTGVuZ3RoOiAyMA0KDQp7Im9wZW5hcGkiOiAiMy4wLjAifQ==</response>
+  </item>
+  <item>
+    <url><![CDATA[http://127.0.0.1:8191/healthz]]></url>
+    <host>127.0.0.1</host>
+    <port>8191</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <request base64="true">R0VUIC9oZWFsdGh6IEhUVFAvMS4xDQpIb3N0OiAxMjcuMC4wLjE6ODE5MQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIFNZTlRILVNFQ1JFVC10b2tlbi1sYWINCkNvb2tpZTogc2lkPVNZTlRILVNFQ1JFVC1jb29raWUtbGFiDQpBY2NlcHQ6IGFwcGxpY2F0aW9uL2pzb24NCg0K</request>
+    <status>200</status>
+    <response base64="true">SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24NClNlcnZlcjogbmdpbngNCkNvbnRlbnQtTGVuZ3RoOiAxOQ0KDQp7InN0YXR1cyI6ICJyZWFkeSJ9</response>
+  </item>
+  <item>
+    <url><![CDATA[http://127.0.0.1:8191/api/v1/admin]]></url>
+    <host>127.0.0.1</host>
+    <port>8191</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <request base64="true">R0VUIC9hcGkvdjEvYWRtaW4gSFRUUC8xLjENCkhvc3Q6IDEyNy4wLjAuMTo4MTkxDQpBdXRob3JpemF0aW9uOiBCZWFyZXIgU1lOVEgtU0VDUkVULXRva2VuLWxhYg0KQ29va2llOiBzaWQ9U1lOVEgtU0VDUkVULWNvb2tpZS1sYWINCkFjY2VwdDogYXBwbGljYXRpb24vanNvbg0KDQo=</request>
+    <status>401</status>
+    <response base64="true">SFRUUC8xLjEgNDAxIFVuYXV0aG9yaXplZA0KQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9qc29uDQpTZXJ2ZXI6IG5naW54DQpDb250ZW50LUxlbmd0aDogMzYNCg0KeyJlcnJvciI6ICJhdXRoZW50aWNhdGlvbl9yZXF1aXJlZCJ9</response>
+  </item>
+</items>
