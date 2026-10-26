@@ -9,6 +9,19 @@
 - Shareable reports use the shareable destination. Absolute privacy is **not** claimed; residual risks documented.
 - Version stays 0.2.2.
 
+### Hardened external tool policy gate
+
+- Add `bugbounty_toolkit.core.secure_subprocess` as the single contract for allowlisted
+  external binaries: structured argv only (never `shell=True`), wall-clock timeout,
+  stdout/file caps, optional RLIMIT memory/CPU/nproc, process-tree kill on cancel/limits,
+  stable error codes, redacted provenance logs, and private output under program dirs.
+- `core.runner.run_tool` routes recon/nuclei/params tools through the gate; invocations that
+  contact remote systems must attest authorization, scope, and execution budget or are
+  rejected before exec. Rate-limit flags are not treated as absolute safety guarantees.
+- `fuzzing.ffuf_runner` launches ffuf via the same contract without rewriting scanner internals.
+- Synthetic local-lab tests cover success, timeout, runaway output, child-tree kill,
+  allowlist/argv/path/policy rejections, cancellation, and budget exhaustion. No real
+  third-party tool installs and zero lab HTTP. Version stays 0.2.2.
 
 ### Content-aware wordlist ranking (opt-in)
 
