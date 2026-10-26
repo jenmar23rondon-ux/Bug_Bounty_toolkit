@@ -1,0 +1,237 @@
+{
+ "corpus_version": "adv-ranking-1.0",
+ "origin": "http://127.0.0.1:8139",
+ "scenarios": [
+  {
+   "adversarial_tag": "shared-frequent",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Shared org on every call by 3 sessions; one rare private dossier each",
+   "entries": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "dossier"
+   ],
+   "forbidden_pair_types": [
+    "org"
+   ],
+   "id": "R01",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "multi-role",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Manager and report both read distinct employee records under shared department",
+   "entries": [
+    6,
+    7
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "employee"
+   ],
+   "forbidden_pair_types": [
+    "department"
+   ],
+   "id": "R02",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "id-collision",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Same numeric value used as warehouse id and crate id across sessions",
+   "entries": [
+    8,
+    9
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "warehouse",
+    "crate"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R03",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "uuid-numeric",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "UUID path ticket + numeric query export across two sessions",
+   "entries": [
+    10,
+    11,
+    12,
+    13
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "ticket",
+    "export"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R04",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "nested-arrays",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Array of shipment ids in JSON body; nested preference under profile",
+   "entries": [
+    14,
+    15,
+    16,
+    17
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "shipment",
+    "preference"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R05",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "relations",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Shared tenant parent with distinct pipeline children",
+   "entries": [
+    18,
+    19
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "pipeline"
+   ],
+   "forbidden_pair_types": [
+    "tenant"
+   ],
+   "id": "R06",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "partial-duplicate",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Duplicate identical capture of license; second session missing response",
+   "entries": [
+    20,
+    21,
+    22
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "license"
+   ],
+   "id": "R07",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "ambiguous-fields",
+   "ambiguous_types": [
+    "ref"
+   ],
+   "class": "ambiguous",
+   "description": "Opaque generic ref parameter across sessions",
+   "entries": [
+    23,
+    24
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [],
+   "id": "R08",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "public-protected",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Public article catalogue without credentials; protected note with auth",
+   "entries": [
+    25,
+    26,
+    27,
+    28
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "note"
+   ],
+   "forbidden_pair_types": [
+    "article"
+   ],
+   "id": "R09",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "misleading-shared",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Same channel id requested by both sessions on two endpoints (shared resource)",
+   "entries": [
+    29,
+    30,
+    31,
+    32
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "channel"
+   ],
+   "id": "R10",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "unknown-endpoints",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Unknown collection nouns outside built-in vocabulary; distinct ids per session",
+   "entries": [
+    33,
+    34,
+    35,
+    36
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "zephyr",
+    "quarrel"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R11",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "cross-reference",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Id in session A listing response, requested by B on path",
+   "entries": [
+    37,
+    38
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "subscription"
+   ],
+   "forbidden_pair_types": [],
+   "id": "R12",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  }
+ ]
+}
