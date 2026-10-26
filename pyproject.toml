@@ -103,6 +103,7 @@ files = [
     "bugbounty_toolkit/analysis/api_workflow.py",
     "bugbounty_toolkit/analysis/object_relationships.py",
     "bugbounty_toolkit/analysis/har_import.py",
+    "bugbounty_toolkit/analysis/har_provenance.py",
     "bugbounty_toolkit/analysis/object_handoff.py",
     "bugbounty_toolkit/analysis/evidence_graph.py",
     "bugbounty_toolkit/analysis/hypotheses.py",
