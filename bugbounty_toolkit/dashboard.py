@@ -18,6 +18,14 @@ from .analysis.evidence_graph import EvidenceGraphStore
 from .analysis.investigation_memory import InvestigationMemory
 from .core.records import ProgramPaths, RecordStore
 from .fuzzing.wordlist_manager import default_registry_path, list_wordlists, load_collections
+from .dashboard_triage import (
+    ai_review_differences,
+    build_triage,
+    candidate_detail,
+    compare_prioritization_runs,
+    mask_display_secrets,
+    review_queue_reports,
+)
 from .reporting.evidence import write_evidence_json
 
 _PROGRAM_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$")
@@ -51,39 +59,110 @@ _ACCESS_CLASSIFICATIONS = {
 }
 
 _DASHBOARD_HTML = """<!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>Bug Bounty Toolkit · Investigación local</title>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bug Bounty Toolkit · Triage local</title>
 <style>
-body{font:16px system-ui,sans-serif;max-width:1100px;margin:2rem auto;padding:0 1rem;background:#101827;color:#e6edf3}
-section{border:1px solid #39465b;border-radius:8px;padding:1rem;margin:1rem 0;background:#172235}
-button,input{font:inherit;padding:.45rem;margin:.2rem}button{cursor:pointer}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:28rem;overflow:auto}
-a{color:#8bc5ff}.notice{color:#ffd479}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+:root{--bg:#101827;--panel:#172235;--line:#39465b;--fg:#e6edf3;--muted:#a9b6c8;--warn:#ffd479;--bad:#ff8f8f;--ok:#8fe3a8}
+*{box-sizing:border-box}body{font:16px system-ui,sans-serif;max-width:1280px;margin:0 auto;padding:1rem;background:var(--bg);color:var(--fg)}
+section{border:1px solid var(--line);border-radius:8px;padding:1rem;margin:1rem 0;background:var(--panel)}
+button,input,select{font:inherit;padding:.45rem;margin:.2rem;min-height:2.5rem}button{cursor:pointer}
+:focus-visible{outline:3px solid #8bc5ff;outline-offset:2px}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:28rem;overflow:auto}
+a{color:#8bc5ff}.notice{color:var(--warn)}.muted{color:var(--muted)}.bad{color:var(--bad)}.ok{color:var(--ok)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:1rem}
+.cards{display:flex;flex-wrap:wrap;gap:.5rem}.card{border:1px solid var(--line);border-radius:6px;padding:.5rem .75rem;min-width:8rem}
+.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid var(--line);padding:.4rem;text-align:left;vertical-align:top}
+.badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 .5rem;font-size:.85rem}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style></head><body>
-<h1>Bug Bounty Toolkit</h1><p class="notice">Panel local: importa y consulta evidencias; no ejecuta comprobaciones ni envía tráfico a targets.</p>
+<header><h1>Bug Bounty Toolkit · Triage</h1>
+<p class="notice" role="note">Panel local de solo lectura: muestra artefactos ya guardados. No ejecuta escáneres, no aprueba pruebas, no confirma vulnerabilidades, no cambia el scope, no ejecuta comandos y no envía evidencia a ningún servicio.</p></header>
+<main>
+<section aria-labelledby="h-overview"><h2 id="h-overview">Vista general</h2><button id="refresh" type="button">Actualizar</button>
+<div id="summary" class="cards" aria-live="polite"></div><div id="status-msg" role="status"></div></section>
+<section aria-labelledby="h-queue"><h2 id="h-queue">Candidatos priorizados</h2>
+<form id="filters"><label>Categoría <select id="f-category"><option value="">todas</option></select></label>
+<label>Estado <select id="f-state"><option value="">todos</option></select></label>
+<label>Evidencia <select id="f-evidence"><option value="">cualquiera</option></select></label>
+<button type="submit">Filtrar</button></form>
+<details><summary>Cómo se ordena y sus límites</summary><ul id="ranking"></ul></details>
+<div class="table-wrap"><table><caption class="sr-only">Cola de triage</caption><thead><tr><th scope="col">#</th><th scope="col">Candidato</th><th scope="col">Categoría</th><th scope="col">Estado</th><th scope="col">Evidencia</th><th scope="col">Flujo IDOR/BOLA</th><th scope="col">Avisos</th></tr></thead><tbody id="queue"></tbody></table></div>
+<p id="queue-empty" class="muted"></p></section>
 <div class="grid">
-<section><h2>Investigaciones</h2><button id="refresh">Actualizar</button><pre id="overview"></pre></section>
-<section><h2>Importar evidencia</h2><input id="artifact" type="file"><button id="upload">Importar offline</button><pre id="import-result"></pre></section>
+<section aria-labelledby="h-detail"><h2 id="h-detail">Detalle y procedencia</h2><div id="detail" aria-live="polite"><p class="muted">Selecciona un candidato.</p></div></section>
+<section aria-labelledby="h-coverage"><h2 id="h-coverage">Cobertura</h2><div id="coverage"></div></section>
+<section aria-labelledby="h-issues"><h2 id="h-issues">Referencias rotas y evidencias inválidas</h2><ul id="issues"></ul></section>
+<section aria-labelledby="h-ai"><h2 id="h-ai">Diferencias entre revisores IA</h2><div id="ai"></div></section>
+<section aria-labelledby="h-runs"><h2 id="h-runs">Progreso y comparación de ejecuciones</h2><div id="runs"></div></section>
+<section aria-labelledby="h-queue-reports"><h2 id="h-queue-reports">Reportes para revisión humana</h2><div id="review-queue"></div><div id="reports"></div><pre id="report-content"></pre></section>
+</div>
+<details><summary>Datos de investigación (vistas anteriores)</summary><div class="grid">
+<section><h2>Investigaciones</h2><pre id="overview"></pre></section>
+<section><h2>Importar evidencia</h2><label for="artifact">Archivo local</label><input id="artifact" type="file"><button id="upload" type="button">Importar offline</button><pre id="import-result"></pre></section>
 <section><h2>Grafo</h2><form id="graph-form"><label>Endpoint <input id="endpoint" placeholder="/api/orders/{id}"></label><button>Buscar</button></form><pre id="graph"></pre></section>
 <section><h2>Hipótesis y controles pendientes</h2><pre id="hypotheses"></pre></section>
 <section><h2>Benchmark</h2><pre id="benchmark"></pre></section>
 <section><h2>Wordlists locales</h2><pre id="wordlists"></pre></section>
 <section><h2>Descubrimiento y presupuesto</h2><pre id="discovery"></pre></section>
 <section><h2>Matriz de autorización</h2><pre id="access-matrix"></pre></section>
-<section><h2>Reportes</h2><div id="reports"></div><pre id="report-content"></pre></section>
-</div>
+</div></details>
+</main>
 <script>
-const show=(id,value)=>{document.getElementById(id).textContent=JSON.stringify(value,null,2)};
-async function load(){
-  for(const [url,id] of [['/api/overview','overview'],['/api/hypotheses','hypotheses'],['/api/benchmark','benchmark'],['/api/wordlists','wordlists'],['/api/discovery','discovery'],['/api/access-matrix','access-matrix']]){
-    const r=await fetch(url); show(id,await r.json());
-  }
-  const r=await fetch('/api/reports'); const data=await r.json(); const box=document.getElementById('reports'); box.replaceChildren();
-  for(const item of data.reports){const link=document.createElement('a');link.href='#';link.textContent=item.name;link.addEventListener('click',async e=>{e.preventDefault();const x=await fetch('/api/reports/'+encodeURIComponent(item.name)+'/content');document.getElementById('report-content').textContent=await x.text();});box.append(link,document.createElement('br'));}
+const $=id=>document.getElementById(id);
+const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=String(text);if(cls)n.className=cls;return n;};
+const show=(id,value)=>{$(id).textContent=JSON.stringify(value,null,2)};
+async function getJSON(url){const r=await fetch(url,{credentials:'same-origin'});const body=await r.json().catch(()=>({detail:'Respuesta no válida'}));if(!r.ok)throw new Error(body.detail||('HTTP '+r.status));return body;}
+function fillSelect(id,values,current){const s=$(id);const keep=s.options[0];s.replaceChildren(keep);for(const v of values){const o=el('option',v);o.value=v;if(v===current)o.selected=true;s.append(o);}}
+function card(label,value,cls){const c=el('div',null,'card');c.append(el('div',label,'muted'),el('strong',value,cls));return c;}
+function list(id,items){const u=$(id);u.replaceChildren();for(const i of items)u.append(el('li',i));}
+async function loadTriage(){
+  const q=new URLSearchParams();for(const [k,id] of [['category','f-category'],['state','f-state'],['evidence','f-evidence']]){if($(id).value)q.set(k,$(id).value);}
+  const t=await getJSON('/api/triage?'+q);
+  const st=t.candidate_states||{};
+  $('summary').replaceChildren(card('Candidatos',t.counts.total),card('Requieren validación',st.requires_validation||0,'notice'),card('Confirmados (revisión humana)',st.confirmed||0,'ok'),card('Rechazados',st.rejected||0),card('Referencias rotas',t.broken_references||0,(t.broken_references?'bad':'')),card('Cobertura',Math.round((t.coverage.coverage_ratio||0)*100)+'%'));
+  $('status-msg').textContent=t.message||(t.ledger_valid===false?'El ledger tiene errores de validación; revisa la sección de referencias rotas.':'');
+  if(t.filters.categories){fillSelect('f-category',t.filters.categories,t.filters.applied.category);fillSelect('f-state',t.filters.states,t.filters.applied.state);fillSelect('f-evidence',t.filters.evidence,t.filters.applied.evidence);}
+  list('ranking',[...t.ranking.order,...t.ranking.limits]);
+  const body=$('queue');body.replaceChildren();
+  for(const c of t.candidates){const tr=el('tr');const link=el('button',c.candidate_id);link.type='button';link.setAttribute('aria-label','Ver detalle de '+c.candidate_id);link.addEventListener('click',()=>loadDetail(c.candidate_id).catch(e=>{$('detail').textContent='Error: '+e.message;}));
+    const name=el('td');name.append(link,el('div',c.title||'','muted'));
+    const flow=c.idor_flow.applicable?c.idor_flow.stage:'n/a';
+    tr.append(el('td',c.rank),name,el('td',c.category),el('td',c.displayed_state,'badge'),el('td',c.evidence_status+' ('+c.evidence_counts.usable+'/'+c.evidence_counts.referenced+')',c.evidence_status==='present'?'ok':'bad'),el('td',flow),el('td',c.warnings.join(' ')||'—',c.warnings.length?'notice':''));body.append(tr);}
+  $('queue-empty').textContent=t.candidates.length?'':(t.counts.total?'Ningún candidato coincide con los filtros.':(t.message||'Sin candidatos.'));
+  const cov=$('coverage');cov.replaceChildren();const ss=t.coverage.surface_status||{};
+  const cards=el('div',null,'cards');for(const [k,v] of Object.entries(ss))cards.append(card(k,v));cov.append(cards);
+  const pend=el('ul');for(const p of t.coverage.pending_or_blocked||[])pend.append(el('li',(p.ref||p.surface_id)+' — '+(p.blocker||'sin bloqueo declarado')));cov.append(el('h3','Pendiente / bloqueado'),pend);
+  list('issues',(t.issues||[]).map(i=>'['+i.severity+'] '+i.code+' · '+(i.ref||'')+' · '+(i.message||'')));if(!(t.issues||[]).length)list('issues',['Sin incidencias en el ledger.']);
 }
-document.getElementById('refresh').addEventListener('click',()=>load().catch(e=>show('overview',{error:String(e)})));
-document.getElementById('graph-form').addEventListener('submit',async e=>{e.preventDefault();const q=new URLSearchParams({endpoint:document.getElementById('endpoint').value});const r=await fetch('/api/graph/search?'+q);show('graph',await r.json());});
-document.getElementById('upload').addEventListener('click',async()=>{const f=document.getElementById('artifact').files[0];if(!f){show('import-result',{error:'Selecciona un archivo.'});return;}if(f.size>33554432){show('import-result',{error:'El límite de importación es 32 MiB.'});return;}const r=await fetch('/api/evidence/import?filename='+encodeURIComponent(f.name),{method:'POST',headers:{'content-type':'application/octet-stream'},body:f});show('import-result',await r.json());await load();});
-load().catch(e=>show('overview',{error:String(e)}));
+async function loadDetail(id){
+  const d=await getJSON('/api/triage/candidates/'+encodeURIComponent(id));const box=$('detail');box.replaceChildren();const c=d.candidate;
+  box.append(el('h3',c.candidate_id),el('p','Estado mostrado: '+c.displayed_state+' (ledger: '+c.ledger_state+')'),el('p','Banda de impacto potencial (heurística): '+c.potential_impact_band));
+  box.append(el('h4','Controles que faltan para validar'));const mc=el('ul');for(const m of c.missing_controls)mc.append(el('li',m));if(!c.missing_controls.length)mc.append(el('li','Ninguno registrado.'));box.append(mc);
+  if(c.idor_flow.applicable){box.append(el('h4','Flujo IDOR/BOLA'));const f=el('ol');for(const s of c.idor_flow.stages)f.append(el('li',s.name+': '+(s.done?'hecho':'pendiente')));box.append(f);}
+  box.append(el('h4','Procedencia (minimizada)'),el('p',d.provenance_notice,'muted'));const pv=el('ul');for(const p of d.evidence_provenance)pv.append(el('li',[p.evidence_id,p.status,p.tool,p.captured_at,p.sha256_prefix&&('sha256:'+p.sha256_prefix+'…')].filter(Boolean).join(' · ')));box.append(pv);
+  if(d.issues.length){box.append(el('h4','Incidencias'));const iu=el('ul');for(const i of d.issues)iu.append(el('li',i.code+': '+(i.message||''),'bad'));box.append(iu);}
+}
+async function loadSide(){
+  const ai=await getJSON('/api/triage/ai-reviews');const a=$('ai');a.replaceChildren();
+  if(!ai.latest){a.append(el('p',ai.message,'muted'));}else{a.append(el('p','Coincidencia de decisión: '+(ai.decision_agreement?'sí':'no')+' · independientes: '+(ai.independent?'sí':'no')+' · el consenso no es prueba.'));for(const [k,label] of [['disputed_evidence','Evidencia disputada'],['cited_by_first_only','Solo revisor A'],['cited_by_second_only','Solo revisor B'],['missing_controls_union','Controles faltantes']]){a.append(el('h4',label));const u=el('ul');for(const v of ai[k])u.append(el('li',v));if(!ai[k].length)u.append(el('li','—'));a.append(u);}}
+  const runs=await getJSON('/api/triage/runs');const r=$('runs');r.replaceChildren();const p=runs.progress;
+  r.append(el('div',null,'cards'));r.firstChild.append(card('Ejecuciones',p.runs_total),card('Errores técnicos',p.technical_errors,p.technical_errors?'bad':''),card('Sin terminar',p.unfinished||0));
+  const cmp=runs.comparison;if(!cmp.available){r.append(el('p',cmp.message,'muted'));}else{r.append(el('p','Comparando '+cmp.older+' → '+cmp.newer),el('p','Nuevos: '+(cmp.added.join(', ')||'—')),el('p','Retirados: '+(cmp.removed.join(', ')||'—')));const u=el('ul');for(const s of cmp.score_changes)u.append(el('li',s.group_id+': '+s.before+' → '+s.after));r.append(u);}
+  const rq=await getJSON('/api/triage/review-queue');const q=$('review-queue');q.replaceChildren(el('p',rq.notice,'muted'),el('p','Candidatos esperando revisión humana: '+(rq.candidates_awaiting_human_review.join(', ')||'ninguno')));
+  const data=await getJSON('/api/reports');const box=$('reports');box.replaceChildren();if(!data.reports.length)box.append(el('p','No hay reportes guardados.','muted'));
+  for(const item of data.reports){const link=el('a',item.name);link.href='#';link.addEventListener('click',async e=>{e.preventDefault();const x=await fetch('/api/reports/'+encodeURIComponent(item.name)+'/content');$('report-content').textContent=await x.text();});box.append(link,el('br'));}
+}
+async function loadLegacy(){
+  for(const [url,id] of [['/api/overview','overview'],['/api/hypotheses','hypotheses'],['/api/benchmark','benchmark'],['/api/wordlists','wordlists'],['/api/discovery','discovery'],['/api/access-matrix','access-matrix']]){
+    try{show(id,await getJSON(url));}catch(e){show(id,{error:e.message});}
+  }
+}
+async function load(){for(const f of [loadTriage,loadSide,loadLegacy]){try{await f();}catch(e){$('status-msg').textContent='Error: '+e.message;}}}
+$('refresh').addEventListener('click',()=>load());
+$('filters').addEventListener('submit',e=>{e.preventDefault();loadTriage().catch(err=>{$('status-msg').textContent='Error: '+err.message;});});
+$('graph-form').addEventListener('submit',async e=>{e.preventDefault();const q=new URLSearchParams({endpoint:$('endpoint').value});const r=await fetch('/api/graph/search?'+q);show('graph',await r.json());});
+$('upload').addEventListener('click',async()=>{const f=$('artifact').files[0];if(!f){show('import-result',{error:'Selecciona un archivo.'});return;}if(f.size>33554432){show('import-result',{error:'El límite de importación es 32 MiB.'});return;}const r=await fetch('/api/evidence/import?filename='+encodeURIComponent(f.name),{method:'POST',headers:{'content-type':'application/octet-stream'},body:f});show('import-result',await r.json());await load();});
+load();
 </script></body></html>"""
 
 
@@ -112,6 +191,30 @@ def _host_is_local(value: str | None) -> bool:
     except ValueError:
         return False
     return not parsed.username and not parsed.password and (hostname == "localhost" or _is_loopback(hostname))
+
+
+def _origin_is_local(value: str | None) -> bool:
+    """Absent Origin is allowed (same-origin GET); a present Origin must be loopback http(s)."""
+    if value is None:
+        return True
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        return False
+    return parsed.scheme in {"http", "https"} and _host_is_local(parsed.netloc)
+
+
+def _public_row(row: dict[str, object]) -> dict[str, object]:
+    """Withhold local file paths and redact secrets in run/finding rows shown by /api/overview."""
+    safe: dict[str, object] = {}
+    for key, value in row.items():
+        if key in {"output_path", "evidence_path"}:
+            safe[key] = Path(value).name[:180] if isinstance(value, str) and value else None
+        elif isinstance(value, str):
+            safe[key] = mask_display_secrets(value)
+        else:
+            safe[key] = value
+    return safe
 
 
 def _read_json_file(path: Path, maximum: int = _MAX_REPORT_BYTES) -> object:
@@ -169,9 +272,16 @@ def create_app(records_root: Path, program: str) -> FastAPI:
         client_host = request.client.host if request.client is not None else None
         if not _is_loopback(client_host) or not _host_is_local(request.headers.get("host")):
             return JSONResponse(status_code=403, content={"detail": "Dashboard accepts loopback requests only."})
+        if not _origin_is_local(request.headers.get("origin")) or request.headers.get("sec-fetch-site") == "cross-site":
+            return JSONResponse(status_code=403, content={"detail": "Cross-origin dashboard requests are rejected."})
+        if request.method not in {"GET", "HEAD"} and request.url.path != "/api/evidence/import":
+            return JSONResponse(status_code=405, content={"detail": "The dashboard is read-only."})
         response = await call_next(request)
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
             "connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
@@ -193,10 +303,13 @@ def create_app(records_root: Path, program: str) -> FastAPI:
                 "program": program,
                 "investigations": memory.list_recent(),
                 "findings": [
-                    dict(row)
+                    _public_row(dict(row))
                     for row in store.connection.execute("select * from findings order by created_at desc limit 100")
                 ],
-                "runs": [dict(row) for row in store.connection.execute("select * from runs order by id desc limit 50")],
+                "runs": [
+                    _public_row(dict(row))
+                    for row in store.connection.execute("select * from runs order by id desc limit 50")
+                ],
                 "database_present": True,
             }
         finally:
@@ -605,6 +718,63 @@ def create_app(records_root: Path, program: str) -> FastAPI:
     async def download_report(name: str) -> FileResponse:
         path = _contained_report_path(paths, name)
         return FileResponse(path, filename=path.name, media_type="application/octet-stream")
+
+    @app.get("/api/triage")
+    async def triage(
+        category: str | None = None, state: str | None = None, evidence: str | None = None
+    ) -> dict[str, object]:
+        try:
+            return build_triage(paths, category=category, state=state, evidence=evidence)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.get("/api/triage/candidates/{candidate_id}")
+    async def triage_candidate(candidate_id: str) -> dict[str, object]:
+        try:
+            result = candidate_detail(paths, candidate_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        if result is None:
+            raise HTTPException(status_code=404, detail="Candidate not found.")
+        return result
+
+    @app.get("/api/triage/ai-reviews")
+    async def triage_ai_reviews() -> dict[str, object]:
+        return ai_review_differences(paths)
+
+    @app.get("/api/triage/runs")
+    async def triage_runs() -> dict[str, object]:
+        progress: dict[str, object] = {"runs_total": 0, "technical_errors": 0, "by_command": {}}
+        if paths.db_path.is_file():
+            store = RecordStore(paths)
+            try:
+                rows = list(
+                    store.connection.execute("select command_name, return_code from runs order by id desc limit 1000")
+                )
+            finally:
+                store.close()
+            by_command: dict[str, dict[str, int]] = {}
+            for row in rows:
+                name = _safe_label(row["command_name"]) or "unknown"
+                bucket = by_command.setdefault(name[:60], {"runs": 0, "errors": 0, "unfinished": 0})
+                bucket["runs"] += 1
+                if row["return_code"] is None:
+                    bucket["unfinished"] += 1
+                elif row["return_code"] != 0:
+                    bucket["errors"] += 1
+            progress = {
+                "runs_total": len(rows),
+                "technical_errors": sum(b["errors"] for b in by_command.values()),
+                "unfinished": sum(b["unfinished"] for b in by_command.values()),
+                "by_command": by_command,
+            }
+        return {"progress": progress, "comparison": compare_prioritization_runs(paths)}
+
+    @app.get("/api/triage/review-queue")
+    async def triage_review_queue() -> dict[str, object]:
+        reports = (await list_reports())["reports"]
+        names = [str(item["name"]) for item in reports if isinstance(item, dict)] if isinstance(reports, list) else []
+        return review_queue_reports(paths, names)
 
     @app.post("/api/evidence/import")
     async def import_artifact(request: Request, filename: str) -> dict[str, object]:
