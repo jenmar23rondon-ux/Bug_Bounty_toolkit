@@ -126,7 +126,12 @@ class Scenario:
 
 # Acceptable planner first steps per ideal outcome (planner vocabulary is the *output*
 # vocabulary being scored; acceptability is decided by the outcome spec, not by bbtk rules).
-REVIEW_STEPS = ("attest_ownership", "attest_distinct_accounts", "identify_missing_negative_control", "request_human_review")
+REVIEW_STEPS = (
+    "attest_ownership",
+    "attest_distinct_accounts",
+    "identify_missing_negative_control",
+    "request_human_review",
+)
 STOP_STEPS = (
     "stop_contradicted_hypothesis",
     "review_content_denial",
@@ -172,7 +177,13 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
 
     s = Scenario("D05", "E", "canary-header", "Canary secret inside Authorization and body")
     s.x("GET", "/badges/40501", "alice", token=f"{CANARY}-dev-a1", resp=_data("badge", 40501, "alice"))
-    s.x("GET", "/badges/40502", "bob", token=f"{CANARY}-dev-b1", resp=_data("badge", 40502, "bob", note=f"{CANARY}-dev-body"))
+    s.x(
+        "GET",
+        "/badges/40502",
+        "bob",
+        token=f"{CANARY}-dev-b1",
+        resp=_data("badge", 40502, "bob", note=f"{CANARY}-dev-body"),
+    )
     dev.append(
         s.label(
             "reviewable",
@@ -193,7 +204,9 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
     s.x("GET", "/statements/73001", "owner", resp=_data("statement", 73001, "owner"))
     s.x("GET", "/statements/73002", "actor", resp=_data("statement", 73002, "actor"))
     s.x("GET", "/statements/73001", "actor", resp=_data("statement", 73001, "owner"))
-    final.append(s.label("reviewable", targets=("statement",), pairs=("statement",), steps=REVIEW_STEPS, vuln="vulnerable"))
+    final.append(
+        s.label("reviewable", targets=("statement",), pairs=("statement",), steps=REVIEW_STEPS, vuln="vulnerable")
+    )
 
     s = Scenario("A02", "A", "idor-absent-denied", "Actor's cross-account read is correctly denied with 403")
     s.x("GET", "/payslips/73101", "owner", resp=_data("payslip", 73101, "owner"))
@@ -278,7 +291,9 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
     s = Scenario("B04", "B", "nested-resource", "Comment nested under the same post; only comment id differs")
     s.x("GET", "/posts/75301/comments/75311", "owner", resp=_data("comment", 75311, "owner"))
     s.x("GET", "/posts/75301/comments/75312", "actor", resp=_data("comment", 75312, "actor"))
-    final.append(s.label("reviewable", targets=("comment",), pairs=("comment",), forbidden=("post",), steps=REVIEW_STEPS))
+    final.append(
+        s.label("reviewable", targets=("comment",), pairs=("comment",), forbidden=("post",), steps=REVIEW_STEPS)
+    )
 
     s = Scenario("B05", "B", "array-members", "Response lists member ids; member is not the access target")
     s.x("GET", "/groups/75401", "owner", resp={"ok": True, "group": {"id": 75401, "member_ids": [11, 12, 13, 14]}})
@@ -288,7 +303,9 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
     s = Scenario("B06", "B", "duplicate-fields", "Same id appears in path, body id and query")
     s.x("GET", "/wallets/75501?wallet_id=75501", "owner", resp=_data("wallet", 75501, "owner", wallet_id=75501))
     s.x("GET", "/wallets/75502?wallet_id=75502", "actor", resp=_data("wallet", 75502, "actor", wallet_id=75502))
-    final.append(s.label("abstain", targets=("wallet",), steps=ABSTAIN_STEPS + REVIEW_STEPS + ("review_multiple_differences",)))
+    final.append(
+        s.label("abstain", targets=("wallet",), steps=ABSTAIN_STEPS + REVIEW_STEPS + ("review_multiple_differences",))
+    )
 
     s = Scenario("B07", "B", "shared-object-across", "Shared org object appears in every response; not a target")
     for i, who in enumerate(("owner", "actor", "owner", "actor")):
@@ -301,7 +318,11 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
         s.x("GET", f"/accounts/75700/summary?page={i}", "owner", resp={"ok": True, "account_id": 75700, "page": i})
     s.x("GET", "/accounts/75700/cards/75711", "owner", resp=_data("card", 75711, "owner", account_id=75700))
     s.x("GET", "/accounts/75701/cards/75712", "actor", resp=_data("card", 75712, "actor", account_id=75701))
-    final.append(s.label("abstain", targets=("card",), forbidden=("summary",), steps=ABSTAIN_STEPS + ("review_multiple_differences",)))
+    final.append(
+        s.label(
+            "abstain", targets=("card",), forbidden=("summary",), steps=ABSTAIN_STEPS + ("review_multiple_differences",)
+        )
+    )
 
     s = Scenario("B09", "B", "ownership-looking-field", "owner_id field equal across sessions (fixture user)")
     s.x("GET", "/notes/75801", "owner", resp=_data("note", 75801, "owner", owner_id=1))
@@ -391,23 +412,54 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
 
     s = base_pair("D14", "expired-evidence", "Annotated owner capture expired before now", "certificate", 7804)
     s.mutation = "expired_annotation"
-    final.append(s.label("integrity_block", targets=("certificate",), pairs=("certificate",), steps=("review_stale_evidence",) + INTEGRITY_STEPS))
+    final.append(
+        s.label(
+            "integrity_block",
+            targets=("certificate",),
+            pairs=("certificate",),
+            steps=("review_stale_evidence",) + INTEGRITY_STEPS,
+        )
+    )
 
     s = base_pair("D15", "contradiction", "Stored negative control contradicts hypothesis", "agreement", 7805)
     s.mutation = "contradicting_control"
-    final.append(s.label("stop", targets=("agreement",), pairs=("agreement",), steps=("stop_contradicted_hypothesis",), vuln="not_vulnerable"))
+    final.append(
+        s.label(
+            "stop",
+            targets=("agreement",),
+            pairs=("agreement",),
+            steps=("stop_contradicted_hypothesis",),
+            vuln="not_vulnerable",
+        )
+    )
 
     s = base_pair("D16", "repeated-candidate", "Same issue raised twice with the same dedup key", "voucherbook", 7806)
     s.mutation = "duplicate_candidate"
-    final.append(s.label("duplicate", targets=("voucherbook",), pairs=("voucherbook",), steps=("review_duplicate",) + REVIEW_STEPS))
+    final.append(
+        s.label(
+            "duplicate", targets=("voucherbook",), pairs=("voucherbook",), steps=("review_duplicate",) + REVIEW_STEPS
+        )
+    )
 
     s = base_pair("D17", "controls-complete", "All human controls attested; legitimate review case", "deposit", 7807)
     s.mutation = "attest_all_controls"
-    final.append(s.label("reviewable", targets=("deposit",), pairs=("deposit",), steps=("request_human_review",), missing=("none",)))
+    final.append(
+        s.label(
+            "reviewable", targets=("deposit",), pairs=("deposit",), steps=("request_human_review",), missing=("none",)
+        )
+    )
 
     s = base_pair("D18", "missing-negative", "Ownership+accounts attested, negative control missing", "transfer", 7808)
     s.mutation = "attest_partial_controls"
-    final.append(s.label("reviewable", targets=("transfer",), pairs=("transfer",), steps=("identify_missing_negative_control",), missing=("negative_control",)))
+    final.append(
+        s.label(
+            "reviewable",
+            targets=("transfer",),
+            pairs=("transfer",),
+            steps=("identify_missing_negative_control",),
+            missing=("negative_control",),
+        )
+    )
 
     # ------------------------------------------------------------------ FINAL — E adversarial
     s = Scenario("E01", "E", "heavy-noise", "Target pair hidden among 40 static asset/telemetry requests")
@@ -415,18 +467,50 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
         s.x("GET", f"/static/app.{i}.js?v={i}", "owner" if i % 2 else "actor", resp={"ok": True, "v": i})
     s.x("GET", "/estimates2/79001", "owner", resp=_data("quotation", 79001, "owner"))
     s.x("GET", "/estimates2/79002", "actor", resp=_data("quotation", 79002, "actor"))
-    final.append(s.label("reviewable", targets=("estimates2", "quotation"), pairs=("estimates2", "quotation"), steps=REVIEW_STEPS, max_proposals=3))
+    final.append(
+        s.label(
+            "reviewable",
+            targets=("estimates2", "quotation"),
+            pairs=("estimates2", "quotation"),
+            steps=REVIEW_STEPS,
+            max_proposals=3,
+        )
+    )
 
     s = Scenario("E02", "E", "frequent-irrelevant", "Locale id repeated in every response; target appears once each")
     for i in range(12):
-        s.x("GET", f"/locales/42?ts={i}", "owner" if i % 2 else "actor", resp={"ok": True, "locale_id": 42, "user_id": 42})
+        s.x(
+            "GET",
+            f"/locales/42?ts={i}",
+            "owner" if i % 2 else "actor",
+            resp={"ok": True, "locale_id": 42, "user_id": 42},
+        )
     s.x("GET", "/appointments/79101", "owner", resp=_data("appointment", 79101, "owner", locale_id=42))
     s.x("GET", "/appointments/79102", "actor", resp=_data("appointment", 79102, "actor", locale_id=42))
-    final.append(s.label("reviewable", targets=("appointment",), pairs=("appointment",), forbidden=("locale",), steps=REVIEW_STEPS, max_proposals=2))
+    final.append(
+        s.label(
+            "reviewable",
+            targets=("appointment",),
+            pairs=("appointment",),
+            forbidden=("locale",),
+            steps=REVIEW_STEPS,
+            max_proposals=2,
+        )
+    )
 
     s = Scenario("E03", "E", "misleading-labels", "Field called private_owner_id is a public category id")
-    s.x("GET", "/categories/79201", "owner", resp={"ok": True, "category": {"id": 79201, "private_owner_id": 3, "visibility": "public"}})
-    s.x("GET", "/categories/79202", "actor", resp={"ok": True, "category": {"id": 79202, "private_owner_id": 4, "visibility": "public"}})
+    s.x(
+        "GET",
+        "/categories/79201",
+        "owner",
+        resp={"ok": True, "category": {"id": 79201, "private_owner_id": 3, "visibility": "public"}},
+    )
+    s.x(
+        "GET",
+        "/categories/79202",
+        "actor",
+        resp={"ok": True, "category": {"id": 79202, "private_owner_id": 4, "visibility": "public"}},
+    )
     final.append(s.label("abstain", forbidden=("category",), steps=ABSTAIN_STEPS + STOP_STEPS, vuln="not_vulnerable"))
 
     s = Scenario("E04", "E", "similar-routes", "/users/{id}/avatar is public, /users/{id}/tax is private")
@@ -437,13 +521,37 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
     final.append(s.label("reviewable", targets=("user",), pairs=("user",), steps=REVIEW_STEPS, max_proposals=2))
 
     s = Scenario("E05", "E", "unseen-shape-graphql", "GraphQL-style POST with id in variables (novel shape)")
-    s.x("POST", "/graphql", "owner", body={"query": "q", "variables": {"medicalRecordId": 79401}}, resp=_data("record", 79401, "owner"))
-    s.x("POST", "/graphql", "actor", body={"query": "q", "variables": {"medicalRecordId": 79402}}, resp=_data("record", 79402, "actor"))
+    s.x(
+        "POST",
+        "/graphql",
+        "owner",
+        body={"query": "q", "variables": {"medicalRecordId": 79401}},
+        resp=_data("record", 79401, "owner"),
+    )
+    s.x(
+        "POST",
+        "/graphql",
+        "actor",
+        body={"query": "q", "variables": {"medicalRecordId": 79402}},
+        resp=_data("record", 79402, "actor"),
+    )
     final.append(s.label("stop", targets=("medicalrecord", "record"), steps=STOP_STEPS + ABSTAIN_STEPS, vuln="unknown"))
 
     s = Scenario("E06", "E", "secret-canaries", "Canary tokens in headers, query and body")
-    s.x("GET", f"/exports/79501?api_key={CANARY}-q1", "owner", token=f"{CANARY}-h1", resp=_data("export", 79501, "owner", secret=f"{CANARY}-b1"))
-    s.x("GET", f"/exports/79502?api_key={CANARY}-q2", "actor", token=f"{CANARY}-h2", resp=_data("export", 79502, "actor", secret=f"{CANARY}-b2"))
+    s.x(
+        "GET",
+        f"/exports/79501?api_key={CANARY}-q1",
+        "owner",
+        token=f"{CANARY}-h1",
+        resp=_data("export", 79501, "owner", secret=f"{CANARY}-b1"),
+    )
+    s.x(
+        "GET",
+        f"/exports/79502?api_key={CANARY}-q2",
+        "actor",
+        token=f"{CANARY}-h2",
+        resp=_data("export", 79502, "actor", secret=f"{CANARY}-b2"),
+    )
     final.append(
         s.label(
             "reviewable",
@@ -469,7 +577,12 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
 
     s = Scenario("S02", "C", "many-objects", "60 distinct objects per session in one list endpoint")
     for i in range(60):
-        s.x("GET", f"/rows/{82000 + i}", ("owner", "actor")[i % 2], resp=_data("row", 82000 + i, ("owner", "actor")[i % 2]))
+        s.x(
+            "GET",
+            f"/rows/{82000 + i}",
+            ("owner", "actor")[i % 2],
+            resp=_data("row", 82000 + i, ("owner", "actor")[i % 2]),
+        )
     stress.append(s.label("reviewable", targets=("row",), pairs=("row",), steps=REVIEW_STEPS, max_proposals=5))
 
     s = Scenario("S03", "C", "deep-nesting-60", "Response nested 60 levels")
@@ -486,7 +599,9 @@ def scenarios() -> dict[str, list[Scenario]]:  # noqa: PLR0915 - declarative cor
     s.x("GET", "/tokens2/84001", "owner", resp=_data("tokenset", 84001, "owner"))
     s.x("GET", "/tokens2/84002", "actor", resp=_data("tokenset", 84002, "actor"))
     s.damage = [f"drop_url:{i}" for i in range(5)]
-    stress.append(s.label("reviewable", targets=("tokens2", "tokenset"), pairs=("tokens2", "tokenset"), steps=REVIEW_STEPS))
+    stress.append(
+        s.label("reviewable", targets=("tokens2", "tokenset"), pairs=("tokens2", "tokenset"), steps=REVIEW_STEPS)
+    )
 
     s = Scenario("S05", "C", "all-damaged", "Every entry damaged")
     s.x("GET", "/void/1", "owner", resp={"ok": True})
