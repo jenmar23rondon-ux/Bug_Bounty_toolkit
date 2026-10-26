@@ -16,7 +16,7 @@ from bugbounty_toolkit.analysis.object_relationships import (
     MAX_CAPTURES,
     MAX_FILES,
     MAX_OCCURRENCES,
-    RULES,
+    RANKING_VERSION,
     build_object_graph,
     discover_to_file,
     load_object_key,
@@ -142,7 +142,8 @@ class ObjectRelationshipTests(unittest.TestCase):
         self.assertEqual(len(self.objects(graph)), 1)
         row = self.candidates(graph)[0]
         self.assertEqual(row["session_context_count"], 2)
-        self.assertEqual(row["score"], 40)
+        # Leaf object seen in two sessions: request + path_leaf + multi_session_leaf (not ownership).
+        self.assertEqual(row["score"], 50)
         self.assertTrue(all(node.get("ownership", "unknown") == "unknown" for node in graph["nodes"]))
         self.assertNotIn("OWNS", {r["relation"] for r in graph["relations"]})
 
@@ -264,7 +265,7 @@ class ObjectRelationshipTests(unittest.TestCase):
         entry = self.entry()
         entry["response"]["content"].update(encoding="base64", text=base64.b64encode(b'{"id":987}').decode())
         graph = self.graph([entry])
-        self.assertEqual(self.candidates(graph)[0]["score"], 35)
+        self.assertEqual(self.candidates(graph)[0]["score"], 45)
 
     def test_ranking_is_bounded_explainable_and_filterable(self):
         graph = self.graph(
@@ -274,11 +275,31 @@ class ObjectRelationshipTests(unittest.TestCase):
             ]
         )
         row = next(r for r in self.candidates(graph) if r["resource_type"] == "order")
-        self.assertEqual(row["score"], 100)
-        self.assertEqual(sum(part["points"] for part in row["score_breakdown"]), 100)
-        self.assertEqual({part["rule"] for part in row["score_breakdown"]}, {rule for rule, _ in RULES})
+        self.assertEqual(RANKING_VERSION, "2.0")
+        self.assertEqual(row["score"], 90)
+        self.assertEqual(sum(part["points"] for part in row["score_breakdown"]), row["score_raw"])
+        self.assertLessEqual(row["score"], 100)
         self.assertTrue(all(part["observation_refs"] for part in row["score_breakdown"]))
-        self.assertEqual(len(self.candidates(graph, min_score=100, limit=1)), 1)
+        self.assertTrue(any(part.get("polarity") == "positive" for part in row["score_breakdown"]))
+        self.assertIn("order_reason", row)
+        self.assertIn("uncertainty", row)
+        self.assertFalse(row["confirmed"])
+        self.assertEqual(row["evidence_class"], "observation")
+        # Shared path-parent demotion keeps the parent candidate but lowers it vs leaf order.
+        user = next(r for r in self.candidates(graph) if r["resource_type"] == "user")
+        self.assertLessEqual(user["score"], row["score"])
+        # Dedicated shared-parent demotion: same parent id under two sessions with distinct children.
+        shared = self.graph(
+            [
+                self.entry("/api/users/1/orders/10", session="owner"),
+                self.entry("/api/users/1/orders/11", session="actor"),
+            ]
+        )
+        parent = next(r for r in self.candidates(shared) if r["resource_type"] == "user")
+        child = next(r for r in self.candidates(shared) if r["resource_type"] == "order")
+        self.assertTrue(any(p["rule"] == "shared_path_parent_across_sessions" for p in parent["score_breakdown"]))
+        self.assertGreater(child["score"], parent["score"])
+        self.assertEqual(len(self.candidates(graph, min_score=90, limit=1)), 1)
         for options in ({"limit": 0}, {"limit": 101}, {"min_score": -1}, {"min_score": 101}):
             with self.assertRaises(ValueError):
                 self.candidates(graph, **options)

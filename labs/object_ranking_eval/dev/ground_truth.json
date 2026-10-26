@@ -1,0 +1,103 @@
+{
+ "corpus_version": "adv-ranking-dev",
+ "origin": "http://127.0.0.1:8140",
+ "scenarios": [
+  {
+   "adversarial_tag": "shared-frequent",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Shared campus vs rare locker per session",
+   "entries": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "locker"
+   ],
+   "forbidden_pair_types": [
+    "campus"
+   ],
+   "id": "D01",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "multi-role",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Lead and member under shared squad",
+   "entries": [
+    4,
+    5
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "member"
+   ],
+   "forbidden_pair_types": [
+    "squad"
+   ],
+   "id": "D02",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "public-protected",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "Public brochure vs private memo",
+   "entries": [
+    6,
+    7,
+    8
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "memo"
+   ],
+   "forbidden_pair_types": [
+    "brochure"
+   ],
+   "id": "D03",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "misleading-shared",
+   "ambiguous_types": [],
+   "class": "negative",
+   "description": "Identical bulletin id across sessions",
+   "entries": [
+    9,
+    10
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [],
+   "forbidden_pair_types": [
+    "bulletin"
+   ],
+   "id": "D04",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  },
+  {
+   "adversarial_tag": "uuid-numeric",
+   "ambiguous_types": [],
+   "class": "positive",
+   "description": "UUID parcel + numeric invoice",
+   "entries": [
+    11,
+    12,
+    13,
+    14
+   ],
+   "expected_confirmed": false,
+   "expected_pair_types": [
+    "parcel",
+    "invoice"
+   ],
+   "forbidden_pair_types": [],
+   "id": "D05",
+   "relevance_semantics": "review-priority, not a confirmed vulnerability"
+  }
+ ]
+}

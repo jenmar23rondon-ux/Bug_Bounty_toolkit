@@ -78,6 +78,7 @@ distinct sessions for that kind is correct. "Must NOT pair" = any proposal is an
 |---|---|---|---|---|
 | Discovery | recall (12 expected kinds) | 1.00 [0.76–1.00] | 1.00 | 1.00 |
 | Discovery | P@1 / P@3 / P@5 / P@10 | 0 / 0 / 0.2 / 0.4 | same | same |
+| Discovery (ranking v2.0) | P@1 / P@3 / P@5 / P@10 | — | — | **1.0 / 0.67 / 0.8 / 0.7** (see `results/adv10-ranking-v2.json`) |
 | Discovery | negative kinds surfaced as candidates | 9 | 9 | 9 |
 | Pairing | proposals | n/a | 23 | 23 |
 | Pairing | TP / FP / ambiguous | n/a | 13 / 6 / 4 | 13 / 6 / 4 |

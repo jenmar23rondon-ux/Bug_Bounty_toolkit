@@ -22,7 +22,7 @@ import build_corpus  # noqa: E402
 import evaluate  # noqa: E402
 
 # Baseline main@47c8a30 stays committed in results/v0.2.2-main-47c8a30.json for comparison.
-SNAPSHOT = LAB / "results" / "adv10-resilient-har.json"
+SNAPSHOT = LAB / "results" / "adv10-ranking-v2.json"
 
 
 class AdversarialCorpusFrozenTests(unittest.TestCase):
@@ -126,7 +126,8 @@ class AdversarialEvaluationTests(unittest.TestCase):
     def test_measured_numbers_pinned(self) -> None:
         d, p, c = self.result["discovery"], self.result["pairing"], self.result["case_discovery"]
         self.assertEqual((d["expected_found"], d["expected_objects"]), (12, 12))
-        self.assertEqual(d["precision_at_k"]["1"], 0.0)
+        # Ranking v2.0: shared parents demoted; P@1 becomes positive (was 0.0 on ranking v1.0).
+        self.assertGreater(d["precision_at_k"]["1"], 0.0)
         self.assertEqual(d["exported_resource_types"], ["unknown"])
         self.assertEqual(
             (p["proposals"], p["tp_proposals"], p["fp_proposals"], p["ambiguous_proposals"]), (19, 16, 0, 3)

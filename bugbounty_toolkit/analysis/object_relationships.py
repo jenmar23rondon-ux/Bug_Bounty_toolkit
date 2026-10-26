@@ -26,7 +26,7 @@ from .har_import import HarImportError, import_har
 from .evidence_graph import MAX_GRAPH_EDGES, MAX_GRAPH_INPUT_BYTES, MAX_GRAPH_NODES
 
 SCHEMA_VERSION = "1.0"
-RANKING_VERSION = "1.0"
+RANKING_VERSION = "2.0"
 MAX_FILES = 16
 MAX_TOTAL_BYTES = 64 * 1024 * 1024
 MAX_CAPTURES = 256
@@ -91,15 +91,26 @@ SAFE_NAMES = set(COLLECTIONS) | {
     "uuid",
     "ids",
 }
-RULES = (
+# Positive structural-evidence points (investigation priority for human review).
+# Negative demotions follow; shared/public objects are demoted, never discarded.
+POSITIVE_RULES = (
     ("request_reference", 20),
-    ("also_in_response", 15),
-    ("multiple_endpoints", 15),
-    ("multiple_session_contexts", 20),
-    ("typed_foreign_key", 10),
-    ("json_co_occurrence", 10),
-    ("nested_path_context", 10),
+    ("also_in_response", 10),
+    ("typed_foreign_key", 15),
+    ("path_leaf_position", 15),
+    ("cross_session_kind_peers", 20),
+    ("multiple_session_contexts_leaf", 15),
+    ("multiple_endpoints", 5),
+    ("json_co_occurrence", 5),
+    ("nested_path_context", 5),
 )
+NEGATIVE_RULES = (
+    ("shared_path_parent_across_sessions", -35),
+    ("unauthenticated_context", -15),
+    ("response_only_no_request", -10),
+)
+# Back-compat alias for tests/importers that still import RULES.
+RULES = POSITIVE_RULES
 # Open-vocabulary resource kinds (P1). Structural wrappers / generic names are never a kind:
 # an identifier whose only noun is one of these is INSUFFICIENT evidence and is not paired.
 GENERIC_KIND_NAMES = frozenset(
@@ -728,19 +739,48 @@ def verify_object_sources(graph: dict[str, Any], inputs: list[Path], key: bytes)
 def object_candidates(
     graph: dict[str, Any], program: str, key: bytes, *, limit: int = 100, min_score: int = 0
 ) -> dict[str, Any]:
+    """Rank object references for human review using structural evidence only.
+
+    Ranking prioritizes review depth; it never confirms ownership, privacy, or vulns.
+    Shared/public objects may be demoted but are never auto-discarded.
+    """
     validate_object_graph(graph, program, key)
     if not 1 <= limit <= 100 or not 0 <= min_score <= 100:
         raise ValueError("Candidate limit must be 1-100 and minimum score 0-100.")
     nodes = {node["id"]: node for node in graph["nodes"]}
-    rows = []
+    observations = list(graph["observations"])
+    # Precompute path-parent / path-leaf roles from PATH_CONTEXT edges.
+    path_parent_of: dict[str, set[str]] = defaultdict(set)  # parent -> evidence obs
+    path_child_of: dict[str, set[str]] = defaultdict(set)  # child -> evidence obs
+    co_of: dict[str, set[str]] = defaultdict(set)
+    for relation in graph["relations"]:
+        evidence = set(relation.get("evidence_refs") or [])
+        if relation["relation"] == "PATH_CONTEXT":
+            path_parent_of[relation["source"]].update(evidence)
+            path_child_of[relation["target"]].update(evidence)
+        elif relation["relation"] == "CO_OCCURS":
+            co_of[relation["source"]].update(evidence)
+            co_of[relation["target"]].update(evidence)
+
+    # kind_ref -> session_ref -> distinct object_refs (for cross-session peer signal)
+    kind_sessions: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    for row in observations:
+        session = row.get("session_ref") or ""
+        for fact in row["references"]:
+            kind = fact.get("kind_ref")
+            if kind and session:
+                kind_sessions[kind][session].add(fact["object_ref"])
+
+    rows: list[dict[str, Any]] = []
     for object_id, node in nodes.items():
         if node["type"] != "Object":
             continue
-        observations = [
-            row for row in graph["observations"] if any(f["object_ref"] == object_id for f in row["references"])
-        ]
-        request_refs, response_refs, typed_refs = [], [], []
-        for row in observations:
+        obs_rows = [row for row in observations if any(f["object_ref"] == object_id for f in row["references"])]
+        request_refs: list[str] = []
+        response_refs: list[str] = []
+        typed_refs: list[str] = []
+        kind_refs: set[str] = set()
+        for row in obs_rows:
             facts = [fact for fact in row["references"] if fact["object_ref"] == object_id]
             if any(f["location"] != "response_json" for f in facts):
                 request_refs.append(row["id"])
@@ -748,32 +788,95 @@ def object_candidates(
                 response_refs.append(row["id"])
             if any(f["typed"] for f in facts):
                 typed_refs.append(row["id"])
-        endpoints = sorted({row["endpoint_ref"] for row in observations})
-        sessions = sorted({row["session_ref"] for row in observations if row["session_ref"]})
-        co_refs, path_refs = set(), set()
-        for relation in graph["relations"]:
-            if object_id not in (relation["source"], relation["target"]):
-                continue
-            if relation["relation"] == "CO_OCCURS":
-                co_refs.update(relation["evidence_refs"])
-            if relation["relation"] == "PATH_CONTEXT":
-                path_refs.update(relation["evidence_refs"])
-        all_refs = sorted(row["id"] for row in observations)
-        evidence = [
+            for fact in facts:
+                if fact.get("kind_ref"):
+                    kind_refs.add(fact["kind_ref"])
+        endpoints = sorted({row["endpoint_ref"] for row in obs_rows})
+        sessions = sorted({row["session_ref"] for row in obs_rows if row["session_ref"]})
+        all_refs = sorted(row["id"] for row in obs_rows)
+        leaf_refs = sorted(path_child_of.get(object_id, set()) & set(all_refs))
+        # Sole path identifier (no PATH_CONTEXT involving it) still counts as leaf-like when path-located.
+        if not leaf_refs and not path_parent_of.get(object_id):
+            path_only = [
+                row["id"]
+                for row in obs_rows
+                if any(f["object_ref"] == object_id and f["location"] == "path" for f in row["references"])
+            ]
+            leaf_refs = path_only
+        parent_refs = sorted(path_parent_of.get(object_id, set()) & set(all_refs))
+        co_refs = sorted(co_of.get(object_id, set()) & set(all_refs))
+        path_ctx_refs = sorted(
+            (path_parent_of.get(object_id, set()) | path_child_of.get(object_id, set())) & set(all_refs)
+        )
+
+        # Cross-session kind peers: other object_refs sharing a kind_ref in a different session.
+        peer_sessions = 0
+        peer_objects: set[str] = set()
+        for kind in kind_refs:
+            for session, objs in kind_sessions.get(kind, {}).items():
+                others = objs - {object_id}
+                if others:
+                    peer_objects.update(others)
+                    peer_sessions += 1
+        peer_refs = all_refs if peer_objects and peer_sessions >= 1 and sessions else []
+
+        is_path_parent = bool(parent_refs)
+        is_leaf = bool(leaf_refs) and not is_path_parent
+        multi_session_leaf_refs = all_refs if len(sessions) > 1 and is_leaf else []
+        multi_endpoint_refs = all_refs if len(endpoints) > 1 else []
+
+        positive_evidence = [
             request_refs,
             response_refs if request_refs else [],
-            all_refs if len(endpoints) > 1 else [],
-            all_refs if len(sessions) > 1 else [],
             typed_refs,
-            sorted(co_refs),
-            sorted(path_refs),
+            leaf_refs if is_leaf else [],
+            peer_refs,
+            multi_session_leaf_refs,
+            multi_endpoint_refs,
+            co_refs,
+            path_ctx_refs,
         ]
         breakdown: list[dict[str, Any]] = [
-            {"rule": rule, "points": points, "observation_refs": sorted(refs)}
-            for (rule, points), refs in zip(RULES, evidence)
+            {"rule": rule, "points": points, "polarity": "positive", "observation_refs": sorted(refs)}
+            for (rule, points), refs in zip(POSITIVE_RULES, positive_evidence)
             if refs
         ]
-        score = sum(row["points"] for row in breakdown)
+
+        # Demotions — never discard; only lower priority for human review.
+        shared_parent_refs = all_refs if is_path_parent and len(sessions) > 1 else []
+        unauth_refs = all_refs if not sessions else []
+        response_only_refs = (
+            sorted(set(response_refs) - set(request_refs)) if not request_refs and response_refs else []
+        )
+        negative_evidence = [shared_parent_refs, unauth_refs, response_only_refs]
+        for (rule, points), refs in zip(NEGATIVE_RULES, negative_evidence):
+            if refs:
+                breakdown.append(
+                    {"rule": rule, "points": points, "polarity": "negative", "observation_refs": sorted(refs)}
+                )
+
+        raw = sum(part["points"] for part in breakdown)
+        score = max(0, min(100, raw))
+
+        uncertainty: list[str] = []
+        if not request_refs:
+            uncertainty.append("no_request_side_reference")
+        if not kind_refs:
+            uncertainty.append("insufficient_kind_evidence")
+        if is_path_parent and len(sessions) > 1:
+            uncertainty.append("shared_parent_likely_requires_human_review")
+        if not sessions:
+            uncertainty.append("unauthenticated_or_missing_session_context")
+        if response_only_refs:
+            uncertainty.append("response_only_appearance")
+        if not breakdown:
+            uncertainty.append("insufficient_structural_evidence")
+
+        order_reason_parts = [f"{part['rule']}({part['points']:+d})" for part in breakdown]
+        order_reason = "; ".join(order_reason_parts) if order_reason_parts else "insufficient_evidence"
+        if uncertainty:
+            order_reason += " | uncertainty=" + ",".join(uncertainty)
+
         if score >= min_score:
             rows.append(
                 {
@@ -781,6 +884,9 @@ def object_candidates(
                     "resource_type": node["resource_type"],
                     "score": score,
                     "score_breakdown": breakdown,
+                    "score_raw": raw,
+                    "order_reason": order_reason,
+                    "uncertainty": uncertainty,
                     "endpoint_refs": endpoints,
                     "session_context_count": len(sessions),
                     "observation_refs": all_refs,
@@ -789,6 +895,7 @@ def object_candidates(
                     "confirmed": False,
                     "case_executable": False,
                     "researcher_review_required": True,
+                    "evidence_class": "observation",
                 }
             )
     rows.sort(key=lambda row: (-row["score"], row["object_ref"]))
