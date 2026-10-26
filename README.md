@@ -558,3 +558,10 @@ Tests run HTTP/Burp replay, scope exclusions, redaction, request budgets and rep
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+### Optional passive Burp bridge
+
+[The passive bridge](docs/burp-passive-bridge.md) exports only manually selected Burp
+messages to an owner-only local file, then requires explicit offline import and scope
+review. It adds no scanning or HTTP service. A mocked adapter, synthetic benchmark and
+limitations are in [the local evaluation](labs/burp_passive_bridge_eval/README.md).
