@@ -5,7 +5,9 @@ import hashlib
 import json
 from pathlib import Path
 
-import pytest
+import tempfile
+import unittest
+from unittest import mock
 
 from bugbounty_toolkit.analysis import candidate_similarity as cs
 from bugbounty_toolkit.analysis.evidence_gap_planner import build_plan
@@ -40,19 +42,16 @@ def test_true_duplicate_is_strong_but_never_merged(tmp_path: Path) -> None:
     ]
 
 
-@pytest.mark.parametrize(
-    ("scenario", "band"),
-    [
+def test_adversarial_negatives_not_strong(tmp_path: Path) -> None:
+    for scenario, band in (
         ("same_path_diff_vuln", "distinct"),
         ("same_id_diff_namespace", "distinct"),
         ("different_role", "distinct"),
         ("rejected_and_new", "possible"),
         ("stale_evidence", "insufficient_evidence"),
-    ],
-)
-def test_adversarial_negatives_not_strong(tmp_path: Path, scenario: str, band: str) -> None:
-    report = cs.correlate_program(_program(tmp_path, "dev", scenario), key=KEY, now=NOW)
-    assert [p["similarity_band"] for p in report["pairs"]] == [band]
+    ):
+        report = cs.correlate_program(_program(tmp_path / scenario, "dev", scenario), key=KEY, now=NOW)
+        assert [p["similarity_band"] for p in report["pairs"]] == [band], scenario
 
 
 def test_same_literal_id_different_namespace_explained(tmp_path: Path) -> None:
@@ -149,9 +148,9 @@ def test_planner_context_is_read_only(tmp_path: Path) -> None:
     assert ctx["candidates"]["dup-2"]["reuse"][0]["reuse_kind"] == "reuse_negative_control"
 
 
-def test_too_many_candidates_not_truncated(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(cs, "MAX_CANDIDATES", 2)
-    report = cs.correlate_program(_program(tmp_path, "dev", "group_of_three"), key=KEY)
+def test_too_many_candidates_not_truncated(tmp_path: Path) -> None:
+    with mock.patch.object(cs, "MAX_CANDIDATES", 2):
+        report = cs.correlate_program(_program(tmp_path, "dev", "group_of_three"), key=KEY)
     assert report["status"] == "too_many_candidates" and report["pairs"] == []
 
 
@@ -187,7 +186,7 @@ def test_lab_metrics_reproducible(tmp_path: Path) -> None:
     assert a == b
 
 
-def test_tampered_frozen_labels_detected(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_tampered_frozen_labels_detected(tmp_path: Path) -> None:
     truth = lab_metrics.verify_frozen("final")
     truth["scenarios"][0]["duplicate_pairs"] = []
     real = lab_metrics.build_split
@@ -197,9 +196,57 @@ def test_tampered_frozen_labels_detected(monkeypatch: pytest.MonkeyPatch, tmp_pa
         m["scenarios"][0]["programs"][0]["ledger_sha256"] = "0" * 64  # type: ignore[index]
         return m
 
-    monkeypatch.setattr(lab_metrics, "build_split", mutated)
-    with pytest.raises(lab_metrics.FrozenCorpusError):
-        lab_metrics.evaluate_split("final", tmp_path, frozen=truth)
-    monkeypatch.setattr(lab_metrics, "frozen_text", lambda split: "{}")
-    with pytest.raises(lab_metrics.FrozenCorpusError):
-        lab_metrics.verify_frozen("final")
+    with mock.patch.object(lab_metrics, "build_split", mutated):
+        try:
+            lab_metrics.evaluate_split("final", tmp_path, frozen=truth)
+        except lab_metrics.FrozenCorpusError:
+            pass
+        else:
+            raise AssertionError("mutated corpus accepted")
+    with mock.patch.object(lab_metrics, "frozen_text", lambda split: "{}"):
+        try:
+            lab_metrics.verify_frozen("final")
+        except lab_metrics.FrozenCorpusError:
+            pass
+        else:
+            raise AssertionError("mutated generator accepted")
+
+
+class CandidateSimilarityTests(unittest.TestCase):
+    pass
+
+
+def _wrap(fn: object) -> object:
+    def method(self: unittest.TestCase) -> None:
+        with tempfile.TemporaryDirectory(prefix="bbtk-sem-test-") as tmp:
+            if fn.__code__.co_argcount:  # type: ignore[attr-defined]
+                fn(Path(tmp))  # type: ignore[operator]
+            else:
+                fn()  # type: ignore[operator]
+
+    return method
+
+
+for _name in [
+    "test_true_duplicate_is_strong_but_never_merged",
+    "test_adversarial_negatives_not_strong",
+    "test_same_literal_id_different_namespace_explained",
+    "test_ledger_and_dedup_key_untouched",
+    "test_invalid_refs_never_support",
+    "test_no_program_dir_trusts_nothing",
+    "test_cross_program_skipped_by_default_and_never_compared",
+    "test_report_never_exports_literals",
+    "test_session_ambiguity_blocks_strong",
+    "test_shared_resource_capped",
+    "test_non_clique_component_not_grouped",
+    "test_reuse_is_recommendation_only",
+    "test_planner_context_is_read_only",
+    "test_too_many_candidates_not_truncated",
+    "test_normalize_path",
+    "test_no_ai_or_network_imports",
+    "test_lab_final_acceptance",
+    "test_lab_metrics_reproducible",
+    "test_tampered_frozen_labels_detected",
+]:
+    setattr(CandidateSimilarityTests, _name, _wrap(globals()[_name]))
+    del globals()[_name]
