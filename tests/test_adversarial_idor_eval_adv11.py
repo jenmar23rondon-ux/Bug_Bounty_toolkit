@@ -14,6 +14,7 @@ LAB = ROOT / "labs" / "adversarial_idor_eval"
 sys.path.insert(0, str(LAB))
 
 import build_corpus_adv11  # noqa: E402
+import evaluate  # noqa: E402
 
 FROZEN = LAB / "frozen_adv11"
 
@@ -46,6 +47,17 @@ class AdversarialCorpusAdv11FrozenTests(unittest.TestCase):
         self.assertTrue(all(u.startswith("http://127.0.0.1:8138/adv11/") for u in urls))
         self.assertEqual({s["class"] for s in gt["scenarios"]}, {"positive", "negative", "ambiguous"})
         self.assertTrue(all(s["expected_confirmed"] is False for s in gt["scenarios"]))
+
+    def test_final_evaluation_offline_deterministic_and_pinned(self) -> None:
+        """Measured once after the logic was committed; pinned, never used as a tuning target."""
+        result = evaluate.strip_volatile(evaluate.evaluate(corpus="adv-1.1"))
+        self.assertEqual(result, evaluate.strip_volatile(evaluate.evaluate(corpus="adv-1.1")))
+        snapshot = json.loads((LAB / "results" / "adv11-open-vocab-kind.json").read_text(encoding="utf-8"))
+        for stage in ("discovery", "pairing", "case_discovery", "bounds_probes", "primary_run_input"):
+            self.assertEqual(result[stage], snapshot[stage], stage)
+        self.assertEqual(result["safety"]["network_connect_attempts"], 0)
+        self.assertEqual(result["pairing"]["confirmed_flags"], 0)
+        self.assertEqual(result["confirmation"]["confirmed_by_pipeline"], 0)
 
 
 if __name__ == "__main__":

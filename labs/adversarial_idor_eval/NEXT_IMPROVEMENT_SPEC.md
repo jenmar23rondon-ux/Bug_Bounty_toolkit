@@ -1,4 +1,4 @@
-# SPEC (not implemented): position-qualified object kinds for out-of-vocabulary identifiers
+# SPEC (implemented in feature/open-vocab-resource-kind, see OPEN_VOCAB_KIND_RESULTS.md): position-qualified object kinds for out-of-vocabulary identifiers
 
 **Motivation (from adv-1.0):** cause C1/C1b explains 6/6 pairing FPs and 2/2 pairing FNs.
 Identifiers whose collection/field noun is outside the 19 built-in nouns are all exported as

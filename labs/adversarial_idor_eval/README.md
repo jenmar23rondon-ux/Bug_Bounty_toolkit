@@ -137,3 +137,11 @@ python -m unittest tests.test_adversarial_idor_eval -v
 ## Recommended next improvement (SPEC only, not implemented)
 
 See `NEXT_IMPROVEMENT_SPEC.md` — position-qualified object kinds for out-of-vocabulary identifiers.
+
+## Follow-up: P1 open-vocabulary resource kinds and the final corpus adv-1.1
+
+adv-1.0 stays frozen (ground truth unchanged). An independent FINAL-evaluation corpus
+`adv-1.1` (`build_corpus_adv11.py`, `frozen_adv11/`, origin `127.0.0.1:8138`, disjoint nouns)
+was committed with its baseline before the P1 logic existed. Run with
+`python labs/adversarial_idor_eval/evaluate.py --corpus adv-1.1`. Results and limitations:
+[`OPEN_VOCAB_KIND_RESULTS.md`](OPEN_VOCAB_KIND_RESULTS.md).
