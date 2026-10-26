@@ -1,0 +1,22 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "unsupported_claim"
+    ],
+    "validation_result": "unsupported_claim"
+  },
+  "id": "invented_impact",
+  "package": {
+    "candidate_id": "c-imp",
+    "claims": [
+      {
+        "claim_id": "cl-imp",
+        "evidence_refs": [],
+        "kind": "impact",
+        "text": "Critical because /api/orders endpoint exposes all tenants"
+      }
+    ],
+    "impact_invented": true
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "ledger_state_mismatch"
+    ],
+    "must_not_confirm": true,
+    "validation_result": "contradictory_evidence"
+  },
+  "id": "rejected_as_confirmed",
+  "package": {
+    "candidate_id": "c-rej",
+    "claims": [
+      {
+        "claim_id": "cl-state",
+        "evidence_refs": [
+          "e-r"
+        ],
+        "kind": "ledger_state",
+        "text": "confirmed"
+      },
+      {
+        "claim_id": "cl-conf",
+        "evidence_refs": [
+          "e-r"
+        ],
+        "kind": "confirmation",
+        "text": "confirmed"
+      }
+    ],
+    "declared_ledger_state": "confirmed",
+    "present_rejected_as_confirmed": true
+  }
+}
