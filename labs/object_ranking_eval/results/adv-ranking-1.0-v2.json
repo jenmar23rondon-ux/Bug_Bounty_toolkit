@@ -1,0 +1,40 @@
+{
+ "corpus_version": "adv-ranking-1.0",
+ "discovery_ranking": {
+  "ambiguous_surfaced": [],
+  "candidates": 36,
+  "expected_found": 13,
+  "expected_objects": 13,
+  "human_review_depth_to_first_relevant": 1,
+  "mrr": 1.0,
+  "ndcg_at_k": {
+   "1": 1.0,
+   "10": 1.0,
+   "3": 1.0,
+   "5": 1.0
+  },
+  "negative_in_top5": [],
+  "note": "Scores prioritize human review; candidates are not confirmed findings.",
+  "precision_at_k": {
+   "1": 1.0,
+   "10": 1.0,
+   "3": 1.0,
+   "5": 1.0
+  },
+  "recall": 1.0,
+  "recall_ci95": [
+   0.772,
+   1.0
+  ],
+  "relevant_still_available": true
+ },
+ "entries": 39,
+ "excluded_entries": [
+  22
+ ],
+ "ranking_version": "2.0",
+ "safety": {
+  "network_connect_attempts": 0
+ },
+ "scenarios": 12
+}

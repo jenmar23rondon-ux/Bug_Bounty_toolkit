@@ -4,6 +4,12 @@ Notable user-facing changes are recorded here.
 
 ## Unreleased
 
+- Evidence-based Object Discovery ranking v2.0: structural signals demote shared path-parents
+  and unauthenticated/response-only noise, boost path-leaf specificity and cross-session kind
+  peers; explainable positive/negative breakdown + uncertainty; never discards shared/public
+  candidates; no HTTP, no auto-confirm. Frozen ranking corpus `adv-ranking-1.0` (+ DEV) authored
+  before the rule change. Historical `adv-1.0`/`adv-1.1` ground truths untouched. Version stays 0.2.2.
+
 - Add offline `fuzz-plan`: context-aware discovery plans from local HAR captures, local wordlist
   collections and optional Object Discovery associations; reuses `ffuf_runner` gates; synthetic
   context-fuzz lab + before/after recommendation metrics; no downloads, no auto-execution, version stays 0.2.2.

@@ -52,7 +52,7 @@ class AdversarialCorpusAdv11FrozenTests(unittest.TestCase):
         """Measured once after the logic was committed; pinned, never used as a tuning target."""
         result = evaluate.strip_volatile(evaluate.evaluate(corpus="adv-1.1"))
         self.assertEqual(result, evaluate.strip_volatile(evaluate.evaluate(corpus="adv-1.1")))
-        snapshot = json.loads((LAB / "results" / "adv11-resilient-har.json").read_text(encoding="utf-8"))
+        snapshot = json.loads((LAB / "results" / "adv11-ranking-v2.json").read_text(encoding="utf-8"))
         for stage in (
             "discovery",
             "pairing",

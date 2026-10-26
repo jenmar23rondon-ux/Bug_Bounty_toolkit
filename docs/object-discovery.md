@@ -168,3 +168,11 @@ The document's `response_identifiers` block reports observed counts, exclusions 
 bbtk lab object-discover --dry-run
 bbtk lab object-discover --split eval --metrics-json /tmp/object-metrics.json
 ```
+
+## Candidate ranking (v2.0)
+
+`object-candidates` ranks references for **human review priority** using structural evidence only
+(request/response presence, typed fields, path-leaf vs shared path-parent, cross-session kind peers,
+capture completeness). Shared or public objects may be demoted but are never auto-discarded.
+Scores are not ownership, privacy, or vulnerability proof. See `labs/object_ranking_eval/`.
+

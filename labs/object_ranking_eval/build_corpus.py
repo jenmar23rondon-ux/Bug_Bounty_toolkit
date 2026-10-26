@@ -56,9 +56,7 @@ class Corpus:
             entry: dict = {"request": req}
             if not no_response:
                 text = (
-                    raw_resp
-                    if raw_resp is not None
-                    else (json.dumps(resp, sort_keys=True) if resp is not None else "")
+                    raw_resp if raw_resp is not None else (json.dumps(resp, sort_keys=True) if resp is not None else "")
                 )
                 entry["response"] = {
                     "status": status,
