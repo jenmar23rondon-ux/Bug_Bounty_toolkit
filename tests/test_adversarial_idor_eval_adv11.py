@@ -53,15 +53,16 @@ class AdversarialCorpusAdv11FrozenTests(unittest.TestCase):
         result = evaluate.strip_volatile(evaluate.evaluate(corpus="adv-1.1"))
         self.assertEqual(result, evaluate.strip_volatile(evaluate.evaluate(corpus="adv-1.1")))
         snapshot = json.loads((LAB / "results" / "adv11-ranking-v2.json").read_text(encoding="utf-8"))
-        for stage in (
-            "discovery",
-            "pairing",
-            "case_discovery",
-            "bounds_probes",
-            "primary_run_input",
-            "partial_recovery",
-        ):
+        # discovery/pairing unchanged; case_discovery fixed to use corpus origin :8138.
+        for stage in ("discovery", "pairing", "bounds_probes", "primary_run_input", "partial_recovery"):
             self.assertEqual(result[stage], snapshot[stage], stage)
+        case_snap = json.loads((LAB / "results" / "adv11-handoff-case-reliability.json").read_text(encoding="utf-8"))
+        self.assertEqual(result["case_discovery"], case_snap["case_discovery"])
+        c = result["case_discovery"]
+        self.assertEqual(c["technical_errors"], 0)
+        self.assertEqual(c["tp_pairs_with_case"], 6)
+        self.assertEqual(c["case_yield_on_eligible_tp"], 1.0)
+        self.assertEqual(c["corpus_origin"], "http://127.0.0.1:8138")
         self.assertEqual(result["safety"]["network_connect_attempts"], 0)
         self.assertEqual(result["pairing"]["confirmed_flags"], 0)
         self.assertEqual(result["confirmation"]["confirmed_by_pipeline"], 0)

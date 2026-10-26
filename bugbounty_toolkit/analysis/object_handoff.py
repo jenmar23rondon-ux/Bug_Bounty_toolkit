@@ -670,6 +670,16 @@ def _suggested_command(
     return " ".join(parts)
 
 
+def _capture_origin(source: CaptureSource) -> str:
+    """Scheme://host[:port] from an imported capture URL. Never invents a different authority."""
+    if not source.url:
+        raise ValueError("Capture is missing URL.")
+    parsed = urlsplit(source.url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError("Capture URL must be an HTTP(S) origin.")
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
 def _materialize_pair(
     directory: Path,
     proposal: dict[str, Any],
@@ -680,12 +690,15 @@ def _materialize_pair(
     """Write private raw HTTP snapshots for one proposal. Never logs bodies or headers."""
     directory = local_path(directory)
     paths: dict[str, str] = {}
+    origins: list[str] = []
     for role in ("owner", "actor"):
         side = proposal[role]
         key = (side["source_ref"], side["locator"])
         if key not in index:
             raise ValueError("Proposal locator does not match the verified capture inputs.")
-        request, response = capture_to_raw_http(index[key])
+        source = index[key]
+        origins.append(_capture_origin(source))
+        request, response = capture_to_raw_http(source)
         req_path = directory / f"{proposal['id']}-{role}.http"
         atomic_private_write(req_path, request, force=force)
         paths[f"{role}_path"] = str(req_path)
@@ -693,6 +706,13 @@ def _materialize_pair(
             resp_path = directory / f"{proposal['id']}-{role}-response.http"
             atomic_private_write(resp_path, response, force=force)
             paths[f"{role}_response_path"] = str(resp_path)
+    if len(set(origins)) != 1:
+        # Keep snapshots for human inspection; do not invent a merged origin.
+        paths["provenance_origin"] = ""
+        paths["provenance_origin_compatible"] = "false"
+    else:
+        paths["provenance_origin"] = origins[0]
+        paths["provenance_origin_compatible"] = "true"
     return paths
 
 
@@ -769,20 +789,42 @@ def propose_object_handoff(
         actor_hint = f"<export {proposal['actor']['locator']} from verified capture>"
         owner_resp = None
         actor_resp = None
+        # Prefer the capture's real provenance origin over a caller override that disagrees.
+        # Never rewrite Host in snapshots; an incompatible caller base_url is omitted from the
+        # suggestion so discover-idor can be run with the preserved origin (or fail closed).
+        suggest_base = base_url
         if index is not None and materialize_dir is not None:
             paths = _materialize_pair(materialize_dir, proposal, index, force=force)
             owner_hint = paths["owner_path"]
             actor_hint = paths["actor_path"]
             owner_resp = paths.get("owner_response_path")
             actor_resp = paths.get("actor_response_path")
+            provenance = paths.get("provenance_origin") or None
+            proposal["provenance_origin"] = provenance
+            proposal["provenance_origin_compatible"] = paths.get("provenance_origin_compatible") == "true"
+            if provenance:
+                if base_url is None:
+                    suggest_base = provenance
+                else:
+                    try:
+                        left = urlsplit(base_url)
+                        right = urlsplit(provenance)
+                        if (left.scheme, left.netloc.lower()) != (right.scheme, right.netloc.lower()):
+                            # Do not put a disagreeing override into the suggested command.
+                            suggest_base = provenance
+                    except ValueError:
+                        suggest_base = provenance
             materialized += 1
+        else:
+            proposal["provenance_origin"] = None
+            proposal["provenance_origin_compatible"] = None
         proposal["suggested_discover_idor"] = _suggested_command(
             program,
             owner_hint,
             actor_hint,
             owner_response=owner_resp,
             actor_response=actor_resp,
-            base_url=base_url,
+            base_url=suggest_base,
         )
         # Redacted endpoint hint from graph nodes (path_template only; no host/IDs).
         endpoint_node = next((n for n in graph["nodes"] if n["id"] == proposal["endpoint_ref"]), None)

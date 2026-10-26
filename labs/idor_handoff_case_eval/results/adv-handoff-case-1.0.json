@@ -1,0 +1,296 @@
+{
+ "case_eligible": 7,
+ "classification_codes": [
+  "CASE_ELIGIBLE",
+  "REJECT_MULTI_RESOURCE_DIFF",
+  "REJECT_NON_GET"
+ ],
+ "conversion_fps": 0,
+ "corpus_version": "adv-handoff-case-1.0",
+ "correct_cases": 7,
+ "entries": 28,
+ "excluded_entries": [
+  15,
+  24,
+  25
+ ],
+ "legitimate_rejections": 5,
+ "network_connect_attempts": 0,
+ "note": "Proposals are needs_review only; nothing confirmed or executed.",
+ "origin": "http://127.0.0.1:8141",
+ "proposals": 12,
+ "provenance_coverage": 1.0,
+ "rows": [
+  {
+   "cases": 1,
+   "classification": {
+    "actor_request_sha256": "77d3cecfaf28042309dfa44b10a1074305639455acd690160112833de10cf163",
+    "actor_response_sha256": "e2e45c3d92cc9ce249b1a8734d7af16f885c7b675d98ca75ca8dd42d89ea8490",
+    "case_eligible": true,
+    "code": "CASE_ELIGIBLE",
+    "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": false,
+    "origin": "http://127.0.0.1:8141",
+    "owner_request_sha256": "75dd46b1b4ef19aaf0e9db6abdf03384008a6aa48c25f4a90825b1d17d80e15e",
+    "owner_response_sha256": "6e9c15e193b68e325411bfb067cd66f8b9247952805aab7ebc9ff30de6796009",
+    "status": "case_eligible",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-ded0002ff2fcaa1b",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 0,
+   "classification": {
+    "actor_request_sha256": "0feceda20007b239c36fbe17821c76db3cb9f6962bb81e4f26443f2c2b3c2854",
+    "actor_response_sha256": "0b0311d2de375ff156cb35db460d3aa261a3859c505d46786e468f00387700dd",
+    "case_eligible": false,
+    "code": "REJECT_NON_GET",
+    "detail": "This generator creates read cases and requires GET (both captures use POST). Use the separate --lab-write case format for authorized JSON writes.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": true,
+    "origin": null,
+    "owner_request_sha256": "1c64aa5025ab7e3d02104134a2d9676cde7a27ea081ef4dde3af064c9ff9521a",
+    "owner_response_sha256": "a5418de5e1887a5a8828b928e9724f50e8087df56968aa5fe8ce14b120ad38d2",
+    "status": "security_rejected",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-b976c112f4749835",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 0,
+   "classification": {
+    "actor_request_sha256": "092d9c3012d6f4e1eb362733f2101af146fcf1f4d8a63f688f1810454a991e9a",
+    "actor_response_sha256": "ccb374fe43dd32433e032ef5ef81a13891953cba2b5e9a07a29a5e156ccaff6c",
+    "case_eligible": false,
+    "code": "REJECT_MULTI_RESOURCE_DIFF",
+    "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": true,
+    "origin": null,
+    "owner_request_sha256": "6040f96343e9fe3a859897a7b93f621dabaf8bffc63450225577ee0e129439e2",
+    "owner_response_sha256": "6384f80c85dc8245657b339540c4d16e7fda286ffbfb6b62f166c8d46844ea1e",
+    "status": "needs_more_evidence",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-7c75d071fed05d0f",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 0,
+   "classification": {
+    "actor_request_sha256": "092d9c3012d6f4e1eb362733f2101af146fcf1f4d8a63f688f1810454a991e9a",
+    "actor_response_sha256": "ccb374fe43dd32433e032ef5ef81a13891953cba2b5e9a07a29a5e156ccaff6c",
+    "case_eligible": false,
+    "code": "REJECT_MULTI_RESOURCE_DIFF",
+    "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": true,
+    "origin": null,
+    "owner_request_sha256": "6040f96343e9fe3a859897a7b93f621dabaf8bffc63450225577ee0e129439e2",
+    "owner_response_sha256": "6384f80c85dc8245657b339540c4d16e7fda286ffbfb6b62f166c8d46844ea1e",
+    "status": "needs_more_evidence",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-cfef9503489305e5",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 1,
+   "classification": {
+    "actor_request_sha256": "3415ecd83ff50405b799675671caeeb7e7dd06fff06f3f8223c69152ad486b80",
+    "actor_response_sha256": "462534a7fd38db7345baadc64ccba282408da7dcc0964d6542e44b7c694281f5",
+    "case_eligible": true,
+    "code": "CASE_ELIGIBLE",
+    "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": false,
+    "origin": "http://127.0.0.1:8141",
+    "owner_request_sha256": "3ffec5335820ad5b693a6a6dff481d1effb55efc730b91c8af739fdc30b5d211",
+    "owner_response_sha256": "ffdd722180dd6ddf7682f1d165a8a2368d3a0877bdc35534e19f3941b940c02d",
+    "status": "case_eligible",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-34bce21e7568d7ba",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 1,
+   "classification": {
+    "actor_request_sha256": "8b2d6b3253a4732f4847491c82d6cfe4d684b43810cf4f6d34f40c10378de6ff",
+    "actor_response_sha256": "456f14814ce8fbbe190d1a25fe61ce2148be965b3ee98571335e0c5f9d5815fb",
+    "case_eligible": true,
+    "code": "CASE_ELIGIBLE",
+    "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": false,
+    "origin": "http://127.0.0.1:8141",
+    "owner_request_sha256": "89e13f68f7b0e73acb2df63d5ac3f807175b7f3812a2c4d032c2a5264a60a503",
+    "owner_response_sha256": "396a0c14d99376f0b5dbec50d6d804bac3bad729e154663f16c87c83af3a5260",
+    "status": "case_eligible",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-d5f4016948939662",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 1,
+   "classification": {
+    "actor_request_sha256": "8f722337edf11b1b5d2c43ea49f2a659badd8b102f0455817a46b28ea2c548e9",
+    "actor_response_sha256": "a874acd186a079c0427f67d91c1f178cc6c94c20f50f89cd73006f42a06a67d7",
+    "case_eligible": true,
+    "code": "CASE_ELIGIBLE",
+    "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": false,
+    "origin": "http://127.0.0.1:8141",
+    "owner_request_sha256": "45e9b4b6f78e7946aaffcb86ad9db01b7cbacf7206c34b2446bf77686cc7a73b",
+    "owner_response_sha256": "7cf7a1634458d9f85a961e2d262fb64fa509115591795d6bfa877e479e5265a6",
+    "status": "case_eligible",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-9e0d2e851f2b8f94",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 1,
+   "classification": {
+    "actor_request_sha256": "08bf409e00a0c78f4fd70cb9089ca2c53c5c46c2d3465bece857719f11d4ed17",
+    "actor_response_sha256": "fa7d5e599415d841eb3d5ce2ea3299be431386d8fa0374d428ecfb95e214bebd",
+    "case_eligible": true,
+    "code": "CASE_ELIGIBLE",
+    "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": false,
+    "origin": "http://127.0.0.1:8141",
+    "owner_request_sha256": "d9dd783ba6b532d52537ad2b7d8029416523af9e5261b4606834a6ccf4ebd1c2",
+    "owner_response_sha256": "b9eabbb1bd03f8e6187b059f6512a88802a63bf784229ab5501431cd7fcff042",
+    "status": "case_eligible",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-d3a4b38ca88e5914",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 0,
+   "classification": {
+    "actor_request_sha256": "6040f96343e9fe3a859897a7b93f621dabaf8bffc63450225577ee0e129439e2",
+    "actor_response_sha256": "6384f80c85dc8245657b339540c4d16e7fda286ffbfb6b62f166c8d46844ea1e",
+    "case_eligible": false,
+    "code": "REJECT_MULTI_RESOURCE_DIFF",
+    "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": true,
+    "origin": null,
+    "owner_request_sha256": "092d9c3012d6f4e1eb362733f2101af146fcf1f4d8a63f688f1810454a991e9a",
+    "owner_response_sha256": "ccb374fe43dd32433e032ef5ef81a13891953cba2b5e9a07a29a5e156ccaff6c",
+    "status": "needs_more_evidence",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-5ebb0339e01eb9fa",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 0,
+   "classification": {
+    "actor_request_sha256": "092d9c3012d6f4e1eb362733f2101af146fcf1f4d8a63f688f1810454a991e9a",
+    "actor_response_sha256": "ccb374fe43dd32433e032ef5ef81a13891953cba2b5e9a07a29a5e156ccaff6c",
+    "case_eligible": false,
+    "code": "REJECT_MULTI_RESOURCE_DIFF",
+    "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": true,
+    "origin": null,
+    "owner_request_sha256": "6040f96343e9fe3a859897a7b93f621dabaf8bffc63450225577ee0e129439e2",
+    "owner_response_sha256": "6384f80c85dc8245657b339540c4d16e7fda286ffbfb6b62f166c8d46844ea1e",
+    "status": "needs_more_evidence",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-78e4c152a749c7b3",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 1,
+   "classification": {
+    "actor_request_sha256": "d9dd783ba6b532d52537ad2b7d8029416523af9e5261b4606834a6ccf4ebd1c2",
+    "actor_response_sha256": "b9eabbb1bd03f8e6187b059f6512a88802a63bf784229ab5501431cd7fcff042",
+    "case_eligible": true,
+    "code": "CASE_ELIGIBLE",
+    "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": false,
+    "origin": "http://127.0.0.1:8141",
+    "owner_request_sha256": "08bf409e00a0c78f4fd70cb9089ca2c53c5c46c2d3465bece857719f11d4ed17",
+    "owner_response_sha256": "fa7d5e599415d841eb3d5ce2ea3299be431386d8fa0374d428ecfb95e214bebd",
+    "status": "case_eligible",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-1f3daa3967362842",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  },
+  {
+   "cases": 1,
+   "classification": {
+    "actor_request_sha256": "08bf409e00a0c78f4fd70cb9089ca2c53c5c46c2d3465bece857719f11d4ed17",
+    "actor_response_sha256": "fa7d5e599415d841eb3d5ce2ea3299be431386d8fa0374d428ecfb95e214bebd",
+    "case_eligible": true,
+    "code": "CASE_ELIGIBLE",
+    "detail": "Structurally valid GET read pair with matching origin and both control responses.",
+    "has_actor_response": true,
+    "has_owner_response": true,
+    "legitimate_rejection": false,
+    "origin": "http://127.0.0.1:8141",
+    "owner_request_sha256": "d9dd783ba6b532d52537ad2b7d8029416523af9e5261b4606834a6ccf4ebd1c2",
+    "owner_response_sha256": "b9eabbb1bd03f8e6187b059f6512a88802a63bf784229ab5501431cd7fcff042",
+    "status": "case_eligible",
+    "technical_error": false
+   },
+   "error": null,
+   "proposal_id": "handoff-40dfbd9ca31f67e5",
+   "provenance_origin": "http://127.0.0.1:8141",
+   "resource_type": "unknown"
+  }
+ ],
+ "safety": {
+  "network_connect_attempts": 0
+ },
+ "scenarios": 14,
+ "technical_errors": 0,
+ "yield_among_eligible": 1.0,
+ "yield_among_proposals": 0.5833
+}

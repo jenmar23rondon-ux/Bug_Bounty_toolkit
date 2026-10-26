@@ -108,3 +108,23 @@ python -m unittest discover -s tests -p test_end_to_end_idor.py -v
 ## Known Limitations
 
 This is conservative structural matching, not semantic route discovery or an IDOR oracle. Collections/arrays and multiple ID fields can be ambiguous and need manual review or recapture. Role hierarchies, body-ID writes, signed/session queries, anonymous tests, pagination, arbitrary schema inference and freshly fetched evidence are outside preparation. Unsupported pairs remain unproposed rather than being force-normalized. Complete own-resource captures are still not proof of business ownership/privacy; only the investigator can attest that context. Hashes detect accidental snapshot changes, not an adversary who can edit the private bundle. No AI model is called and no untrusted document text becomes execution instructions.
+
+
+## Handoff Case Reliability (offline classification)
+
+When `object-handoff` materializes owner/actor pairs for `discover-idor`, conversion
+eligibility is classified without networking or auto-approval:
+
+| Status | Meaning |
+| --- | --- |
+| `structural_valid` | Parsed 4-way (or partial) captures with consistent structure |
+| `case_eligible` | GET, same effective origin, single justified resource diff, both control responses |
+| `needs_more_evidence` | Multi-diff, session-only, missing responses, insufficient sessions — remains a hypothesis |
+| `security_rejected` | Non-GET / body-on-GET / method mismatch — not promoted to a read case |
+| `technical_error` | Caller `--base-url` disagrees with capture Host/authority, or parse failure |
+
+Stable codes live in `bugbounty_toolkit.analysis.handoff_case_eligibility` (for example
+`CASE_ELIGIBLE`, `TECH_ORIGIN_OVERRIDE`, `REJECT_MULTI_RESOURCE_DIFF`). Origins are never
+silently rewritten: materialized suggestions use the capture provenance origin; incompatible
+overrides fail closed. Measurement lab: `labs/idor_handoff_case_eval` (`adv-handoff-case-1.0`).
+The adversarial evaluator uses each corpus `ground_truth.origin` (adv-1.0 → `:8137`, adv-1.1 → `:8138`).

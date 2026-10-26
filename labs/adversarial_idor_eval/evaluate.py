@@ -479,11 +479,18 @@ def _evaluate(ks: tuple[int, ...]) -> dict:
             result["pairing"] = pairing
 
             # ---------- case discovery (discover_idor) on materialized pairs ----------
+            # Use the corpus ground-truth origin (provenance). Never hardcode a lab port:
+            # adv-1.1 is 8138 while adv-1.0 is 8137; overriding Host is a technical error.
             try:
                 from bugbounty_toolkit.idor_discovery import discover_idor
             except ImportError:
                 discover_idor = None
+            try:
+                from bugbounty_toolkit.analysis.handoff_case_eligibility import classify_materialized_paths
+            except ImportError:
+                classify_materialized_paths = None  # type: ignore[assignment]
             pairs_dir = Path(tmp) / "pairs"
+            corpus_origin = gt.get("origin") if isinstance(gt.get("origin"), str) else None
             if discover_idor is not None and pairs_dir.is_dir():
                 case_rows = []
                 for r, p in zip(rows, props):
@@ -491,17 +498,28 @@ def _evaluate(ks: tuple[int, ...]) -> dict:
                     actor = pairs_dir / f"{p['id']}-actor.http"
                     if not owner.is_file() or not actor.is_file():
                         case_rows.append(
-                            {"rank": r["rank"], "verdict": r["verdict"], "cases": None, "error": "not materialized"}
+                            {
+                                "rank": r["rank"],
+                                "verdict": r["verdict"],
+                                "cases": None,
+                                "error": "not materialized",
+                                "classification": None,
+                            }
                         )
                         continue
                     ores = pairs_dir / f"{p['id']}-owner-response.http"
                     ares = pairs_dir / f"{p['id']}-actor-response.http"
+                    classification = None
+                    if classify_materialized_paths is not None:
+                        classification = classify_materialized_paths(
+                            pairs_dir, p["id"], base_url=corpus_origin
+                        ).as_dict()
                     try:
                         d = discover_idor(
                             PROGRAM,
                             owner,
                             actor,
-                            base_url="http://127.0.0.1:8137",
+                            base_url=corpus_origin,
                             owner_response=ores if ores.is_file() else None,
                             actor_response=ares if ares.is_file() else None,
                             accounts_authorized=False,
@@ -519,6 +537,8 @@ def _evaluate(ks: tuple[int, ...]) -> dict:
                                 "session_only_pairs": prop.get("session_only_pairs"),
                                 "unsupported_pairs": prop.get("unsupported_pairs"),
                                 "error": None,
+                                "classification": classification,
+                                "base_url_used": corpus_origin,
                             }
                         )
                     except Exception as exc:  # noqa: BLE001 - measured, reported
@@ -528,19 +548,42 @@ def _evaluate(ks: tuple[int, ...]) -> dict:
                                 "verdict": r["verdict"],
                                 "cases": None,
                                 "error": f"{type(exc).__name__}: {str(exc)[:120]}",
+                                "classification": classification,
+                                "base_url_used": corpus_origin,
                             }
                         )
                 tp_rows = [c for c in case_rows if c["verdict"] == "TP"]
+                class_rows = [c.get("classification") or {} for c in case_rows]
+                tp_class = [c.get("classification") or {} for c in tp_rows]
+                technical = sum(1 for c in class_rows if c.get("technical_error"))
+                legitimate = sum(1 for c in class_rows if c.get("legitimate_rejection"))
+                eligible = sum(1 for c in class_rows if c.get("case_eligible"))
+                tp_eligible = sum(1 for c in tp_class if c.get("case_eligible"))
+                tp_with_case = sum(1 for c in tp_rows if c["cases"])
                 result["case_discovery"] = {
                     "pairs_evaluated": len(case_rows),
-                    "tp_pairs_with_case": sum(1 for c in tp_rows if c["cases"]),
+                    "tp_pairs_with_case": tp_with_case,
                     "tp_pairs": len(tp_rows),
-                    "case_yield_on_tp": _ratio(sum(1 for c in tp_rows if c["cases"]), len(tp_rows)),
+                    "case_yield_on_tp": _ratio(tp_with_case, len(tp_rows)),
+                    "case_yield_on_eligible_tp": _ratio(
+                        sum(1 for c in tp_rows if c["cases"] and (c.get("classification") or {}).get("case_eligible")),
+                        tp_eligible,
+                    ),
                     "non_tp_pairs_with_case": sum(1 for c in case_rows if c["verdict"] != "TP" and c["cases"]),
                     "errors": sum(1 for c in case_rows if c["error"]),
+                    "technical_errors": technical,
+                    "legitimate_rejections": legitimate,
+                    "case_eligible_pairs": eligible,
+                    "tp_case_eligible": tp_eligible,
                     "confirmed_flags": sum(1 for c in case_rows if c.get("confirmed")),
+                    "corpus_origin": corpus_origin,
+                    "classification_codes": sorted({c.get("code") for c in class_rows if c.get("code")}),
                     "rows": case_rows,
-                    "note": "Case proposals are needs_review; accounts_authorized=False here, so nothing is executable.",
+                    "note": (
+                        "Case proposals are needs_review; accounts_authorized=False here, so nothing is executable. "
+                        "Technical errors (e.g. caller origin override) are counted separately from legitimate "
+                        "read-case rejections (non-GET, multi-diff, session-only, missing responses)."
+                    ),
                 }
 
     vt = [s for s in gt["scenarios"] if s["vulnerability_truth"] not in ("n/a",)]

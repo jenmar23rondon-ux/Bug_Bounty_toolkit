@@ -4,6 +4,14 @@ Notable user-facing changes are recorded here.
 
 ## Unreleased
 
+- IDOR handoff→case reliability: classify materialized pairs as `structural_valid` /
+  `case_eligible` / `needs_more_evidence` / `security_rejected` / `technical_error` with
+  stable codes; adversarial evaluator uses each corpus `ground_truth.origin` (never a
+  hardcoded port) and separates technical origin overrides from legitimate read-case
+  rejections; materialize suggestions preserve capture provenance origin. Frozen FINAL
+  corpus `adv-handoff-case-1.0` (+ DEV) authored before the fix. No discovery/ranking/fuzz
+  changes, no auto access-check/approve/confirm. Version stays 0.2.2.
+
 - Add offline evidence verification & coverage ledger (`bbtk ledger ...`, schema `bbtk-evidence-ledger/1`):
   surface coverage states, digest-verified evidence with provenance, distinct candidate states,
   blocked auto-confirmation, rejection reasons/blockers, broken-ref/duplicate/stale-evidence detection,
