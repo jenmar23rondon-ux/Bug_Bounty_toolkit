@@ -1,0 +1,144 @@
+{
+  "canary": "CANARY-SEMDEDUP-7f3a",
+  "frozen": true,
+  "network_requests_sent": 0,
+  "scenario_count": 8,
+  "scenarios": [
+    {
+      "adversarial": false,
+      "cross_program": false,
+      "duplicate_pairs": [
+        [
+          "c1",
+          "c2"
+        ]
+      ],
+      "expected_reuse": [],
+      "family": "true_duplicate",
+      "programs": [
+        {
+          "ledger_sha256": "b46d3e8c33e5b4b43577c8d85a2eae9c03ac4e36350c59f559cc2a793f5997ad",
+          "program": "sem-dev-true-duplicate"
+        }
+      ],
+      "scenario": "true_duplicate"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "same_path_different_vuln",
+      "programs": [
+        {
+          "ledger_sha256": "4a2848955ef7aa1cc601527f14e7382f8fe8f7d93c56ef04177d73db2ffed438",
+          "program": "sem-dev-same-path-diff-vuln"
+        }
+      ],
+      "scenario": "same_path_diff_vuln"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "same_id_different_namespace",
+      "programs": [
+        {
+          "ledger_sha256": "3d57240f33fd96b28a775c285bb39f31bcd706bed7953662285253de8d97957d",
+          "program": "sem-dev-same-id-diff-namespace"
+        }
+      ],
+      "scenario": "same_id_diff_namespace"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "different_role_permission",
+      "programs": [
+        {
+          "ledger_sha256": "ce13d600c48574475c9394b2733f9d7b12de50657ad34ccf8c43d38fbbad84e3",
+          "program": "sem-dev-different-role"
+        }
+      ],
+      "scenario": "different_role"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "rejected_and_new",
+      "programs": [
+        {
+          "ledger_sha256": "fb2482efb8523689381439658a28f55e361a17064e0abd0ba9d2131ddbdc5af5",
+          "program": "sem-dev-rejected-and-new"
+        }
+      ],
+      "scenario": "rejected_and_new"
+    },
+    {
+      "adversarial": true,
+      "cross_program": false,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "stale_evidence",
+      "programs": [
+        {
+          "ledger_sha256": "64127c02eaf31979ffee0df5f0cd49993d78c6d08776fc99df50d562c43abb71",
+          "program": "sem-dev-stale-evidence"
+        }
+      ],
+      "scenario": "stale_evidence"
+    },
+    {
+      "adversarial": false,
+      "cross_program": false,
+      "duplicate_pairs": [
+        [
+          "c1",
+          "c2"
+        ],
+        [
+          "c1",
+          "c3"
+        ],
+        [
+          "c2",
+          "c3"
+        ]
+      ],
+      "expected_reuse": [],
+      "family": "group",
+      "programs": [
+        {
+          "ledger_sha256": "da3d690162c0baa4e7250ac237d37c57c4058da40ca91ebcef8288f8356ef500",
+          "program": "sem-dev-group-of-three"
+        }
+      ],
+      "scenario": "group_of_three"
+    },
+    {
+      "adversarial": true,
+      "cross_program": true,
+      "duplicate_pairs": [],
+      "expected_reuse": [],
+      "family": "different_programs",
+      "programs": [
+        {
+          "ledger_sha256": "a6c1ffe40007f22096580dc55432c1687fc285dc8089001ce93d66d8f63b2e65",
+          "program": "sem-dev-cross-program-a"
+        },
+        {
+          "ledger_sha256": "acb787d9d859fe88ae50cc4d730780dc70aad641dddfe8ba11493f613729f5f5",
+          "program": "sem-dev-cross-program-b"
+        }
+      ],
+      "scenario": "cross_program"
+    }
+  ],
+  "schema_version": "bbtk-semantic-candidate-lab/1",
+  "split": "dev"
+}

@@ -1,0 +1,29 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "contradictory_evidence"
+    ],
+    "validation_result": "contradictory_evidence"
+  },
+  "id": "contradictory",
+  "package": {
+    "candidate_id": "c-con",
+    "claims": [
+      {
+        "claim_id": "cl-class",
+        "evidence_refs": [
+          "e-c"
+        ],
+        "kind": "classification",
+        "text": "candidate"
+      }
+    ],
+    "classification_matches_deterministic": false,
+    "contradictory_json": true,
+    "deterministic_result": {
+      "classification": "rejected_in_this_test"
+    },
+    "reported_classification": "candidate"
+  }
+}

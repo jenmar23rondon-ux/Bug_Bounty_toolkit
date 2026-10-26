@@ -1,0 +1,35 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "unsupported_claim",
+      "human_validation_required"
+    ],
+    "must_not_confirm": true,
+    "validation_result": "unsupported_claim"
+  },
+  "id": "ai_unverified",
+  "package": {
+    "ai_confirmation": true,
+    "candidate_id": "c-ai",
+    "claims": [
+      {
+        "claim_id": "cl-ai",
+        "evidence_refs": [
+          "e-ai"
+        ],
+        "kind": "ai_conclusion",
+        "text": "Model confirmed IDOR"
+      },
+      {
+        "claim_id": "cl-conf",
+        "evidence_refs": [
+          "e-ai"
+        ],
+        "kind": "confirmation",
+        "text": "confirmed by llm"
+      }
+    ],
+    "treat_ai_as_confirmed": true
+  }
+}

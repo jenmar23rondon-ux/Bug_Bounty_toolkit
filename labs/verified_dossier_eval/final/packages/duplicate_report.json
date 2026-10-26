@@ -1,0 +1,29 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "validation_result": "human_validation_required"
+  },
+  "id": "duplicate_report",
+  "package": {
+    "candidate_id": "c-dup",
+    "claims": [
+      {
+        "claim_id": "cl-state",
+        "evidence_refs": [
+          "e-d"
+        ],
+        "kind": "ledger_state",
+        "text": "candidate"
+      },
+      {
+        "claim_id": "cl-obs",
+        "evidence_refs": [
+          "e-d"
+        ],
+        "kind": "observed_behavior",
+        "text": "dup draft"
+      }
+    ],
+    "declared_ledger_state": "candidate"
+  }
+}

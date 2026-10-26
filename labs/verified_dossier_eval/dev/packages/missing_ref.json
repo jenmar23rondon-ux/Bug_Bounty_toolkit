@@ -1,0 +1,23 @@
+{
+  "expect": {
+    "finding_confirmed": false,
+    "must_detect": [
+      "broken_evidence_ref"
+    ],
+    "validation_result": "missing_evidence"
+  },
+  "id": "missing_ref",
+  "package": {
+    "candidate_id": "c-miss",
+    "claims": [
+      {
+        "claim_id": "cl-ghost",
+        "evidence_refs": [
+          "e-ghost"
+        ],
+        "kind": "evidence_reference",
+        "text": "ghost"
+      }
+    ]
+  }
+}
