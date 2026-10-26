@@ -1,0 +1,4 @@
+GET /ib/permits/76101 HTTP/1.1
+Host: 127.0.0.1:8177
+Authorization: Bearer ib30-c02-owner
+

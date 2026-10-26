@@ -1,0 +1,3154 @@
+{
+  "by_family": {
+    "A": {
+      "abstention_recall": 0.2857,
+      "auto_confirmations": 0,
+      "correct_abstentions": 2,
+      "eligibility_correct": 0.5,
+      "false_reviewable_after_planner": 5,
+      "false_reviewable_cases": 5,
+      "false_reviewable_rate": 0.7143,
+      "false_reviewable_rate_ci95": [
+        0.3589,
+        0.9178
+      ],
+      "forbidden_pairs_proposed": 1,
+      "info_loss_events": 0,
+      "missed_eligible_cases": 0,
+      "missed_eligible_rate": 0.0,
+      "missing_control_recall": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
+      "network_attempts": 0,
+      "next_step_precision_at_1": 0.5,
+      "next_step_precision_at_1_ci95": [
+        0.2366,
+        0.7634
+      ],
+      "object_recall": 1.0,
+      "object_recall_strict_resource_type": 0.0,
+      "outcome_accuracy": 0.5,
+      "outcome_accuracy_ci95": [
+        0.2366,
+        0.7634
+      ],
+      "outcome_accuracy_lenient": 0.5,
+      "pairing_precision": 0.3333,
+      "pairing_recall": 1.0,
+      "pipeline_exceptions": 0,
+      "precision_at_1": 1.0,
+      "precision_at_1_ci95": [
+        0.6756,
+        1.0
+      ],
+      "precision_at_1_strict_resource_type": 0.0,
+      "precision_at_3": 1.0,
+      "precision_at_5": 0.725,
+      "ranking_scenarios": 8,
+      "redundant_proposals": 0,
+      "reference_correct_rate": null,
+      "scenarios": 10,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 80,
+      "technical_errors_predicted": 0,
+      "wrong_object_top1": 0
+    },
+    "B": {
+      "abstention_recall": 1.0,
+      "auto_confirmations": 0,
+      "correct_abstentions": 3,
+      "eligibility_correct": 1.0,
+      "false_reviewable_after_planner": 0,
+      "false_reviewable_cases": 0,
+      "false_reviewable_rate": 0.0,
+      "false_reviewable_rate_ci95": [
+        0.0,
+        0.5615
+      ],
+      "forbidden_pairs_proposed": 0,
+      "info_loss_events": 0,
+      "missed_eligible_cases": 0,
+      "missed_eligible_rate": 0.0,
+      "missing_control_recall": 1.0,
+      "mrr": 0.9167,
+      "ndcg_at_5": 0.9009,
+      "network_attempts": 0,
+      "next_step_precision_at_1": 1.0,
+      "next_step_precision_at_1_ci95": [
+        0.7009,
+        1.0
+      ],
+      "object_recall": 1.0,
+      "object_recall_strict_resource_type": 0.125,
+      "outcome_accuracy": 1.0,
+      "outcome_accuracy_ci95": [
+        0.7009,
+        1.0
+      ],
+      "outcome_accuracy_lenient": 1.0,
+      "pairing_precision": 0.6667,
+      "pairing_recall": 1.0,
+      "pipeline_exceptions": 0,
+      "precision_at_1": 0.875,
+      "precision_at_1_ci95": [
+        0.5291,
+        0.9776
+      ],
+      "precision_at_1_strict_resource_type": 0.125,
+      "precision_at_3": 0.8333,
+      "precision_at_5": 0.7,
+      "ranking_scenarios": 8,
+      "redundant_proposals": 0,
+      "reference_correct_rate": null,
+      "scenarios": 9,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 60,
+      "technical_errors_predicted": 0,
+      "wrong_object_top1": 1
+    },
+    "C": {
+      "abstention_recall": 0.6667,
+      "auto_confirmations": 0,
+      "correct_abstentions": 2,
+      "eligibility_correct": 0.9091,
+      "false_reviewable_after_planner": 1,
+      "false_reviewable_cases": 1,
+      "false_reviewable_rate": 0.1667,
+      "false_reviewable_rate_ci95": [
+        0.0301,
+        0.5635
+      ],
+      "forbidden_pairs_proposed": 0,
+      "info_loss_events": 0,
+      "missed_eligible_cases": 0,
+      "missed_eligible_rate": 0.0,
+      "missing_control_recall": 1.0,
+      "mrr": 0.7273,
+      "ndcg_at_5": 0.7273,
+      "network_attempts": 0,
+      "next_step_precision_at_1": 0.9091,
+      "next_step_precision_at_1_ci95": [
+        0.6226,
+        0.9838
+      ],
+      "object_recall": 0.7273,
+      "object_recall_strict_resource_type": 0.1818,
+      "outcome_accuracy": 0.6364,
+      "outcome_accuracy_ci95": [
+        0.3538,
+        0.8483
+      ],
+      "outcome_accuracy_lenient": 0.7273,
+      "pairing_precision": 0.625,
+      "pairing_recall": 1.0,
+      "pipeline_exceptions": 0,
+      "precision_at_1": 0.7273,
+      "precision_at_1_ci95": [
+        0.4344,
+        0.9025
+      ],
+      "precision_at_1_strict_resource_type": 0.1818,
+      "precision_at_3": 0.6667,
+      "precision_at_5": 0.4909,
+      "ranking_scenarios": 11,
+      "redundant_proposals": 2,
+      "reference_correct_rate": null,
+      "scenarios": 11,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 60,
+      "technical_errors_predicted": 1,
+      "wrong_object_top1": 0
+    },
+    "D": {
+      "abstention_recall": 1.0,
+      "auto_confirmations": 0,
+      "correct_abstentions": 1,
+      "eligibility_correct": 0.25,
+      "false_reviewable_after_planner": 2,
+      "false_reviewable_cases": 6,
+      "false_reviewable_rate": 1.0,
+      "false_reviewable_rate_ci95": [
+        0.6097,
+        1.0
+      ],
+      "forbidden_pairs_proposed": 0,
+      "info_loss_events": 0,
+      "missed_eligible_cases": 0,
+      "missed_eligible_rate": 0.0,
+      "missing_control_recall": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
+      "network_attempts": 0,
+      "next_step_precision_at_1": 0.75,
+      "next_step_precision_at_1_ci95": [
+        0.4093,
+        0.9285
+      ],
+      "object_recall": 1.0,
+      "object_recall_strict_resource_type": 0.0,
+      "outcome_accuracy": 0.75,
+      "outcome_accuracy_ci95": [
+        0.4093,
+        0.9285
+      ],
+      "outcome_accuracy_lenient": 0.75,
+      "pairing_precision": 1.0,
+      "pairing_recall": 1.0,
+      "pipeline_exceptions": 0,
+      "precision_at_1": 1.0,
+      "precision_at_1_ci95": [
+        0.6756,
+        1.0
+      ],
+      "precision_at_1_strict_resource_type": 0.0,
+      "precision_at_3": 1.0,
+      "precision_at_5": 0.8,
+      "ranking_scenarios": 8,
+      "redundant_proposals": 0,
+      "reference_correct_rate": 0.8889,
+      "scenarios": 8,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 86,
+      "technical_errors_predicted": 0,
+      "wrong_object_top1": 0
+    },
+    "E": {
+      "abstention_recall": 0.5,
+      "auto_confirmations": 0,
+      "correct_abstentions": 1,
+      "eligibility_correct": 0.5714,
+      "false_reviewable_after_planner": 1,
+      "false_reviewable_cases": 1,
+      "false_reviewable_rate": 0.5,
+      "false_reviewable_rate_ci95": [
+        0.0945,
+        0.9055
+      ],
+      "forbidden_pairs_proposed": 1,
+      "info_loss_events": 1,
+      "missed_eligible_cases": 2,
+      "missed_eligible_rate": 0.4,
+      "missing_control_recall": 0.6,
+      "mrr": 0.6389,
+      "ndcg_at_5": 0.6687,
+      "network_attempts": 0,
+      "next_step_precision_at_1": 0.5714,
+      "next_step_precision_at_1_ci95": [
+        0.2505,
+        0.8418
+      ],
+      "object_recall": 0.8333,
+      "object_recall_strict_resource_type": 0.3333,
+      "outcome_accuracy": 0.4286,
+      "outcome_accuracy_ci95": [
+        0.1582,
+        0.7495
+      ],
+      "outcome_accuracy_lenient": 0.5714,
+      "pairing_precision": 0.6667,
+      "pairing_recall": 0.8,
+      "pipeline_exceptions": 1,
+      "precision_at_1": 0.5,
+      "precision_at_1_ci95": [
+        0.1876,
+        0.8124
+      ],
+      "precision_at_1_strict_resource_type": 0.1667,
+      "precision_at_3": 0.6111,
+      "precision_at_5": 0.4667,
+      "ranking_scenarios": 6,
+      "redundant_proposals": 1,
+      "reference_correct_rate": null,
+      "scenarios": 7,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 40,
+      "technical_errors_predicted": 1,
+      "wrong_object_top1": 2
+    }
+  },
+  "corpus_version": "irb-1.0",
+  "historical_overlap": {
+    "historical_files_scanned": 71,
+    "identical_files": 0,
+    "needle_hits": {},
+    "our_bytes": 92054,
+    "overlap_free": true
+  },
+  "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
+  "latency_ms": {
+    "e2e_total_ms": {
+      "max": 133.01,
+      "median": 43.54
+    },
+    "handoff_ms": {
+      "max": 27.04,
+      "median": 10.4
+    },
+    "import_discovery_ms": {
+      "max": 29.38,
+      "median": 4.2
+    },
+    "planner_ms": {
+      "max": 10.4,
+      "median": 2.74
+    },
+    "ranking_ms": {
+      "max": 3.34,
+      "median": 1.31
+    }
+  },
+  "manifest_sha256": "097ec726a02c22fa579893d6ff3a19c8999d8b6584b0126a581420daaf9ae3ad",
+  "metric_scope": "synthetic loopback lab only; not evidence of real-world performance",
+  "overall": {
+    "abstention_recall": 0.5625,
+    "auto_confirmations": 0,
+    "correct_abstentions": 9,
+    "eligibility_correct": 0.6667,
+    "false_reviewable_after_planner": 9,
+    "false_reviewable_cases": 13,
+    "false_reviewable_rate": 0.5417,
+    "false_reviewable_rate_ci95": [
+      0.3507,
+      0.7211
+    ],
+    "forbidden_pairs_proposed": 2,
+    "info_loss_events": 1,
+    "missed_eligible_cases": 2,
+    "missed_eligible_rate": 0.0952,
+    "missing_control_recall": 0.8983,
+    "mrr": 0.8577,
+    "ndcg_at_5": 0.859,
+    "network_attempts": 0,
+    "next_step_precision_at_1": 0.7556,
+    "next_step_precision_at_1_ci95": [
+      0.6133,
+      0.8576
+    ],
+    "object_recall": 0.9024,
+    "object_recall_strict_resource_type": 0.122,
+    "outcome_accuracy": 0.6667,
+    "outcome_accuracy_ci95": [
+      0.5207,
+      0.7864
+    ],
+    "outcome_accuracy_lenient": 0.7111,
+    "pairing_precision": 0.65,
+    "pairing_recall": 0.963,
+    "pipeline_exceptions": 1,
+    "precision_at_1": 0.8293,
+    "precision_at_1_ci95": [
+      0.6874,
+      0.9147
+    ],
+    "precision_at_1_strict_resource_type": 0.0976,
+    "precision_at_3": 0.8211,
+    "precision_at_5": 0.6341,
+    "ranking_scenarios": 41,
+    "redundant_proposals": 3,
+    "reference_correct_rate": 0.8889,
+    "scenarios": 45,
+    "secret_leaks": 0,
+    "synthetic_manual_steps": 326,
+    "technical_errors_predicted": 2,
+    "wrong_object_top1": 3
+  },
+  "peak_mem_kib_max": 33950.7,
+  "scenarios": [
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "A",
+      "first_step": "attest_distinct_accounts",
+      "id": "A01",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 33001.8,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "statement"
+      ],
+      "proposals": 2,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.6,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "statement"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 47.42,
+        "handoff_ms": 11.81,
+        "import_discovery_ms": 7.2,
+        "planner_ms": 2.2,
+        "ranking_ms": 1.4
+      },
+      "tag": "read-idor-proven"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE",
+        "REJECT_SESSION_ONLY"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "A",
+      "first_step": "attest_distinct_accounts",
+      "id": "A02",
+      "ideal_outcome": "stop",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32874.4,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "payslip"
+      ],
+      "proposals": 4,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "payslip"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 54.24,
+        "handoff_ms": 10.8,
+        "import_discovery_ms": 4.94,
+        "planner_ms": 3.52,
+        "ranking_ms": 1.32
+      },
+      "tag": "idor-absent-denied"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "A",
+      "first_step": "attest_distinct_accounts",
+      "id": "A03",
+      "ideal_outcome": "abstain",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 1,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32820.5,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "catalog"
+      ],
+      "proposals": 1,
+      "ranking": null,
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 25.8,
+        "handoff_ms": 4.67,
+        "import_discovery_ms": 4.14,
+        "planner_ms": 1.7,
+        "ranking_ms": 1.53
+      },
+      "tag": "public-resource-id"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "A",
+      "first_step": "none",
+      "id": "A04",
+      "ideal_outcome": "abstain",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32801.7,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": null,
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 14.5,
+        "handoff_ms": 2.25,
+        "import_discovery_ms": 3.94,
+        "planner_ms": 1.04,
+        "ranking_ms": 0.76
+      },
+      "tag": "shared-legit"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "A",
+      "first_step": "attest_distinct_accounts",
+      "id": "A05",
+      "ideal_outcome": "stop",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32836.3,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "contract"
+      ],
+      "proposals": 2,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.6,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "contract"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 38.88,
+        "handoff_ms": 11.09,
+        "import_discovery_ms": 3.8,
+        "planner_ms": 2.11,
+        "ranking_ms": 0.98
+      },
+      "tag": "denied-http-200"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "A",
+      "first_step": "attest_distinct_accounts",
+      "id": "A06",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32853.8,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "claim"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "claim"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 42.86,
+        "handoff_ms": 11.23,
+        "import_discovery_ms": 4.02,
+        "planner_ms": 2.91,
+        "ranking_ms": 1.2
+      },
+      "tag": "success-with-403"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "REJECT_HEADER_DIFF"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "A",
+      "first_step": "none",
+      "id": "A07",
+      "ideal_outcome": "abstain",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32806.1,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [
+        "profile"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "profile"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 34.62,
+        "handoff_ms": 11.69,
+        "import_discovery_ms": 3.71,
+        "planner_ms": 2.24,
+        "ranking_ms": 1.2
+      },
+      "tag": "authorized-admin-role"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "A",
+      "first_step": "attest_distinct_accounts",
+      "id": "A08",
+      "ideal_outcome": "stop",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32836.5,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "ledger"
+      ],
+      "proposals": 2,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.6,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "ledger"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 34.9,
+        "handoff_ms": 5.49,
+        "import_discovery_ms": 3.87,
+        "planner_ms": 2.49,
+        "ranking_ms": 1.1
+      },
+      "tag": "insufficient-permission"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE",
+        "REJECT_SESSION_ONLY"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "A",
+      "first_step": "attest_distinct_accounts",
+      "id": "A09",
+      "ideal_outcome": "stop",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32874.6,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "prescription"
+      ],
+      "proposals": 4,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "prescription"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 47.89,
+        "handoff_ms": 14.71,
+        "import_discovery_ms": 5.51,
+        "planner_ms": 3.45,
+        "ranking_ms": 1.48
+      },
+      "tag": "negative-control-correct"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "A",
+      "first_step": "attest_distinct_accounts",
+      "id": "A10",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32847.1,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "ticket"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "ticket"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 43.05,
+        "handoff_ms": 11.52,
+        "import_discovery_ms": 3.49,
+        "planner_ms": 2.57,
+        "ranking_ms": 1.22
+      },
+      "tag": "ownership-not-shown"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE",
+        "REJECT_MULTI_RESOURCE_DIFF"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "B",
+      "first_step": "attest_distinct_accounts",
+      "id": "B01",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32836.7,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "invoice"
+      ],
+      "proposals": 2,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 0.6667,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 1.0,
+        "strict_recall": true,
+        "top1_strict_type": "invoice",
+        "top1_type": "invoice"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 37.01,
+        "handoff_ms": 6.95,
+        "import_discovery_ms": 5.44,
+        "planner_ms": 2.41,
+        "ranking_ms": 1.32
+      },
+      "tag": "cross-reference"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "B",
+      "first_step": "attest_distinct_accounts",
+      "id": "B02",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32857.0,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "vault"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "vault"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 53.5,
+        "handoff_ms": 8.37,
+        "import_discovery_ms": 4.52,
+        "planner_ms": 2.59,
+        "ranking_ms": 1.51
+      },
+      "tag": "uuid-ids"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "B",
+      "first_step": "none",
+      "id": "B03",
+      "ideal_outcome": "abstain",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32802.4,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": null,
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 15.1,
+        "handoff_ms": 1.84,
+        "import_discovery_ms": 3.59,
+        "planner_ms": 0.87,
+        "ranking_ms": 0.98
+      },
+      "tag": "same-id-diff-namespace"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "B",
+      "first_step": "attest_distinct_accounts",
+      "id": "B04",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32860.1,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "comment"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "comment"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 41.73,
+        "handoff_ms": 10.28,
+        "import_discovery_ms": 4.62,
+        "planner_ms": 2.94,
+        "ranking_ms": 1.62
+      },
+      "tag": "nested-resource"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "B",
+      "first_step": "attest_distinct_accounts",
+      "id": "B05",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32886.3,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "group"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 0.6367,
+        "p@1": 1.0,
+        "p@3": 0.6667,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "group"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 50.28,
+        "handoff_ms": 13.2,
+        "import_discovery_ms": 7.5,
+        "planner_ms": 3.34,
+        "ranking_ms": 3.3
+      },
+      "tag": "array-members"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "REJECT_MULTI_RESOURCE_DIFF"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "B",
+      "first_step": "none",
+      "id": "B06",
+      "ideal_outcome": "abstain",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32821.0,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [
+        "wallet"
+      ],
+      "proposals": 6,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 1.0,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "wallet"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 54.79,
+        "handoff_ms": 13.2,
+        "import_discovery_ms": 5.93,
+        "planner_ms": 2.81,
+        "ranking_ms": 2.58
+      },
+      "tag": "duplicate-fields"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "B",
+      "first_step": "attest_distinct_accounts",
+      "id": "B07",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 33950.7,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "report"
+      ],
+      "proposals": 12,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 1.0,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "report"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 133.01,
+        "handoff_ms": 27.04,
+        "import_discovery_ms": 8.22,
+        "planner_ms": 10.4,
+        "ranking_ms": 3.02
+      },
+      "tag": "shared-object-across"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "REJECT_MULTI_RESOURCE_DIFF"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "B",
+      "first_step": "none",
+      "id": "B08",
+      "ideal_outcome": "abstain",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 2,
+        "tp": 0
+      },
+      "peak_mem_kib": 32864.0,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [
+        "account",
+        "card"
+      ],
+      "proposals": 4,
+      "ranking": {
+        "ndcg@5": 0.5706,
+        "p@1": 0.0,
+        "p@3": 0.3333,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 0.3333,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "account",
+        "top1_type": "account"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 55.71,
+        "handoff_ms": 14.34,
+        "import_discovery_ms": 16.09,
+        "planner_ms": 2.21,
+        "ranking_ms": 3.13
+      },
+      "tag": "parent-frequency-trap"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "B",
+      "first_step": "attest_distinct_accounts",
+      "id": "B09",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32861.2,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "note"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "note"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 44.28,
+        "handoff_ms": 9.57,
+        "import_discovery_ms": 4.96,
+        "planner_ms": 2.88,
+        "ranking_ms": 1.66
+      },
+      "tag": "ownership-looking-field"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "attest_distinct_accounts",
+      "id": "C01",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32846.2,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "shipment"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "shipment"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 47.9,
+        "handoff_ms": 18.59,
+        "import_discovery_ms": 4.79,
+        "planner_ms": 3.05,
+        "ranking_ms": 1.24
+      },
+      "tag": "burp-xml"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "NEEDS_RESPONSE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "none",
+      "id": "C02",
+      "ideal_outcome": "technical_error",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32789.2,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [
+        "kind-370923e21ed2d0804e880898f849f570"
+      ],
+      "proposals": 1,
+      "ranking": {
+        "ndcg@5": 0.0,
+        "p@1": 0.0,
+        "p@3": 0.0,
+        "p@5": 0.0,
+        "recall": false,
+        "rr": 0.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "kind-370923e21ed2d0804e880898f849f570"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 22.15,
+        "handoff_ms": 4.68,
+        "import_discovery_ms": 3.34,
+        "planner_ms": 1.44,
+        "ranking_ms": 0.87
+      },
+      "tag": "raw-http"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "attest_distinct_accounts",
+      "id": "C03",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32852.9,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "license"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "license"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 46.8,
+        "handoff_ms": 16.29,
+        "import_discovery_ms": 4.25,
+        "planner_ms": 2.64,
+        "ranking_ms": 1.49
+      },
+      "tag": "reordered"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "none",
+      "id": "C04",
+      "ideal_outcome": "technical_error",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32793.2,
+      "predicted_outcome": "technical_error",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": {
+        "ndcg@5": 0.0,
+        "p@1": 0.0,
+        "p@3": 0.0,
+        "p@5": 0.0,
+        "recall": false,
+        "rr": 0.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "unknown"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 14.63,
+        "handoff_ms": 1.47,
+        "import_discovery_ms": 2.82,
+        "planner_ms": 0.87,
+        "ranking_ms": 0.71
+      },
+      "tag": "missing-response"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "C",
+      "first_step": "attest_distinct_accounts",
+      "id": "C05",
+      "ideal_outcome": "stop",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32818.3,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "quote"
+      ],
+      "proposals": 2,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.6,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "quote"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 29.76,
+        "handoff_ms": 6.82,
+        "import_discovery_ms": 3.26,
+        "planner_ms": 2.17,
+        "ranking_ms": 0.97
+      },
+      "tag": "redirect"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "none",
+      "id": "C06",
+      "ideal_outcome": "technical_error",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32805.6,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": {
+        "ndcg@5": 0.0,
+        "p@1": 0.0,
+        "p@3": 0.0,
+        "p@5": 0.0,
+        "recall": false,
+        "rr": 0.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "unknown"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 15.08,
+        "handoff_ms": 2.0,
+        "import_discovery_ms": 3.82,
+        "planner_ms": 1.11,
+        "ranking_ms": 1.61
+      },
+      "tag": "mixed-origins"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "REJECT_NON_GET"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "none",
+      "id": "C07",
+      "ideal_outcome": "stop",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": false,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32809.0,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [
+        "address"
+      ],
+      "proposals": 1,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 0.6667,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 1.0,
+        "strict_recall": true,
+        "top1_strict_type": "address",
+        "top1_type": "address"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 23.63,
+        "handoff_ms": 5.48,
+        "import_discovery_ms": 4.61,
+        "planner_ms": 1.62,
+        "ranking_ms": 0.96
+      },
+      "tag": "write-method"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "attest_distinct_accounts",
+      "id": "C08",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32851.9,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "booking"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "booking"
+      },
+      "redundant_proposals": 2,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 51.67,
+        "handoff_ms": 12.97,
+        "import_discovery_ms": 10.42,
+        "planner_ms": 2.76,
+        "ranking_ms": 1.66
+      },
+      "tag": "duplicate-captures"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "none",
+      "id": "C09",
+      "ideal_outcome": "abstain",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32802.7,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 0.6667,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 1.0,
+        "strict_recall": true,
+        "top1_strict_type": "cart",
+        "top1_type": "cart"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 14.66,
+        "handoff_ms": 1.69,
+        "import_discovery_ms": 3.48,
+        "planner_ms": 0.89,
+        "ranking_ms": 0.8
+      },
+      "tag": "ambiguous-session"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "attest_distinct_accounts",
+      "id": "C10",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32849.3,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "subscription"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "subscription"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 38.98,
+        "handoff_ms": 9.62,
+        "import_discovery_ms": 3.87,
+        "planner_ms": 2.74,
+        "ranking_ms": 1.27
+      },
+      "tag": "deep-json"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "attest_distinct_accounts",
+      "id": "C11",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32853.7,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "estimate"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "estimate"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 43.54,
+        "handoff_ms": 10.31,
+        "import_discovery_ms": 3.86,
+        "planner_ms": 3.31,
+        "ranking_ms": 1.22
+      },
+      "tag": "partially-damaged"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "D",
+      "first_step": "verify_evidence_digest",
+      "id": "D11",
+      "ideal_outcome": "integrity_block",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 11,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32852.9,
+      "predicted_outcome": "integrity_block",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "manifest"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "manifest"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 1,
+        "valid": 1
+      },
+      "stage_ms": {
+        "e2e_total_ms": 46.1,
+        "handoff_ms": 8.49,
+        "import_discovery_ms": 4.44,
+        "planner_ms": 2.9,
+        "ranking_ms": 1.33
+      },
+      "tag": "evidence-altered"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "D",
+      "first_step": "verify_evidence_digest",
+      "id": "D12",
+      "ideal_outcome": "integrity_block",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 11,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32852.3,
+      "predicted_outcome": "integrity_block",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "dossier"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "dossier"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 1,
+        "valid": 1
+      },
+      "stage_ms": {
+        "e2e_total_ms": 43.54,
+        "handoff_ms": 13.69,
+        "import_discovery_ms": 3.68,
+        "planner_ms": 2.42,
+        "ranking_ms": 1.22
+      },
+      "tag": "evidence-deleted"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "D",
+      "first_step": "repair_broken_reference",
+      "id": "D13",
+      "ideal_outcome": "integrity_block",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 11,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32853.1,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "transcript"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "transcript"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 1,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 41.98,
+        "handoff_ms": 10.66,
+        "import_discovery_ms": 3.81,
+        "planner_ms": 3.05,
+        "ranking_ms": 1.21
+      },
+      "tag": "broken-reference"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "D",
+      "first_step": "review_stale_evidence",
+      "id": "D14",
+      "ideal_outcome": "integrity_block",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 11,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32852.5,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "certificate"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "certificate"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 1,
+        "valid": 1
+      },
+      "stage_ms": {
+        "e2e_total_ms": 48.87,
+        "handoff_ms": 11.84,
+        "import_discovery_ms": 3.71,
+        "planner_ms": 3.2,
+        "ranking_ms": 1.2
+      },
+      "tag": "expired-evidence"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "D",
+      "first_step": "stop_contradicted_hypothesis",
+      "id": "D15",
+      "ideal_outcome": "stop",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 11,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32855.1,
+      "predicted_outcome": "stop",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "agreement"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "agreement"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 1,
+        "valid": 1
+      },
+      "stage_ms": {
+        "e2e_total_ms": 53.86,
+        "handoff_ms": 8.78,
+        "import_discovery_ms": 4.2,
+        "planner_ms": 2.77,
+        "ranking_ms": 1.42
+      },
+      "tag": "contradiction"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "D",
+      "first_step": "review_duplicate",
+      "id": "D16",
+      "ideal_outcome": "duplicate",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 11,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32853.7,
+      "predicted_outcome": "duplicate",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "voucherbook"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "voucherbook"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 51.66,
+        "handoff_ms": 11.65,
+        "import_discovery_ms": 3.9,
+        "planner_ms": 3.16,
+        "ranking_ms": 1.31
+      },
+      "tag": "repeated-candidate"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "D",
+      "first_step": "reuse_existing_control",
+      "id": "D17",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 1,
+        "hit": 1,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32852.8,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "deposit"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "deposit"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 4,
+        "valid": 4
+      },
+      "stage_ms": {
+        "e2e_total_ms": 44.64,
+        "handoff_ms": 12.17,
+        "import_discovery_ms": 3.67,
+        "planner_ms": 3.56,
+        "ranking_ms": 1.31
+      },
+      "tag": "controls-complete"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "D",
+      "first_step": "attest_distinct_accounts",
+      "id": "D18",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 1,
+        "hit": 1,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32852.6,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "transfer"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "transfer"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 45.65,
+        "handoff_ms": 9.34,
+        "import_discovery_ms": 4.28,
+        "planner_ms": 3.43,
+        "ranking_ms": 1.46
+      },
+      "tag": "missing-negative"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": false,
+      "exception": "ValueError: Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: entries_over_limit)",
+      "family": "E",
+      "first_step": "none",
+      "id": "E01",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": {
+        "expected": 3,
+        "hit": 0,
+        "predicted": []
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 1,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32792.5,
+      "predicted_outcome": "technical_error",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": {
+        "ndcg@5": 0.0,
+        "p@1": 0.0,
+        "p@3": 0.0,
+        "p@5": 0.0,
+        "recall": false,
+        "rr": 0.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": null,
+        "top1_type": null
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "error": "ValueError"
+      },
+      "tag": "heavy-noise"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "E",
+      "first_step": "attest_distinct_accounts",
+      "id": "E02",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32902.9,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "appointment"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 0.4415,
+        "p@1": 0.0,
+        "p@3": 0.6667,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 0.5,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "unknown"
+      },
+      "redundant_proposals": 1,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 77.48,
+        "handoff_ms": 19.64,
+        "import_discovery_ms": 29.38,
+        "planner_ms": 2.78,
+        "ranking_ms": 3.34
+      },
+      "tag": "frequent-irrelevant"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "E",
+      "first_step": "attest_distinct_accounts",
+      "id": "E03",
+      "ideal_outcome": "abstain",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 1,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32861.6,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "category"
+      ],
+      "proposals": 3,
+      "ranking": null,
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 47.06,
+        "handoff_ms": 10.4,
+        "import_discovery_ms": 5.4,
+        "planner_ms": 3.23,
+        "ranking_ms": 2.28
+      },
+      "tag": "misleading-labels"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "E",
+      "first_step": "attest_distinct_accounts",
+      "id": "E04",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32859.4,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "user"
+      ],
+      "proposals": 2,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 0.6667,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 1.0,
+        "strict_recall": true,
+        "top1_strict_type": "user",
+        "top1_type": "user"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 40.78,
+        "handoff_ms": 7.08,
+        "import_discovery_ms": 7.58,
+        "planner_ms": 2.13,
+        "ranking_ms": 1.44
+      },
+      "tag": "similar-routes"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "REJECT_NON_GET"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "E",
+      "first_step": "none",
+      "id": "E05",
+      "ideal_outcome": "stop",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": false,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "peak_mem_kib": 32813.7,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [
+        "kind-75c55565937017fc6e4899ab98f8b87b"
+      ],
+      "proposals": 1,
+      "ranking": {
+        "ndcg@5": 0.5706,
+        "p@1": 0.0,
+        "p@3": 0.3333,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 0.3333,
+        "strict_p@1": 0.0,
+        "strict_recall": true,
+        "top1_strict_type": "unknown",
+        "top1_type": "kind-75c55565937017fc6e4899ab98f8b87b"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 25.86,
+        "handoff_ms": 5.36,
+        "import_discovery_ms": 4.2,
+        "planner_ms": 1.27,
+        "ranking_ms": 1.29
+      },
+      "tag": "unseen-shape-graphql"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "REJECT_MULTI_RESOURCE_DIFF"
+      ],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "E",
+      "first_step": "none",
+      "id": "E06",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [
+        "paired_but_no_reviewable_case"
+      ],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": {
+        "expected": 3,
+        "hit": 0,
+        "predicted": []
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32806.7,
+      "predicted_outcome": "abstain",
+      "predicted_reviewable": false,
+      "proposal_types": [
+        "export"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "export"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 37.98,
+        "handoff_ms": 10.31,
+        "import_discovery_ms": 3.82,
+        "planner_ms": 1.81,
+        "ranking_ms": 1.21
+      },
+      "tag": "secret-canaries"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "E",
+      "first_step": "attest_distinct_accounts",
+      "id": "E07",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 32858.4,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "message"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "message"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 46.1,
+        "handoff_ms": 10.41,
+        "import_discovery_ms": 3.92,
+        "planner_ms": 3.14,
+        "ranking_ms": 1.21
+      },
+      "tag": "prompt-injection"
+    }
+  ],
+  "split": "final",
+  "type": "bbtk-independent-research-benchmark"
+}
