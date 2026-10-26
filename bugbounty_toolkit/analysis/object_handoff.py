@@ -19,6 +19,7 @@ from ..core.private_files import atomic_private_write, local_path
 from ..core.records import ProgramPaths
 from .evidence_engine import CaptureSource
 from .object_relationships import (
+    COLLECTIONS,
     MAX_CAPTURES,
     MAX_FILES,
     SCHEMA_VERSION,
@@ -32,9 +33,26 @@ from .object_relationships import (
     build_object_graph,
 )
 
-HANDOFF_VERSION = "1.0"
-LAB_CORPUS_VERSION = "1.0"
+HANDOFF_VERSION = "1.1"
+LAB_CORPUS_VERSION = "1.1"
 MAX_PROPOSALS = 64
+# Bounds for asymmetric response->request pairing (deterministic, memory-bounded).
+MAX_RESPONSE_SIDES = 512
+MAX_ASYMMETRIC_PAIRS = 256
+# Asymmetric proposals never outrank an equally evidenced request/request proposal.
+ASYMMETRIC_SCORE_CEILING = 79
+ASYMMETRIC_RULE = "response-identifier-v1"
+ASYMMETRIC_RULE_TEXT = (
+    "An identifier observed only in a response JSON body of one authorized session may be proposed "
+    "alongside a request-side identifier of a DIFFERENT authorized session only when: (1) both carry the "
+    "same known resource_type; (2) the response identifier has type evidence of its own, either a typed "
+    "field name (e.g. project_id) or a collection-named JSON container (e.g. addresses[*].id); bare "
+    "wrapper ids typed only by the endpoint path are never linked; (3) both are on the same origin; "
+    "(4) the response identifier is observed in exactly one session context (identifiers seen by several "
+    "sessions are treated as shared context and excluded); (5) the identifiers differ. Equal numeric "
+    "tokens of different resource types never link because object refs are HMAC(origin, type, value). "
+    "The relation is INFERRED, never ownership: response presence alone is not evidence of who owns an object."
+)
 MAX_MATERIALIZE_BYTES = 1_000_000
 REQUEST_LOCATIONS = frozenset({"path", "query", "request_json"})
 KNOWN_COLLECTIONS = frozenset(
@@ -72,8 +90,20 @@ HUMAN_GATE = (
 )
 
 # Label categories used only by the synthetic efficacy lab.
-POSITIVE_LABELS = frozenset({"vulnerable", "cross-tenant", "nested-json", "query"})
-NEGATIVE_RANK_LABELS = frozenset({"public", "session-only", "single-session", "ambiguous"})
+POSITIVE_LABELS = frozenset(
+    {"vulnerable", "cross-tenant", "nested-json", "query", "response-observed", "response-nested"}
+)
+NEGATIVE_RANK_LABELS = frozenset(
+    {
+        "public",
+        "session-only",
+        "single-session",
+        "ambiguous",
+        "response-collision",
+        "ambiguous-shared",
+        "incomplete-capture",
+    }
+)
 # Protected may yield a structural proposal but must never be confirmed.
 PROTECTED_LABELS = frozenset({"protected"})
 
@@ -82,8 +112,12 @@ def _canonical(value: Any) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode()
 
 
-def _proposal_id(program: str, endpoint: str, owner_obj: str, actor_obj: str) -> str:
-    digest = hashlib.sha256(_canonical([program, endpoint, owner_obj, actor_obj])).hexdigest()[:16]
+def _proposal_id(program: str, endpoint: str, owner_obj: str, actor_obj: str, kind: str | None = None) -> str:
+    parts: list[str] = [program, endpoint, owner_obj, actor_obj]
+    if kind is not None:
+        # Asymmetric proposals use a distinct id namespace; request/request ids are unchanged.
+        parts.append(kind)
+    digest = hashlib.sha256(_canonical(parts)).hexdigest()[:16]
     return "handoff-" + digest
 
 
@@ -206,13 +240,215 @@ def _observation_object_sides(
     return by_endpoint
 
 
+def _response_type_basis(pointer: str, resource_type: str, typed: bool) -> str | None:
+    """Type evidence for a response identifier, or None for bare endpoint-typed wrapper ids."""
+    if typed:
+        return "typed_field_name"
+    # Collection names are kept verbatim in pointer templates (other names are HMAC-redacted).
+    for segment in [part for part in pointer.split("/") if part][:-1]:
+        if COLLECTIONS.get(segment.lower()) == resource_type:
+            return "collection_container"
+    return None
+
+
+def _response_object_sides(
+    graph: dict[str, Any],
+    stats: dict[str, int],
+) -> tuple[list[dict[str, Any]], dict[str, set[str]]]:
+    """Response-only identifiers per (observation, object) plus every session that saw each object.
+
+    These are OBSERVED identifiers. They carry no ownership claim and are only used for inferred,
+    human-review pairing under ASYMMETRIC_RULE.
+    """
+    nodes = {node["id"]: node for node in graph["nodes"]}
+    object_sessions: dict[str, set[str]] = defaultdict(set)
+    sides: list[dict[str, Any]] = []
+    for observation in graph["observations"]:
+        session = observation.get("session_ref")
+        provenance = observation.get("provenance") or []
+        per_object: dict[str, dict[str, Any]] = {}
+        for fact in observation.get("references") or []:
+            object_ref = fact.get("object_ref")
+            node = nodes.get(object_ref) if isinstance(object_ref, str) else None
+            if not node or node.get("type") != "Object":
+                continue
+            if session:
+                object_sessions[str(object_ref)].add(session)
+            bucket = per_object.setdefault(str(object_ref), {"locations": set(), "bases": set()})
+            location = fact.get("location")
+            if isinstance(location, str):
+                bucket["locations"].add(location)
+            if location == "response_json":
+                field = nodes.get(fact.get("field_ref") or "") or {}
+                basis = _response_type_basis(
+                    str(field.get("pointer_template") or ""),
+                    str(node.get("resource_type") or "unknown"),
+                    bool(fact.get("typed")),
+                )
+                if basis:
+                    bucket["bases"].add(basis)
+        if not session or not provenance:
+            continue
+        endpoint_node = nodes.get(observation["endpoint_ref"]) or {}
+        for object_ref, bucket in sorted(per_object.items()):
+            if "response_json" not in bucket["locations"] or bucket["locations"] & REQUEST_LOCATIONS:
+                continue
+            resource_type = str(nodes[object_ref].get("resource_type") or "unknown")
+            stats["response_identifiers_observed"] += 1
+            if resource_type not in KNOWN_COLLECTIONS:
+                stats["excluded_untyped_resource"] += 1
+                continue
+            if not bucket["bases"]:
+                stats["excluded_bare_response_id"] += 1
+                continue
+            basis = "typed_field_name" if "typed_field_name" in bucket["bases"] else "collection_container"
+            for prov in provenance:
+                if not isinstance(prov, dict):
+                    continue
+                source_ref = prov.get("source_ref")
+                locator = prov.get("locator")
+                if not isinstance(source_ref, str) or not isinstance(locator, str):
+                    continue
+                if len(sides) >= MAX_RESPONSE_SIDES:
+                    stats["truncated_response_sides"] += 1
+                    break
+                sides.append(
+                    {
+                        "object_ref": object_ref,
+                        "resource_type": resource_type,
+                        "locations": {"response_json"},
+                        "type_basis": basis,
+                        "session_ref": session,
+                        "observation_ref": observation["id"],
+                        "source_ref": source_ref,
+                        "locator": locator,
+                        "endpoint_ref": observation["endpoint_ref"],
+                        "origin_ref": endpoint_node.get("origin_ref"),
+                    }
+                )
+    sides.sort(key=lambda row: (row["resource_type"], row["object_ref"], row["session_ref"], row["locator"]))
+    return sides, object_sessions
+
+
+def _asymmetric_proposals(
+    graph: dict[str, Any],
+    program: str,
+    by_endpoint: dict[str, list[dict[str, Any]]],
+    *,
+    candidate: str | None,
+    stats: dict[str, int],
+) -> list[dict[str, Any]]:
+    """Inferred response->request pairs for human review. Never ownership, never confirmed."""
+    nodes = {node["id"]: node for node in graph["nodes"]}
+    response_sides, object_sessions = _response_object_sides(graph, stats)
+    request_sides = sorted(
+        (side for sides in by_endpoint.values() for side in sides),
+        key=lambda row: (row["endpoint_ref"], row["object_ref"], row["session_ref"], row["locator"]),
+    )
+    proposals: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    shared: set[str] = set()
+    for owner in response_sides:
+        if len(object_sessions.get(owner["object_ref"], set())) > 1:
+            if owner["object_ref"] not in shared:
+                shared.add(owner["object_ref"])
+                stats["excluded_shared_context"] += 1
+            continue
+        for actor in request_sides:
+            if actor["resource_type"] != owner["resource_type"]:
+                continue
+            if actor["session_ref"] == owner["session_ref"] or actor["object_ref"] == owner["object_ref"]:
+                continue
+            endpoint = actor["endpoint_ref"]
+            if (nodes.get(endpoint) or {}).get("origin_ref") != owner["origin_ref"]:
+                continue
+            if candidate and candidate not in {owner["object_ref"], actor["object_ref"]}:
+                continue
+            dedupe = (endpoint, owner["object_ref"], actor["object_ref"])
+            if dedupe in seen:
+                continue
+            seen.add(dedupe)
+            if len(proposals) >= MAX_ASYMMETRIC_PAIRS:
+                stats["truncated_asymmetric_pairs"] += 1
+                return proposals
+            resource_type = owner["resource_type"]
+            response_points = 6 + (8 if owner["type_basis"] == "typed_field_name" else 4)
+            if resource_type in KNOWN_COLLECTIONS:
+                response_points += 6
+            score = min(
+                _side_score(actor["locations"], actor["typed"], resource_type) + response_points,
+                ASYMMETRIC_SCORE_CEILING,
+            )
+            proposals.append(
+                {
+                    "id": _proposal_id(program, endpoint, owner["object_ref"], actor["object_ref"], ASYMMETRIC_RULE),
+                    "endpoint_ref": endpoint,
+                    "resource_type": resource_type,
+                    "score": score,
+                    "pair_kind": "asymmetric_response_request",
+                    "relation": {
+                        "state": "inferred",
+                        "rule": ASYMMETRIC_RULE,
+                        "basis": "same_resource_type_distinct_sessions",
+                        "ownership": "unknown",
+                        "note": "Response presence is an observed identifier only; it does not establish ownership.",
+                    },
+                    "observed_identifiers": [
+                        {
+                            "role": "owner",
+                            "object_ref": owner["object_ref"],
+                            "observed_in": "response_json",
+                            "type_basis": owner["type_basis"],
+                            "observation_ref": owner["observation_ref"],
+                            "ownership": "unknown",
+                        },
+                        {
+                            "role": "actor",
+                            "object_ref": actor["object_ref"],
+                            "observed_in": "request",
+                            "locations": sorted(actor["locations"] & REQUEST_LOCATIONS),
+                            "observation_ref": actor["observation_ref"],
+                            "ownership": "unknown",
+                        },
+                    ],
+                    "owner": {
+                        "object_ref": owner["object_ref"],
+                        "session_ref": owner["session_ref"],
+                        "observation_ref": owner["observation_ref"],
+                        "endpoint_ref": owner["endpoint_ref"],
+                        "source_ref": owner["source_ref"],
+                        "locator": owner["locator"],
+                        "locations": ["response_json"],
+                    },
+                    "actor": {
+                        "object_ref": actor["object_ref"],
+                        "session_ref": actor["session_ref"],
+                        "observation_ref": actor["observation_ref"],
+                        "endpoint_ref": endpoint,
+                        "source_ref": actor["source_ref"],
+                        "locator": actor["locator"],
+                        "locations": sorted(actor["locations"]),
+                    },
+                    "confirmed": False,
+                    "case_executable": False,
+                    "researcher_review_required": True,
+                    "human_gate": HUMAN_GATE,
+                    "insufficient_evidence": False,
+                }
+            )
+    return proposals
+
+
 def _build_proposals(
     graph: dict[str, Any],
     program: str,
     *,
     candidate: str | None,
     limit: int,
+    include_response_identifiers: bool = True,
+    stats: dict[str, int] | None = None,
 ) -> list[dict[str, Any]]:
+    stats = stats if stats is not None else defaultdict(int)
     by_endpoint = _observation_object_sides(graph)
     path_linked: set[str] = set()
     for relation in graph.get("relations") or []:
@@ -266,6 +502,14 @@ def _build_proposals(
                             "endpoint_ref": endpoint,
                             "resource_type": resource_type,
                             "score": score,
+                            "pair_kind": "request_request",
+                            "relation": {
+                                "state": "observed",
+                                "rule": "request-side-identifiers",
+                                "basis": "same_endpoint_template_distinct_sessions",
+                                "ownership": "unknown",
+                                "note": "Both identifiers were observed in captured requests; ownership is unknown.",
+                            },
                             "owner": {
                                 "object_ref": left["object_ref"],
                                 "session_ref": left["session_ref"],
@@ -289,6 +533,10 @@ def _build_proposals(
                             "insufficient_evidence": False,
                         }
                     )
+
+    if include_response_identifiers:
+        raw.extend(_asymmetric_proposals(graph, program, by_endpoint, candidate=candidate, stats=stats))
+    stats["asymmetric_candidates"] = sum(1 for row in raw if row.get("pair_kind") == "asymmetric_response_request")
 
     # Diversified deterministic ranking: prefer higher score, then rotate resource types.
     def _sort_key(row: dict[str, Any]) -> tuple[int, int, str, str]:
@@ -384,8 +632,13 @@ def propose_object_handoff(
     limit: int = 20,
     materialize_dir: Path | None = None,
     force: bool = False,
+    include_response_identifiers: bool = True,
 ) -> dict[str, Any]:
-    """Build offline capture-pair proposals. network_requests_sent is always 0."""
+    """Build offline capture-pair proposals. network_requests_sent is always 0.
+
+    With include_response_identifiers (default), typed identifiers observed only in response JSON may
+    form INFERRED asymmetric proposals under ASYMMETRIC_RULE. They never establish ownership.
+    """
     ProgramPaths(Path("."), program)
     validate_object_graph(graph, program, key)
     if not 1 <= limit <= MAX_PROPOSALS:
@@ -404,14 +657,23 @@ def propose_object_handoff(
         index = indexed_capture_sources(program, inputs, key, base_url=base_url)
 
     # Explicit insufficient-evidence path when a candidate cannot form a pair.
-    proposals = _build_proposals(graph, program, candidate=candidate, limit=limit)
+    stats: dict[str, int] = defaultdict(int)
+    proposals = _build_proposals(
+        graph,
+        program,
+        candidate=candidate,
+        limit=limit,
+        include_response_identifiers=include_response_identifiers,
+        stats=stats,
+    )
     status = "proposals_ready"
     notes: list[str] = []
     if candidate and not proposals:
         status = "insufficient_evidence"
         notes.append(
             "The selected candidate lacks two distinct session contexts with different "
-            "request-side object values on a shared endpoint template."
+            "request-side object values on a shared endpoint template, and no typed response-only "
+            "identifier from another single session qualifies under the asymmetric rule."
         )
 
     materialized = 0
@@ -452,6 +714,18 @@ def propose_object_handoff(
         "status": status,
         "notes": notes,
         "candidate_filter": candidate,
+        "response_identifiers": {
+            "enabled": include_response_identifiers,
+            "rule": ASYMMETRIC_RULE,
+            "rule_text": ASYMMETRIC_RULE_TEXT,
+            "observed": stats["response_identifiers_observed"],
+            "excluded_untyped_resource": stats["excluded_untyped_resource"],
+            "excluded_bare_response_id": stats["excluded_bare_response_id"],
+            "excluded_shared_context": stats["excluded_shared_context"],
+            "asymmetric_candidates": stats["asymmetric_candidates"],
+            "asymmetric_selected": sum(1 for row in proposals if row.get("pair_kind") == "asymmetric_response_request"),
+            "truncated": stats["truncated_response_sides"] + stats["truncated_asymmetric_pairs"],
+        },
         "total_proposals": len(proposals),
         "proposals": proposals,
         "materialized_pairs": materialized,
@@ -481,6 +755,7 @@ def handoff_to_file(
     force: bool = False,
     base_url: str | None = None,
     limit: int = 20,
+    include_response_identifiers: bool = True,
 ) -> dict[str, Any]:
     """CLI orchestration for object-handoff."""
     key_path = local_path(key_path)
@@ -498,6 +773,7 @@ def handoff_to_file(
         limit=limit,
         materialize_dir=write_materialize,
         force=force,
+        include_response_identifiers=include_response_identifiers,
     )
     if dry_run:
         document = dict(document)
@@ -537,6 +813,11 @@ def _enrich_labels(labels: list[dict[str, Any]]) -> list[dict[str, Any]]:
         "nested-json": ("account", "nested-json"),
         "query-id": ("invoice", "query"),
         "public": ("product", "public"),
+        "response-observed": ("project", "response-observed"),
+        "response-nested": ("address", "response-nested"),
+        "response-collision": ("team", "response-collision"),
+        "response-shared": ("tenant", "ambiguous-shared"),
+        "incomplete-capture": ("customer", "incomplete-capture"),
         "single-session": ("cart", "single-session"),
         "ambiguous": ("unknown", "ambiguous"),
         "session-only": ("wishlist", "session-only"),
@@ -717,6 +998,20 @@ def run_object_discovery_lab(
             limit=limit,
         )
         elapsed_ms = (time.perf_counter() - started) * 1000.0
+        # Same-run comparison against request-side-only pairing (the PR #26 behavior).
+        request_only = propose_object_handoff(
+            graph,
+            program,
+            key,
+            limit=limit,
+            include_response_identifiers=False,
+        )
+        request_only_metrics = _compute_metrics(
+            request_only["proposals"],
+            baseline_unique,
+            labels if isinstance(labels, list) else [],
+            elapsed_ms=elapsed_ms,
+        )
         metrics = _compute_metrics(
             handoff["proposals"],
             baseline_unique,
@@ -731,6 +1026,19 @@ def run_object_discovery_lab(
                 "baseline_candidates": candidates["total_candidates"],
                 "handoff_proposals": handoff["total_proposals"],
                 "metrics": metrics,
+                "request_only_comparison": {
+                    key_name: request_only_metrics[key_name]
+                    for key_name in (
+                        "precision_at_1",
+                        "precision_at_3",
+                        "precision_at_5",
+                        "recall",
+                        "fp_count",
+                        "fn_count",
+                        "false_negatives",
+                    )
+                },
+                "asymmetric_selected": handoff["response_identifiers"]["asymmetric_selected"],
                 "network_requests_sent": 0,
                 "vulnerabilities_confirmed": 0,
                 "confirmed": False,

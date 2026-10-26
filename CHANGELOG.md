@@ -6,6 +6,8 @@ Notable user-facing changes are recorded here.
 
 - Add offline `object-handoff` to turn object-relationship candidates into reproducible owner/actor capture-pair proposals (locators, provenance, suggested `discover-idor` command) without writing cases, calling access-check, approving, or sending HTTP.
 - Add `bbtk lab object-discover` with a versioned synthetic labeled corpus (`dev`/`eval`), Precision@k/recall/FP/FN metrics, and before/after comparison against `object-candidates` ranking. Synthetic metrics do not claim real bug-bounty confirmation performance.
+- Extend `object-handoff` (handoff 1.1) with offline asymmetric pairing: typed identifiers observed only in one session's response JSON (nested objects/arrays) can form human-review proposals with another session's request-side identifier. Proposals label observed identifiers vs inferred relations, never infer ownership, keep provenance, stay `confirmed=false`/`case_executable=false`, and follow the documented `response-identifier-v1` guards (own type evidence, distinct sessions, same origin, shared-context exclusion, bounded). `--request-only` restores request-side-only pairing.
+- Object discovery lab corpus 1.1 adds response-observed, response-nested, collision, shared-context and incomplete-capture scenarios to DEV and EVAL and reports a same-run `request_only_comparison`.
 
 ## 0.2.2 - 2026-10-25
 
