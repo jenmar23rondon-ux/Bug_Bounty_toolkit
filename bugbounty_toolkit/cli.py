@@ -415,8 +415,17 @@ def cmd_recon(args: argparse.Namespace) -> None:
     store, settings, scope = executor_context(args, automated=True)
     rate = external_rate(settings)
     ensure_in_scope(args.target, store.paths.scope_file)
-    subfinder = run_tool(store, "subfinder", args.target, ["subfinder", "-silent", "-d", args.target])
-    amass = run_tool(store, "amass", args.target, ["amass", "enum", "-passive", "-d", args.target])
+    budget = getattr(args, "_execution_budget", None)
+    tool_kwargs = {
+        "timeout_seconds": max(60.0, float(settings.timeout) * 20.0),
+        "max_output_bytes": max(settings.max_response_bytes * 20, 1_000_000),
+        "execution_budget": budget,
+        "contact_external": True,
+        "authorization_attested": True,
+        "scope_attested": True,
+    }
+    subfinder = run_tool(store, "subfinder", args.target, ["subfinder", "-silent", "-d", args.target], **tool_kwargs)
+    amass = run_tool(store, "amass", args.target, ["amass", "enum", "-passive", "-d", args.target], **tool_kwargs)
     merged = store.paths.raw_dir / "subdomains.txt"
     values = set()
     for path in [subfinder, amass]:
@@ -433,7 +442,13 @@ def cmd_recon(args: argparse.Namespace) -> None:
     if not authorized:
         raise ValueError("No discovered hosts are in scope. Add explicit subdomains or a permitted wildcard.")
     merged.write_text("\n".join(authorized) + "\n", encoding="utf-8")
-    httpx = run_tool(store, "httpx", args.target, ["httpx", "-silent", "-l", str(merged), "-rl", str(rate)])
+    httpx = run_tool(
+        store,
+        "httpx",
+        args.target,
+        ["httpx", "-silent", "-l", str(merged), "-rl", str(rate)],
+        **tool_kwargs,
+    )
     print(f"[+] Recon complete. Live host output: {httpx}")
 
 
@@ -444,6 +459,7 @@ def cmd_scan_nuclei(args: argparse.Namespace) -> None:
     if not hosts.exists():
         raise SystemExit("Run recon first; missing registros/<program>/raw/subdomains.txt")
     scope.require_all([line.strip() for line in hosts.read_text(encoding="utf-8").splitlines() if line.strip()])
+    budget = getattr(args, "_execution_budget", None)
     output = run_tool(
         store,
         "nuclei",
@@ -460,6 +476,12 @@ def cmd_scan_nuclei(args: argparse.Namespace) -> None:
             "-c",
             str(settings.max_concurrency),
         ],
+        timeout_seconds=max(60.0, float(settings.timeout) * 20.0),
+        max_output_bytes=max(settings.max_response_bytes * 20, 1_000_000),
+        execution_budget=budget,
+        contact_external=True,
+        authorization_attested=True,
+        scope_attested=True,
     )
     print(f"[+] Nuclei scan complete: {output}")
 
@@ -917,10 +939,19 @@ def cmd_xss(args: argparse.Namespace) -> None:
 
 
 def cmd_params(args: argparse.Namespace) -> None:
-    store, _, _ = executor_context(args, automated=True)
+    store, settings, _ = executor_context(args, automated=True)
     ensure_in_scope(args.url, store.paths.scope_file)
-    paramspider = run_tool(store, "paramspider", args.url, ["paramspider", "-d", args.url])
-    arjun = run_tool(store, "arjun", args.url, ["arjun", "-u", args.url])
+    budget = getattr(args, "_execution_budget", None)
+    tool_kwargs = {
+        "timeout_seconds": max(60.0, float(settings.timeout) * 20.0),
+        "max_output_bytes": max(settings.max_response_bytes * 20, 1_000_000),
+        "execution_budget": budget,
+        "contact_external": True,
+        "authorization_attested": True,
+        "scope_attested": True,
+    }
+    paramspider = run_tool(store, "paramspider", args.url, ["paramspider", "-d", args.url], **tool_kwargs)
+    arjun = run_tool(store, "arjun", args.url, ["arjun", "-u", args.url], **tool_kwargs)
     store.mark_reviewed("parameter-target", args.url, "paramspider and arjun executed")
     print(f"[+] Parameter analysis complete: {paramspider}, {arjun}")
 

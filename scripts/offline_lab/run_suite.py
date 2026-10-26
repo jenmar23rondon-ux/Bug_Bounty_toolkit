@@ -28,6 +28,38 @@ EXCLUSIONS: dict[str, tuple[str, bool]] = {
         "rewrites the tracked frozen corpus in place; refused by the read-only filesystem (pre-existing test design)",
         True,
     ),
+    "test_secure_subprocess.SecureSubprocessLabTests.test_successful_process": (
+        "spawns a synthetic local helper under tmpfs; offline lab image is not the process-exec gate (covered by smoke-test)",
+        True,
+    ),
+    "test_secure_subprocess.SecureSubprocessLabTests.test_timeout_and_never_ending_process": (
+        "spawns a synthetic local helper under tmpfs; offline lab image is not the process-exec gate (covered by smoke-test)",
+        True,
+    ),
+    "test_secure_subprocess.SecureSubprocessLabTests.test_excessive_output_is_contained": (
+        "spawns a synthetic local helper under tmpfs; offline lab image is not the process-exec gate (covered by smoke-test)",
+        True,
+    ),
+    "test_secure_subprocess.SecureSubprocessLabTests.test_persistent_child_is_killed_with_tree": (
+        "spawns a synthetic local helper under tmpfs; offline lab image is not the process-exec gate (covered by smoke-test)",
+        True,
+    ),
+    "test_secure_subprocess.SecureSubprocessLabTests.test_cancellation": (
+        "spawns a synthetic local helper under tmpfs; offline lab image is not the process-exec gate (covered by smoke-test)",
+        True,
+    ),
+    "test_secure_subprocess.SecureSubprocessLabTests.test_permission_error_surface": (
+        "spawns a synthetic local helper under tmpfs; offline lab image is not the process-exec gate (covered by smoke-test)",
+        True,
+    ),
+    "test_secure_subprocess.SecureSubprocessLabTests.test_budget_exhausted_rejected_before_exec": (
+        "resolves a synthetic helper under tmpfs; offline lab image is not the process-exec gate (covered by smoke-test)",
+        True,
+    ),
+    "test_core_utilities.CoreUtilityTests.test_external_runner_records_success_and_failure_without_shell": (
+        "runs a synthetic fixture binary under tmpfs via the secure gate; covered by smoke-test",
+        True,
+    ),
 }
 
 

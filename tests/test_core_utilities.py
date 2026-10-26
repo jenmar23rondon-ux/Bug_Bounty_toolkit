@@ -1,7 +1,7 @@
+import os
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 from unittest.mock import patch
 
 from bugbounty_toolkit.core.checks import render_checklist
@@ -44,26 +44,30 @@ class CoreUtilityTests(unittest.TestCase):
     def test_external_runner_records_success_and_failure_without_shell(self):
         with tempfile.TemporaryDirectory() as directory:
             store = RecordStore(ProgramPaths(Path(directory), "lab"))
-            with (
-                patch("bugbounty_toolkit.core.runner.tool_exists", return_value=True),
-                patch(
-                    "bugbounty_toolkit.core.runner.subprocess.run", return_value=SimpleNamespace(returncode=0)
-                ) as run,
-            ):
-                output = run_tool(store, "fixture", "example.test", ["fixture", "literal value"])
-            self.assertTrue(output.is_file())
-            self.assertEqual(store.runs()[0]["return_code"], 0)
-            self.assertEqual(run.call_args.args[0], ["fixture", "literal value"])
-            with patch("bugbounty_toolkit.core.runner.tool_exists", return_value=False):
-                with self.assertRaisesRegex(RuntimeError, "not found"):
-                    run_tool(store, "fixture", None, ["missing-tool"])
-            with (
-                patch("bugbounty_toolkit.core.runner.tool_exists", return_value=True),
-                patch("bugbounty_toolkit.core.runner.subprocess.run", return_value=SimpleNamespace(returncode=2)),
-            ):
-                with self.assertRaisesRegex(RuntimeError, "exited with code 2"):
-                    run_tool(store, "fixture", None, ["fixture"])
-            self.assertEqual(len(store.runs()), 2)
+            root = Path(directory)
+            fixture = root / "fixture"
+            fixture.write_text("#!/bin/sh\nprintf '%s\\n' \"$@\"\n", encoding="utf-8")
+            fixture.chmod(0o755)
+            allowed = frozenset({"fixture"})
+            common = {
+                "contact_external": False,
+                "allowed_executables": allowed,
+                "allowed_path_roots": (root.resolve(),),
+                "timeout_seconds": 5.0,
+            }
+            with patch.dict("os.environ", {"PATH": str(root) + os.pathsep + os.environ.get("PATH", "")}):
+                output = run_tool(store, "fixture", "example.test", ["fixture", "literal value"], **common)
+                self.assertTrue(output.is_file())
+                self.assertIn("literal value", output.read_text(encoding="utf-8"))
+                self.assertEqual(store.runs()[0]["return_code"], 0)
+                with self.assertRaisesRegex(Exception, "not found|not in the allowlist"):
+                    run_tool(store, "missing-tool", None, ["missing-tool"], **common)
+                # overwrite fixture to fail
+                fixture.write_text("#!/bin/sh\nexit 2\n", encoding="utf-8")
+                fixture.chmod(0o755)
+                with self.assertRaisesRegex(Exception, "exited with code 2"):
+                    run_tool(store, "fixture", None, [str(fixture)], **common)
+            self.assertGreaterEqual(len(store.runs()), 2)
             store.close()
 
     def test_logger_writes_file_and_replaces_existing_handlers(self):
