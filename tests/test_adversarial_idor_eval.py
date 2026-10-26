@@ -21,7 +21,8 @@ sys.path.insert(0, str(LAB))
 import build_corpus  # noqa: E402
 import evaluate  # noqa: E402
 
-SNAPSHOT = LAB / "results" / "v0.2.2-main-47c8a30.json"
+# Baseline main@47c8a30 stays committed in results/v0.2.2-main-47c8a30.json for comparison.
+SNAPSHOT = LAB / "results" / "adv10-open-vocab-kind.json"
 
 
 class AdversarialCorpusFrozenTests(unittest.TestCase):
@@ -109,11 +110,11 @@ class AdversarialEvaluationTests(unittest.TestCase):
         self.assertEqual(d["precision_at_k"]["1"], 0.0)
         self.assertEqual(d["exported_resource_types"], ["unknown"])
         self.assertEqual(
-            (p["proposals"], p["tp_proposals"], p["fp_proposals"], p["ambiguous_proposals"]), (23, 13, 6, 4)
+            (p["proposals"], p["tp_proposals"], p["fp_proposals"], p["ambiguous_proposals"]), (19, 16, 0, 3)
         )
-        self.assertEqual(p["false_negatives"], ["S04:ticket", "S11:subscription"])
+        self.assertEqual(p["false_negatives"], [])
         self.assertEqual(p["manual_review_rate"], 1.0)
-        self.assertEqual((c["tp_pairs"], c["tp_pairs_with_case"]), (13, 8))
+        self.assertEqual((c["tp_pairs"], c["tp_pairs_with_case"]), (16, 8))
 
 
 if __name__ == "__main__":

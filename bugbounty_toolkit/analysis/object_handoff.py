@@ -45,12 +45,13 @@ ASYMMETRIC_RULE = "response-identifier-v1"
 ASYMMETRIC_RULE_TEXT = (
     "An identifier observed only in a response JSON body of one authorized session may be proposed "
     "alongside a request-side identifier of a DIFFERENT authorized session only when: (1) both carry the "
-    "same known resource_type; (2) the response identifier has type evidence of its own, either a typed "
-    "field name (e.g. project_id) or a collection-named JSON container (e.g. addresses[*].id); bare "
+    "same inferred resource kind (known vocabulary or open-vocabulary kind, see open-vocabulary-kind-v1); "
+    "(2) the response identifier has type evidence of its own, either a typed field name (e.g. project_id) "
+    "or a named JSON container (e.g. addresses[*].id); generic wrappers (data, results, ...) and bare "
     "wrapper ids typed only by the endpoint path are never linked; (3) both are on the same origin; "
     "(4) the response identifier is observed in exactly one session context (identifiers seen by several "
     "sessions are treated as shared context and excluded); (5) the identifiers differ. Equal numeric "
-    "tokens of different resource types never link because object refs are HMAC(origin, type, value). "
+    "tokens of different kinds never link because object refs are HMAC(origin, type, value) and kinds differ. "
     "The relation is INFERRED, never ownership: response presence alone is not evidence of who owns an object."
 )
 MAX_MATERIALIZE_BYTES = 1_000_000
@@ -178,8 +179,37 @@ def _side_score(locations: set[str], typed: bool, resource_type: str) -> int:
     return score
 
 
+MAX_REVIEW_REFS = 64
+KIND_RULE = "open-vocabulary-kind-v1"
+KIND_RULE_TEXT = (
+    "Identifiers are paired only when both carry the SAME inferred resource kind (keyed hash of the "
+    "singularized collection segment or typed field stem, e.g. tickets/{id} and ticket_id) and, for "
+    "request/request pairs, the SAME identifier position (path index or JSON/query pointer). Bare or "
+    "generic names (id, ref, key, data, ...), conflicting kinds and untyped ids are insufficient "
+    "evidence: never paired, routed to researcher review. A kind is an inference, never ownership."
+)
+
+
+def _position(location: str, pointer: str) -> str:
+    """Identifier position: path index kept; JSON/query array indexes normalized."""
+    if location == "path":
+        return location + ":" + pointer
+    return location + ":" + "/".join("*" if part.isdigit() else part for part in pointer.split("/"))
+
+
+def _side_kind(kind_refs: set[str], resource_type: str, legacy_typed: bool) -> str | None:
+    """One unambiguous kind for a side, or None (insufficient). Legacy graphs fall back to known types."""
+    if len(kind_refs) == 1:
+        return next(iter(kind_refs))
+    if not kind_refs and legacy_typed and resource_type in KNOWN_COLLECTIONS:
+        return "kind:" + resource_type
+    return None
+
+
 def _observation_object_sides(
     graph: dict[str, Any],
+    stats: dict[str, int] | None = None,
+    review: set[str] | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     """Group per-endpoint sides: one entry per (observation, object_ref) with request preference."""
     nodes = {node["id"]: node for node in graph["nodes"]}
@@ -206,6 +236,9 @@ def _observation_object_sides(
                     "resource_type": node.get("resource_type") or "unknown",
                     "locations": set(),
                     "typed": False,
+                    "kind_refs": set(),
+                    "legacy": False,
+                    "positions": set(),
                 },
             )
             location = fact.get("location")
@@ -213,9 +246,24 @@ def _observation_object_sides(
                 bucket["locations"].add(location)
             if fact.get("typed"):
                 bucket["typed"] = True
+            if location in REQUEST_LOCATIONS:
+                field = nodes.get(fact.get("field_ref") or "") or {}
+                bucket["positions"].add(_position(str(location), str(field.get("pointer_template") or "")))
+                if isinstance(fact.get("kind_ref"), str):
+                    bucket["kind_refs"].add(fact["kind_ref"])
+                elif "kind_ref" not in fact:
+                    bucket["legacy"] = True
         for bucket in per_object.values():
             # Prefer request-side evidence for IDOR pair construction.
             if not (bucket["locations"] & REQUEST_LOCATIONS):
+                continue
+            kind = _side_kind(bucket["kind_refs"], bucket["resource_type"], bucket["legacy"])
+            if kind is None:
+                # Bare/generic/untyped or conflicting kinds: insufficient evidence, never paired.
+                if stats is not None:
+                    stats["insufficient_kind_evidence"] += 1
+                if review is not None:
+                    review.add(bucket["object_ref"])
                 continue
             for prov in provenance:
                 if not isinstance(prov, dict):
@@ -228,6 +276,8 @@ def _observation_object_sides(
                     {
                         "object_ref": bucket["object_ref"],
                         "resource_type": bucket["resource_type"],
+                        "kind_ref": kind,
+                        "position": "|".join(sorted(bucket["positions"])),
                         "locations": set(bucket["locations"]),
                         "typed": bool(bucket["typed"]),
                         "session_ref": session,
@@ -274,10 +324,17 @@ def _response_object_sides(
                 continue
             if session:
                 object_sessions[str(object_ref)].add(session)
-            bucket = per_object.setdefault(str(object_ref), {"locations": set(), "bases": set()})
+            bucket = per_object.setdefault(
+                str(object_ref), {"locations": set(), "bases": set(), "kinds": set(), "legacy": False}
+            )
             location = fact.get("location")
             if isinstance(location, str):
                 bucket["locations"].add(location)
+            if location == "response_json" and fact.get("kind_basis") in {"typed_field_name", "collection_container"}:
+                if isinstance(fact.get("kind_ref"), str):
+                    bucket["kinds"].add((fact["kind_ref"], fact["kind_basis"]))
+            if location == "response_json" and "kind_ref" not in fact:
+                bucket["legacy"] = True
             if location == "response_json":
                 field = nodes.get(fact.get("field_ref") or "") or {}
                 basis = _response_type_basis(
@@ -295,13 +352,22 @@ def _response_object_sides(
                 continue
             resource_type = str(nodes[object_ref].get("resource_type") or "unknown")
             stats["response_identifiers_observed"] += 1
-            if resource_type not in KNOWN_COLLECTIONS:
-                stats["excluded_untyped_resource"] += 1
+            kinds = {kind for kind, _ in bucket["kinds"]}
+            if len(kinds) == 1:
+                kind_ref: str | None = next(iter(kinds))
+                bases = {basis for _, basis in bucket["kinds"]}
+            elif not kinds and resource_type in KNOWN_COLLECTIONS and bucket["bases"]:
+                # Known vocabulary keeps the pre-existing response-identifier-v1 evidence.
+                kind_ref, bases = "kind:" + resource_type, set(bucket["bases"])
+            else:
+                kind_ref, bases = None, set()
+            if kind_ref is None:
+                if len(kinds) > 1 or (resource_type in KNOWN_COLLECTIONS and not bucket["bases"]):
+                    stats["excluded_bare_response_id"] += 1
+                else:
+                    stats["excluded_untyped_resource"] += 1
                 continue
-            if not bucket["bases"]:
-                stats["excluded_bare_response_id"] += 1
-                continue
-            basis = "typed_field_name" if "typed_field_name" in bucket["bases"] else "collection_container"
+            basis = "typed_field_name" if "typed_field_name" in bases else "collection_container"
             for prov in provenance:
                 if not isinstance(prov, dict):
                     continue
@@ -316,6 +382,7 @@ def _response_object_sides(
                     {
                         "object_ref": object_ref,
                         "resource_type": resource_type,
+                        "kind_ref": kind_ref,
                         "locations": {"response_json"},
                         "type_basis": basis,
                         "session_ref": session,
@@ -326,7 +393,7 @@ def _response_object_sides(
                         "origin_ref": endpoint_node.get("origin_ref"),
                     }
                 )
-    sides.sort(key=lambda row: (row["resource_type"], row["object_ref"], row["session_ref"], row["locator"]))
+    sides.sort(key=lambda row: (row["kind_ref"], row["object_ref"], row["session_ref"], row["locator"]))
     return sides, object_sessions
 
 
@@ -355,7 +422,7 @@ def _asymmetric_proposals(
                 stats["excluded_shared_context"] += 1
             continue
         for actor in request_sides:
-            if actor["resource_type"] != owner["resource_type"]:
+            if actor["kind_ref"] != owner["kind_ref"]:
                 continue
             if actor["session_ref"] == owner["session_ref"] or actor["object_ref"] == owner["object_ref"]:
                 continue
@@ -384,12 +451,14 @@ def _asymmetric_proposals(
                     "id": _proposal_id(program, endpoint, owner["object_ref"], actor["object_ref"], ASYMMETRIC_RULE),
                     "endpoint_ref": endpoint,
                     "resource_type": resource_type,
+                    "resource_kind": owner["kind_ref"],
                     "score": score,
                     "pair_kind": "asymmetric_response_request",
                     "relation": {
                         "state": "inferred",
                         "rule": ASYMMETRIC_RULE,
-                        "basis": "same_resource_type_distinct_sessions",
+                        "kind_rule": KIND_RULE,
+                        "basis": "same_resource_kind_distinct_sessions",
                         "ownership": "unknown",
                         "note": "Response presence is an observed identifier only; it does not establish ownership.",
                     },
@@ -447,9 +516,11 @@ def _build_proposals(
     limit: int,
     include_response_identifiers: bool = True,
     stats: dict[str, int] | None = None,
+    review: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     stats = stats if stats is not None else defaultdict(int)
-    by_endpoint = _observation_object_sides(graph)
+    review = review if review is not None else set()
+    by_endpoint = _observation_object_sides(graph, stats, review)
     path_linked: set[str] = set()
     for relation in graph.get("relations") or []:
         if relation.get("relation") == "PATH_CONTEXT":
@@ -459,11 +530,12 @@ def _build_proposals(
     raw: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
     for endpoint, sides in by_endpoint.items():
-        # Group by resource_type then form cross-session, cross-object pairs.
-        by_type: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        # Group by inferred kind AND identifier position, then form cross-session, cross-object pairs.
+        by_type: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
         for side in sides:
-            by_type[side["resource_type"]].append(side)
-        for resource_type, typed_sides in by_type.items():
+            by_type[(side["kind_ref"], side["position"])].append(side)
+        for (kind_ref, _position_key), typed_sides in sorted(by_type.items()):
+            resource_type = typed_sides[0]["resource_type"]
             sessions = {side["session_ref"] for side in typed_sides}
             if len(sessions) < 2:
                 continue
@@ -501,11 +573,14 @@ def _build_proposals(
                             "id": _proposal_id(program, endpoint, left["object_ref"], right["object_ref"]),
                             "endpoint_ref": endpoint,
                             "resource_type": resource_type,
+                            "resource_kind": kind_ref,
                             "score": score,
                             "pair_kind": "request_request",
                             "relation": {
                                 "state": "observed",
                                 "rule": "request-side-identifiers",
+                                "kind_rule": KIND_RULE,
+                                "kind_state": "inferred",
                                 "basis": "same_endpoint_template_distinct_sessions",
                                 "ownership": "unknown",
                                 "note": "Both identifiers were observed in captured requests; ownership is unknown.",
@@ -543,16 +618,16 @@ def _build_proposals(
         owner_locs = set(row["owner"]["locations"])
         # Prefer direct path/query object IDs over nested user companions when scores tie.
         direct = 0 if (("path" in owner_locs or "query" in owner_locs) and row["resource_type"] != "user") else 1
-        return (-row["score"], direct, row["resource_type"], row["id"])
+        return (-row["score"], direct, row["resource_kind"], row["id"])
 
     raw.sort(key=_sort_key)
     selected: list[dict[str, Any]] = []
     seen_types: set[str] = set()
     deferred: list[dict[str, Any]] = []
     for row in raw:
-        if row["resource_type"] not in seen_types:
+        if row["resource_kind"] not in seen_types:
             selected.append(row)
-            seen_types.add(row["resource_type"])
+            seen_types.add(row["resource_kind"])
         else:
             deferred.append(row)
         if len(selected) >= limit:
@@ -658,6 +733,7 @@ def propose_object_handoff(
 
     # Explicit insufficient-evidence path when a candidate cannot form a pair.
     stats: dict[str, int] = defaultdict(int)
+    review: set[str] = set()
     proposals = _build_proposals(
         graph,
         program,
@@ -665,6 +741,7 @@ def propose_object_handoff(
         limit=limit,
         include_response_identifiers=include_response_identifiers,
         stats=stats,
+        review=review,
     )
     status = "proposals_ready"
     notes: list[str] = []
@@ -725,6 +802,14 @@ def propose_object_handoff(
             "asymmetric_candidates": stats["asymmetric_candidates"],
             "asymmetric_selected": sum(1 for row in proposals if row.get("pair_kind") == "asymmetric_response_request"),
             "truncated": stats["truncated_response_sides"] + stats["truncated_asymmetric_pairs"],
+        },
+        "resource_kinds": {
+            "rule": KIND_RULE,
+            "rule_text": KIND_RULE_TEXT,
+            "insufficient_evidence": stats["insufficient_kind_evidence"],
+            "review_object_refs": sorted(review)[:MAX_REVIEW_REFS],
+            "routed_to": "researcher_review",
+            "confirmed": False,
         },
         "total_proposals": len(proposals),
         "proposals": proposals,
