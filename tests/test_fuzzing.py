@@ -14,6 +14,11 @@ from bugbounty_toolkit.fuzzing.results_parser import (
     parse_ffuf_results,
 )
 from bugbounty_toolkit.utils.exceptions import ExternalToolError
+from bugbounty_toolkit.core.secure_subprocess import (
+    CODE_TIMEOUT,
+    SecureSubprocessError,
+    SecureToolResult,
+)
 
 
 class FuzzingTests(unittest.TestCase):
@@ -109,19 +114,34 @@ class FuzzingTests(unittest.TestCase):
                 self.runner.validate(FfufOptions(url, self.wordlist))
 
     def test_runner_writes_json_output_and_explicit_limits(self):
-        def fake_ffuf(command, **kwargs):
+        def fake_secure(request):
+            command = list(request.argv)
             output = Path(command[command.index("-o") + 1])
             output.write_text(json.dumps({"results": []}))
-            return SimpleNamespace(wait=lambda timeout: 0)
+            request.output_path.write_text("", encoding="utf-8")
+            return SecureToolResult(
+                returncode=0,
+                status="completed",
+                error_code=None,
+                duration_seconds=0.01,
+                bytes_written=0,
+                truncated=False,
+                timed_out=False,
+                cancelled=False,
+                killed=False,
+                output_path=request.output_path,
+                argv_provenance=tuple(command),
+                executable_path="ffuf",
+            )
 
         with (
             patch("bugbounty_toolkit.fuzzing.ffuf_runner.shutil.which", return_value="ffuf"),
-            patch("bugbounty_toolkit.fuzzing.ffuf_runner.subprocess.Popen", side_effect=fake_ffuf) as run,
+            patch("bugbounty_toolkit.core.secure_subprocess.run_secure_subprocess", side_effect=fake_secure) as run,
         ):
             output, results = self.runner.run(
                 FfufOptions("https://example.com/FUZZ", self.wordlist, threads=2, rate=1, max_entries=1)
             )
-        command = run.call_args.args[0]
+        command = list(run.call_args.args[0].argv)
         self.assertIn("-r=false", command)
         self.assertIn("-recursion=false", command)
         self.assertIn("-rate", command)
@@ -148,7 +168,7 @@ class FuzzingTests(unittest.TestCase):
         runner = FfufRunner(self.store, self.runner.scope, client)
         with (
             patch("bugbounty_toolkit.fuzzing.ffuf_runner.shutil.which", return_value="ffuf"),
-            patch("bugbounty_toolkit.fuzzing.ffuf_runner.subprocess.Popen") as process,
+            patch("bugbounty_toolkit.core.secure_subprocess.run_secure_subprocess") as process,
         ):
             evidence, results = runner.run(FfufOptions("https://example.com/FUZZ", self.wordlist))
         process.assert_not_called()
@@ -168,7 +188,8 @@ class FuzzingTests(unittest.TestCase):
         )
         runner = FfufRunner(self.store, self.runner.scope, client)
 
-        def fake_ffuf(command, **kwargs):
+        def fake_secure(request):
+            command = list(request.argv)
             output = Path(command[command.index("-o") + 1])
             output.write_text(
                 json.dumps(
@@ -185,11 +206,25 @@ class FuzzingTests(unittest.TestCase):
                     }
                 )
             )
-            return SimpleNamespace(wait=lambda timeout: 0)
+            request.output_path.write_text("", encoding="utf-8")
+            return SecureToolResult(
+                returncode=0,
+                status="completed",
+                error_code=None,
+                duration_seconds=0.01,
+                bytes_written=0,
+                truncated=False,
+                timed_out=False,
+                cancelled=False,
+                killed=False,
+                output_path=request.output_path,
+                argv_provenance=tuple(command),
+                executable_path="ffuf",
+            )
 
         with (
             patch("bugbounty_toolkit.fuzzing.ffuf_runner.shutil.which", return_value="ffuf"),
-            patch("bugbounty_toolkit.fuzzing.ffuf_runner.subprocess.Popen", side_effect=fake_ffuf),
+            patch("bugbounty_toolkit.core.secure_subprocess.run_secure_subprocess", side_effect=fake_secure),
         ):
             evidence_path, results = runner.run(FfufOptions("https://example.com/FUZZ", self.wordlist, max_entries=1))
         evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
@@ -200,25 +235,26 @@ class FuzzingTests(unittest.TestCase):
         self.assertEqual(evidence["followup_candidates"][0]["route_template"], "/api/orders/{id}")
 
     def test_supervisor_terminates_ffuf_on_wall_clock_timeout(self):
-        class TimedOutProcess:
-            stopped = False
+        def fake_timeout(request):
+            raise SecureSubprocessError(
+                CODE_TIMEOUT,
+                "ffuf stopped: timed_out.",
+                SecureToolResult(
+                    returncode=-9,
+                    status="timed_out",
+                    error_code=CODE_TIMEOUT,
+                    duration_seconds=0.01,
+                    bytes_written=0,
+                    truncated=False,
+                    timed_out=True,
+                    cancelled=False,
+                    killed=True,
+                    output_path=request.output_path,
+                    argv_provenance=tuple(request.argv),
+                    executable_path="ffuf",
+                ),
+            )
 
-            def wait(self, timeout=None):
-                if self.stopped:
-                    return -15
-                raise __import__("subprocess").TimeoutExpired("ffuf", timeout)
-
-            def poll(self):
-                return None if not self.stopped else -15
-
-            def terminate(self):
-                self.stopped = True
-
-            def kill(self):
-                self.stopped = True
-
-        process = TimedOutProcess()
-        with patch("bugbounty_toolkit.fuzzing.ffuf_runner.subprocess.Popen", return_value=process):
+        with patch("bugbounty_toolkit.core.secure_subprocess.run_secure_subprocess", side_effect=fake_timeout):
             with self.assertRaisesRegex(ExternalToolError, "wall-clock limit"):
                 self.runner._run_process(["ffuf"], {}, self.root / "timeout.log", 0.01)
-        self.assertTrue(process.stopped)
