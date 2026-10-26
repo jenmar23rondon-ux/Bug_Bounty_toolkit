@@ -64,6 +64,7 @@ class WorkbenchTests(unittest.TestCase):
             secret: secret,
             "owner": secret,
             "cookie": secret,
+            "9876": secret,
             "token": jwt,
             "path": "/home/example/private.json",
             "name": "<img src=x onerror=alert(1)>",
@@ -78,7 +79,7 @@ class WorkbenchTests(unittest.TestCase):
             }
         )
         output = json.dumps(build_workbench(self.paths, ["ev-lab@0"]))
-        for value in (secret, jwt, "/home/example", "<img", "onerror", "cookie", "token"):
+        for value in (secret, jwt, "/home/example", "<img", "onerror", "cookie", "token", "9876"):
             self.assertNotIn(value, output)
         page = self.client.get("/authorization-workbench")
         self.assertEqual(page.status_code, 200)

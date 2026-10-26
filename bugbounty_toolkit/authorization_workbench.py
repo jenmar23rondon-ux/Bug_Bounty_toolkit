@@ -241,7 +241,11 @@ def build_workbench(paths: ProgramPaths, selections: list[str] | None = None) ->
             aliases[pointer] = ""
         else:
             key = pointer[-1]
-            segment = key if key in PUBLIC_KEYS or key.isdigit() and len(key) < 5 else f"field-{len(aliases)}"
+            parents = [
+                mapping[pointer[:-1]] for mapping in field_maps if mapping is not None and pointer[:-1] in mapping
+            ]
+            array_index = bool(parents) and all(isinstance(parent, list) for parent in parents)
+            segment = key if key in PUBLIC_KEYS or array_index else f"field-{len(aliases)}"
             aliases[pointer] = aliases[pointer[:-1]] + "/" + segment
     rows = []
     for pointer in pointers:
