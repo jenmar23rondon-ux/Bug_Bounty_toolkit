@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import json
 import tempfile
 import unittest
@@ -194,15 +195,27 @@ class MetricsTests(unittest.TestCase):
         after = evaluate_set(_collection(), truth, mode="content")
         self.assertEqual(after["overall"]["forbidden_hits"], 0)
         self.assertEqual(before["overall"]["forbidden_hits"], 0)
-        # Persist measured values for the report (never fabricated).
-        out = LAB / "measured_metrics.json"
-        out.write_text(
-            json.dumps(
-                {"before_filename": before["overall"], "after_content": after["overall"]}, indent=2, sort_keys=True
+        # Lab tree may be read-only in the offline Docker image; compare to frozen snapshot.
+        snapshot = LAB / "measured_metrics.json"
+        if snapshot.is_file() and os.access(str(snapshot), os.W_OK):
+            snapshot.write_text(
+                json.dumps(
+                    {"before_filename": before["overall"], "after_content": after["overall"]},
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
             )
-            + "\n",
-            encoding="utf-8",
-        )
+        elif snapshot.is_file():
+            frozen = json.loads(snapshot.read_text(encoding="utf-8"))
+            self.assertAlmostEqual(
+                before["overall"]["precision_at_1"], frozen["before_filename"]["precision_at_1"], places=6
+            )
+            self.assertAlmostEqual(
+                after["overall"]["precision_at_1"], frozen["after_content"]["precision_at_1"], places=6
+            )
+            self.assertAlmostEqual(after["overall"]["mrr"], frozen["after_content"]["mrr"], places=6)
         improved = (
             after["overall"]["precision_at_1"] > before["overall"]["precision_at_1"]
             or after["overall"]["mrr"] > before["overall"]["mrr"]
