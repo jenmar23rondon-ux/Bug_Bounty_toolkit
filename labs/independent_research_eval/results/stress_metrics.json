@@ -1,0 +1,539 @@
+{
+  "by_family": {
+    "C": {
+      "abstention_recall": null,
+      "auto_confirmations": 0,
+      "correct_abstentions": 0,
+      "eligibility_correct": 0.4,
+      "false_reviewable_after_planner": 0,
+      "false_reviewable_cases": 0,
+      "false_reviewable_rate": 0.0,
+      "false_reviewable_rate_ci95": [
+        0.0,
+        0.7935
+      ],
+      "forbidden_pairs_proposed": 0,
+      "info_loss_events": 0,
+      "missed_eligible_cases": 3,
+      "missed_eligible_rate": 0.75,
+      "missing_control_recall": 0.25,
+      "mrr": 0.25,
+      "ndcg_at_5": 0.25,
+      "network_attempts": 0,
+      "next_step_precision_at_1": 0.4,
+      "next_step_precision_at_1_ci95": [
+        0.1176,
+        0.7693
+      ],
+      "object_recall": 0.25,
+      "object_recall_strict_resource_type": 0.0,
+      "outcome_accuracy": 0.4,
+      "outcome_accuracy_ci95": [
+        0.1176,
+        0.7693
+      ],
+      "outcome_accuracy_lenient": 0.4,
+      "pairing_precision": 1.0,
+      "pairing_recall": 0.25,
+      "pipeline_exceptions": 2,
+      "precision_at_1": 0.25,
+      "precision_at_1_ci95": [
+        0.0456,
+        0.6994
+      ],
+      "precision_at_1_strict_resource_type": 0.0,
+      "precision_at_3": 0.25,
+      "precision_at_5": 0.2,
+      "ranking_scenarios": 4,
+      "redundant_proposals": 0,
+      "reference_correct_rate": null,
+      "scenarios": 5,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 10,
+      "technical_errors_predicted": 4,
+      "wrong_object_top1": 0
+    },
+    "E": {
+      "abstention_recall": null,
+      "auto_confirmations": 0,
+      "correct_abstentions": 0,
+      "eligibility_correct": 0.0,
+      "false_reviewable_after_planner": 0,
+      "false_reviewable_cases": 0,
+      "false_reviewable_rate": null,
+      "false_reviewable_rate_ci95": null,
+      "forbidden_pairs_proposed": 0,
+      "info_loss_events": 0,
+      "missed_eligible_cases": 1,
+      "missed_eligible_rate": 1.0,
+      "missing_control_recall": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_5": 0.0,
+      "network_attempts": 0,
+      "next_step_precision_at_1": 0.0,
+      "next_step_precision_at_1_ci95": [
+        0.0,
+        0.7935
+      ],
+      "object_recall": 0.0,
+      "object_recall_strict_resource_type": 0.0,
+      "outcome_accuracy": 0.0,
+      "outcome_accuracy_ci95": [
+        0.0,
+        0.7935
+      ],
+      "outcome_accuracy_lenient": 0.0,
+      "pairing_precision": null,
+      "pairing_recall": 0.0,
+      "pipeline_exceptions": 1,
+      "precision_at_1": 0.0,
+      "precision_at_1_ci95": [
+        0.0,
+        0.7935
+      ],
+      "precision_at_1_strict_resource_type": 0.0,
+      "precision_at_3": 0.0,
+      "precision_at_5": 0.0,
+      "ranking_scenarios": 1,
+      "redundant_proposals": 0,
+      "reference_correct_rate": null,
+      "scenarios": 1,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 0,
+      "technical_errors_predicted": 1,
+      "wrong_object_top1": 0
+    }
+  },
+  "corpus_version": "irb-1.0",
+  "historical_overlap": {
+    "historical_files_scanned": 71,
+    "identical_files": 0,
+    "needle_hits": {},
+    "our_bytes": 309172,
+    "overlap_free": true
+  },
+  "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
+  "latency_ms": {
+    "e2e_total_ms": {
+      "max": 84.41,
+      "median": 13.91
+    },
+    "handoff_ms": {
+      "max": 26.06,
+      "median": 2.08
+    },
+    "import_discovery_ms": {
+      "max": 22.44,
+      "median": 3.91
+    },
+    "planner_ms": {
+      "max": 3.0,
+      "median": 1.18
+    },
+    "ranking_ms": {
+      "max": 1.4,
+      "median": 0.92
+    }
+  },
+  "manifest_sha256": "4dd82cac98084f0a73f7b67d23e8090fee8a48b2497b55bbdb6e25d18dfe1c72",
+  "metric_scope": "synthetic loopback lab only; not evidence of real-world performance",
+  "overall": {
+    "abstention_recall": null,
+    "auto_confirmations": 0,
+    "correct_abstentions": 0,
+    "eligibility_correct": 0.3333,
+    "false_reviewable_after_planner": 0,
+    "false_reviewable_cases": 0,
+    "false_reviewable_rate": 0.0,
+    "false_reviewable_rate_ci95": [
+      0.0,
+      0.7935
+    ],
+    "forbidden_pairs_proposed": 0,
+    "info_loss_events": 0,
+    "missed_eligible_cases": 4,
+    "missed_eligible_rate": 0.8,
+    "missing_control_recall": 0.2,
+    "mrr": 0.2,
+    "ndcg_at_5": 0.2,
+    "network_attempts": 0,
+    "next_step_precision_at_1": 0.3333,
+    "next_step_precision_at_1_ci95": [
+      0.0968,
+      0.7
+    ],
+    "object_recall": 0.2,
+    "object_recall_strict_resource_type": 0.0,
+    "outcome_accuracy": 0.3333,
+    "outcome_accuracy_ci95": [
+      0.0968,
+      0.7
+    ],
+    "outcome_accuracy_lenient": 0.3333,
+    "pairing_precision": 1.0,
+    "pairing_recall": 0.2,
+    "pipeline_exceptions": 3,
+    "precision_at_1": 0.2,
+    "precision_at_1_ci95": [
+      0.0362,
+      0.6245
+    ],
+    "precision_at_1_strict_resource_type": 0.0,
+    "precision_at_3": 0.2,
+    "precision_at_5": 0.16,
+    "ranking_scenarios": 5,
+    "redundant_proposals": 0,
+    "reference_correct_rate": null,
+    "scenarios": 6,
+    "secret_leaks": 0,
+    "synthetic_manual_steps": 10,
+    "technical_errors_predicted": 5,
+    "wrong_object_top1": 0
+  },
+  "peak_mem_kib_max": 34814.2,
+  "scenarios": [
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": false,
+      "exception": "ValueError: Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: entries_over_limit)",
+      "family": "E",
+      "first_step": "none",
+      "id": "S01",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": {
+        "expected": 3,
+        "hit": 0,
+        "predicted": []
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 1,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32797.5,
+      "predicted_outcome": "technical_error",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": {
+        "ndcg@5": 0.0,
+        "p@1": 0.0,
+        "p@3": 0.0,
+        "p@5": 0.0,
+        "recall": false,
+        "rr": 0.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": null,
+        "top1_type": null
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "error": "ValueError"
+      },
+      "tag": "noise-300"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": false,
+      "exception": "ValueError: Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: entries_over_limit)",
+      "family": "C",
+      "first_step": "none",
+      "id": "S02",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": {
+        "expected": 3,
+        "hit": 0,
+        "predicted": []
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 1,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32795.4,
+      "predicted_outcome": "technical_error",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": {
+        "ndcg@5": 0.0,
+        "p@1": 0.0,
+        "p@3": 0.0,
+        "p@5": 0.0,
+        "recall": false,
+        "rr": 0.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": null,
+        "top1_type": null
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "error": "ValueError"
+      },
+      "tag": "many-objects"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "C",
+      "first_step": "none",
+      "id": "S03",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": {
+        "expected": 3,
+        "hit": 0,
+        "predicted": []
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 1,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32797.9,
+      "predicted_outcome": "technical_error",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": {
+        "ndcg@5": 0.0,
+        "p@1": 0.0,
+        "p@3": 0.0,
+        "p@5": 0.0,
+        "recall": false,
+        "rr": 0.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "unknown"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 13.91,
+        "handoff_ms": 1.76,
+        "import_discovery_ms": 3.91,
+        "planner_ms": 0.91,
+        "ranking_ms": 0.92
+      },
+      "tag": "deep-nesting-60"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": false,
+      "exception": null,
+      "family": "C",
+      "first_step": "none",
+      "id": "S04",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": {
+        "expected": 3,
+        "hit": 0,
+        "predicted": []
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": false,
+      "outcome_correct": false,
+      "outcome_correct_lenient": false,
+      "pairing": {
+        "fn": 1,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32798.3,
+      "predicted_outcome": "technical_error",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": {
+        "ndcg@5": 0.0,
+        "p@1": 0.0,
+        "p@3": 0.0,
+        "p@5": 0.0,
+        "recall": false,
+        "rr": 0.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": null,
+        "top1_type": null
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 12.94,
+        "handoff_ms": 2.08,
+        "import_discovery_ms": 3.43,
+        "planner_ms": 1.18,
+        "ranking_ms": 0.21
+      },
+      "tag": "mostly-damaged"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [],
+      "eligibility_correct": true,
+      "exception": "ValueError: Offline captures are invalid, incomplete or exceed discovery limits; inspect locally. (reason: no_valid_entries)",
+      "family": "C",
+      "first_step": "none",
+      "id": "S05",
+      "ideal_outcome": "technical_error",
+      "ideal_reviewable": false,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 0,
+      "missing_control": null,
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "peak_mem_kib": 32778.0,
+      "predicted_outcome": "technical_error",
+      "predicted_reviewable": false,
+      "proposal_types": [],
+      "proposals": 0,
+      "ranking": null,
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "error": "ValueError"
+      },
+      "tag": "all-damaged"
+    },
+    {
+      "confirmed": 0,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
+      "family": "C",
+      "first_step": "attest_distinct_accounts",
+      "id": "S06",
+      "ideal_outcome": "reviewable",
+      "ideal_reviewable": true,
+      "info_loss": [],
+      "leaks": 0,
+      "manual_steps": 10,
+      "missing_control": {
+        "expected": 3,
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
+      },
+      "mutation_error": null,
+      "network_attempts": 0,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "peak_mem_kib": 34814.2,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "blob"
+      ],
+      "proposals": 3,
+      "ranking": {
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
+        "strict_p@1": 0.0,
+        "strict_recall": false,
+        "top1_strict_type": "unknown",
+        "top1_type": "blob"
+      },
+      "redundant_proposals": 0,
+      "refs": {
+        "total": 0,
+        "valid": 0
+      },
+      "stage_ms": {
+        "e2e_total_ms": 84.41,
+        "handoff_ms": 26.06,
+        "import_discovery_ms": 22.44,
+        "planner_ms": 3.0,
+        "ranking_ms": 1.4
+      },
+      "tag": "large-body"
+    }
+  ],
+  "split": "stress",
+  "type": "bbtk-independent-research-benchmark"
+}

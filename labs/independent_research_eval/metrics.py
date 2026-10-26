@@ -140,6 +140,11 @@ def summarize(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "false_reviewable_cases": false_rev,
         "false_reviewable_rate": ratio(false_rev, len(not_rev)),
         "false_reviewable_rate_ci95": wilson(false_rev, len(not_rev)),
+        # Post-planner view (added after the first FINAL run; labels unchanged): a case is only
+        # counted as falsely reviewable if the planner also leaves it in a reviewable state.
+        "false_reviewable_after_planner": sum(
+            1 for r in not_rev if r["predicted_reviewable"] and r["predicted_outcome"] == "reviewable"
+        ),
         "missed_eligible_cases": missed,
         "missed_eligible_rate": ratio(missed, len(ideal_rev)),
         "technical_errors_predicted": sum(1 for r in rows if r["predicted_outcome"] == "technical_error"),
