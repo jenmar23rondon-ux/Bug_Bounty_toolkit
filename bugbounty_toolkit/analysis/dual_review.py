@@ -18,6 +18,12 @@ import json
 from typing import Any
 
 from .ai_backend import AICallLog, AISelection, dispatch_chat
+from .ai_evidence_contract_v2 import (
+    build_contract_packet,
+    lint_contract_packet,
+    normalize_dual_advisory,
+    validate_contract_packet,
+)
 from .ai_providers import AIProviderError, normalize_model_identity
 from .multi_review import DECISIONS, SECOND_OPINION, build_evidence_bundle, scrub_untrusted_text
 from .ollama_review import OllamaUnavailableError
@@ -263,12 +269,31 @@ def compare(bundle: dict[str, Any], analysis: dict[str, Any] | None, critique: d
     }
 
 
-def dual_review(data: dict[str, Any], analyst: AISelection, critic: AISelection) -> dict[str, Any]:
+def dual_review(
+    data: dict[str, Any],
+    analyst: AISelection,
+    critic: AISelection,
+    *,
+    advisory_normalization: bool = False,
+) -> dict[str, Any]:
+    """Review one bundle. Advisory normalization is opt-in and cannot confirm a finding.
+
+    The production comparator is unchanged. Opt-in adds a schema-v2 packet to the
+    model view and a separate normalized advisory that still leaves the ledger alone.
+    """
     analyst.validate()
     critic.validate()
     bundle = build_evidence_bundle(data)
     refs = {row["ref"] for row in bundle["observations"]}
-    view = json.dumps(_model_view(bundle), sort_keys=True, ensure_ascii=True)
+    view_obj = _model_view(bundle)
+    contract_packet: dict[str, Any] | None = None
+    if advisory_normalization:
+        built = build_contract_packet(data)
+        if not lint_contract_packet(built) and not validate_contract_packet(built):
+            contract_packet = built
+            view_obj = {**view_obj, "contract_v2": contract_packet}
+            refs = refs | {str(row["ref"]) for row in contract_packet["observations"]}
+    view = json.dumps(view_obj, sort_keys=True, ensure_ascii=True)
     log_a, log_b = AICallLog(), AICallLog()
     a_content = _call(
         analyst,
@@ -278,7 +303,7 @@ def dual_review(data: dict[str, Any], analyst: AISelection, critic: AISelection)
     )
     analysis, a_issues, a_invented = validate_analyst(a_content, refs) if a_content is not None else (None, [], [])
     critic_view = {
-        "bundle": _model_view(bundle),
+        "bundle": view_obj,
         "analyst_claims_untrusted": [
             {"index": c["index"], "kind": c["kind"], "statement": c["statement"], "refs": c["refs"]}
             for c in (analysis["claims"] if analysis else [])
@@ -341,4 +366,12 @@ def dual_review(data: dict[str, Any], analyst: AISelection, critic: AISelection)
         "raw_evidence_sent": False,
         "prompt_stored": False,
         "notice": SECOND_OPINION,
+        "normalized_advisory": normalize_dual_advisory(
+            analysis,
+            critique,
+            contract_packet or {},
+            [*a_invented, *b_invented],
+            refs,
+            enabled=advisory_normalization,
+        ),
     }

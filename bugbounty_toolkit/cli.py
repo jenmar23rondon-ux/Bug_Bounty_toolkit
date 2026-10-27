@@ -2920,10 +2920,32 @@ def cmd_ai_dual_review(args: argparse.Namespace) -> None:
             "critic": critic.describe(),
             "finding_confirmed": False,
             "execution_performed": False,
+            "advisory_normalization": bool(getattr(args, "normalize_advisory", False)),
             "reason": "Evidence minimized locally; no AI provider was contacted.",
         }
+        if args.normalize_advisory:
+            from .analysis.ai_evidence_contract_v2 import build_contract_packet
+
+            packet = build_contract_packet(data)
+            result["contract_v2"] = packet
+            result["normalized_advisory"] = {
+                "enabled": False,
+                "applied": False,
+                "reason": "dry_run_models_not_called",
+                "finding_confirmed": False,
+                "evidence_ledger_modified": False,
+                "requests_emitted": False,
+                "investigation_approved": False,
+                "ai_has_classification_authority": False,
+                "tools_available": False,
+            }
     else:
-        result = dual_review(data, analyst, critic)
+        result = dual_review(
+            data,
+            analyst,
+            critic,
+            advisory_normalization=bool(getattr(args, "normalize_advisory", False)),
+        )
     print(f"[i] {SECOND_OPINION} Consensus between models is not confirmation.")
     print(json.dumps(result, indent=2, sort_keys=True))
 
@@ -4652,6 +4674,11 @@ def build_parser() -> argparse.ArgumentParser:
     ai_dual.add_argument("--critic-model", required=True, help="Model B (contradictions and missing controls)")
     ai_dual.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Per-call timeout in seconds")
     ai_dual.add_argument("--dry-run", action="store_true", help="Minimize locally without contacting any model")
+    ai_dual.add_argument(
+        "--normalize-advisory",
+        action="store_true",
+        help="Opt in to contract-v2 advisory normalization. Never confirms a finding or rewrites the ledger.",
+    )
     ai_dual.set_defaults(func=cmd_ai_dual_review)
 
     ai_assist = ai_sub.add_parser(
