@@ -1,0 +1,99 @@
+{
+  "by_family": {
+    "auth_context_false": {
+      "cases": 1,
+      "v1_known_fact_preservation": 0.09090909090909091,
+      "v2_known_fact_preservation": 1.0,
+      "v2_unknown_preservation": null
+    },
+    "cross_read_contradiction": {
+      "cases": 1,
+      "v1_known_fact_preservation": 0.07692307692307693,
+      "v2_known_fact_preservation": 1.0,
+      "v2_unknown_preservation": 1.0
+    },
+    "explicit_denial": {
+      "cases": 1,
+      "v1_known_fact_preservation": 0.09090909090909091,
+      "v2_known_fact_preservation": 1.0,
+      "v2_unknown_preservation": null
+    },
+    "privacy_cookie_bearer_password": {
+      "cases": 1,
+      "v1_known_fact_preservation": 0.09090909090909091,
+      "v2_known_fact_preservation": 1.0,
+      "v2_unknown_preservation": null
+    },
+    "public_non_disclosure": {
+      "cases": 1,
+      "v1_known_fact_preservation": 0.1,
+      "v2_known_fact_preservation": 1.0,
+      "v2_unknown_preservation": null
+    },
+    "shared_resource": {
+      "cases": 1,
+      "v1_known_fact_preservation": 0.21428571428571427,
+      "v2_known_fact_preservation": 1.0,
+      "v2_unknown_preservation": null
+    },
+    "truncated_partial": {
+      "cases": 1,
+      "v1_known_fact_preservation": 0.18181818181818182,
+      "v2_known_fact_preservation": 1.0,
+      "v2_unknown_preservation": 1.0
+    },
+    "unknown_explicit_null": {
+      "cases": 1,
+      "v1_known_fact_preservation": 0.2222222222222222,
+      "v2_known_fact_preservation": 1.0,
+      "v2_unknown_preservation": 1.0
+    }
+  },
+  "cases": 8,
+  "dual_advisory_gate_checks": {
+    "finding_confirmed": false,
+    "ledger_modified": false,
+    "opt_in_disabled_decision": null,
+    "shared_resource_blocks_candidate": true,
+    "tools_available": false
+  },
+  "external_requests": 0,
+  "finding_confirmed": false,
+  "finding_confirmed_true_count": 0,
+  "mode": "mock_in_process",
+  "network_attempts": 0,
+  "not_measured": [
+    {
+      "item": "real_local_model_quality",
+      "reason": "CI uses in-process fixtures only. No Ollama, LM Studio, or other model host was contacted."
+    },
+    {
+      "item": "human_reviewer_agreement",
+      "reason": "No human study was run. Advisory output is not a classification."
+    },
+    {
+      "item": "p08_local_llm_quality_eval_rerun",
+      "reason": "labs/local_llm_quality_eval is owned by another change and was not executed or modified."
+    }
+  ],
+  "notice": "Structural contract metrics only. NOT a local model score.",
+  "schema_version": "bbtk.ai-evidence-contract-v2-eval.v1",
+  "secret_leaks": 0,
+  "simulated": true,
+  "split": "dev",
+  "v1": {
+    "known_fact_preservation": 0.13333333333333333,
+    "privacy_leak_rate": 0.0,
+    "schema_valid_rate": 0.0,
+    "semantic_loss": 0.8666666666666667,
+    "unknown_preservation": 0.0
+  },
+  "v2": {
+    "known_fact_preservation": 1.0,
+    "privacy_leak_rate": 0.0,
+    "schema_valid_rate": 1.0,
+    "semantic_loss": 0.0,
+    "unknown_coerced": 0,
+    "unknown_preservation": 1.0
+  }
+}
