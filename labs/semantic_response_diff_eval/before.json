@@ -1,0 +1,124 @@
+{
+  "base_sha_pinned": "bd289808600d57983f1dcacaa9b68c0d7eea0d18",
+  "confirmed": false,
+  "corpus_version": "semantic-response-diff-eval/1",
+  "details": [
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": false,
+      "has_relevant_annotation": false,
+      "scenario": "equivalent_json_timestamps"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "different_keys"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "different_types"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "array_reordered"
+    },
+    {
+      "baseline_reports_difference": false,
+      "expect_diff": false,
+      "has_relevant_annotation": false,
+      "scenario": "html_denial_bodies"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "access_vs_html_denial"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "http200_json_error_vs_success"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "login_redirect"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "sensitive_fields"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "large_responses"
+    },
+    {
+      "baseline_reports_difference": false,
+      "expect_diff": false,
+      "has_relevant_annotation": false,
+      "scenario": "encoding_content_type"
+    },
+    {
+      "baseline_reports_difference": false,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "content_length_mismatch"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "malformed_json"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "deceptive_volatile_id"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": false,
+      "has_relevant_annotation": false,
+      "scenario": "json_key_order_only"
+    },
+    {
+      "baseline_reports_difference": true,
+      "expect_diff": true,
+      "has_relevant_annotation": true,
+      "scenario": "owner_change_preserved"
+    }
+  ],
+  "finding_confirmed": false,
+  "measurement": "naive status+content-type+exact-body equality",
+  "metrics": {
+    "dangerous_normalizations": 0,
+    "false_equivalences": 1,
+    "false_positive_diffs": 2,
+    "network_requests_sent": 0,
+    "precision_relevant_diff": 0.8462,
+    "recall_field_changes": 0.9167,
+    "secrets_leaked": 0,
+    "true_positive_diffs": 11
+  },
+  "notes": [
+    "No semantic JSON/HTML engine existed on main at branch time.",
+    "response_analyzer extracts status/size/content-type/markers only.",
+    "access_control.comparison.exact is exact-value match, not a response diff.",
+    "PR #52 denial classifier is authority for denials and is not modified."
+  ],
+  "scenarios": 16,
+  "schema_version": "bbtk-semantic-response-diff-baseline/1",
+  "true_diff_scenarios": 12
+}
