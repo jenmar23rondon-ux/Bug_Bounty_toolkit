@@ -1,0 +1,174 @@
+{
+  "abstentions": 1,
+  "after_evaluate_compatibility": {
+    "f1": 1.0,
+    "fn": 0,
+    "fp": 0,
+    "pairing_precision": 1.0,
+    "pairing_recall": 1.0,
+    "tp": 2
+  },
+  "before_correlate_resources": {
+    "f1": 0.8,
+    "fn": 0,
+    "fp": 1,
+    "note": "Existing correlate_resources idor_review_signal on the same frozen cases. Not a relabel.",
+    "pairing_precision": 0.6667,
+    "pairing_recall": 1.0,
+    "tp": 2
+  },
+  "cases": 5,
+  "cross_kind_collisions_admitted": 0,
+  "cross_program_contamination_admitted": 0,
+  "external_requests": 0,
+  "false_pairs": 0,
+  "finding_confirmed": false,
+  "lab": "idor-pairing-precision-v4",
+  "legacy_default_unchanged": true,
+  "missed_valid_pairs": 0,
+  "network_attempts": 0,
+  "peak_memory_kib": 12.6,
+  "provenance_completeness": 1.0,
+  "reference_irb45": {
+    "pairing_precision": 0.65,
+    "pairing_recall": 0.963,
+    "source": "IRB FINAL 45 frozen"
+  },
+  "rows": [
+    {
+      "admitted": true,
+      "baseline_admitted": true,
+      "compatibility": "compatible",
+      "finding_confirmed": false,
+      "id": "DEV-same-instance",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "positive"
+      ],
+      "valid_pair": true
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": false,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "DEV-cross-kind",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "cross_kind"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "insufficient_evidence",
+      "finding_confirmed": false,
+      "id": "DEV-missing-response",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "abstain"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": true,
+      "baseline_admitted": true,
+      "compatibility": "compatible",
+      "finding_confirmed": false,
+      "id": "DEV-json-equivalent",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "json_canonical_equivalent",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "positive",
+        "json"
+      ],
+      "valid_pair": true
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": false,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "DEV-shared",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "shared"
+      ],
+      "valid_pair": false
+    }
+  ],
+  "secret_leaks": 0,
+  "split": "dev",
+  "wall_time_s": 0.004081
+}

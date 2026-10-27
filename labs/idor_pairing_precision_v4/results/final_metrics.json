@@ -1,0 +1,578 @@
+{
+  "abstentions": 6,
+  "after_evaluate_compatibility": {
+    "f1": 1.0,
+    "fn": 0,
+    "fp": 0,
+    "pairing_precision": 1.0,
+    "pairing_recall": 1.0,
+    "tp": 4
+  },
+  "before_correlate_resources": {
+    "f1": 0.4444,
+    "fn": 0,
+    "fp": 10,
+    "note": "Existing correlate_resources idor_review_signal on the same frozen cases. Not a relabel.",
+    "pairing_precision": 0.2857,
+    "pairing_recall": 1.0,
+    "tp": 4
+  },
+  "cases": 20,
+  "cross_kind_collisions_admitted": 0,
+  "cross_program_contamination_admitted": 0,
+  "external_requests": 0,
+  "false_pairs": 0,
+  "finding_confirmed": false,
+  "lab": "idor-pairing-precision-v4",
+  "legacy_default_unchanged": true,
+  "missed_valid_pairs": 0,
+  "network_attempts": 0,
+  "peak_memory_kib": 32.1,
+  "provenance_completeness": 1.0,
+  "reference_irb45": {
+    "pairing_precision": 0.65,
+    "pairing_recall": 0.963,
+    "source": "IRB FINAL 45 frozen"
+  },
+  "rows": [
+    {
+      "admitted": true,
+      "baseline_admitted": true,
+      "compatibility": "compatible",
+      "finding_confirmed": false,
+      "id": "FIN-same-instance",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "positive"
+      ],
+      "valid_pair": true
+    },
+    {
+      "admitted": true,
+      "baseline_admitted": true,
+      "compatibility": "compatible",
+      "finding_confirmed": false,
+      "id": "FIN-json-equivalent",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "json_canonical_equivalent",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "positive",
+        "json"
+      ],
+      "valid_pair": true
+    },
+    {
+      "admitted": true,
+      "baseline_admitted": true,
+      "compatibility": "compatible",
+      "finding_confirmed": false,
+      "id": "FIN-alias-route",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "positive",
+        "alias"
+      ],
+      "valid_pair": true
+    },
+    {
+      "admitted": true,
+      "baseline_admitted": true,
+      "compatibility": "compatible",
+      "finding_confirmed": false,
+      "id": "FIN-nested-same-leaf",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_parent_identity",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "positive",
+        "nested"
+      ],
+      "valid_pair": true
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": false,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-cross-kind",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "cross_kind",
+        "hard_negative"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": false,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-same-account",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": false,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-shared",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative",
+        "shared"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "insufficient_evidence",
+      "finding_confirmed": false,
+      "id": "FIN-missing-response",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative",
+        "abstain"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-denial-200",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "insufficient_evidence",
+      "finding_confirmed": false,
+      "id": "FIN-id-echo",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative",
+        "abstain"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-temporal",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity"
+      ],
+      "tags": [
+        "hard_negative"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-stale",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity"
+      ],
+      "tags": [
+        "hard_negative"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": false,
+      "compatibility": "insufficient_evidence",
+      "finding_confirmed": false,
+      "id": "FIN-ambiguous-kind",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative",
+        "abstain"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "conflicting_evidence",
+      "finding_confirmed": false,
+      "id": "FIN-tamper",
+      "matching_signals": [
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative",
+        "abstain"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-mixed-origin",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative",
+        "cross_program"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-mixed-program",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative",
+        "cross_program"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": false,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-partial-array",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "insufficient_evidence",
+      "finding_confirmed": false,
+      "id": "FIN-batch",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative",
+        "abstain"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": true,
+      "compatibility": "conflicting_evidence",
+      "finding_confirmed": false,
+      "id": "FIN-contradiction",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "same_resource_identity",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "hard_negative",
+        "abstain"
+      ],
+      "valid_pair": false
+    },
+    {
+      "admitted": false,
+      "baseline_admitted": false,
+      "compatibility": "incompatible",
+      "finding_confirmed": false,
+      "id": "FIN-distinct-instances",
+      "matching_signals": [
+        "actor_artifact_integrity",
+        "distinct_accounts_attested",
+        "distinct_sessions",
+        "owner_artifact_integrity",
+        "private_resource_content",
+        "read_method",
+        "same_batch",
+        "same_endpoint",
+        "same_kind",
+        "same_namespace",
+        "same_origin",
+        "same_program",
+        "temporal_window_overlaps"
+      ],
+      "tags": [
+        "distinct_instance"
+      ],
+      "valid_pair": false
+    }
+  ],
+  "secret_leaks": 0,
+  "split": "final",
+  "wall_time_s": 0.015285
+}
