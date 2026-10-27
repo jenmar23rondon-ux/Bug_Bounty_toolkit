@@ -1,25 +1,19 @@
 # IDOR pairing precision v4
 
-Offline, synthetic, loopback fixtures only (`http://127.0.0.1:8194`, alt
-`http://127.0.0.1:8195`). The scorer is
-`evaluate_compatibility` (`bbtk.idor-compatibility/1`). It does not call the
-network, does not confirm findings, and does not replace `propose_object_handoff`.
+Offline synthetic lab for `bugbounty_toolkit.analysis.idor_pairing_precision.evaluate_compatibility`.
+No HTTP. `finding_confirmed` stays false. Legacy `propose_object_handoff` is not called.
 
-## Splits
-
-`dev/cases.json` and `final/cases.json` are the authored cases. Each split has
-a `MANIFEST.sha256` that must match before a run. FINAL was frozen before the
-first FINAL measurement. Do not edit case labels to chase a score.
-
-## Run
+DEV is the tuning split. FINAL is frozen by `final/MANIFEST.sha256` and must not be edited to
+move a score. The runner checks the manifest before it scores.
 
 ```bash
-python labs/idor_pairing_precision_v4/build_cases.py --check
-python labs/idor_pairing_precision_v4/evaluate.py --split dev --json labs/idor_pairing_precision_v4/results/dev_metrics.json --report labs/idor_pairing_precision_v4/results/dev_report.md
-python labs/idor_pairing_precision_v4/evaluate.py --split final --json labs/idor_pairing_precision_v4/results/final_metrics.json --report labs/idor_pairing_precision_v4/results/final_report.md
-python labs/idor_pairing_precision_v4/reeval_irb.py labs/idor_pairing_precision_v4/results/irb45_reeval.json
-python -m unittest tests.test_idor_pairing_compatibility tests.test_idor_pairing_precision_v4_lab -q
+python labs/idor_pairing_precision_v4/freeze.py
+python labs/idor_pairing_precision_v4/evaluate.py --split dev --json labs/idor_pairing_precision_v4/results/dev_metrics.json
+python labs/idor_pairing_precision_v4/evaluate.py --split final --irb \
+  --json labs/idor_pairing_precision_v4/results/final_metrics.json \
+  --report labs/idor_pairing_precision_v4/results/REPORT.md
+python -m unittest tests.test_idor_pairing_precision_v4 -q
 ```
 
-`reeval_irb.py` reads `labs/independent_research_eval/final` and does not write
-there. IRB labels stay frozen.
+`--irb` re-reads `labs/independent_research_eval/final` and does not write those labels.
+The naive "equal final path segment" column is a baseline only; it is not a product decision.

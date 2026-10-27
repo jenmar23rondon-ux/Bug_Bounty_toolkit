@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+### IDOR pairing precision v4
+
+- Additive `analysis/idor_pairing_precision.py` (`evaluate_compatibility`) decides
+  owner/actor compatibility as `compatible`, `incompatible`, `insufficient_evidence`,
+  or `conflicting_evidence`. Decisions cite evidence. There is no probability score
+  and `finding_confirmed` stays false. Legacy `propose_object_handoff` defaults are
+  unchanged. Lab `labs/idor_pairing_precision_v4/` (DEV + frozen FINAL) plus a
+  read-only IRB FINAL 45 re-eval. Version stays 0.2.2.
+
+
 ### Local AI evidence assistant
 
 - New `analysis/local_ai_evidence_assistant.py` and `bbtk ai evidence-assist`:

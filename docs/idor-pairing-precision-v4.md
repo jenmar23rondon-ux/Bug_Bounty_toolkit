@@ -1,27 +1,33 @@
 # IDOR pairing precision v4
 
-Opt-in evidence check for whether an owner capture and an actor capture refer to
-the same resource. See `docs/idor-pairing-v4-audit.md` for the failure modes of
-the legacy handoff path.
+`evaluate_compatibility` is an opt-in assessment of whether an owner capture and an actor
+capture support a human-reviewable IDOR/BOLA candidate. It does not replace
+`propose_object_handoff`.
 
-`bugbounty_toolkit.analysis.idor_pairing_compatibility.evaluate_compatibility`
-returns `bbtk.idor-compatibility/1`:
+```python
+from bugbounty_toolkit.analysis.idor_pairing_precision import evaluate_compatibility
 
-- `compatibility`: `compatible`, `incompatible`, `insufficient_evidence`, or
-  `conflicting_evidence`
-- `pairing_decision`: true only when `compatibility` is `compatible` (admit to
-  human review)
-- `confidence_basis`: cited signals, never a float
-- `finding_confirmed`: always false
-- `network_requests_sent`: always 0
+assessment = evaluate_compatibility(owner_evidence, actor_evidence, context=siblings)
+```
 
-Same digits under two kinds do not match. A public or shared ACL, a clean
-denial, a missing response, a hash mismatch, a second session of the same
-attested account, or a disjoint time window is not an IDOR candidate.
+`assessment.compatibility` is one of `compatible`, `incompatible`, `insufficient_evidence`,
+`conflicting_evidence`. `pairing_decision` is true only for `compatible`, and
+`requires_human_review` follows that decision. `finding_confirmed` is always false.
+`confidence_basis` is a citation of evidence refs and signals, not a float.
 
-`propose_object_handoff` is unchanged. Flip that default only after the gate
-criteria in `compatibility_gate_status()` are met. IRB FINAL 45 ideal pair
-types mostly name distinct instances of one kind; they are the wrong signal
-for that flip.
+Account identity is used only when both sides carry `accounts_attested` and `account_ref`.
+A session pseudonym is not an account. Route aliases apply only through `alias_rules`.
 
-Lab: `labs/idor_pairing_precision_v4/`. Version stays 0.2.2.
+## Gate for changing the legacy default
+
+Do not filter `propose_object_handoff` proposals by default until a follow-up change shows
+all of the following on a frozen split, with labels untouched:
+
+- DEV and FINAL `pairing_decision` precision above the IRB reference 0.65
+- any recall change explained in the PR
+- hard negatives in `tests/test_idor_pairing_precision_v4.py` still passing
+- `finding_confirmed` still false and `network_attempts` still 0
+
+That follow-up would add an explicit `compatibility_gate` flag defaulting to off. This
+change does not add the flag and does not alter handoff, eligibility, or Evidence Ledger
+schemas or historical states.

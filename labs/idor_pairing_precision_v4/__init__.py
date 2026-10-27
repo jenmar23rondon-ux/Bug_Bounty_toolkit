@@ -1,3 +1,3 @@
-"""Offline synthetic lab for IDOR pairing compatibility v4. No network."""
+"""Offline lab for evidence-grounded IDOR pairing precision v4."""
 
-LAB_VERSION = "idor-pairing-precision-v4"
+SCHEMA = "bbtk.idor-pairing-precision-lab/1"
