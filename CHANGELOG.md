@@ -1,5 +1,22 @@
 ## [Unreleased]
 
+### AI evidence contract v2
+
+- New `analysis/ai_evidence_contract_v2.py`: schema v2 packets (booleans, enums,
+  synthetic refs) so shared-resource signals, structured contradictions, and
+  explicit unknowns survive minimization. A privacy linter rejects cookies,
+  bearers, passwords, bodies, query secrets, localStorage, account ids, raw
+  HTML, secret hashes, and embedded instructions. Semantic-completeness metrics
+  compare the packet with the v1 minimized bundle.
+- Opt-in `dual_review(..., advisory_normalization=True)` and
+  `bbtk ai dual-review --normalize-advisory`. The production comparator is
+  unchanged. The normalized advisory cannot confirm a finding, write the
+  Evidence Ledger, rewrite controls, or call tools. `finding_confirmed` stays
+  false.
+- Lab `labs/ai_evidence_contract_v2_eval/` (DEV + frozen FINAL) runs in-process
+  only. Version stays 0.2.2.
+
+
 ### Local AI evidence assistant
 
 - New `analysis/local_ai_evidence_assistant.py` and `bbtk ai evidence-assist`:
