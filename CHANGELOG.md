@@ -9,6 +9,80 @@
   tools, and does not grant classification authority. `finding_confirmed`
   stays false. Frozen FINAL labels are unchanged. Version stays 0.2.2.
 
+### Disclosure context quality v2
+
+- New offline `analysis/disclosure_context.py` (`disclosure-context-quality-v2`) and
+  `bbtk analyze disclosure-context`. Every candidate carries an exposure model
+  (shape, origin, observed and intended audience, auth state, integrity,
+  completeness, confidence basis, human verification). A candidate is reviewable
+  only when evidence shows the data should not be available to that audience;
+  otherwise the result is inconclusive. `finding_confirmed` stays false.
+  Reuses information-disclosure scanning and disclosure↔access correlation;
+  does not add a second IDOR engine. Lab `labs/disclosure_context_v2_eval/`
+  (DEV + frozen FINAL + frozen STRESS) plus a re-score of the prior 18 FINAL
+  disclosure cases with labels unchanged. Version stays 0.2.2.
+
+### Stored XSS lifecycle validation
+
+- Lab `labs/stored_xss_lifecycle_eval/` drives cases 1–17 through the existing
+  `xss/stored_local.py` write → store → render → browser chain. It does not
+  duplicate that chain and does not change DOM hooks. Disposable loopback
+  storage only; `finding_confirmed` stays false; live Chromium metrics are
+  `NOT_MEASURED` when Chromium is absent. Version stays 0.2.2.
+
+### DOM observability v3
+
+- Additive loopback DOM observer (`xss/dom_observability.py`, `xss/dom_observer.py`):
+  early `add_init_script` hooks, async sinks inside a bounded window, and
+  same-origin frame reads. Isolated and cross-origin frames stay `unsupported`
+  (no Same-Origin Policy bypass). A marker in the URL is `source_available`,
+  not `source_observed`. `innerHTML` alone is never execution.
+  `finding_confirmed` stays false. DOM local v2 classifications are unchanged.
+- Lab `labs/dom_observability_v3_eval/` (DEV + frozen FINAL) scores the new
+  observer against the DOM local v2 baseline. Version stays 0.2.2.
+
+### Authorization control matrix
+
+- New offline `analysis/authorization_control_matrix.py` annotates owner,
+  second-actor, and anonymous comparisons when captures already exist. It does
+  not send requests, rewrite session identity, invent actors, or confirm
+  findings. Isolated 401 is not expiry; a different token is not a new identity
+  without provenance; a missing mandatory control is `blocked`, never an
+  automatic negative. Lab `labs/authorization_control_matrix_eval/` (DEV +
+  frozen FINAL). Ranking and pairing engines are unchanged. Version stays 0.2.2.
+
+### IDOR false-negative recovery
+
+- Overlay `analysis/blocker_dependency_graph.py` (`bbtk-blocker-dependency-graph/1`)
+  on the evidence-gap planner. Effective states are computed at plan time.
+  Historical Evidence Ledger states are not rewritten. `finding_confirmed` stays false.
+  Registration-time `registered_object_refs` / `depends_on` let a same-surface
+  candidate with disjoint objects stay reviewable when a sibling artifact is invalid
+  (V3-A11) while shared objects and unknown object identity stay blocked (V3-A10, D11–D16).
+- Session-channel query names (`api_key`) are not a second resource id when one
+  other difference remains (E06). Session-only query pairs stay rejected.
+- IDOR e2e research may read a HAR past the 32-entry window up to the 256-entry
+  observation budget. Default import stays 32. A numbered collection token such as
+  `estimates2` is an open-vocabulary kind when its alphabetic stem is not generic
+  (E01). Version stays 0.2.2.
+
+### IDOR pairing precision v4
+
+- Additive `analysis/idor_pairing_precision.py` (`evaluate_compatibility`) decides
+  owner/actor compatibility as `compatible`, `incompatible`, `insufficient_evidence`,
+  or `conflicting_evidence`. Decisions cite evidence. There is no probability score
+  and `finding_confirmed` stays false. Legacy `propose_object_handoff` defaults are
+  unchanged. Lab `labs/idor_pairing_precision_v4/` (DEV + frozen FINAL) plus a
+  read-only IRB FINAL 45 re-eval. Version stays 0.2.2.
+
+### XSS real-browser validation
+
+- New disposable loopback lab `labs/xss_real_browser_eval/` (endpoints A–P) that
+  scores the existing reflected classifier and DOM evidence states in real
+  Chromium when it is installed. Mock CI path records live metrics as
+  `NOT_MEASURED` instead of inventing browser results. `finding_confirmed` stays
+  false. No detector retune. Version stays 0.2.2.
+
 ### Local AI evidence assistant
 
 - New `analysis/local_ai_evidence_assistant.py` and `bbtk ai evidence-assist`:

@@ -1,0 +1,281 @@
+{
+  "cases": [
+    {
+      "expect_execution": true,
+      "expected_browser_state": "execution_observed",
+      "expected_parser_context": "html_attribute",
+      "expected_parser_decision": "candidate",
+      "letter": "A",
+      "marker": "bbtkxssfina",
+      "metric_groups": [
+        "exec_positive"
+      ],
+      "name": "reflected_vuln",
+      "path": "/a",
+      "payload_kind": "html_event",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "reflection_observed",
+      "expected_parser_context": "html_text",
+      "expected_parser_decision": "escaped_safe",
+      "letter": "B",
+      "marker": "bbtkxssfinb",
+      "metric_groups": [
+        "exec_negative"
+      ],
+      "name": "reflected_escaped",
+      "path": "/b",
+      "payload_kind": "html_event",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "reflection_observed",
+      "expected_parser_context": "html_attribute",
+      "expected_parser_decision": "escaped_safe",
+      "letter": "C",
+      "marker": "bbtkxssfinc",
+      "metric_groups": [
+        "exec_negative"
+      ],
+      "name": "attr_safe",
+      "path": "/c",
+      "payload_kind": "attr_breakout",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": true,
+      "expected_browser_state": "execution_observed",
+      "expected_parser_context": "html_attribute",
+      "expected_parser_decision": "candidate",
+      "letter": "D",
+      "marker": "bbtkxssfind",
+      "metric_groups": [
+        "exec_positive"
+      ],
+      "name": "attr_vuln",
+      "path": "/d",
+      "payload_kind": "attr_breakout",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "reflection_observed",
+      "expected_parser_context": "js_string",
+      "expected_parser_decision": "escaped_safe",
+      "letter": "E",
+      "marker": "bbtkxssfine",
+      "metric_groups": [
+        "exec_negative"
+      ],
+      "name": "js_safe",
+      "path": "/e",
+      "payload_kind": "js_breakout",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": true,
+      "expected_browser_state": "execution_observed",
+      "expected_parser_context": "js_string",
+      "expected_parser_decision": "escaped_safe",
+      "letter": "F",
+      "marker": "bbtkxssfinf",
+      "metric_groups": [
+        "exec_positive"
+      ],
+      "name": "js_vuln",
+      "path": "/f",
+      "payload_kind": "js_breakout",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "reflection_observed",
+      "expected_parser_context": "json",
+      "expected_parser_decision": "escaped_safe",
+      "letter": "G",
+      "marker": "bbtkxssfing",
+      "metric_groups": [
+        "exec_negative"
+      ],
+      "name": "json_non_executing",
+      "path": "/g",
+      "payload_kind": "html_event",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": true,
+      "expected_browser_state": "execution_observed",
+      "expected_parser_context": "not_reflected",
+      "expected_parser_decision": "not_reflected",
+      "letter": "H",
+      "marker": "bbtkxssfinh",
+      "metric_groups": [
+        "exec_positive"
+      ],
+      "name": "dom_hash",
+      "path": "/h",
+      "payload_kind": "html_event",
+      "placement": "hash",
+      "reflected_in_body": false,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": true,
+      "expected_browser_state": "execution_observed",
+      "expected_parser_context": "not_reflected",
+      "expected_parser_decision": "not_reflected",
+      "letter": "I",
+      "marker": "bbtkxssfini",
+      "metric_groups": [
+        "exec_positive"
+      ],
+      "name": "dom_search",
+      "path": "/i",
+      "payload_kind": "html_event",
+      "placement": "query",
+      "reflected_in_body": false,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "sanitized",
+      "expected_parser_context": "not_reflected",
+      "expected_parser_decision": "not_reflected",
+      "letter": "J",
+      "marker": "bbtkxssfinj",
+      "metric_groups": [
+        "sanitized"
+      ],
+      "name": "sanitize_before_sink",
+      "path": "/j",
+      "payload_kind": "html_event",
+      "placement": "query",
+      "reflected_in_body": false,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "source_observed",
+      "expected_parser_context": "not_reflected",
+      "expected_parser_decision": "not_reflected",
+      "letter": "K",
+      "marker": "bbtkxssfink",
+      "metric_groups": [
+        "exec_negative",
+        "safe_sink"
+      ],
+      "name": "text_content_safe",
+      "path": "/k",
+      "payload_kind": "html_event",
+      "placement": "query",
+      "reflected_in_body": false,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": true,
+      "expected_browser_state": "execution_observed",
+      "expected_parser_context": "js_string",
+      "expected_parser_decision": "escaped_safe",
+      "letter": "L",
+      "marker": "bbtkxssfinl",
+      "metric_groups": [
+        "exec_positive"
+      ],
+      "name": "inner_html_dangerous",
+      "path": "/l",
+      "payload_kind": "html_event",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "execution_blocked",
+      "expected_parser_context": "html_attribute",
+      "expected_parser_decision": "candidate",
+      "letter": "M",
+      "marker": "bbtkxssfinm",
+      "metric_groups": [
+        "csp"
+      ],
+      "name": "csp_block",
+      "path": "/m",
+      "payload_kind": "html_event",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "reflection_observed",
+      "expected_parser_context": "html_text",
+      "expected_parser_decision": "escaped_safe",
+      "letter": "N",
+      "marker": "bbtkxssfinn",
+      "metric_groups": [
+        "exec_negative"
+      ],
+      "name": "marker_not_executed",
+      "path": "/n",
+      "payload_kind": "plain",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "reflection_observed",
+      "expected_parser_context": "html_text",
+      "expected_parser_decision": "escaped_safe",
+      "letter": "O",
+      "marker": "bbtkxssfino",
+      "metric_groups": [
+        "external_block",
+        "exec_negative"
+      ],
+      "name": "external_navigation_blocked",
+      "path": "/o",
+      "payload_kind": "plain",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 4000
+    },
+    {
+      "expect_execution": false,
+      "expected_browser_state": "inconclusive_browser_error",
+      "expected_parser_context": "html_text",
+      "expected_parser_decision": "escaped_safe",
+      "letter": "P",
+      "marker": "bbtkxssfinp",
+      "metric_groups": [
+        "timeout"
+      ],
+      "name": "timeout_hung_page",
+      "path": "/p",
+      "payload_kind": "plain",
+      "placement": "query",
+      "reflected_in_body": true,
+      "timeout_ms": 1000
+    }
+  ],
+  "finding_confirmed": false,
+  "lab": "xss_real_browser_eval",
+  "split": "final"
+}
