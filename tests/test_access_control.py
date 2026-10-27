@@ -9,9 +9,10 @@ import threading
 import time
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from urllib.parse import parse_qs, urlsplit
 
+from bugbounty_toolkit.access_control import comparison as comparison_module
 from bugbounty_toolkit.access_control.comparison import (
     AccessControlTester,
     load_case,
@@ -309,6 +310,41 @@ class AccessControlTests(unittest.TestCase):
                 self.assertEqual(result["steps"][-1]["status_code"], code)
                 self.assertEqual(result["requests_attempted"], 3)
                 self.assertFalse(result["confirmed"])
+
+    def _unlabelled_observations(self):
+        real = comparison_module.account_observations
+
+        def wrapper(*args, **kwargs):
+            return {**real(*args, **kwargs), "step": "unlabelled"}
+
+        return patch.object(comparison_module, "account_observations", side_effect=wrapper)
+
+    def test_cross_without_labelled_controls_stays_candidate(self):
+        AccessLab.mode = "vulnerable"
+        with self._unlabelled_observations():
+            _, result = self.run_case()
+        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["finding_state"], "candidate")
+        self.assertFalse(result["confirmed"])
+        self.assertEqual(result["confirmation_gap"], "no_second_proof")
+
+    def test_matrix_without_labelled_controls_stays_candidate(self):
+        host = urlsplit(self.base).netloc
+        (self.root / "third.http").write_text(
+            f"GET /objects/C HTTP/1.1\r\nHost: {host}\r\nAuthorization: {TOKENS['C']}\r\n\r\n",
+            encoding="utf-8",
+            newline="",
+        )
+        self.data["additional_accounts"] = {
+            "actor2": {"request": "third.http", "resource": "C", "marker": MARKERS["C"]}
+        }
+        self.save_case()
+        tester, _ = self.mock_tester("vulnerable")
+        with self._unlabelled_observations():
+            _, result = tester.run(self.case, self.root / "matrix", max_tests=9, multi_account=True)
+        self.assertEqual(result["classification"], "candidate")
+        self.assertFalse(result["confirmed"])
+        self.assertEqual(result["confirmation_gap"], "no_second_proof")
 
     def test_private_leak_is_not_hidden_by_error_status(self):
         AccessLab.mode = "leak_on_error"
