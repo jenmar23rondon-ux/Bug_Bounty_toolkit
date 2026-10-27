@@ -1,0 +1,10 @@
+{
+  "association_accuracy": 0.6363636363636364,
+  "captures": 11,
+  "conflicts_detected": 0,
+  "correct_abstentions": 7,
+  "cross_program_associations": 0,
+  "incorrect_associations": 0,
+  "label_coverage": 0.0,
+  "secrets_exposed": 0
+}

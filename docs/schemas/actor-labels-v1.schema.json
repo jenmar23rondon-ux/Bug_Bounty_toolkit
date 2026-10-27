@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bbtk:actor-labels:1",
+  "title": "Local human actor declarations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "program",
+    "labels",
+    "distinct_accounts"
+  ],
+  "properties": {
+    "schema": {
+      "const": "bbtk.actor-labels/1"
+    },
+    "program": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "labels": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_path",
+          "locator",
+          "label",
+          "evidence_id"
+        ],
+        "properties": {
+          "source_path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "locator": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "account": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "browser": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "label": {
+            "enum": [
+              "owner",
+              "second_account",
+              "anonymous",
+              "role_a",
+              "role_b",
+              "unknown"
+            ]
+          },
+          "pwnfox_color": {
+            "enum": [
+              "red",
+              "orange",
+              "yellow",
+              "green",
+              "cyan",
+              "blue",
+              "purple",
+              "pink"
+            ]
+          },
+          "declared_by_human": {
+            "const": true
+          },
+          "evidence_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "account"
+              ]
+            },
+            "then": {
+              "required": [
+                "declared_by_human"
+              ],
+              "properties": {
+                "label": {
+                  "enum": [
+                    "owner",
+                    "second_account",
+                    "role_a",
+                    "role_b"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "declared_by_human"
+              ]
+            },
+            "then": {
+              "required": [
+                "account"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "distinct_accounts": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "uniqueItems": true,
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      }
+    }
+  }
+}
