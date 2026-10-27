@@ -1,0 +1,555 @@
+{
+  "cases": [
+    {
+      "id": "F-disc-jwt-public",
+      "category": "information_disclosure",
+      "audience": "public",
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA\"}"
+      },
+      "expected_state": "ready_for_manual_review",
+      "expected_categories": [
+        "token"
+      ],
+      "canaries": [
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA"
+      ],
+      "request": {},
+      "url": "https://lab.invalid/F-disc-jwt-public"
+    },
+    {
+      "id": "F-disc-cross-pii",
+      "category": "information_disclosure",
+      "audience": "cross_actor",
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"ssn\": \"000-11-2222\"}"
+      },
+      "expected_state": "access_control_validation_required",
+      "expected_categories": [
+        "pii"
+      ],
+      "canaries": [],
+      "request": {},
+      "url": "https://lab.invalid/F-disc-cross-pii"
+    },
+    {
+      "id": "F-disc-placeholder",
+      "category": "information_disclosure",
+      "audience": "public",
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"token\": \"changeme\"}"
+      },
+      "expected_state": "not_observed",
+      "expected_categories": [],
+      "canaries": [],
+      "request": {},
+      "url": "https://lab.invalid/F-disc-placeholder"
+    },
+    {
+      "id": "F-xss-vuln",
+      "category": "reflected_xss",
+      "kind": "reflected",
+      "body": "<!doctype html><p><bbtkxssaabbccddee></p>",
+      "marker": "bbtkxssaabbccddee",
+      "payload": "<bbtkxssaabbccddee>",
+      "content_type": "text/html",
+      "expected_decision": "candidate",
+      "expected_context": "html_text",
+      "canaries": [
+        "bbtkxssaabbccddee"
+      ]
+    },
+    {
+      "id": "F-xss-json",
+      "category": "reflected_xss",
+      "kind": "reflected",
+      "body": "{\"q\": \"bbtkxssaabbccddee\"}",
+      "marker": "bbtkxssaabbccddee",
+      "payload": "bbtkxssaabbccddee",
+      "content_type": "application/json",
+      "expected_decision": "escaped_safe",
+      "expected_context": "json",
+      "canaries": [
+        "bbtkxssaabbccddee"
+      ]
+    },
+    {
+      "id": "F-dom-exec",
+      "category": "dom_xss",
+      "kind": "dom",
+      "observation": {
+        "source_observed": true,
+        "sinks": [
+          "innerHTML"
+        ],
+        "marker_executed": true,
+        "sanitized": false,
+        "csp_blocked": false,
+        "classification": "ok"
+      },
+      "expected_state": "execution_observed",
+      "canaries": []
+    },
+    {
+      "id": "F-dom-csp",
+      "category": "dom_xss",
+      "kind": "dom",
+      "observation": {
+        "source_observed": true,
+        "sinks": [
+          "innerHTML"
+        ],
+        "marker_executed": false,
+        "sanitized": false,
+        "csp_blocked": true,
+        "classification": "ok"
+      },
+      "expected_state": "execution_blocked_csp",
+      "canaries": []
+    },
+    {
+      "id": "F-idor-cross",
+      "category": "idor",
+      "kind": "resource_correlation",
+      "owner": {
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "namespace_key": "doc:1",
+        "account_ref": "a",
+        "distinct_accounts_attested": true,
+        "session_ref": "s1",
+        "visibility": "private",
+        "body_digest": "sha256:aaa"
+      },
+      "actor": {
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "namespace_key": "doc:1",
+        "account_ref": "b",
+        "distinct_accounts_attested": true,
+        "session_ref": "s2",
+        "visibility": "private",
+        "body_digest": "sha256:bbb"
+      },
+      "expected_idor_review_signal": true,
+      "canaries": []
+    },
+    {
+      "id": "F-idor-shared",
+      "category": "idor",
+      "kind": "resource_correlation",
+      "owner": {
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "namespace_key": "doc:1",
+        "account_ref": "a",
+        "distinct_accounts_attested": true,
+        "session_ref": "s1",
+        "visibility": "shared",
+        "body_digest": "sha256:x"
+      },
+      "actor": {
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "namespace_key": "doc:1",
+        "account_ref": "b",
+        "distinct_accounts_attested": true,
+        "session_ref": "s2",
+        "visibility": "shared",
+        "body_digest": "sha256:x"
+      },
+      "expected_idor_review_signal": false,
+      "canaries": []
+    },
+    {
+      "id": "F-corr-ready",
+      "category": "idor_disclosure_correlation",
+      "program_id": "prog-srev2",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "F-corr-ready-o",
+          "status": 200,
+          "body_digest": "sha256:aa40754c3f9fbc7fd03801466c563f02de5feff823e5b9fd6ef3316acac5e115",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "F-corr-ready-a",
+          "status": 403,
+          "body_digest": "sha256:fa58e2b4f71f156fd08f4b8a40b340c7b0e70a838bbcb9be004572133af0d0e7",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "F-corr-ready-c",
+          "status": 200,
+          "body_digest": "sha256:7f6d203aa59b348c634a05fb2e594787c1a45218c82450c5c65b389dfa4c562b",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"note\": \"BBTK_PRIVATE_DOC_MARKER_bench_v2\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA"
+      ],
+      "expected_state": "ready_for_manual_review"
+    },
+    {
+      "id": "F-corr-public",
+      "category": "idor_disclosure_correlation",
+      "program_id": "prog-srev2",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "public",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "F-corr-public-o",
+          "status": 200,
+          "body_digest": "sha256:e0bd2db86d15ffb8d9ca23a3f912df1a4ab2a4088a984bfbea54676a44332c8e",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "F-corr-public-a",
+          "status": 403,
+          "body_digest": "sha256:9945522856468a492449664d970405e5e5b777acf5b7d7b98d07176627253e64",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "F-corr-public-c",
+          "status": 200,
+          "body_digest": "sha256:1e9dd217643c91d5525ac135a97cbcf0a9609c40b99ddefebe450b20e9f70bec",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"note\": \"BBTK_PRIVATE_DOC_MARKER_bench_v2\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA"
+      ],
+      "expected_state": "public_resource"
+    },
+    {
+      "id": "F-corr-altered",
+      "category": "idor_disclosure_correlation",
+      "program_id": "prog-srev2",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "F-corr-altered-o",
+          "status": 200,
+          "body_digest": "sha256:26e3907ea25b517f0e5f65e07ee027e9d0ec5806e96692705e063be0716b255f",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+          "integrity": "altered",
+          "program_id": "prog-srev2",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "F-corr-altered-a",
+          "status": 403,
+          "body_digest": "sha256:334203f731ad092b1a64daac5735d0c8b51d9d9679fbb10d7515df0eaf373d79",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "F-corr-altered-c",
+          "status": 200,
+          "body_digest": "sha256:3663bf4504d5fc740fb4b866643ece24ba1699b42f778e8913a03b6a109da976",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"note\": \"BBTK_PRIVATE_DOC_MARKER_bench_v2\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA"
+      ],
+      "expected_state": "integrity_blocked"
+    },
+    {
+      "id": "F-dossier-rejected",
+      "category": "capture_to_dossier",
+      "evidence_content": {
+        "type": "access-control",
+        "note": "synthetic"
+      },
+      "package": {
+        "candidate_id": "F-dossier-rejected",
+        "category": "idor",
+        "declared_ledger_state": "rejected",
+        "expected_behavior": "Only the owner may read the document.",
+        "expected_behavior_source": "lab_spec",
+        "observed_behavior": "Access denied with 403.",
+        "observed_behavior_refs": [
+          "F-dossier-rejected-ev"
+        ],
+        "negative_controls": [
+          "anonymous_denied"
+        ],
+        "control_evidence_refs": [
+          "F-dossier-rejected-ev"
+        ],
+        "ai_confirmation": false,
+        "claims": [
+          {
+            "claim_id": "cl-state",
+            "kind": "ledger_state",
+            "text": "rejected",
+            "evidence_refs": [
+              "F-dossier-rejected-ev"
+            ]
+          },
+          {
+            "claim_id": "cl-obs",
+            "kind": "observed_behavior",
+            "text": "observed",
+            "evidence_refs": [
+              "F-dossier-rejected-ev"
+            ]
+          }
+        ],
+        "deterministic_result": {
+          "classification": "rejected_in_this_test"
+        }
+      },
+      "ledger": {
+        "schema_version": "bbtk-evidence-ledger/1",
+        "program": "srev2",
+        "candidates": [
+          {
+            "candidate_id": "F-dossier-rejected",
+            "surface_id": "F-dossier-rejected-s",
+            "category": "idor",
+            "state": "rejected",
+            "evidence_refs": [
+              "F-dossier-rejected-ev"
+            ],
+            "raised_by": "lab",
+            "rejection": {
+              "reason": "expected_behavior",
+              "detail": "denied"
+            },
+            "review": {
+              "reviewer": "bob",
+              "method": "human_manual",
+              "basis": "403",
+              "reviewed_at": "2026-10-27T00:00:00Z"
+            }
+          }
+        ],
+        "surfaces": [
+          {
+            "surface_id": "F-dossier-rejected-s",
+            "kind": "endpoint",
+            "ref": "https://lab.invalid/doc/1",
+            "status": "investigated",
+            "fingerprint": "fp-srev2"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "F-dossier-rejected-ev",
+            "path": "evidence/F-dossier-rejected.json",
+            "sha256": "PLACEHOLDER",
+            "provenance": {
+              "tool": "lab",
+              "captured_at": "2026-10-27T00:00:00Z"
+            },
+            "surface_fingerprint": "fp-srev2"
+          }
+        ]
+      },
+      "expected_validation_result": "complete_for_review",
+      "canaries": []
+    },
+    {
+      "id": "F-dossier-cand",
+      "category": "capture_to_dossier",
+      "evidence_content": {
+        "type": "access-control",
+        "note": "synthetic"
+      },
+      "package": {
+        "candidate_id": "F-dossier-cand",
+        "category": "idor",
+        "declared_ledger_state": "requires_validation",
+        "expected_behavior": "Only the owner may read the document.",
+        "expected_behavior_source": "lab_spec",
+        "observed_behavior": "Second account received private marker.",
+        "observed_behavior_refs": [
+          "F-dossier-cand-ev"
+        ],
+        "negative_controls": [
+          "anonymous_denied"
+        ],
+        "control_evidence_refs": [
+          "F-dossier-cand-ev"
+        ],
+        "ai_confirmation": false,
+        "claims": [
+          {
+            "claim_id": "cl-state",
+            "kind": "ledger_state",
+            "text": "requires_validation",
+            "evidence_refs": [
+              "F-dossier-cand-ev"
+            ]
+          },
+          {
+            "claim_id": "cl-obs",
+            "kind": "observed_behavior",
+            "text": "observed",
+            "evidence_refs": [
+              "F-dossier-cand-ev"
+            ]
+          }
+        ]
+      },
+      "ledger": {
+        "schema_version": "bbtk-evidence-ledger/1",
+        "program": "srev2",
+        "candidates": [
+          {
+            "candidate_id": "F-dossier-cand",
+            "surface_id": "F-dossier-cand-s",
+            "category": "idor",
+            "state": "requires_validation",
+            "evidence_refs": [
+              "F-dossier-cand-ev"
+            ],
+            "raised_by": "lab"
+          }
+        ],
+        "surfaces": [
+          {
+            "surface_id": "F-dossier-cand-s",
+            "kind": "endpoint",
+            "ref": "https://lab.invalid/doc/1",
+            "status": "investigated",
+            "fingerprint": "fp-srev2"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "F-dossier-cand-ev",
+            "path": "evidence/F-dossier-cand.json",
+            "sha256": "PLACEHOLDER",
+            "provenance": {
+              "tool": "lab",
+              "captured_at": "2026-10-27T00:00:00Z"
+            },
+            "surface_fingerprint": "fp-srev2"
+          }
+        ]
+      },
+      "expected_validation_result": "human_validation_required",
+      "canaries": []
+    }
+  ]
+}
