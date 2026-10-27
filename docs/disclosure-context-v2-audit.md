@@ -2,7 +2,9 @@
 
 Measured on base `bbd0068f90b0f411360519434008ccdcfcbaaae0` before any v2 code
 landed. `origin/main` matched that SHA (no drift). Package version `0.2.2`.
-Full `python -m unittest discover -s tests -q`: **1179 tests, exit 0, ~108s**.
+The suite collected **1179** tests before these changes. A piped `unittest`
+invocation did not preserve the suite's own exit status, so that run is not
+cited as a pass/fail result.
 
 Information-disclosure lab (`python -m labs.information_disclosure_eval.evaluate`):
 
@@ -173,3 +175,20 @@ states are not reviewable.
 
 No rule validates a credential, contacts a third party, or sets
 `finding_confirmed`.
+
+## First FINAL run (after the hash was committed)
+
+Held-out FINAL reviewable precision 1.0, recall 0.9. One miss: **C17**.
+Its URL is `https://final.invalid/api/docs/9`, which matches the documentation
+path rule, so the result is `not_a_disclosure` / `documentation`. The frozen
+label says `reviewable` because the case is a correlated national-id read.
+The label and the URL were not edited after the run. STRESS matched the rubric
+on all 8 cases. Prior disclosure FINAL (18) still hashes to
+`final/FROZEN.sha256` in `labs/information_disclosure_eval`; v1 accuracy
+remains 0.944 with only F16 mismatched, and v2 marks F16 inconclusive.
+
+A later `python -m unittest discover -s tests` (1191 tests, including the new
+ones, with `beautifulsoup4` installed) reported one error in
+`tests/test_offline_lab.py` `SuiteRunnerExclusionTests`. That test calls
+`TestLoader.discover` on a temp directory after `python -m unittest discover`
+has already set the loader's top-level directory. It is outside this change.

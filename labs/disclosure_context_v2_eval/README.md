@@ -25,5 +25,23 @@ Positive class for precision/recall: `expected_disposition == reviewable`.
 High confidence is scored separately. A hard negative that becomes reviewable
 or high confidence fails the run.
 
-Metrics from the frozen run are recorded in the PR after that run. Until then
-they are not implied by this file.
+## First frozen run
+
+| Split | Cases | Reviewable P/R | High-confidence P/R | Inconclusive rate | FP reduction vs v1 candidates | Provenance | Leaks | External requests |
+|---|---|---|---|---|---|---|---|---|
+| DEV | 39 | 1.0 / 1.0 | 1.0 / 1.0 | 1.0 (9/9) | 1.0 (8 → 0) | 1.0 | 0 | 0 |
+| FINAL | 18 | 1.0 / 0.9 | 1.0 / 0.875 | 1.0 (1/1) | 1.0 (3 → 0) | 1.0 | 0 | 0 |
+| STRESS | 8 | 1.0 / 1.0 | 1.0 / 1.0 | 1.0 (3/3) | 1.0 (2 → 0) | 1.0 | 0 | 0 |
+
+`finding_confirmed` true was 0 on every split. Hard negatives promoted: 0.
+
+FINAL miss, label left as frozen: **C17**. The URL is `https://final.invalid/api/docs/9`.
+The rubric treats `/docs/` as public documentation, so the model returns
+`not_a_disclosure` / `documentation`. The label says `reviewable` (correlated
+national-id read). That is a suspected fixture/label tension, not a reason to
+edit the case.
+
+Prior 18 (`labs/information_disclosure_eval/final`, hash unchanged): v1 state
+accuracy 0.944, only mismatch F16 (`indicator_detected` vs
+`ready_for_manual_review`). v2 disposition for F16 is `inconclusive`, high
+confidence false.

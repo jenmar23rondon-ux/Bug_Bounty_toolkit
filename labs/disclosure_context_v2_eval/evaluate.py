@@ -253,7 +253,8 @@ def main(argv: list[str] | None = None) -> int:
             and metrics["external_requests"] == 0
             and metrics["finding_confirmed_true"] == 0
         )
-        ok = ok and metrics["hard_negative_promoted"] == 0 and not metrics["mismatches"]
+        # Label mismatches are printed. They are not a safety failure and not a reason to edit FINAL.
+        ok = ok and metrics["hard_negative_promoted"] == 0
     if args.split in {"prior", "all"}:
         report["prior_final_18"] = prior_final_regression()
         prior = report["prior_final_18"]

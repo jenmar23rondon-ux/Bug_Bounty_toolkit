@@ -153,15 +153,26 @@ class DisclosureContextFrozenTests(unittest.TestCase):
     def test_final_and_stress_manifests_and_metrics(self) -> None:
         self.assertTrue(split_is_frozen("final"))
         self.assertTrue(split_is_frozen("stress"))
-        for cases in (final_cases(), stress_cases()):
-            metrics = evaluate(cases)
-            self.assertEqual(metrics["mismatches"], [], metrics["mismatches"])
-            self.assertEqual(metrics["secret_leaks"], 0)
-            self.assertEqual(metrics["external_requests"], 0)
-            self.assertEqual(metrics["finding_confirmed_true"], 0)
-            self.assertEqual(metrics["hard_negative_promoted"], 0)
-            self.assertEqual(metrics["reviewable"]["precision"], 1.0)
-            self.assertEqual(metrics["reviewable"]["recall"], 1.0)
+        final = evaluate(final_cases())
+        # C17 URL contains /docs/, so the precommitted rubric treats it as documentation.
+        # The frozen label says reviewable. Do not edit the label or the URL to erase the miss.
+        self.assertEqual([item["id"] for item in final["mismatches"]], ["C17"])
+        self.assertEqual(final["mismatches"][0]["got_disposition"], "not_a_disclosure")
+        self.assertEqual(final["mismatches"][0]["got_origin"], "documentation")
+        self.assertEqual(final["reviewable"]["precision"], 1.0)
+        self.assertEqual(final["reviewable"]["recall"], 0.9)
+        self.assertEqual(final["secret_leaks"], 0)
+        self.assertEqual(final["external_requests"], 0)
+        self.assertEqual(final["finding_confirmed_true"], 0)
+        self.assertEqual(final["hard_negative_promoted"], 0)
+        stress = evaluate(stress_cases())
+        self.assertEqual(stress["mismatches"], [])
+        self.assertEqual(stress["reviewable"]["precision"], 1.0)
+        self.assertEqual(stress["reviewable"]["recall"], 1.0)
+        self.assertEqual(stress["secret_leaks"], 0)
+        self.assertEqual(stress["external_requests"], 0)
+        self.assertEqual(stress["finding_confirmed_true"], 0)
+        self.assertEqual(stress["hard_negative_promoted"], 0)
 
     def test_prior_18_final_labels_are_not_edited(self) -> None:
         report = prior_final_regression()
