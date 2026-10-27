@@ -182,8 +182,8 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(report["reused_entrypoint"], REUSED_ENTRYPOINT)
         self.assertEqual(report["version"], "0.2.2")
         self.assertEqual(report["browser_mode"], "mock")
-        self.assertFalse(report["chromium_available"])
-        self.assertFalse(chromium_available())
+        # Mock mode is forced regardless of the host; availability only reports the environment.
+        self.assertEqual(report["chromium_available"], chromium_available())
         self.assertTrue(report["gates_passed"])
         self.assertFalse(report["finding_confirmed"])
         self.assertEqual(report["external_requests"], 0)
