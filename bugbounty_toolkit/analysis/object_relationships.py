@@ -22,7 +22,7 @@ from ..core.redaction import JWT_TOKEN
 from ..idor_discovery import SENSITIVE_FIELD, json_scalar_fields
 from .api_workflow import graph_node_id, merge_relation
 from .evidence_engine import CaptureSource, resource_path_segments
-from .har_import import HarImportError, import_har
+from .har_import import HarImportError, import_har, load_har_entries
 from .evidence_graph import MAX_GRAPH_EDGES, MAX_GRAPH_INPUT_BYTES, MAX_GRAPH_NODES
 
 SCHEMA_VERSION = "1.0"
@@ -150,21 +150,55 @@ def _json_fields(body: str, headers: dict[str, str] | None) -> dict[str, Any]:
     return json_scalar_fields(parse_json(body), include_sensitive=True)
 
 
+def _window_budget(data: bytes, independent_windows: bool) -> int:
+    """Entry cap for one HAR file.
+
+    The historical per-file cap stays in force unless the caller opts into independent
+    windows. A file that exceeds one window but fits the observation budget is then
+    accepted in full: entries are not a single shared artifact, so one window's limit
+    must not discard an unrelated pair that sits later in the file. Files above
+    ``MAX_CAPTURES`` still fail closed.
+    """
+    if not independent_windows:
+        return MAX_EXCHANGES
+    try:
+        count = len(load_har_entries(data, max_bytes=MAX_ITEM_BYTES))
+    except HarImportError:
+        return MAX_EXCHANGES
+    if count <= MAX_EXCHANGES or count > MAX_CAPTURES:
+        return MAX_EXCHANGES
+    return count
+
+
 def _read_sources(
-    path: Path, base_url: str | None, strict: bool = False, allow_truncate: bool = False
+    path: Path,
+    base_url: str | None,
+    strict: bool = False,
+    allow_truncate: bool = False,
+    independent_windows: bool = False,
 ) -> tuple[bytes, list[CaptureSource], dict[str, Any]]:
     data = read_private_input(path, MAX_ITEM_BYTES)
     if data.lstrip().startswith(b"{"):
+        budget = _window_budget(data, independent_windows)
         result = import_har(
             data,
             strict=strict,
             max_bytes=MAX_ITEM_BYTES,
             max_message_bytes=MAX_EXCHANGE_BYTES,
-            max_entries=MAX_EXCHANGES,
+            max_entries=budget,
             allow_truncate=allow_truncate,
         )
+        summary = result.summary()
+        if independent_windows and budget > MAX_EXCHANGES:
+            summary["independent_windows"] = {
+                "enabled": True,
+                "window_size": MAX_EXCHANGES,
+                "windows": (budget + MAX_EXCHANGES - 1) // MAX_EXCHANGES,
+                "observation_budget": MAX_CAPTURES,
+                "whole_file_blocked": False,
+            }
         # Every per-entry check (URL, method, sizes, bodies) already ran in import_har.
-        return data, result.accepted, result.summary()
+        return data, result.accepted, summary
     sources = []
     for index, exchange in enumerate(parse_captured_exchanges(data, base_url)):
         response = captured_response(exchange)
@@ -252,16 +286,26 @@ def resource_kind_noun(word: str) -> tuple[str, str] | None:
     lower = re.sub(r"([a-z])([A-Z])", r"\1_\2", word).lower().strip("_")
     if lower in COLLECTIONS:
         return COLLECTIONS[lower], "known_vocabulary"
+    # A trailing numeric suffix (estimates2, tokens2) is part of the collection token.
+    # The alphabetic stem must still pass the generic/version/length checks. Version
+    # tags (v2) and pure numbers stay insufficient. The full token is the kind name so
+    # a label noun such as ``estimates2`` matches the keyed kind ref.
+    numbered = re.fullmatch(r"([a-z][a-z_]*[a-z])(\d{1,4})?", lower)
+    stem = numbered.group(1) if numbered else ""
     if (
         not lower
         or len(lower) > MAX_KIND_CHARS
         or lower in GENERIC_KIND_NAMES
+        or stem in GENERIC_KIND_NAMES
         or SENSITIVE_FIELD.search(lower)
-        or not re.fullmatch(r"[a-z][a-z_]*[a-z]", lower)
+        or SENSITIVE_FIELD.search(stem or lower)
+        or numbered is None
         or re.fullmatch(r"v\d+", lower)
     ):
         return None
-    noun = _singular(lower)
+    if numbered.group(2):
+        return lower, "open_vocabulary"
+    noun = _singular(stem)
     if noun in GENERIC_KIND_NAMES or len(noun) < 2:
         return None
     return noun, "open_vocabulary"
@@ -459,6 +503,7 @@ def build_object_graph(
     base_url: str | None = None,
     strict: bool = False,
     allow_truncate: bool = False,
+    independent_windows: bool = False,
 ) -> dict[str, Any]:
     """Read captures only. No DB, network, model calls, output files or executable cases.
 
@@ -473,7 +518,7 @@ def build_object_graph(
     if strict and allow_truncate:
         raise ValueError("Choose either strict import or explicit truncation, not both.")
     try:
-        return _build(program, inputs, key, base_url, strict, allow_truncate)
+        return _build(program, inputs, key, base_url, strict, allow_truncate, independent_windows)
     except (ValueError, UnicodeError, TypeError, KeyError, OverflowError, RecursionError) as exc:
         # Parser exceptions can contain raw input. Never propagate their text to the CLI.
         raise ValueError(_safe_failure(exc)) from exc
@@ -511,13 +556,16 @@ def _build(
     base_url: str | None,
     strict: bool = False,
     allow_truncate: bool = False,
+    independent_windows: bool = False,
 ) -> dict[str, Any]:
     loaded: list[tuple[str, CaptureSource]] = []
     sources: dict[str, dict[str, Any]] = {}
     imports: dict[str, dict[str, Any]] = {}
     total_bytes = 0
     for path in inputs:
-        data, captures, import_summary = _read_sources(path, base_url, strict, allow_truncate)
+        data, captures, import_summary = _read_sources(
+            path, base_url, strict, allow_truncate, independent_windows
+        )
         total_bytes += len(data)
         if total_bytes > MAX_TOTAL_BYTES:
             raise ValueError("Capture set exceeds total byte limit.")
@@ -682,6 +730,17 @@ def _build(
         provenance_rows = relation["provenance"]
         assert isinstance(provenance_rows, list)
         provenance_rows.sort(key=_canonical)
+    capture_import: dict[str, Any] = {
+        **_import_totals(list(imports.values()), "strict" if strict else "partial"),
+        "truncate_allowed": allow_truncate,
+        "sources": [{"source_ref": ref, **imports[ref]} for ref in sorted(imports)],
+    }
+    if independent_windows:
+        capture_import["independent_windows"] = {
+            "enabled": True,
+            "window_size": MAX_EXCHANGES,
+            "observation_budget": MAX_CAPTURES,
+        }
     graph: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "type": "api-object-relationship-graph",
@@ -698,11 +757,7 @@ def _build(
             "nodes": len(nodes),
             "relations": len(relations),
         },
-        "capture_import": {
-            **_import_totals(list(imports.values()), "strict" if strict else "partial"),
-            "truncate_allowed": allow_truncate,
-            "sources": [{"source_ref": ref, **imports[ref]} for ref in sorted(imports)],
-        },
+        "capture_import": capture_import,
         "network_requests_sent": 0,
         "vulnerabilities_confirmed": 0,
         "captures_authorized_attestation": True,
@@ -1034,6 +1089,7 @@ def indexed_capture_sources(
     base_url: str | None = None,
     strict: bool = False,
     allow_truncate: bool = False,
+    independent_windows: bool = False,
 ) -> dict[tuple[str, str], Any]:
     """Map (source_ref, locator) to CaptureSource for offline handoff. Read-only; no network."""
     ProgramPaths(Path("."), program)
@@ -1044,7 +1100,7 @@ def indexed_capture_sources(
         total_bytes = 0
         capture_count = 0
         for path in inputs:
-            data, captures, _ = _read_sources(path, base_url, strict, allow_truncate)
+            data, captures, _ = _read_sources(path, base_url, strict, allow_truncate, independent_windows)
             total_bytes += len(data)
             if total_bytes > MAX_TOTAL_BYTES:
                 raise ValueError("Capture set exceeds total byte limit.")
