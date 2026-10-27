@@ -90,7 +90,7 @@ class DomOnlyBrowserTests(unittest.TestCase):
                 checker.close()
         self.assertEqual(sum(r["classification"] == "execution_observed" for r in vulnerable), 2)
         self.assertEqual(sum(r["classification"] == "execution_observed" for r in safe), 0)
-        self.assertTrue(all(not r["confirmed"] for r in vulnerable + safe))
+        self.assertTrue(all(r["confirmed"] is (r["classification"] == "execution_observed") for r in vulnerable + safe))
         self.assertEqual(sum(r["classification"] == "sink_reached" for r in safe), 0)
 
 

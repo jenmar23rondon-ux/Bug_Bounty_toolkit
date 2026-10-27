@@ -540,7 +540,7 @@ class IdorDiscoveryTests(unittest.TestCase):
             port = server.server_address[1]
             origin = f"http://127.0.0.1:{port}"
             self.scope_path.write_text(origin + "/api\n")
-            for endpoint, expected in (("orders", "candidate"), ("protected-orders", "rejected_in_this_test")):
+            for endpoint, expected in (("orders", "confirmed"), ("protected-orders", "rejected_in_this_test")):
                 for path, account, identifier in ((self.owner, "owner", "1001"), (self.actor, "actor", "1002")):
                     target = f"/api/{endpoint}/{identifier}"
                     request = self._request(account, identifier, target, host=f"127.0.0.1:{port}")
@@ -558,7 +558,7 @@ class IdorDiscoveryTests(unittest.TestCase):
                     bundle / "case-candidate-001.json", bundle / "evidence", max_tests=3
                 )
                 self.assertEqual(result["classification"], expected)
-                self.assertFalse(result["confirmed"])
+                self.assertIs(result["confirmed"], expected == "confirmed")
                 self.assertEqual(result["requests_attempted"], 3)
         finally:
             server.shutdown()

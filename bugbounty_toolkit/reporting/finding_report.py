@@ -578,8 +578,8 @@ def build_confirmed_report(
 
 def render_confirmed_report_markdown(report: dict[str, object]) -> str:
     """Render the confirmed report to Markdown (HackerOne-shaped, no adjectives)."""
-    steps = report.get("steps") if isinstance(report.get("steps"), list) else []
-    not_done = report.get("not_done") if isinstance(report.get("not_done"), list) else []
+    steps = _list_value(report, "steps")
+    not_done = _list_value(report, "not_done")
     lines = [
         f"# {_markdown_text(report.get('title'))}",
         "",

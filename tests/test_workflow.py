@@ -177,7 +177,8 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(WorkflowLab.hits, [])
 
         cors = self.cli("cors-check", "lab", "--url", self.base + "/cors")
-        self.assertIn("4 vulnerable", cors.stdout)
+        self.assertIn("4 header-vulnerable", cors.stdout)
+        self.assertIn("confirmed=0 candidate=4", cors.stdout)
         self.assertEqual(len(WorkflowLab.hits), 4)
         WorkflowLab.hits.clear()
 
