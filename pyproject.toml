@@ -180,6 +180,9 @@ files = [
     "labs/offline_authz_code_eval/evaluate.py",
     "labs/offline_authz_code_eval/run.py",
     "tests/test_offline_authorization_audit.py",
+    "bugbounty_toolkit/analysis/information_disclosure.py",
+    "labs/information_disclosure_eval/evaluate.py",
+    "tests/test_information_disclosure.py",
 ]
 
 [tool.coverage.run]
