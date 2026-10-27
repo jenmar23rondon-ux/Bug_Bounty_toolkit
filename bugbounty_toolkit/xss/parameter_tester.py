@@ -15,6 +15,7 @@ from .reflection_detector import detect_reflection
 from .result_validator import classify_reflection
 from .test_cases import new_marker, payload_cases_for_marker
 from .playwright_confirm import PlaywrightExecutionChecker, require_playwright_installed
+from .dom_local import require_literal_loopback, run_dom_local
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,7 @@ class XssOptions:
     headers: dict[str, str] = field(default_factory=dict)
     html_parser: str = "html.parser"
     confirm_exec: bool = False
+    dom_local: bool = False
 
 
 class XssParameterTester:
@@ -35,6 +37,25 @@ class XssParameterTester:
 
     def run(self, options: XssOptions, evidence_dir: Path) -> tuple[Path, list[dict[str, object]]]:
         routes, parameters = self.validate(options)
+        if options.dom_local:
+            require_playwright_installed()
+            local_checker = PlaywrightExecutionChecker(
+                self.scope,
+                timeout_ms=int(self.client.timeout * 1000),
+                rate_limiter=self.client.rate_limiter,
+                execution_budget=self.client.execution_budget,
+            )
+            try:
+                return run_dom_local(
+                    routes,
+                    parameters,
+                    local_checker,
+                    evidence_dir,
+                    max_tests=options.max_tests,
+                    headers=options.headers,
+                )
+            finally:
+                local_checker.close()
         if options.confirm_exec:
             require_playwright_installed()
         checker = (
@@ -200,4 +221,7 @@ class XssParameterTester:
         if not routes or not parameters:
             raise ValueError("Routes and parameters must contain at least one usable entry.")
         self.scope.require_all(routes)
+        if options.dom_local:
+            for route in routes:
+                require_literal_loopback(route)
         return routes, parameters
