@@ -1,0 +1,241 @@
+{
+  "confirmed": false,
+  "corpus_version": "semantic-response-diff-eval/1",
+  "finding_confirmed": false,
+  "metrics": {
+    "authz_fields_lost": 0,
+    "authz_fields_preserved": 8,
+    "baseline_false_positive_diffs": 2,
+    "dangerous_normalizations": 0,
+    "false_equivalences": 0,
+    "json_invalid_outputs": 0,
+    "json_valid_outputs": 16,
+    "latency_ms_total": 13.485,
+    "network_requests_sent": 0,
+    "peak_memory_kib": 334.489,
+    "precision_relevant_diff": 1.0,
+    "recall_field_changes": 1.0,
+    "scenarios_failed": 0,
+    "scenarios_passed": 16,
+    "secret_leaks": 0,
+    "semantic_false_positive_diffs": 0,
+    "unexpected_results": 0
+  },
+  "results": [
+    {
+      "authz_relevant_changes": 0,
+      "behavioral_equivalence": true,
+      "change_kinds": [],
+      "normalizations": [
+        "volatile_rule_registered:timestamp",
+        "ignore_value:timestamp:/timestamp"
+      ],
+      "passed": true,
+      "scenario": "equivalent_json_timestamps",
+      "similarity": "identical",
+      "structural_equality": true
+    },
+    {
+      "authz_relevant_changes": 1,
+      "behavioral_equivalence": false,
+      "change_kinds": [
+        "body_length_changed",
+        "key_added"
+      ],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "different_keys",
+      "similarity": "low",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 1,
+      "behavioral_equivalence": false,
+      "change_kinds": [
+        "body_length_changed",
+        "type_changed"
+      ],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "different_types",
+      "similarity": "low",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 0,
+      "behavioral_equivalence": true,
+      "change_kinds": [
+        "array_reordered"
+      ],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "array_reordered",
+      "similarity": "high",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 0,
+      "behavioral_equivalence": true,
+      "change_kinds": [],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "html_denial_bodies",
+      "similarity": "identical",
+      "structural_equality": true
+    },
+    {
+      "authz_relevant_changes": 3,
+      "behavioral_equivalence": false,
+      "change_kinds": [
+        "body_kind_changed",
+        "body_length_changed",
+        "content_type_changed",
+        "status_changed"
+      ],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "access_vs_html_denial",
+      "similarity": "low",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 2,
+      "behavioral_equivalence": false,
+      "change_kinds": [
+        "body_length_changed",
+        "key_added",
+        "key_removed",
+        "value_changed"
+      ],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "http200_json_error_vs_success",
+      "similarity": "low",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 4,
+      "behavioral_equivalence": false,
+      "change_kinds": [
+        "body_kind_changed",
+        "body_length_changed",
+        "content_type_changed",
+        "location_changed",
+        "status_changed"
+      ],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "login_redirect",
+      "similarity": "low",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 2,
+      "behavioral_equivalence": false,
+      "change_kinds": [
+        "value_changed"
+      ],
+      "normalizations": [
+        "volatile_rule_registered:token",
+        "volatile_rule_registered:password"
+      ],
+      "passed": true,
+      "scenario": "sensitive_fields",
+      "similarity": "low",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 0,
+      "behavioral_equivalence": true,
+      "change_kinds": [
+        "value_changed"
+      ],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "large_responses",
+      "similarity": "high",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 0,
+      "behavioral_equivalence": true,
+      "change_kinds": [],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "encoding_content_type",
+      "similarity": "identical",
+      "structural_equality": true
+    },
+    {
+      "authz_relevant_changes": 0,
+      "behavioral_equivalence": true,
+      "change_kinds": [
+        "content_length_mismatch"
+      ],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "content_length_mismatch",
+      "similarity": "medium",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 1,
+      "behavioral_equivalence": false,
+      "change_kinds": [
+        "body_kind_changed",
+        "body_length_changed"
+      ],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "malformed_json",
+      "similarity": "low",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 1,
+      "behavioral_equivalence": false,
+      "change_kinds": [
+        "value_changed"
+      ],
+      "normalizations": [
+        "volatile_rule_registered:id",
+        "volatile_rule_registered:timestamp",
+        "ignore_value:timestamp:/timestamp"
+      ],
+      "passed": true,
+      "scenario": "deceptive_volatile_id",
+      "similarity": "low",
+      "structural_equality": false
+    },
+    {
+      "authz_relevant_changes": 0,
+      "behavioral_equivalence": true,
+      "change_kinds": [],
+      "normalizations": [],
+      "passed": true,
+      "scenario": "json_key_order_only",
+      "similarity": "identical",
+      "structural_equality": true
+    },
+    {
+      "authz_relevant_changes": 1,
+      "behavioral_equivalence": false,
+      "change_kinds": [
+        "body_length_changed",
+        "value_changed"
+      ],
+      "normalizations": [
+        "volatile_rule_registered:timestamp",
+        "volatile_rule_registered:owner",
+        "ignore_value:timestamp:/timestamp"
+      ],
+      "passed": true,
+      "scenario": "owner_change_preserved",
+      "similarity": "low",
+      "structural_equality": false
+    }
+  ],
+  "scenarios": 16,
+  "schema_version": "bbtk-semantic-response-diff-eval/1",
+  "vulnerability_verdict": null
+}
