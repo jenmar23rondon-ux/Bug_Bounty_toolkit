@@ -68,6 +68,12 @@ strict = true
 follow_imports = "silent"
 files = [
     "bugbounty_toolkit/burp_passive_bridge.py",
+    "bugbounty_toolkit/analysis/request_variation_plan.py",
+    "labs/request_variation_eval/baseline.py",
+    "labs/request_variation_eval/fixtures.py",
+    "labs/request_variation_eval/evaluate.py",
+    "labs/request_variation_eval/example.py",
+    "tests/test_request_variation_plan.py",
     "labs/local_llm_quality_eval/corpus.py",
     "labs/local_llm_quality_eval/harness.py",
     "labs/local_llm_quality_eval/run.py",
