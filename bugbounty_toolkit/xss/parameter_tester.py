@@ -47,8 +47,12 @@ class XssParameterTester:
             )
             try:
                 return run_dom_local(
-                    routes, parameters, local_checker, evidence_dir,
-                    max_tests=options.max_tests, headers=options.headers,
+                    routes,
+                    parameters,
+                    local_checker,
+                    evidence_dir,
+                    max_tests=options.max_tests,
+                    headers=options.headers,
                 )
             finally:
                 local_checker.close()

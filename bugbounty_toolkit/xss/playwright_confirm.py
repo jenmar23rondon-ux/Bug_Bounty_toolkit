@@ -170,12 +170,17 @@ class PlaywrightExecutionChecker:
             raise RuntimeError(f"Could not start headless Playwright: {type(exc).__name__}") from exc
 
     def confirm(
-        self, url: str, marker: str, headers: dict[str, str] | None = None,
-        *, local_only: bool = False,
+        self,
+        url: str,
+        marker: str,
+        headers: dict[str, str] | None = None,
+        *,
+        local_only: bool = False,
     ) -> dict[str, object]:
         if local_only:
             from .dom_local import require_literal_loopback
-            require_literal_loopback(url.split('#', 1)[0])
+
+            require_literal_loopback(url.split("#", 1)[0])
         self.scope.require(url)
         if self._browser is None:
             self._start()
@@ -187,7 +192,7 @@ class PlaywrightExecutionChecker:
         }
         context = self._browser.new_context(
             extra_http_headers=browser_headers,
-            service_workers='block' if local_only else 'allow',
+            service_workers="block" if local_only else "allow",
         )
         expected_origin = _origin(url)
         observed_sinks: set[str] = set()
@@ -196,7 +201,7 @@ class PlaywrightExecutionChecker:
             expected_origin,
             self.execution_budget,
             self.rate_limiter,
-            url.split('#', 1)[0],
+            url.split("#", 1)[0],
             observed_sinks,
         )
         init_script = """(() => {
@@ -293,17 +298,22 @@ class PlaywrightExecutionChecker:
                 # Give bounded event-driven DOM updates a chance to run.
                 try:
                     page.wait_for_function(
-                        'marker => window.__bbtk_xss_marker === marker',
-                        arg=marker, timeout=min(timeout_ms, 300),
+                        "marker => window.__bbtk_xss_marker === marker",
+                        arg=marker,
+                        timeout=min(timeout_ms, 300),
                     )
                 except Exception as exc:
-                    if type(exc).__name__ != 'TimeoutError':
+                    if type(exc).__name__ != "TimeoutError":
                         raise
             marker_observed = page.evaluate("marker => window.__bbtk_xss_marker === marker", marker)
             source_marker_present = (
-                bool(page.evaluate(
-                    'marker => location.search.includes(marker) || location.hash.includes(marker)', marker
-                )) if local_only else False
+                bool(
+                    page.evaluate(
+                        "marker => location.search.includes(marker) || location.hash.includes(marker)", marker
+                    )
+                )
+                if local_only
+                else False
             )
             observed_sinks.update(page.evaluate("() => window.__bbtk_dom_sinks || []"))
             if request_budget.error is not None:

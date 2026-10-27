@@ -915,8 +915,11 @@ def cmd_xss(args: argparse.Namespace) -> None:
     if args.dry_run:
         print(
             f"[+] {len(routes)} routes, {len(parameters)} parameters, up to {min(total, options.max_tests)} "
-            + ("local browser probes (HTTP subrequests governed by --run-max-*)." if options.dom_local
-               else f"HTTP requests. Browser confirmation {'enabled' if options.confirm_exec else 'disabled'}.")
+            + (
+                "local browser probes (HTTP subrequests governed by --run-max-*)."
+                if options.dom_local
+                else f"HTTP requests. Browser confirmation {'enabled' if options.confirm_exec else 'disabled'}."
+            )
             + " No requests sent."
         )
         return
@@ -928,7 +931,7 @@ def cmd_xss(args: argparse.Namespace) -> None:
     store.add_run("xss", str(args.routes), ["xss", str(args.routes), str(args.parameters)], 1 if failures else 0, path)
     summary = f"{len(results)} tests, {possible} possible reflections, {failures} errors"
     if options.dom_local:
-        observed = sum(item['classification'] == 'execution_observed' for item in results)
+        observed = sum(item["classification"] == "execution_observed" for item in results)
         summary += f", {observed} DOM executions observed in a local fixture (not vulnerability verdicts)"
     elif options.confirm_exec:
         summary += f", {confirmed} confirmed executions, {not_executed} reflected but not executed"
@@ -3628,7 +3631,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Opt in to headless Playwright confirmation for possible reflected payloads",
     )
     xss.add_argument(
-        "--dom-local", action="store_true",
+        "--dom-local",
+        action="store_true",
         help="Opt-in query/hash DOM checks on literal loopback IP fixtures only",
     )
     xss.add_argument("--dry-run", action="store_true")

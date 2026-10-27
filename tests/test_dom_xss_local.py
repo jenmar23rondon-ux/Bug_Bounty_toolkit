@@ -17,9 +17,13 @@ class DomLocalProbeTests(TestCase):
         for allowed in ("http://127.0.0.1:8181/test", "http://[::1]:8181/test"):
             require_literal_loopback(allowed)
         for rejected in (
-            "https://example.com/test", "http://localhost:8181/", "file:///etc/passwd",
-            "http://127.0.0.1.evil.invalid", "http://user:secret@127.0.0.1/",
-            "http://127.0.0.1/test#fragment", "http://192.0.2.1/",
+            "https://example.com/test",
+            "http://localhost:8181/",
+            "file:///etc/passwd",
+            "http://127.0.0.1.evil.invalid",
+            "http://user:secret@127.0.0.1/",
+            "http://127.0.0.1/test#fragment",
+            "http://192.0.2.1/",
         ):
             with self.subTest(url=rejected), self.assertRaises(ValueError):
                 require_literal_loopback(rejected)
@@ -37,6 +41,7 @@ class DomLocalProbeTests(TestCase):
 
     def test_four_bounded_browser_observations_without_confirming_a_finding(self):
         checker = Mock()
+
         def check(url, marker, headers, *, local_only):
             self.assertTrue(local_only)
             self.assertTrue(ipaddress.ip_address(urlsplit(url).hostname).is_loopback)
@@ -49,18 +54,28 @@ class DomLocalProbeTests(TestCase):
                 "marker_observed": active,
                 "alert_observed": active,
             }
+
         checker.confirm.side_effect = check
         with TemporaryDirectory() as tmp:
             path, results = run_dom_local(
-                ["http://127.0.0.1:8181/dom"], ["q"], checker,
-                Path(tmp), max_tests=4,
+                ["http://127.0.0.1:8181/dom"],
+                ["q"],
+                checker,
+                Path(tmp),
+                max_tests=4,
             )
             saved = json.loads(path.read_text(encoding="utf-8"))
         self.assertEqual(checker.confirm.call_count, 4)
         self.assertEqual(len(results), 4)
-        self.assertEqual([r["classification"] for r in results], [
-            "source_present_only", "execution_observed", "source_present_only", "execution_observed",
-        ])
+        self.assertEqual(
+            [r["classification"] for r in results],
+            [
+                "source_present_only",
+                "execution_observed",
+                "source_present_only",
+                "execution_observed",
+            ],
+        )
         self.assertFalse(any(r["confirmed"] for r in results))
         self.assertEqual(saved["type"], "dom_xss_local")
         self.assertNotIn("<img", path.name)
@@ -70,7 +85,10 @@ class DomLocalProbeTests(TestCase):
         with TemporaryDirectory() as tmp, self.assertRaises(ValueError):
             run_dom_local(
                 ["http://127.0.0.1:8181/", "https://example.org/"],
-                ["q"], checker, Path(tmp), max_tests=4,
+                ["q"],
+                checker,
+                Path(tmp),
+                max_tests=4,
             )
         checker.confirm.assert_not_called()
 
@@ -79,7 +97,11 @@ class DomLocalProbeTests(TestCase):
         checker.confirm.return_value = {"source_marker_present": True, "dom_sinks": ["innerHTML"]}
         with TemporaryDirectory() as tmp:
             path, results = run_dom_local(
-                ["http://127.0.0.1:8181/"], ["q"], checker, Path(tmp), max_tests=1,
+                ["http://127.0.0.1:8181/"],
+                ["q"],
+                checker,
+                Path(tmp),
+                max_tests=1,
             )
             self.assertEqual(len(results), 1)
             self.assertEqual(results[0]["classification"], "sink_reached")
@@ -87,7 +109,11 @@ class DomLocalProbeTests(TestCase):
         checker.confirm.side_effect = ToolkitError("Run request budget exhausted")
         with TemporaryDirectory() as tmp:
             path, results = run_dom_local(
-                ["http://127.0.0.1:8181/"], ["q"], checker, Path(tmp), max_tests=4,
+                ["http://127.0.0.1:8181/"],
+                ["q"],
+                checker,
+                Path(tmp),
+                max_tests=4,
             )
             self.assertEqual(len(results), 1)
             self.assertEqual(results[0]["classification"], "error")

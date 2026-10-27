@@ -96,15 +96,17 @@ def run_dom_local(
                     try:
                         evidence = checker.confirm(url, marker, headers, local_only=True)
                     except (ToolkitError, RuntimeError) as exc:
-                        results.append({
-                            "route": redact_url(route),
-                            "parameter": parameter,
-                            "source": source,
-                            "probe": "execution_marker" if active else "plain_marker",
-                            "classification": "error",
-                            "confirmed": False,
-                            "reason": redact_text(str(exc)),
-                        })
+                        results.append(
+                            {
+                                "route": redact_url(route),
+                                "parameter": parameter,
+                                "source": source,
+                                "probe": "execution_marker" if active else "plain_marker",
+                                "classification": "error",
+                                "confirmed": False,
+                                "reason": redact_text(str(exc)),
+                            }
+                        )
                         stop_reason = "browser_or_budget_error"
                         break
                     marker_observed = bool(evidence.get("marker_observed"))
@@ -115,24 +117,29 @@ def run_dom_local(
                     execution = marker_observed or alert_observed
                     present = bool(evidence.get("source_marker_present"))
                     classification = (
-                        "execution_observed" if execution
-                        else "sink_reached" if sinks
-                        else "source_present_only" if present
+                        "execution_observed"
+                        if execution
+                        else "sink_reached"
+                        if sinks
+                        else "source_present_only"
+                        if present
                         else "inconclusive"
                     )
-                    results.append({
-                        "route": redact_url(route),
-                        "parameter": parameter,
-                        "source": source,
-                        "probe": "execution_marker" if active else "plain_marker",
-                        "source_marker_present": present,
-                        "dom_sinks": sorted(sink for sink in sinks if isinstance(sink, str)),
-                        "browser_execution_observed": execution,
-                        "classification": classification,
-                        # Even observed execution remains a lab observation, not a
-                        # reportable vulnerability confirmation.
-                        "confirmed": False,
-                    })
+                    results.append(
+                        {
+                            "route": redact_url(route),
+                            "parameter": parameter,
+                            "source": source,
+                            "probe": "execution_marker" if active else "plain_marker",
+                            "source_marker_present": present,
+                            "dom_sinks": sorted(sink for sink in sinks if isinstance(sink, str)),
+                            "browser_execution_observed": execution,
+                            "classification": classification,
+                            # Even observed execution remains a lab observation, not a
+                            # reportable vulnerability confirmation.
+                            "confirmed": False,
+                        }
+                    )
                 if stop_reason:
                     break
             if stop_reason:
