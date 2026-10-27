@@ -121,6 +121,16 @@ LEDGER_SCHEMA: dict[str, Any] = {
                             "bundle_id": {"type": "string", "pattern": _ID.pattern},
                             "investigation_id": {"type": "string", "pattern": _ID.pattern},
                             "graph_node_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 100},
+                            "registered_object_refs": {
+                                "type": "array",
+                                "items": {"type": "string", "maxLength": 200},
+                                "maxItems": 100,
+                            },
+                            "depends_on": {
+                                "type": "array",
+                                "items": {"type": "string", "pattern": _ID.pattern},
+                                "maxItems": 100,
+                            },
                         },
                     },
                 },
@@ -562,6 +572,43 @@ def upsert_surface(ledger: dict[str, Any], surface: Mapping[str, Any]) -> dict[s
     return row
 
 
+def registration_snapshot(path: Path) -> dict[str, list[str]]:
+    """Capture object identity and dependency refs while the file still matches its digest.
+
+    ``registered_object_refs`` is present (possibly empty) only when the file parses as a
+    JSON object. A later digest mismatch can then tell "named no objects" from "never
+    snapshotted". The current file bytes are not consulted again after a mismatch.
+    """
+    try:
+        if path.stat().st_size > 262_144:
+            return {}
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    objects: list[str] = []
+    proposal = data.get("proposal")
+    if isinstance(proposal, dict):
+        for side in ("owner", "actor"):
+            side_row = proposal.get(side)
+            if isinstance(side_row, dict) and isinstance(side_row.get("object_ref"), str):
+                objects.append(side_row["object_ref"])
+    control = data.get("control") if isinstance(data.get("control"), dict) else {}
+    extra = control.get("object_refs") if isinstance(control, dict) else None
+    if isinstance(extra, list):
+        objects.extend(item for item in extra if isinstance(item, str))
+    depends_raw = control.get("depends_on") if isinstance(control, dict) else None
+    if not isinstance(depends_raw, list):
+        depends_raw = data.get("depends_on")
+    depends = [item for item in depends_raw if isinstance(item, str) and _ID.fullmatch(item)] if isinstance(depends_raw, list) else []
+    cleaned = sorted({item for item in objects if item and len(item) <= 200 and "\n" not in item})
+    out: dict[str, list[str]] = {"registered_object_refs": cleaned[:100]}
+    if depends:
+        out["depends_on"] = sorted(set(depends))[:100]
+    return out
+
+
 def add_evidence(
     ledger: dict[str, Any],
     program_dir: Path,
@@ -589,6 +636,9 @@ def add_evidence(
         provenance["investigation_id"] = investigation_id
     if graph_node_ids:
         provenance["graph_node_ids"] = list(graph_node_ids)
+    # Frozen at registration. Evaluation must not re-read object identity from a
+    # file whose digest no longer matches this row.
+    provenance.update(registration_snapshot(target))
     row: dict[str, Any] = {
         "evidence_id": evidence_id,
         "path": rel,
