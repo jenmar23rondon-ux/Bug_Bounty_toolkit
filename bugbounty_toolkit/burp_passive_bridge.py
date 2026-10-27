@@ -197,7 +197,13 @@ def _inspect(raw: bytes, *, project: str, origins: Sequence[str]) -> BridgePrevi
             parts = urlsplit(exchange.request.prepared_url())
             if _origin(f"{parts.scheme}://{parts.netloc}") != origin:
                 raise ValueError("Destination mismatch.")
-            key = _canonical([origin, entry["request"], entry["response"]])
+            key = _canonical(
+                [
+                    origin,
+                    base64.b64encode(request).decode("ascii"),
+                    None if response is None else base64.b64encode(response).decode("ascii"),
+                ]
+            )
             if key in seen:
                 duplicates += 1
                 continue

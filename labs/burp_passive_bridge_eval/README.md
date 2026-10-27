@@ -55,8 +55,8 @@ Limits: no real Burp/Jython runtime smoke test here; selected-message capture ti
 are unavailable in the extension; cross-file/global deduplication is outside scope;
 no claim that a digest authenticates an untrusted exporter. See the main bridge guide.
 
-Quality validation: full suite 953/953 before the final two permission/CLI cases;
-all 11 bridge cases pass after those additions. Ruff lint/format and strict mypy
+Quality validation: final full suite **955/955 passed in 101.600 s**;
+all 11 bridge cases also pass separately. Ruff lint/format and strict mypy
 (78 modules) pass. All existing CI coverage thresholds pass; bridge coverage is 92%.
 The only shared configuration change is one explicit mypy module entry in
 `pyproject.toml`; no CLI, workflow, version, importer or shared interface changed.
