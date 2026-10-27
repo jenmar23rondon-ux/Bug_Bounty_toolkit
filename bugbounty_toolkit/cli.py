@@ -1401,10 +1401,7 @@ def _hunt_tasks(
                 )
             )
 
-    if "csrf-audit" in selected:
-        csrf_url = normalize_url(args.csrf_url or base_url)
-        scope.require(csrf_url)
-        tasks.append(HuntTask("csrf-audit", "csrf-audit", ("csrf-audit", args.program, "--url", csrf_url), 1, 1, 1))
+    # csrf-audit cannot reach confirmed; keep as standalone `bbtk csrf-audit` only.
 
     if "open-redirect" in selected:
         if params_error:

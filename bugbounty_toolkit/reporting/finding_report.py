@@ -504,3 +504,104 @@ def render_evidence_report(data: dict[str, Any], destination: Path, program: str
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(render_evidence_report_markdown(report), encoding="utf-8")
     return destination
+
+
+def build_confirmed_report(
+    evidence: dict[str, Any],
+    *,
+    program: str,
+    title: str | None = None,
+    asset: str | None = None,
+) -> dict[str, object]:
+    """Build a HackerOne-shaped confirmed-finding report from lab evidence.
+
+    Fields: title, asset, type, state, request, truncated response, numbered steps,
+    one-sentence impact, what was NOT done. No adjectives. Only for confirmed evidence.
+    """
+    if evidence.get("confirmed") is not True and evidence.get("finding_state") != "confirmed":
+        raise ValueError("Confirmed report requires evidence with confirmed=true or finding_state=confirmed.")
+    category = str(evidence.get("type") or evidence.get("category") or "unknown")
+    rows = _rows(evidence, "results") or _rows(evidence, "steps")
+    request_summary = _text(evidence.get("url", evidence.get("endpoint", PENDING)), limit=500)
+    response_summary = PENDING
+    for row in rows:
+        if row.get("confirmed") is True or row.get("finding_state") == "confirmed":
+            response_summary = _text(
+                json.dumps(
+                    {
+                        "status_code": row.get("status_code"),
+                        "location": row.get("location"),
+                        "body_size": row.get("body_size"),
+                        "finding_state": row.get("finding_state"),
+                    },
+                    ensure_ascii=True,
+                    sort_keys=True,
+                ),
+                limit=500,
+            )
+            break
+    steps = []
+    for index, row in enumerate(rows[:20], start=1):
+        probe = row.get("origin", row.get("payload", row.get("stage", row.get("step", "item"))))
+        steps.append(
+            f"{index}. Probe {_text(probe)} → state={_text(row.get('finding_state', row.get('classification')))}"
+        )
+    if not steps:
+        steps = ["1. Review attached evidence records."]
+    impact = _text(
+        evidence.get("impact")
+        or "An attacker-controlled condition was reproduced in the authorized lab with the second proof required by the confirmation bar."
+    )
+    not_done = [
+        "No internet scanning.",
+        "Redirects were not followed.",
+        "No credential or response body was stored beyond redacted evidence fields.",
+        "No report was submitted to a platform.",
+    ]
+    return {
+        "type": "confirmed-finding-report",
+        "schema_version": "1.0",
+        "program": _text(program),
+        "title": _text(title or f"{category} confirmed in lab"),
+        "asset": _text(asset or evidence.get("url") or evidence.get("host") or PENDING),
+        "vulnerability_type": category,
+        "state": "confirmed",
+        "request": request_summary,
+        "response_truncated": response_summary,
+        "steps": steps,
+        "impact": impact.split(".")[0].strip() + ".",
+        "not_done": not_done,
+        "evidence_type": category,
+        "submitted": False,
+    }
+
+
+def render_confirmed_report_markdown(report: dict[str, object]) -> str:
+    """Render the confirmed report to Markdown (HackerOne-shaped, no adjectives)."""
+    steps = report.get("steps") if isinstance(report.get("steps"), list) else []
+    not_done = report.get("not_done") if isinstance(report.get("not_done"), list) else []
+    lines = [
+        f"# {_markdown_text(report.get('title'))}",
+        "",
+        f"**Asset:** {_markdown_text(report.get('asset'))}",
+        f"**Type:** {_markdown_text(report.get('vulnerability_type'))}",
+        f"**State:** {_markdown_text(report.get('state'))}",
+        "",
+        "## Request",
+        "",
+        _markdown_text(report.get("request")),
+        "",
+        "## Response (truncated)",
+        "",
+        _markdown_text(report.get("response_truncated")),
+        "",
+        "## Steps",
+        "",
+    ]
+    for step in steps:
+        lines.append(f"- {_markdown_text(step)}")
+    lines.extend(["", "## Impact", "", _markdown_text(report.get("impact")), "", "## What was not done", ""])
+    for item in not_done:
+        lines.append(f"- {_markdown_text(item)}")
+    lines.append("")
+    return "\n".join(lines)

@@ -86,7 +86,6 @@ class HuntTests(unittest.TestCase):
             row_classification = {
                 "cors-check": "SEGURO",
                 "ssrf-check": "possible",
-                "csrf-audit": "protected",
                 "open-redirect": "VULNERABLE",
                 "xss": "possible",
                 "sqli": "candidate",
@@ -103,9 +102,6 @@ class HuntTests(unittest.TestCase):
             }
             if task.module == "access-check":
                 evidence["steps"] = evidence.pop("results")
-                evidence["classification"] = row_classification
-            if task.module == "csrf-audit":
-                evidence.pop("results")
                 evidence["classification"] = row_classification
             if task.module == "open-redirect":
                 evidence["parameter"] = task.parameters[0]
@@ -130,7 +126,7 @@ class HuntTests(unittest.TestCase):
         self.assertEqual(parse_module_selection("xss,cors-check", None), ("cors-check", "xss"))
         self.assertEqual(
             parse_module_selection(None, "sqli"),
-            ("cors-check", "ssrf-check", "csrf-audit", "open-redirect", "xss", "access-check"),
+            ("cors-check", "ssrf-check", "open-redirect", "xss", "access-check"),
         )
         tasks = [
             HuntTask("a", "cors-check", (), 4, 4, 4),
@@ -166,12 +162,12 @@ class HuntTests(unittest.TestCase):
         report = json.loads(reports[0].read_text(encoding="utf-8"))
         self.assertEqual(
             calls,
-            ["cors-check", "csrf-audit", "open-redirect", "xss", "sqli", "access-check"],
+            ["cors-check", "open-redirect", "xss", "sqli", "access-check"],
             json.dumps(report, indent=2),
         )
         self.assertEqual(
             [item["module"] for item in report["modules"]],
-            ["cors-check", "ssrf-check", "csrf-audit", "open-redirect", "xss", "sqli", "access-check"],
+            ["cors-check", "ssrf-check", "open-redirect", "xss", "sqli", "access-check"],
         )
         self.assertEqual({item["module"]: item["status"] for item in report["modules"]}["ssrf-check"], "skipped")
         self.assertLessEqual(report["budget"]["requests_started"], report["budget"]["max_tests"])
@@ -212,21 +208,25 @@ class HuntTests(unittest.TestCase):
         self.assertIn("3", by_module["sqli"].argv)
         self.assertEqual(by_module["sqli"].minimum_requests, 12)
 
-    def test_hunt_includes_csrf_and_only_schedules_ssrf_with_explicit_url_and_param(self):
+    def test_hunt_confirmable_modules_exclude_csrf_and_ssrf_needs_explicit_inputs(self):
+        from bugbounty_toolkit.hunt import MODULE_ORDER
+
+        self.assertNotIn("csrf-audit", MODULE_ORDER)
         args = self.args(
             "--only",
-            "csrf-audit,ssrf-check",
-            "--csrf-url",
-            "https://target.example/form",
+            "ssrf-check",
             "--ssrf-url",
             "https://target.example/fetch?url=x",
             "--ssrf-param",
             "url",
         )
         tasks, static, _ = cli._hunt_tasks(args, self.scope)
-        self.assertEqual([task.module for task in tasks], ["ssrf-check", "csrf-audit"])
-        self.assertEqual([task.estimated_requests for task in tasks], [6, 1])
+        self.assertEqual([task.module for task in tasks], ["ssrf-check"])
+        self.assertEqual([task.estimated_requests for task in tasks], [6])
         self.assertNotIn("ssrf-check", static)
+        skipped = self.args("--only", "ssrf-check")
+        _, static_skip, _ = cli._hunt_tasks(skipped, self.scope)
+        self.assertEqual(static_skip["ssrf-check"]["status"], "skipped")
 
     def test_global_request_cap_is_never_exceeded(self):
         calls = []

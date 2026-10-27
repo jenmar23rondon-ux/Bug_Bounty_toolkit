@@ -194,9 +194,10 @@ class AccessControlTests(unittest.TestCase):
     def test_native_cross_uses_actor_context_and_exposes_only_predicates(self):
         AccessLab.mode = "vulnerable"
         path, result = self.run_case()
-        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["classification"], "confirmed")
+        self.assertEqual(result["finding_state"], "confirmed")
         self.assertTrue(result["controls_valid"])
-        self.assertFalse(result["confirmed"])
+        self.assertTrue(result["confirmed"])
         self.assertFalse(result["inverse_sent"])
         self.assertFalse(result["anonymous_sent"])
         self.assertEqual([hit["path"] for hit in AccessLab.hits], ["/objects/B", "/objects/A", "/objects/B"])
@@ -282,7 +283,8 @@ class AccessControlTests(unittest.TestCase):
         path, result = tester.run(self.case, self.root / "matrix", max_tests=9, multi_account=True)
         self.assertEqual(result["requests_attempted"], 9)
         self.assertEqual(result["request_budget"], 9)
-        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["classification"], "confirmed")
+        self.assertTrue(result["confirmed"])
         self.assertEqual(len(result["matrix"]), 9)
         self.assertEqual(result["matrix_crosses"], 6)
         self.assertEqual(sum(cell["access_type"] == "control" for cell in result["matrix"]), 3)
@@ -311,7 +313,8 @@ class AccessControlTests(unittest.TestCase):
     def test_private_leak_is_not_hidden_by_error_status(self):
         AccessLab.mode = "leak_on_error"
         _, result = self.run_case()
-        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["classification"], "confirmed")
+        self.assertTrue(result["confirmed"])
         self.assertFalse(result["steps"][-1]["application_success"])
 
     def test_invalid_controls_stop_before_cross(self):
@@ -378,7 +381,8 @@ class AccessControlTests(unittest.TestCase):
         self.save_case()
         AccessLab.mode = "vulnerable"
         _, result = self.run_case()
-        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["classification"], "confirmed")
+        self.assertTrue(result["confirmed"])
         for query in ("id=B&id=B&page=1", "id=B&page=2", "id=B&token=private"):
             AccessLab.hits.clear()
             (self.root / "owner.http").write_text(

@@ -76,7 +76,9 @@ class DomLocalProbeTests(TestCase):
                 "execution_observed",
             ],
         )
-        self.assertFalse(any(r["confirmed"] for r in results))
+        self.assertTrue(
+            all((r["confirmed"] is True) == (r.get("classification") == "execution_observed") for r in results)
+        )
         self.assertEqual(saved["type"], "dom_xss_local")
         self.assertNotIn("<img", path.name)
 

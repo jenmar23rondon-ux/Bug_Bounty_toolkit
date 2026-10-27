@@ -42,6 +42,7 @@ class TakeoverCheckTests(unittest.TestCase):
         self.assertEqual(result["host"], "docs.example.com")
         self.assertEqual(result["cname_records"], ["project.netlify.app"])
         self.assertEqual(result["classification"], "possible_takeover")
+        self.assertEqual(result["finding_state"], "inconclusive")
         self.assertEqual(result["unclaimed_status"], "not_verified")
         self.assertFalse(result["confirmed"])
         self.assertEqual(result["network_requests_sent"], 0)
@@ -179,6 +180,20 @@ class TakeoverCheckTests(unittest.TestCase):
             ):
                 cli.main()
             self.assertIn("No DNS or HTTP requests sent", output.getvalue())
+
+    def test_confirmation_bar_candidate_requires_dangling_and_unclaimed(self):
+        tp = analyze_cnames(
+            "docs.example.com",
+            ["project.netlify.app"],
+            "supplied_offline",
+            dangling=True,
+            unclaimed=True,
+        )
+        self.assertEqual(tp["finding_state"], "candidate")
+        self.assertFalse(tp["confirmed"])
+        tn = analyze_cnames("docs.example.com", ["host.other.invalid"], "supplied_offline")
+        self.assertEqual(tn["finding_state"], "not_observed")
+        self.assertFalse(tn["confirmed"])
 
 
 if __name__ == "__main__":

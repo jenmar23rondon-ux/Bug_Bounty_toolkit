@@ -189,6 +189,8 @@ class AccessWriteLabTests(unittest.TestCase):
         _, result = self.tester.run(self.case_file, self.root / "persisted", max_tests=4, verify_persistence=True)
         self.assertEqual(result["requests_attempted"], 4)
         self.assertEqual(result["classification"], "write_confirmed_persisted")
+        self.assertEqual(result["finding_state"], "confirmed")
+        self.assertTrue(result["confirmed"])
         self.assertTrue(result["write_effect_verified"])
         self.assertEqual(self.client.send.call_args_list[-1].args[0].method, "GET")
 

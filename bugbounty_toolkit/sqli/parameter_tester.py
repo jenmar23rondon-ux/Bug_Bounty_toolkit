@@ -1,3 +1,9 @@
+"""Bounded SQLi probes with confirmation bar.
+
+confirmed only when a lab shows reproducible boolean, timing, or UNION
+difference versus baseline. SQL syntax-error signatures alone stay candidate.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -129,9 +135,6 @@ class SqliParameterTester:
                         baseline_response = response
                         baseline_duration = response.duration_ms
                     new_errors = sorted(errors - baseline_errors) if stage != "baseline" else []
-                    classification = (
-                        "baseline" if stage == "baseline" else "possible" if new_errors else "not_reproducible"
-                    )
                     body_hash = _body_hash(response)
                     time_candidate = (
                         probe_kind == "time"
@@ -139,14 +142,39 @@ class SqliParameterTester:
                         and baseline_duration < 2500
                         and response.duration_ms >= 2500
                     )
-                    if probe_kind == "time":
-                        classification = "possible" if time_candidate or new_errors else "not_reproducible"
+                    finding_state = "not_observed"
+                    confirmation_gap = None
+                    confirmed = False
+                    if stage == "baseline":
+                        classification = "baseline"
+                    elif probe_kind == "time":
+                        if time_candidate:
+                            classification = "confirmed"
+                            finding_state = "confirmed"
+                            confirmed = True
+                        elif new_errors:
+                            classification = "possible"
+                            finding_state = "candidate"
+                            confirmation_gap = "no_second_proof"
+                        else:
+                            classification = "not_reproducible"
                     elif probe_kind == "boolean":
                         boolean_records.append({"body_size": response.body_size, "body_sha256": body_hash})
+                        # Finalized after the pair completes.
                         classification = "possible" if new_errors else "not_reproducible"
+                        finding_state = "candidate" if new_errors else "not_observed"
+                        confirmation_gap = "no_second_proof" if new_errors else None
+                    else:
+                        # Quote / syntax-error probes: candidate at most.
+                        classification = "possible" if new_errors else "not_reproducible"
+                        finding_state = "candidate" if new_errors else "not_observed"
+                        confirmation_gap = "no_second_proof" if new_errors else None
                     blocked = response.status_code in {401, 403, 429}
                     if blocked or response.body_truncated:
                         classification = "error"
+                        finding_state = "inconclusive"
+                        confirmed = False
+                        confirmation_gap = None
                         stop_reason = "access_or_rate_limit" if blocked else "truncated_response"
                     results.append(
                         {
@@ -158,7 +186,10 @@ class SqliParameterTester:
                             "duration_ms": response.duration_ms,
                             "new_error_families": new_errors,
                             "classification": classification,
-                            "confirmed": False,
+                            "finding_state": finding_state,
+                            "confirmed": confirmed,
+                            "confirmation_gap": confirmation_gap,
+                            "rejection_reason": None,
                             "time_candidate": time_candidate,
                             "body_size": response.body_size,
                             "body_sha256": body_hash,
@@ -172,9 +203,21 @@ class SqliParameterTester:
                         differs = boolean_records[0] != boolean_records[1]
                         for row in results[-2:]:
                             row["boolean_pair_differs"] = differs
-                            row["classification"] = (
-                                "possible" if differs or row["new_error_families"] else "not_reproducible"
-                            )
+                            if differs:
+                                row["classification"] = "confirmed"
+                                row["finding_state"] = "confirmed"
+                                row["confirmed"] = True
+                                row["confirmation_gap"] = None
+                            elif row["new_error_families"]:
+                                row["classification"] = "possible"
+                                row["finding_state"] = "candidate"
+                                row["confirmed"] = False
+                                row["confirmation_gap"] = "no_second_proof"
+                            else:
+                                row["classification"] = "not_reproducible"
+                                row["finding_state"] = "not_observed"
+                                row["confirmed"] = False
+                                row["confirmation_gap"] = None
                 if stop_reason:
                     break
                 if options.union and baseline_response is not None:
@@ -193,12 +236,25 @@ class SqliParameterTester:
             if stop_reason:
                 break
         note = (
-            "SQL error, timing, boolean and UNION response differences are candidates only; "
-            "no extraction or data retrieval is performed."
+            "SQL syntax-error signatures alone are candidates. confirmed requires reproducible "
+            "boolean, timing, or UNION difference versus baseline in lab. No extraction is performed."
         )
+        any_confirmed = any(row.get("confirmed") for row in results)
         path = write_evidence_json(
             evidence_dir,
-            {"type": "sqli", "requests_attempted": sent, "stop_reason": stop_reason, "results": results, "note": note},
+            {
+                "type": "sqli",
+                "requests_attempted": sent,
+                "stop_reason": stop_reason,
+                "results": results,
+                "classification": "confirmed"
+                if any_confirmed
+                else "candidate"
+                if any(row.get("finding_state") == "candidate" for row in results)
+                else "not_observed",
+                "confirmed": any_confirmed,
+                "note": note,
+            },
             prefix="sqli",
         )
         return path, results
@@ -301,16 +357,33 @@ class SqliParameterTester:
             or _body_hash(response) != _body_hash(baseline)
         )
         blocked = response.status_code in {401, 403, 429}
+        finding_state = "not_observed"
+        confirmed = False
+        confirmation_gap = None
         if blocked:
             classification = "error"
+            finding_state = "inconclusive"
             stop_reason = "access_or_rate_limit"
         elif response.body_truncated:
             classification = "error"
+            finding_state = "inconclusive"
             stop_reason = "truncated_response"
         else:
-            classification = (
-                "possible" if differs and not new_errors and 200 <= response.status_code < 400 else "not_reproducible"
-            )
+            if differs and not new_errors and 200 <= response.status_code < 400:
+                classification = "confirmed"
+                finding_state = "confirmed"
+                confirmed = True
+                confirmation_gap = None
+            elif differs or new_errors:
+                classification = "possible"
+                finding_state = "candidate"
+                confirmed = False
+                confirmation_gap = "no_second_proof"
+            else:
+                classification = "not_reproducible"
+                finding_state = "not_observed"
+                confirmed = False
+                confirmation_gap = None
             stop_reason = None
         results.append(
             {
@@ -324,7 +397,10 @@ class SqliParameterTester:
                 "new_error_families": new_errors,
                 "response_differs_from_baseline": differs,
                 "classification": classification,
-                "confirmed": False,
+                "finding_state": finding_state,
+                "confirmed": confirmed,
+                "confirmation_gap": confirmation_gap,
+                "rejection_reason": None,
                 "body_size": response.body_size,
                 "body_sha256": _body_hash(response),
                 "exchange": response.to_dict(),
