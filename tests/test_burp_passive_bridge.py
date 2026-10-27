@@ -169,7 +169,7 @@ class PassiveBridgeTests(unittest.TestCase):
         ):
             for name in names:
                 setattr(modules[module], name, object())
-        path = Path(__file__).resolve().parents[1] / "extensions/burp_passive_bridge/BurpExtender.py"
+        path = Path(__file__).resolve().parents[1] / "labs/burp_passive_bridge_eval/extension/BurpExtender.py"
         with patch.dict(sys.modules, modules):
             spec = importlib.util.spec_from_file_location("passive_extension", path)
             module = importlib.util.module_from_spec(spec)

@@ -10,7 +10,7 @@ Version remains 0.2.2. PR #52 is already present at the audited base.
 
 1. Create an owner-only directory **outside every Git checkout** (`mkdir -m 700 /tmp/bbtk-private`).
 2. In Burp's legacy Extender settings configure Jython 2.7, then load
-   `extensions/burp_passive_bridge/BurpExtender.py` as a Python extension.
+   `labs/burp_passive_bridge_eval/extension/BurpExtender.py` as a Python extension.
    This is the legacy Extender API, not a Montoya extension. POSIX filesystem
    support is required; unsupported permissions/filesystems fail closed.
 3. Select messages in Burp history/site map. Choose **bbtk: export selected privately**.

@@ -60,3 +60,6 @@ all 11 bridge cases also pass separately. Ruff lint/format and strict mypy
 (78 modules) pass. All existing CI coverage thresholds pass; bridge coverage is 92%.
 The only shared configuration change is one explicit mypy module entry in
 `pyproject.toml`; no CLI, workflow, version, importer or shared interface changed.
+
+The extension is under `labs/burp_passive_bridge_eval/extension/` so the existing
+offline Docker source allowlist includes it. No Docker allowlist or CI change is needed.
