@@ -1,0 +1,11 @@
+{
+  "expect": {
+    "kinds": [
+      "product"
+    ],
+    "ownership": "unknown",
+    "preserve": true
+  },
+  "id": "K12",
+  "tag": "out-of-order-captures"
+}

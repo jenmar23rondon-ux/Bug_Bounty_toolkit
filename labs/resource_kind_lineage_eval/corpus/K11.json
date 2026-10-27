@@ -1,0 +1,13 @@
+{
+  "expect": {
+    "kinds": [
+      "order",
+      "user"
+    ],
+    "no_cross_kind_collision": true,
+    "ownership": "unknown",
+    "preserve": true
+  },
+  "id": "K11",
+  "tag": "foreign-id-fields"
+}

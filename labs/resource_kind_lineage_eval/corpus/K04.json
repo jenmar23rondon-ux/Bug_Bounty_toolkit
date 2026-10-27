@@ -1,0 +1,11 @@
+{
+  "expect": {
+    "kinds": [
+      "invoice"
+    ],
+    "ownership": "unknown",
+    "preserve": true
+  },
+  "id": "K04",
+  "tag": "singular-plural"
+}

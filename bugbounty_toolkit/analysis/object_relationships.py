@@ -398,6 +398,22 @@ def _extract(source: CaptureSource, key: bytes, origin: str, credentials: set[st
     return template, occurrences
 
 
+def _identity_namespace(occurrence: _Occurrence) -> str:
+    """Stable object-identity namespace (resource-kind-lineage-v1).
+
+    The legacy namespace (known noun or endpoint/field scoped ``unknown:...``) is kept and, when the
+    inferred kind differs from it, the kind is appended as a disambiguator. This only ever SPLITS
+    identities (equal raw IDs of different kinds stop colliding, e.g. ``tickets[*].id`` vs
+    ``claims[*].id`` on one endpoint); it never creates a new union across endpoints or namespaces.
+    """
+    noun = occurrence.resource_kind
+    # Path segments and typed field names already scope the legacy namespace by their own noun
+    # (endpoint template / field name), so their historical object refs are kept byte-identical.
+    if not noun or noun == occurrence.kind or occurrence.kind_basis != "collection_container":
+        return occurrence.kind
+    return occurrence.kind + "|kind:" + noun
+
+
 def _kind_ref(key: bytes, program: str, origin: str, kind: str | None) -> str | None:
     """Keyed, origin-scoped kind reference. Known nouns stay readable; open nouns are HMAC-only."""
     if not kind:
@@ -566,8 +582,16 @@ def _build(
         containers: dict[tuple[str, str], set[str]] = defaultdict(set)
         path_refs: list[str] = []
         for occurrence in occurrences:
-            object_id = _ref(key, "object", program, origin, occurrence.kind, occurrence.value)
-            type_hint = occurrence.kind if occurrence.kind in set(COLLECTIONS.values()) else "unknown"
+            # Resource-kind lineage: equal raw IDs of different inferred kinds never share an object.
+            identity = _identity_namespace(occurrence)
+            object_id = _ref(key, "object", program, origin, identity, occurrence.value)
+            # A known legacy type is only exported when the inferred kind does not contradict it
+            # (`users[*].tickets[*].id` is a ticket reference, not a user). Contradiction -> unknown.
+            type_hint = (
+                occurrence.kind
+                if occurrence.kind in set(COLLECTIONS.values()) and identity == occurrence.kind
+                else "unknown"
+            )
             nodes[object_id] = {
                 "id": object_id,
                 "type": "Object",
@@ -736,6 +760,38 @@ def verify_object_sources(graph: dict[str, Any], inputs: list[Path], key: bytes)
         raise ValueError("Source commitments do not match this graph.")
 
 
+KIND_LINEAGE_VERSION = "resource-kind-lineage-v1"
+EXPLICIT_KIND_BASES = frozenset({"path_collection", "typed_field_name"})
+DERIVED_KIND_BASES = frozenset({"collection_container"})
+KIND_STATUSES = ("explicit", "derived", "unknown", "ambiguous")
+
+
+def kind_status(kind_refs: set[str], kind_bases: set[str]) -> str:
+    """explicit (named by path/field), derived (container noun), unknown (no evidence) or ambiguous."""
+    if len(kind_refs) > 1:
+        return "ambiguous"
+    if not kind_refs:
+        return "unknown"
+    return "explicit" if kind_bases & EXPLICIT_KIND_BASES else "derived"
+
+
+def kind_lineage(
+    kind_refs: set[str], kind_bases: set[str], observation_refs: set[str], namespace_refs: list[str]
+) -> dict[str, Any]:
+    """Exportable kind lineage for one object: keyed ids only, provenance by observation ref."""
+    status = kind_status(kind_refs, kind_bases)
+    return {
+        "version": KIND_LINEAGE_VERSION,
+        "kind_id": next(iter(kind_refs)) if len(kind_refs) == 1 else None,
+        "status": status,
+        "conflicting_kind_ids": sorted(kind_refs) if status == "ambiguous" else [],
+        "bases": sorted(kind_bases),
+        "namespace_refs": namespace_refs,
+        "evidence_observation_refs": sorted(observation_refs),
+        "ownership": "not_inferred_from_kind",
+    }
+
+
 def object_candidates(
     graph: dict[str, Any], program: str, key: bytes, *, limit: int = 100, min_score: int = 0
 ) -> dict[str, Any]:
@@ -771,6 +827,9 @@ def object_candidates(
             if kind and session:
                 kind_sessions[kind][session].add(fact["object_ref"])
 
+    ep_origin = {
+        node_id: str(node.get("origin_ref") or "") for node_id, node in nodes.items() if node["type"] == "Endpoint"
+    }
     rows: list[dict[str, Any]] = []
     for object_id, node in nodes.items():
         if node["type"] != "Object":
@@ -780,6 +839,8 @@ def object_candidates(
         response_refs: list[str] = []
         typed_refs: list[str] = []
         kind_refs: set[str] = set()
+        kind_bases: set[str] = set()
+        kind_obs: set[str] = set()
         for row in obs_rows:
             facts = [fact for fact in row["references"] if fact["object_ref"] == object_id]
             if any(f["location"] != "response_json" for f in facts):
@@ -791,6 +852,9 @@ def object_candidates(
             for fact in facts:
                 if fact.get("kind_ref"):
                     kind_refs.add(fact["kind_ref"])
+                    kind_obs.add(row["id"])
+                    if isinstance(fact.get("kind_basis"), str):
+                        kind_bases.add(fact["kind_basis"])
         endpoints = sorted({row["endpoint_ref"] for row in obs_rows})
         sessions = sorted({row["session_ref"] for row in obs_rows if row["session_ref"]})
         all_refs = sorted(row["id"] for row in obs_rows)
@@ -812,7 +876,8 @@ def object_candidates(
         # Cross-session kind peers: other object_refs sharing a kind_ref in a different session.
         peer_sessions = 0
         peer_objects: set[str] = set()
-        for kind in kind_refs:
+        # Conflicting kinds are AMBIGUOUS: no kind-based peer signal is derived from them.
+        for kind in kind_refs if len(kind_refs) == 1 else ():
             for session, objs in kind_sessions.get(kind, {}).items():
                 others = objs - {object_id}
                 if others:
@@ -863,6 +928,8 @@ def object_candidates(
             uncertainty.append("no_request_side_reference")
         if not kind_refs:
             uncertainty.append("insufficient_kind_evidence")
+        elif len(kind_refs) > 1:
+            uncertainty.append("ambiguous_kind_evidence")
         if is_path_parent and len(sessions) > 1:
             uncertainty.append("shared_parent_likely_requires_human_review")
         if not sessions:
@@ -882,6 +949,11 @@ def object_candidates(
                 {
                     "object_ref": object_id,
                     "resource_type": node["resource_type"],
+                    # resource-kind-lineage-v1: stable (keyed) kind id + status + provenance. Never ownership.
+                    "resource_kind": next(iter(kind_refs)) if len(kind_refs) == 1 else None,
+                    "kind_lineage": kind_lineage(
+                        kind_refs, kind_bases, kind_obs, sorted({ep_origin.get(e) or "" for e in endpoints} - {""})
+                    ),
                     "score": score,
                     "score_breakdown": breakdown,
                     "score_raw": raw,

@@ -1,0 +1,13 @@
+{
+  "expect": {
+    "kinds": [
+      "dossier",
+      "shipment"
+    ],
+    "no_cross_kind_collision": true,
+    "ownership": "unknown",
+    "preserve": true
+  },
+  "id": "K03",
+  "tag": "uuid-different-namespace"
+}
