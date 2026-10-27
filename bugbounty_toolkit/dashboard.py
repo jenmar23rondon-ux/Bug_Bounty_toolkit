@@ -13,6 +13,8 @@ from urllib.parse import urlsplit
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 
+from .authorization_workbench import build_workbench
+from .authorization_workbench_ui import WORKBENCH_HTML
 from .analysis.evidence_engine import MAX_INPUT_BYTES, import_evidence
 from .analysis.evidence_graph import EvidenceGraphStore
 from .analysis.investigation_memory import InvestigationMemory
@@ -290,7 +292,26 @@ def create_app(records_root: Path, program: str) -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse)
     async def home() -> HTMLResponse:
-        return HTMLResponse(_DASHBOARD_HTML)
+        return HTMLResponse(
+            _DASHBOARD_HTML.replace(
+                "</body>", '<p><a href="/authorization-workbench">Authorization comparison workbench</a></p></body>'
+            )
+        )
+
+    @app.get("/authorization-workbench", response_class=HTMLResponse)
+    async def authorization_workbench_page() -> HTMLResponse:
+        return HTMLResponse(WORKBENCH_HTML)
+
+    @app.get("/api/authorization-workbench")
+    async def authorization_workbench(
+        a: str | None = None, b: str | None = None, c: str | None = None
+    ) -> dict[str, object]:
+        if (a is None) != (b is None) or (c is not None and a is None):
+            raise HTTPException(status_code=400, detail="Choose A and B; C is optional.")
+        try:
+            return build_workbench(paths, [v for v in (a, b, c) if v is not None])
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="Choose distinct existing captures.") from exc
 
     @app.get("/api/overview")
     async def overview() -> dict[str, object]:

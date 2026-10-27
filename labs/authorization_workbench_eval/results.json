@@ -1,0 +1,16 @@
+{
+  "samples": 25,
+  "endpoint_projection_median_ms": 2.969,
+  "aligned_fields": 10,
+  "alignment_oracle_checks": 4,
+  "alignment_oracle_failures": 0,
+  "false_difference_oracle_checks": 2,
+  "false_differences": 0,
+  "lost_sha256_references": 0,
+  "canaries_exposed": 0,
+  "missing_presented_as_denied": 0,
+  "ledger_changed": false,
+  "network_requests_sent": 0,
+  "steps_to_locate_difference": 4,
+  "steps_definition": "Select A, select B, select optional C, compare. Difference rows are highlighted by default. This is an interaction count, not a human timing study."
+}
