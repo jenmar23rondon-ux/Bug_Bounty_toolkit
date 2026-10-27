@@ -47,3 +47,9 @@ before a hook is installed, isolated frames, asynchronous code after the page
 load event, and client-side flows not exercised by the fixture. A DOM sink
 observation or the absence of one does not prove (in)security. No claim is made
 about real-world detection efficacy.
+
+## Evidence-quality v2 extension
+
+`run_dom_local` results now also carry an additive `dom_state` from
+`xss.evidence_record.assess_dom_result`. Legacy `classification` values are
+unchanged. See [xss-evidence-quality-v2.md](xss-evidence-quality-v2.md).

@@ -16,6 +16,7 @@ from ..core.redaction import redact_text, redact_url
 from ..reporting.evidence import write_evidence_json
 from ..requests_engine.parameters import with_parameter
 from ..utils.exceptions import ToolkitError
+from .evidence_record import assess_dom_result
 from .test_cases import new_marker
 
 if TYPE_CHECKING:
@@ -96,17 +97,18 @@ def run_dom_local(
                     try:
                         evidence = checker.confirm(url, marker, headers, local_only=True)
                     except (ToolkitError, RuntimeError) as exc:
-                        results.append(
-                            {
-                                "route": redact_url(route),
-                                "parameter": parameter,
-                                "source": source,
-                                "probe": "execution_marker" if active else "plain_marker",
-                                "classification": "error",
-                                "confirmed": False,
-                                "reason": redact_text(str(exc)),
-                            }
-                        )
+                        entry: dict[str, object] = {
+                            "route": redact_url(route),
+                            "parameter": parameter,
+                            "source": source,
+                            "probe": "execution_marker" if active else "plain_marker",
+                            "classification": "error",
+                            "confirmed": False,
+                            "finding_confirmed": False,
+                            "reason": redact_text(str(exc)),
+                        }
+                        entry.update(assess_dom_result(entry))
+                        results.append(entry)
                         stop_reason = "browser_or_budget_error"
                         break
                     marker_observed = bool(evidence.get("marker_observed"))
@@ -125,21 +127,23 @@ def run_dom_local(
                         if present
                         else "inconclusive"
                     )
-                    results.append(
-                        {
-                            "route": redact_url(route),
-                            "parameter": parameter,
-                            "source": source,
-                            "probe": "execution_marker" if active else "plain_marker",
-                            "source_marker_present": present,
-                            "dom_sinks": sorted(sink for sink in sinks if isinstance(sink, str)),
-                            "browser_execution_observed": execution,
-                            "classification": classification,
-                            # Even observed execution remains a lab observation, not a
-                            # reportable vulnerability confirmation.
-                            "confirmed": False,
-                        }
-                    )
+                    entry2: dict[str, object] = {
+                        "route": redact_url(route),
+                        "parameter": parameter,
+                        "source": source,
+                        "probe": "execution_marker" if active else "plain_marker",
+                        "source_marker_present": present,
+                        "dom_sinks": sorted(sink for sink in sinks if isinstance(sink, str)),
+                        "browser_execution_observed": execution,
+                        "classification": classification,
+                        # Even observed execution remains a lab observation, not a
+                        # reportable vulnerability confirmation.
+                        "confirmed": False,
+                        "finding_confirmed": False,
+                    }
+                    # Additive precise DOM state (never infers execution from sinks alone).
+                    entry2.update(assess_dom_result(entry2))
+                    results.append(entry2)
                 if stop_reason:
                     break
             if stop_reason:
