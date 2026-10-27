@@ -16,6 +16,9 @@ from .result_validator import classify_reflection
 from .test_cases import new_marker, payload_cases_for_marker
 from .playwright_confirm import PlaywrightExecutionChecker, require_playwright_installed
 from .dom_local import require_literal_loopback, run_dom_local
+from .context_classifier import classify_reflected_context
+from .stored_local import StoredLocalOptions, run_stored_local
+from .capture_review import review_captures
 
 
 @dataclass(frozen=True)
@@ -28,6 +31,13 @@ class XssOptions:
     html_parser: str = "html.parser"
     confirm_exec: bool = False
     dom_local: bool = False
+    # Opt-in Phase-3 evidence-quality features (additive; default off).
+    enrich_context: bool = True
+    stored_local: bool = False
+    stored_write_url: str | None = None
+    stored_render_url: str | None = None
+    stored_parameter: str = "content"
+    capture_review_file: Path | None = None
 
 
 class XssParameterTester:
@@ -36,6 +46,50 @@ class XssParameterTester:
         self.client = client
 
     def run(self, options: XssOptions, evidence_dir: Path) -> tuple[Path, list[dict[str, object]]]:
+        if options.capture_review_file is not None:
+            import json
+
+            self.validate(options)
+            exchanges = json.loads(options.capture_review_file.read_text(encoding="utf-8"))
+            if isinstance(exchanges, dict):
+                exchanges = exchanges.get("exchanges", exchanges.get("items", []))
+            reviews = review_captures(exchanges)
+            path = write_evidence_json(
+                evidence_dir,
+                {
+                    "type": "xss_capture_review",
+                    "results": reviews,
+                    "finding_confirmed": False,
+                    "requests_issued": 0,
+                    "note": "Offline capture review only; no new HTTP requests were issued.",
+                },
+                prefix="xss-capture-review",
+            )
+            return path, reviews
+        if options.stored_local:
+            self.validate(options)
+            require_playwright_installed()
+            local_checker = PlaywrightExecutionChecker(
+                self.scope,
+                timeout_ms=int(self.client.timeout * 1000),
+                rate_limiter=self.client.rate_limiter,
+                execution_budget=self.client.execution_budget,
+            )
+            try:
+                return run_stored_local(
+                    StoredLocalOptions(
+                        write_url=options.stored_write_url,
+                        render_url=options.stored_render_url,
+                        parameter=options.stored_parameter,
+                        max_tests=options.max_tests,
+                        headers=options.headers,
+                    ),
+                    self.client,
+                    local_checker,
+                    evidence_dir,
+                )
+            finally:
+                local_checker.close()
         routes, parameters = self.validate(options)
         if options.dom_local:
             require_playwright_installed()
@@ -133,6 +187,7 @@ class XssParameterTester:
                             "duration_ms": response.duration_ms,
                             "classification": validation["classification"],
                             "confirmed": validation["confirmed"],
+                            "finding_confirmed": False,
                             "reason": validation["reason"],
                             "reflected": reflection.reflected,
                             "reflected_unescaped": reflection.reflected_unescaped,
@@ -144,6 +199,16 @@ class XssParameterTester:
                             "browser_execution_observed": False,
                             "exchange": response.to_dict(),
                         }
+                        if options.enrich_context:
+                            # Additive deep context analysis; never overrides confirmed=False.
+                            deep = classify_reflected_context(
+                                response.body_text,
+                                marker,
+                                payload,
+                                media_type,
+                                truncated=response.body_truncated,
+                            )
+                            result["reflected_assessment"] = deep.to_dict()
                         stop_reason = None
                         if response.status_code in {401, 403, 429}:
                             result.update(
@@ -216,6 +281,18 @@ class XssParameterTester:
             raise ValueError("Max tests must be positive.")
         if options.html_parser not in {"html.parser", "lxml", "html5lib"}:
             raise ValueError("Unsupported HTML parser.")
+        if options.stored_local and options.dom_local:
+            raise ValueError("dom_local and stored_local are mutually exclusive.")
+        if options.stored_local:
+            if not options.stored_write_url or not options.stored_render_url:
+                raise ValueError("stored_local requires write and render loopback URLs.")
+            require_literal_loopback(options.stored_write_url)
+            require_literal_loopback(options.stored_render_url)
+            return [], []
+        if options.capture_review_file is not None:
+            if not options.capture_review_file.is_file():
+                raise ValueError("capture_review_file must be an existing JSON file.")
+            return [], []
         routes = load_routes(options.routes_file, base_url=options.base_url)
         parameters = load_parameter_names(options.parameters_file)
         if not routes or not parameters:

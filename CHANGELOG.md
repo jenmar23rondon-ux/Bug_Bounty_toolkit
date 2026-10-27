@@ -1,5 +1,21 @@
 ## [Unreleased]
 
+### XSS evidence quality v2
+
+- Additive reflected context classifier (`xss/context_classifier.py`) covering
+  HTML text/attrs, JS, URL/event attrs, templates, non-HTML, escaping, transforms,
+  truncation, malformed HTML, and adversarial prompt-injection bodies. Existing
+  reflected XSS classifications are preserved; results gain `reflected_assessment`.
+- Precise DOM observation states integrated with the already-merged `--dom-local`
+  probes (PR #63). Execution is never inferred from `innerHTML` alone.
+- Synthetic stored-XSS local lab (`--stored-local`) restricted to disposable
+  loopback write→store→render→browser checks. No third-party writes, no Blind XSS.
+- Offline Burp/HAR capture review (`--capture-review`) that recommends review
+  without issuing new requests or treating isolated reflection as a vuln.
+- Minimized browser evidence records (case id, context, source, sink, execution,
+  CSP, errors, capture refs, hashes) with forbidden-field checks.
+- Independent DEV + FINAL corpora and evaluator under `labs/xss_evidence_v2_eval/`.
+
 ### IDOR/BOLA evidence correctness v3
 
 - Integrity-aware reviewability: the evidence-gap planner now emits a read-only

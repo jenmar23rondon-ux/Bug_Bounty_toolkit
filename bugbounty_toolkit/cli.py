@@ -902,21 +902,48 @@ def cmd_xss(args: argparse.Namespace) -> None:
         headers["Cookie"] = cookies
     tester = XssParameterTester(scope, client_for(args, settings, scope))
     options = XssOptions(
-        args.routes,
-        args.parameters,
+        args.routes or Path("/dev/null"),
+        args.parameters or Path("/dev/null"),
         args.base_url,
         args.max_tests or settings.max_tests,
         headers,
         args.html_parser,
         args.confirm_exec,
         args.dom_local,
+        enrich_context=not getattr(args, "no_enrich_context", False),
+        stored_local=bool(getattr(args, "stored_local", False)),
+        stored_write_url=getattr(args, "stored_write_url", None),
+        stored_render_url=getattr(args, "stored_render_url", None),
+        stored_parameter=getattr(args, "stored_parameter", "content") or "content",
+        capture_review_file=getattr(args, "capture_review", None),
     )
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
+    if not options.stored_local and options.capture_review_file is None:
+        if args.routes is None or args.parameters is None:
+            raise ValueError(
+                "--routes and --parameters are required unless --stored-local or --capture-review is used."
+            )
+    elif options.stored_local and (not options.stored_write_url or not options.stored_render_url):
+        raise ValueError("--stored-local requires --stored-write-url and --stored-render-url.")
     routes, parameters = tester.validate(options)
-    variants = 4 if options.dom_local else 11 if options.confirm_exec else 4
-    total = len(routes) * len(parameters) * variants
+    if options.capture_review_file is not None:
+        total = 0
+    elif options.stored_local:
+        total = options.max_tests
+    else:
+        variants = 4 if options.dom_local else 11 if options.confirm_exec else 4
+        total = len(routes) * len(parameters) * variants
     if args.dry_run:
+        if options.capture_review_file is not None:
+            print("[+] Offline capture review. No HTTP requests will be issued.")
+            return
+        if options.stored_local:
+            print(
+                "[+] Stored-XSS local lab (write→store→render→browser) on loopback only. "
+                "No third-party writes. No Blind XSS callbacks. No requests sent (dry-run)."
+            )
+            return
         print(
             f"[+] {len(routes)} routes, {len(parameters)} parameters, up to {min(total, options.max_tests)} "
             + (
@@ -928,13 +955,18 @@ def cmd_xss(args: argparse.Namespace) -> None:
         )
         return
     path, results = tester.run(options, store.paths.evidence_dir / "xss")
-    failures = sum(item["classification"] == "error" for item in results)
-    possible = sum(item["classification"] == "possible" for item in results)
-    confirmed = sum(item["classification"] == "confirmed" for item in results)
-    not_executed = sum(item["classification"] == "reflected_not_executed" for item in results)
+    failures = sum(item.get("classification") == "error" for item in results)
+    possible = sum(item.get("classification") == "possible" for item in results)
+    confirmed = sum(item.get("classification") == "confirmed" for item in results)
+    not_executed = sum(item.get("classification") == "reflected_not_executed" for item in results)
     store.add_run("xss", str(args.routes), ["xss", str(args.routes), str(args.parameters)], 1 if failures else 0, path)
     summary = f"{len(results)} tests, {possible} possible reflections, {failures} errors"
-    if options.dom_local:
+    if options.capture_review_file is not None:
+        summary += f", {len(results)} offline capture recommendations (no requests issued)"
+    elif options.stored_local:
+        observed = sum(bool(item.get("browser_execution_observed")) for item in results)
+        summary += f", {observed} stored-lab executions observed (not vulnerability verdicts)"
+    elif options.dom_local:
         observed = sum(item["classification"] == "execution_observed" for item in results)
         summary += f", {observed} DOM executions observed in a local fixture (not vulnerability verdicts)"
     elif options.confirm_exec:
@@ -3623,8 +3655,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     xss = sub.add_parser("xss")
     xss.add_argument("program")
-    xss.add_argument("--routes", required=True, type=Path)
-    xss.add_argument("--parameters", required=True, type=Path)
+    xss.add_argument("--routes", type=Path)
+    xss.add_argument("--parameters", type=Path)
     xss.add_argument("--base-url")
     xss.add_argument("--header", action="append")
     xss.add_argument("--cookie", action="append")
@@ -3641,6 +3673,24 @@ def build_parser() -> argparse.ArgumentParser:
         "--dom-local",
         action="store_true",
         help="Opt-in query/hash DOM checks on literal loopback IP fixtures only",
+    )
+    xss.add_argument(
+        "--stored-local",
+        action="store_true",
+        help="Opt-in stored XSS write→store→render lab on literal loopback only",
+    )
+    xss.add_argument("--stored-write-url", help="Loopback URL that accepts the stored write")
+    xss.add_argument("--stored-render-url", help="Loopback URL that renders the stored value")
+    xss.add_argument("--stored-parameter", default="content", help="Form/query parameter for stored write")
+    xss.add_argument(
+        "--capture-review",
+        type=Path,
+        help="Offline JSON of captured exchanges to recommend XSS review (no new requests)",
+    )
+    xss.add_argument(
+        "--no-enrich-context",
+        action="store_true",
+        help="Disable additive reflected context enrichment on XSS results",
     )
     xss.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(xss)

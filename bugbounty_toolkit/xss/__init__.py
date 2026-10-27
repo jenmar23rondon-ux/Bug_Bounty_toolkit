@@ -1,1 +1,1 @@
-"""Controlled XSS reflection testing."""
+"""Controlled XSS reflection, DOM-local, and evidence-quality testing."""
