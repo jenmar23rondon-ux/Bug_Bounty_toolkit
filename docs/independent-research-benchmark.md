@@ -53,11 +53,11 @@ Full tables: `labs/independent_research_eval/results/RESULTS.md`.
    origins → no proposal and no technical signal; C02 raw requests without responses → `NEEDS_RESPONSE`
    but planner abstains instead of `complete_partial_capture`). Ordinary noise volume (> 32 exchanges)
    makes a valid pair unreachable, and several drops are indistinguishable from "nothing found".
-3. **Object typing / prioritization loss** — `ranking.json` exports `resource_type: unknown` for every
-   open-vocabulary noun (strict P@1 0.10 vs 0.83 resolved via handoff kinds): a reviewer cannot tell what
-   was ranked. Frequent irrelevant objects outrank the target (E02 locale/user id, B08 parent account).
-   Credential-like query params are treated as resource differences (E06 `api_key` → `REJECT_MULTI_RESOURCE_DIFF`,
-   missed eligible). Redundancy: B07 produces 12 proposals for one issue; 326 synthetic manual steps.
+3. **Object typing / prioritization loss** — *(partially addressed by resource-kind-lineage-v1)*
+   Ranking now exports keyed `resource_kind` + `kind_lineage` (exported-kind P@1 **0.88** on FINAL;
+   legacy `resource_type`-only P@1 remains 0.10 for back-compat). Remaining: frequent irrelevant
+   objects still outrank the target (E02 locale/user id, B08 parent account); credential-like query
+   params still treated as resource differences (E06); redundancy (B07) unchanged.
 
 Secondary: D13/D14 — the planner chooses the right first step (`repair_broken_reference`,
 `review_stale_evidence`) but leaves the candidate `open` when other usable evidence exists (reported as
@@ -72,8 +72,8 @@ outcome mismatch against the frozen `integrity_block` label; arguably a spec/lab
 2. **Bounded partial discovery instead of whole-capture failure, plus explicit technical signals** for
    silent drops (entry-limit overflow, mixed origins, `NEEDS_RESPONSE` → `complete_partial_capture`).
    Overlaps with the parallel `feature/bounded-capture-batch-ingestion` work — coordinate.
-3. **Typed, frequency-aware ranking export**: carry the (pseudonymized) open-vocabulary kind into ranking
-   rows, demote objects repeated across every session/request, ignore credential-like query params in the
+3. **Frequency-aware ranking + credential-aware diffs** *(kind export done in resource-kind-lineage)*:
+   demote objects repeated across every session/request, ignore credential-like query params in the
    single-difference check, and collapse equivalent proposals.
 
 ## Reproduce

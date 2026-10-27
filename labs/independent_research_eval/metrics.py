@@ -112,7 +112,7 @@ def summarize(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     refs_tot = sum(r["refs"]["total"] for r in rows)
 
     def mean(key: str) -> float | None:
-        vals = [r["ranking"][key] for r in ranked]
+        vals = [r["ranking"][key] for r in ranked if key in r["ranking"] and r["ranking"][key] is not None]
         return round(sum(vals) / len(vals), 4) if vals else None
 
     return {
@@ -128,6 +128,8 @@ def summarize(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "object_recall_strict_resource_type": ratio(
             sum(1 for r in ranked if r["ranking"]["strict_recall"]), len(ranked)
         ),
+        "precision_at_1_exported_kind": mean("kind_p@1"),
+        "object_recall_exported_kind": ratio(sum(1 for r in ranked if r["ranking"].get("kind_recall")), len(ranked)),
         "precision_at_3": mean("p@3"),
         "precision_at_5": mean("p@5"),
         "mrr": mean("rr"),

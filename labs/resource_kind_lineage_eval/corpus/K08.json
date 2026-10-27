@@ -1,0 +1,11 @@
+{
+  "expect": {
+    "kinds": [
+      "order"
+    ],
+    "ownership": "unknown",
+    "preserve": true
+  },
+  "id": "K08",
+  "tag": "schema-change-same-kind"
+}

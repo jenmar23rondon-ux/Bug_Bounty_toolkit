@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+### End-to-end resource kind lineage
+
+- Preserve inferred resource kind/namespace from capture through Object Discovery,
+  ranking and Object Handoff (`resource-kind-lineage-v1`). Equal raw IDs under
+  different collection containers no longer collapse into one object.
+- Ranking candidates export `resource_kind` + `kind_lineage` (explicit / derived /
+  unknown / ambiguous, provenance). Conflicting kinds stay ambiguous; ownership is
+  never inferred from kind. Coherence checks link graph ↔ ranking ↔ handoff.
+- Lab `labs/resource_kind_lineage_eval/` (`rkl-1.0`, 13 adversarial scenarios): kind
+  accuracy 1.0, preservation 1.0, cross-kind collisions 0, ownership claims 0.
+  IRB FINAL exported-kind P@1 0.10 → 0.88 (resolved P@1 unchanged at 0.83).
+  Version stays 0.2.2; denial assessment (PR #52) and parallel identifier work untouched.
+
 ### Evidence-preserving semantic HTTP response diff
 
 - New offline `analysis/semantic_response_diff.py` compares stored HTTP responses

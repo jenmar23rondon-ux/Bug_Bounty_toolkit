@@ -234,6 +234,7 @@ def _empty() -> dict[str, Any]:
         "import": {},
         "ranked_types": [],
         "ranked_types_resolved": [],
+        "ranked_types_exported_kind": [],
         "proposal_types": [],
         "classifications": [],
         "ledger_states": [],
@@ -306,6 +307,16 @@ def _extract(work: Path, report: dict[str, Any], plan: dict[str, Any], labels: d
         ],
         "import": {k: imp.get(k) for k in ("entries_total", "accepted", "rejected", "reasons", "duplicate_entries")},
         "ranked_types": [str(r.get("resource_type")) for r in report.get("ranking") or []],
+        # resource-kind-lineage-v1: what the exported ranking row ALONE says (resource_type, else the
+        # keyed resource_kind pseudonymized like the labels). No handoff back-fill.
+        "ranked_types_exported_kind": [
+            str(r.get("resource_type"))
+            if r.get("resource_type") not in (None, "unknown")
+            else _kind_name(r.get("resource_kind"), krefs)
+            if r.get("resource_kind")
+            else "unknown"
+            for r in report.get("ranking") or []
+        ],
         "proposal_types": [
             _kind_name(p.get("resource_kind") or p.get("resource_type"), krefs) for p in handoff.get("proposals") or []
         ],
@@ -365,6 +376,17 @@ def score(sc: dict[str, Any], pred: dict[str, Any]) -> dict[str, Any]:
         ranking = {
             "strict_p@1": M.precision_at_k(strict, 1),
             "strict_recall": bool(sum(strict)),
+            "kind_p@1": M.precision_at_k(
+                M.relevance_vector(pred.get("ranked_types_exported_kind") or pred["ranked_types"], lab["target_types"]),
+                1,
+            ),
+            "kind_recall": bool(
+                sum(
+                    M.relevance_vector(
+                        pred.get("ranked_types_exported_kind") or pred["ranked_types"], lab["target_types"]
+                    )
+                )
+            ),
             "recall": bool(sum(rel)),
             "p@1": M.precision_at_k(rel, 1),
             "p@3": round(M.precision_at_k(rel, 3), 4),
