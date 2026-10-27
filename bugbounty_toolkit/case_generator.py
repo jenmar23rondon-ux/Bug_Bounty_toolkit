@@ -205,11 +205,19 @@ def _resource_selector(owner_url: str, actor_url: str) -> tuple[dict[str, object
     owner_query, actor_query = dict(owner_pairs), dict(actor_pairs)
     if len(owner_query) != len(owner_pairs) or len(actor_query) != len(actor_pairs):
         raise ValueError("Duplicate query parameters are ambiguous; capture requests with unique parameter names.")
-    if any(SESSION_HEADER.search(name) for name in owner_query.keys() | actor_query.keys()):
-        raise ValueError("Session-bearing query parameters are unsupported; keep sessions in headers.")
+    # Credential-like query names are a session channel, not a second object. They do not
+    # count as a resource difference when exactly one non-credential object difference remains.
+    # A pair that differs only in that channel is still rejected: no object identity is proven.
+    session_names = {name for name in owner_query.keys() | actor_query.keys() if SESSION_HEADER.search(name)}
+    owner_resource_query = {name: value for name, value in owner_query.items() if name not in session_names}
+    actor_resource_query = {name: value for name, value in actor_query.items() if name not in session_names}
     changed_query = sorted(
-        name for name in owner_query.keys() | actor_query.keys() if owner_query.get(name) != actor_query.get(name)
+        name
+        for name in owner_resource_query.keys() | actor_resource_query.keys()
+        if owner_resource_query.get(name) != actor_resource_query.get(name)
     )
+    if session_names and not changed_segments and not changed_query:
+        raise ValueError("Session-bearing query parameters are unsupported; keep sessions in headers.")
     if len(changed_segments) == 1 and not changed_query and len(owner_segments) == len(actor_segments):
         index = changed_segments[0]
         owner_id, actor_id = owner_segments[index], actor_segments[index]
