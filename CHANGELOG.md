@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+### Local AI evidence assistant
+
+- New `analysis/local_ai_evidence_assistant.py` and `bbtk ai evidence-assist`:
+  Ollama/LM Studio-only advisory explain/summarize/pending questions/contradictions/
+  drafts/missing-data suggestions/model compare over minimized evidence.
+  Deterministic baseline always runs first and stays primary for confirmation
+  decisions; AI never executes requests, invents evidence, mutates the ledger,
+  confirms findings, calls cloud APIs, emits cleartext credentials, or changes
+  scope. Lab `labs/local_ai_evidence_assistant_eval/` (DEV + frozen FINAL) compares
+  mock local profiles against the deterministic baseline; if AI does not improve
+  advisory quality, deterministic remains primary. Version stays 0.2.2.
+
+
 ### Security research benchmark v2
 
 - New offline meta-benchmark `labs/security_research_eval_v2/` (DEV / frozen FINAL /

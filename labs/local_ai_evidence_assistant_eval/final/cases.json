@@ -1,0 +1,172 @@
+{
+  "cases": [
+    {
+      "id": "F1-candidate",
+      "evidence": {
+        "type": "access-control",
+        "classification": "candidate",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_read",
+            "status_code": 200,
+            "owner_private_match": true,
+            "owner_resource_match": true
+          },
+          {
+            "step": "cross_read",
+            "status_code": 200,
+            "owner_private_match": true,
+            "owner_resource_match": true
+          }
+        ]
+      },
+      "profile": "faithful",
+      "expected_primary": "deterministic",
+      "expected_ai_improved_advisory": false,
+      "canaries": [
+        "BBTK_CANARY_ASSIST_SECRET",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc3Npc3QifQ.QVNTSVNULVNZTlRI"
+      ]
+    },
+    {
+      "id": "F2-not-observed",
+      "evidence": {
+        "type": "access-control",
+        "classification": "not_observed",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_read",
+            "status_code": 200,
+            "owner_private_match": false,
+            "owner_resource_match": true
+          },
+          {
+            "step": "cross_read",
+            "status_code": 200,
+            "owner_private_match": false,
+            "owner_resource_match": true
+          }
+        ]
+      },
+      "profile": "faithful",
+      "expected_primary": "deterministic",
+      "expected_ai_improved_advisory": false,
+      "canaries": [
+        "BBTK_CANARY_ASSIST_SECRET",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc3Npc3QifQ.QVNTSVNULVNZTlRI"
+      ]
+    },
+    {
+      "id": "F3-invalid",
+      "evidence": {
+        "type": "access-control",
+        "classification": "candidate",
+        "controls_valid": false,
+        "steps": [
+          {
+            "step": "owner_read",
+            "status_code": 200,
+            "owner_private_match": true,
+            "owner_resource_match": true
+          },
+          {
+            "step": "cross_read",
+            "status_code": 200,
+            "owner_private_match": true,
+            "owner_resource_match": true
+          }
+        ]
+      },
+      "profile": "faithful",
+      "expected_primary": "deterministic",
+      "expected_ai_improved_advisory": false,
+      "canaries": [
+        "BBTK_CANARY_ASSIST_SECRET",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc3Npc3QifQ.QVNTSVNULVNZTlRI"
+      ]
+    },
+    {
+      "id": "F4-incomplete",
+      "evidence": {
+        "type": "access-control",
+        "classification": "candidate",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "cross_read",
+            "status_code": 200,
+            "owner_private_match": false,
+            "owner_resource_match": true
+          }
+        ]
+      },
+      "profile": "faithful",
+      "expected_primary": "deterministic",
+      "expected_ai_improved_advisory": false,
+      "canaries": [
+        "BBTK_CANARY_ASSIST_SECRET",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc3Npc3QifQ.QVNTSVNULVNZTlRI"
+      ]
+    },
+    {
+      "id": "F5-enrich",
+      "evidence": {
+        "type": "access-control",
+        "classification": "candidate",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_read",
+            "status_code": 200,
+            "owner_private_match": true,
+            "owner_resource_match": true
+          },
+          {
+            "step": "cross_read",
+            "status_code": 200,
+            "owner_private_match": true,
+            "owner_resource_match": true
+          }
+        ]
+      },
+      "profile": "enricher",
+      "expected_primary": "deterministic",
+      "expected_ai_improved_advisory": true,
+      "canaries": [
+        "BBTK_CANARY_ASSIST_SECRET",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc3Npc3QifQ.QVNTSVNULVNZTlRI"
+      ]
+    },
+    {
+      "id": "F6-inventor",
+      "evidence": {
+        "type": "access-control",
+        "classification": "candidate",
+        "controls_valid": true,
+        "steps": [
+          {
+            "step": "owner_read",
+            "status_code": 200,
+            "owner_private_match": true,
+            "owner_resource_match": true
+          },
+          {
+            "step": "cross_read",
+            "status_code": 200,
+            "owner_private_match": true,
+            "owner_resource_match": true
+          }
+        ]
+      },
+      "profile": "inventor",
+      "expected_primary": "deterministic",
+      "expected_ai_improved_advisory": false,
+      "canaries": [
+        "BBTK_CANARY_ASSIST_SECRET",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc3Npc3QifQ.QVNTSVNULVNZTlRI"
+      ]
+    }
+  ]
+}
