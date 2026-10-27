@@ -1,0 +1,38 @@
+{
+  "after": {
+    "expected": 17.0,
+    "f1": 1.0,
+    "precision": 1.0,
+    "predicted": 17.0,
+    "recall": 1.0,
+    "true_positive": 17.0
+  },
+  "before": {
+    "expected": 17.0,
+    "f1": 0.2857142857142857,
+    "precision": 0.36363636363636365,
+    "predicted": 11.0,
+    "recall": 0.23529411764705882,
+    "true_positive": 4.0
+  },
+  "delta_f1": 0.7142857142857143,
+  "delta_precision": 0.6363636363636364,
+  "delta_recall": 0.7647058823529411,
+  "elapsed_seconds_after": 0.0006202569929882884,
+  "format_recall_after": {
+    "declared": 1.0,
+    "form": 1.0,
+    "json": 1.0,
+    "json_array": 1.0,
+    "matrix": 1.0,
+    "path": 1.0,
+    "query": 1.0,
+    "xml": 1.0,
+    "xml_attr": 1.0
+  },
+  "locators_valid_after": true,
+  "rejected_ok_after": true,
+  "rss_kb_after": 24432,
+  "secret_leaks_after": 0,
+  "types_preserved_after": true
+}
