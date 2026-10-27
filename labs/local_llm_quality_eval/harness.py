@@ -36,7 +36,7 @@ from bugbounty_toolkit.analysis.ai_providers import (
 from bugbounty_toolkit.analysis.dual_review import dual_review
 from bugbounty_toolkit.analysis.multi_review import build_evidence_bundle, review_evidence_multi
 
-from . import corpus
+from . import corpus, discovery, metadata
 
 RESULT_SCHEMA = "bbtk.local-llm-quality-result.v1"
 CONTROL_KEYWORDS: dict[str, tuple[str, ...]] = {
@@ -617,8 +617,21 @@ def parse_reviewer(value: str) -> tuple[str, str]:
     return provider, model
 
 
-def run_live(qwen: str, deepseek: str, split: str, repeats: int, timeout: float) -> dict[str, Any]:
-    """Opt-in run on the user's own machine. Refuses absent models; never downloads anything."""
+def run_live(
+    qwen: str,
+    deepseek: str,
+    split: str,
+    repeats: int,
+    timeout: float,
+    *,
+    temperature: float = 0.0,
+    seed: int | None = None,
+) -> dict[str, Any]:
+    """Opt-in run on the user's own machine. Refuses absent models; never downloads anything.
+
+    ``seed`` is recorded and not applied: the provider adapter has no seed parameter.
+    The model receives no tools and cannot confirm a finding.
+    """
     (qp, qm), (dp, dm) = parse_reviewer(qwen), parse_reviewer(deepseek)
     meta = {"B": model_metadata(qp, qm), "C": model_metadata(dp, dm)}
     missing = [m["model"] for m in meta.values() if not m.get("present")]
@@ -632,7 +645,8 @@ def run_live(qwen: str, deepseek: str, split: str, repeats: int, timeout: float)
         and meta["B"].get("digest") == meta["C"].get("digest")
     ):
         raise RuntimeError("Both reviewers resolve to the same model; they are not independent reviewers.")
-    limits = GenerationLimits(timeout=float(timeout), max_output_tokens=768)
+    limits = GenerationLimits(timeout=float(timeout), max_output_tokens=768, temperature=float(temperature))
+    limits.validate()
     sq = AISelection(qp, qm, None, float(timeout)).validate()
     sd = AISelection(dp, dm, None, float(timeout)).validate()
     rq, rd = Reviewer(f"qwen:{qm}", sq), Reviewer(f"deepseek:{dm}", sd)
@@ -642,6 +656,10 @@ def run_live(qwen: str, deepseek: str, split: str, repeats: int, timeout: float)
     result = evaluate(split, rq, rd, rq, rd, repeats, limits, live=True)
     _, peak = tracemalloc.get_traced_memory()
     tracemalloc.stop()
+    elapsed = round(perf_counter() - started, 3)
+    after = vram_mb()
+    inventory = discovery.discover()
+    advice = metadata.compare_to_baseline(result)
     result.update(
         {
             "schema_version": RESULT_SCHEMA,
@@ -651,9 +669,37 @@ def run_live(qwen: str, deepseek: str, split: str, repeats: int, timeout: float)
             "models": meta,
             "generation_limits": limits.as_dict(),
             "vram_used_mb_before": before,
-            "vram_used_mb_after": vram_mb(),
+            "vram_used_mb_after": after,
             "harness_python_peak_bytes": peak,
-            "elapsed_seconds": round(perf_counter() - started, 3),
+            "elapsed_seconds": elapsed,
+            "finding_confirmed": False,
+            "ai_classification_authority": False,
+            "tools_enabled": False,
+            "tool_calling_enabled": False,
+            "model_output_executed": False,
+            "evidence_ledger_modified": False,
+            "classification_primary": "deterministic",
+            "deterministic_remains_primary": True,
+            "dual_review_may_confirm": False,
+            "dual_review_recommended_for_classification": advice["dual_review_recommended_for_classification"],
+            "preferred_second_opinion": advice["preferred_second_opinion"],
+            "recommendation": advice,
+            "model_download_attempted": False,
+            "external_requests": inventory["external_requests"],
+            "seed_applied": False,
+            "reproducibility": metadata.reproducibility(
+                measured=True,
+                reason="measured",
+                inventory=inventory,
+                temperature=float(temperature),
+                seed=seed,
+                models=meta,
+                elapsed_s=elapsed,
+                tokens_in=metadata.token_total(result, "estimated_input_tokens"),
+                tokens_out=metadata.token_total(result, "estimated_output_tokens"),
+                vram_used_mb_before=before,
+                vram_used_mb_after=after,
+            ),
             "privacy": {
                 "note": "Live mode cannot observe the wire; bundles are pre-scanned instead.",
                 "secrets_or_canaries_in_bundles": prescan_bundles(split),
