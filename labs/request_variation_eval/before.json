@@ -1,0 +1,18 @@
+{
+  "base_sha": "bd289808600d57983f1dcacaa9b68c0d7eea0d18",
+  "confirmed": false,
+  "declaration_driven_planner_available": false,
+  "measurement": "existing inspect_read_pair representation, not planner efficacy",
+  "network_requests_sent": 0,
+  "representable": {
+    "json_pointer_get_body": false,
+    "numeric_path": true,
+    "post": false,
+    "query_parameter": true,
+    "signed_url": false,
+    "two_fields": false,
+    "uuid_path": true
+  },
+  "representable_types": 3,
+  "schema_version": "bbtk-request-variation-baseline/1"
+}
