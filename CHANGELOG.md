@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### Real local LLM eval (RTX 3060)
+
+- Extend `labs/local_llm_quality_eval` with read-only GPU/model discovery, a
+  committed run-metadata schema, and `--discover` / `--not-measured`.
+  Live Qwen/DeepSeek metrics stay `NOT_MEASURED` when no GPU or local model
+  is present. The runner does not download models, does not give the model
+  tools, and does not grant classification authority. `finding_confirmed`
+  stays false. Frozen FINAL labels are unchanged. Version stays 0.2.2.
+
 ### Disclosure context quality v2
 
 - New offline `analysis/disclosure_context.py` (`disclosure-context-quality-v2`) and

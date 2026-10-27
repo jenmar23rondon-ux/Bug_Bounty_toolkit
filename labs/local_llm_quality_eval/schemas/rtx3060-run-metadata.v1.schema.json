@@ -1,0 +1,140 @@
+{
+  "$id": "https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/labs/local_llm_quality_eval/schemas/rtx3060-run-metadata.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Local LLM RTX 3060 run metadata",
+  "description": "Reproducibility block for a Qwen/DeepSeek evidence-review run. Fields that were not executed use value NOT_MEASURED plus a reason. This schema does not authorize model downloads, tools, or finding confirmation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "model_digest",
+    "quantization",
+    "gpu",
+    "vram",
+    "driver",
+    "temperature",
+    "seed",
+    "prompt_schema",
+    "packet_hash",
+    "wall_time_s",
+    "tokens_in",
+    "tokens_out",
+    "token_method"
+  ],
+  "properties": {
+    "schema_version": {"const": "bbtk.local-llm-rtx3060-metadata.v1"},
+    "model_digest": {"$ref": "#/$defs/slotPair"},
+    "quantization": {"$ref": "#/$defs/slotPair"},
+    "gpu": {"$ref": "#/$defs/measured"},
+    "vram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_mib", "used_mb_before", "used_mb_after"],
+      "properties": {
+        "total_mib": {"$ref": "#/$defs/measured"},
+        "used_mb_before": {"$ref": "#/$defs/measured"},
+        "used_mb_after": {"$ref": "#/$defs/measured"}
+      }
+    },
+    "driver": {"$ref": "#/$defs/measured"},
+    "temperature": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["value", "applied"],
+      "properties": {
+        "value": {"$ref": "#/$defs/scalar"},
+        "applied": {"type": "boolean"},
+        "configured_default": {"type": "number"},
+        "reason": {"type": ["string", "null"]},
+        "source": {"type": "string"}
+      }
+    },
+    "seed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "applied", "reason"],
+      "properties": {
+        "value": {"const": "NOT_MEASURED"},
+        "applied": {"const": false},
+        "requested_seed": {"type": ["integer", "null"]},
+        "reason": {"const": "ai_provider_adapter_has_no_seed_parameter"}
+      }
+    },
+    "prompt_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "measured",
+        "requires_model",
+        "single_review_schema",
+        "bundle_schema",
+        "dual_review_schema",
+        "single_prompt_sha256",
+        "analyst_prompt_sha256",
+        "critic_prompt_sha256"
+      ],
+      "properties": {
+        "measured": {"const": true},
+        "requires_model": {"const": false},
+        "single_review_schema": {"type": "string"},
+        "bundle_schema": {"type": "string"},
+        "dual_review_schema": {"type": "string"},
+        "single_prompt_sha256": {"type": "string"},
+        "analyst_prompt_sha256": {"type": "string"},
+        "critic_prompt_sha256": {"type": "string"},
+        "single_output_schema_sha256": {"type": "string"},
+        "analyst_schema_sha256": {"type": "string"},
+        "critic_schema_sha256": {"type": "string"}
+      }
+    },
+    "packet_hash": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dev", "final"],
+      "properties": {
+        "dev": {"$ref": "#/$defs/packets"},
+        "final": {"$ref": "#/$defs/packets"}
+      }
+    },
+    "wall_time_s": {"$ref": "#/$defs/measured"},
+    "tokens_in": {"$ref": "#/$defs/measured"},
+    "tokens_out": {"$ref": "#/$defs/measured"},
+    "token_method": {"type": "string"}
+  },
+  "$defs": {
+    "scalar": {"type": ["string", "number", "integer", "null"]},
+    "measured": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "reason"],
+      "properties": {
+        "value": {"$ref": "#/$defs/scalar"},
+        "reason": {"type": ["string", "null"]}
+      }
+    },
+    "slotPair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["B", "C"],
+      "properties": {
+        "B": {"$ref": "#/$defs/measured"},
+        "C": {"$ref": "#/$defs/measured"}
+      }
+    },
+    "packets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["split", "count", "packet_sha256", "labels_included", "secret_leaks_in_packets", "measured", "requires_model"],
+      "properties": {
+        "split": {"enum": ["dev", "final"]},
+        "count": {"type": "integer", "minimum": 0},
+        "packet_sha256": {"type": "string"},
+        "packets": {"type": "array"},
+        "labels_included": {"const": false},
+        "secret_leaks_in_packets": {"const": 0},
+        "measured": {"const": true},
+        "requires_model": {"const": false}
+      }
+    }
+  }
+}
