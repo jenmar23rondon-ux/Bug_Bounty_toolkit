@@ -1,5 +1,16 @@
 ## [Unreleased]
 
+### DOM observability v3
+
+- Additive loopback DOM observer (`xss/dom_observability.py`, `xss/dom_observer.py`):
+  early `add_init_script` hooks, async sinks inside a bounded window, and
+  same-origin frame reads. Isolated and cross-origin frames stay `unsupported`
+  (no Same-Origin Policy bypass). A marker in the URL is `source_available`,
+  not `source_observed`. `innerHTML` alone is never execution.
+  `finding_confirmed` stays false. DOM local v2 classifications are unchanged.
+- Lab `labs/dom_observability_v3_eval/` (DEV + frozen FINAL) scores the new
+  observer against the DOM local v2 baseline. Version stays 0.2.2.
+
 ### Authorization control matrix
 
 - New offline `analysis/authorization_control_matrix.py` annotates owner,
