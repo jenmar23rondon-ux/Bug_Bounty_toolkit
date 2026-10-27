@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+### Authorization control matrix
+
+- New offline `analysis/authorization_control_matrix.py` annotates owner,
+  second-actor, and anonymous comparisons when captures already exist. It does
+  not send requests, rewrite session identity, invent actors, or confirm
+  findings. Isolated 401 is not expiry; a different token is not a new identity
+  without provenance; a missing mandatory control is `blocked`, never an
+  automatic negative. Lab `labs/authorization_control_matrix_eval/` (DEV +
+  frozen FINAL). Ranking and pairing engines are unchanged. Version stays 0.2.2.
+
 ### IDOR false-negative recovery
 
 - Overlay `analysis/blocker_dependency_graph.py` (`bbtk-blocker-dependency-graph/1`)
