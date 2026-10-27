@@ -67,6 +67,7 @@ from .analysis.disclosure_access_correlation import (
     correlate_batch as correlate_disclosure_access_batch,
     load_cases as load_disclosure_access_cases,
 )
+from .analysis.disclosure_context import assess_context_batch
 from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
@@ -2343,6 +2344,9 @@ def cmd_analyze(args: argparse.Namespace) -> None:
     elif args.analysis == "disclosure-access":
         # Offline correlation of disclosure indicators with IDOR/access evidence; never confirms.
         data = correlate_disclosure_access_batch(load_disclosure_access_cases(text))
+    elif args.analysis == "disclosure-context":
+        # Exposure model over stored responses. Reuses disclosure and access correlation. Never confirms.
+        data = assess_context_batch(load_disclosure_records(text))
     elif args.analysis == "evidence":
         data = review_evidence(json.loads(text))
         if args.ai == "ollama":
@@ -4091,6 +4095,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", type=Path, help="Write the minimized correlation summary (no secret values) to a local file"
     )
     disclosure_access.set_defaults(func=cmd_analyze)
+    disclosure_context = analyze_sub.add_parser(
+        "disclosure-context",
+        help="Offline disclosure exposure model (audience, provenance, intended visibility); never confirms",
+    )
+    disclosure_context.add_argument(
+        "--input",
+        required=True,
+        type=Path,
+        help="Local JSON with stored response records (see docs/disclosure-context-quality-v2.md)",
+    )
+    disclosure_context.add_argument(
+        "--output", type=Path, help="Write the minimized exposure summary (no secret values) to a local file"
+    )
+    disclosure_context.set_defaults(func=cmd_analyze)
     evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations with optional local Ollama review")
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)

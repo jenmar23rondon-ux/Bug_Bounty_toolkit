@@ -3,6 +3,12 @@
 Lab: `labs/local_llm_quality_eval/` · Tests: `tests/test_local_llm_quality_eval.py` ·
 Results schema: `bbtk.local-llm-quality-result.v1` · Corpus schema: `bbtk.local-llm-quality-corpus.v1`
 
+RTX 3060 follow-up: live Qwen/DeepSeek metrics on the preparing machine are
+`NOT_MEASURED` (`labs/local_llm_quality_eval/results/real/not-measured.json`).
+Runbook: `docs/real-local-llm-rtx3060.md`. Audit: `docs/real-local-llm-rtx3060-audit.md`.
+Metadata schema: `bbtk.local-llm-rtx3060-metadata.v1`. AI has no tools and no final
+classification authority. Version stays 0.2.2.
+
 ## Why
 
 Existing AI labs (`labs/unified_ai_eval`, `scripts/ai_provider_benchmark.py`,
