@@ -26,6 +26,7 @@
         0.7693
       ],
       "object_recall": 0.25,
+      "object_recall_exported_kind": 0.5,
       "object_recall_strict_resource_type": 0.0,
       "outcome_accuracy": 0.4,
       "outcome_accuracy_ci95": [
@@ -41,6 +42,7 @@
         0.0456,
         0.6994
       ],
+      "precision_at_1_exported_kind": 0.5,
       "precision_at_1_strict_resource_type": 0.0,
       "precision_at_3": 0.25,
       "precision_at_5": 0.2,
@@ -76,6 +78,7 @@
         0.7935
       ],
       "object_recall": 0.0,
+      "object_recall_exported_kind": 0.0,
       "object_recall_strict_resource_type": 0.0,
       "outcome_accuracy": 0.0,
       "outcome_accuracy_ci95": [
@@ -91,6 +94,7 @@
         0.0,
         0.7935
       ],
+      "precision_at_1_exported_kind": 0.0,
       "precision_at_1_strict_resource_type": 0.0,
       "precision_at_3": 0.0,
       "precision_at_5": 0.0,
@@ -106,7 +110,7 @@
   },
   "corpus_version": "irb-1.0",
   "historical_overlap": {
-    "historical_files_scanned": 71,
+    "historical_files_scanned": 161,
     "identical_files": 0,
     "needle_hits": {},
     "our_bytes": 309172,
@@ -115,24 +119,24 @@
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
-      "max": 84.41,
-      "median": 13.91
+      "max": 84.48,
+      "median": 16.53
     },
     "handoff_ms": {
-      "max": 26.06,
-      "median": 2.08
+      "max": 22.78,
+      "median": 2.47
     },
     "import_discovery_ms": {
-      "max": 22.44,
-      "median": 3.91
+      "max": 20.66,
+      "median": 4.43
     },
     "planner_ms": {
-      "max": 3.0,
-      "median": 1.18
+      "max": 3.45,
+      "median": 0.98
     },
     "ranking_ms": {
-      "max": 1.4,
-      "median": 0.92
+      "max": 1.54,
+      "median": 1.0
     }
   },
   "manifest_sha256": "4dd82cac98084f0a73f7b67d23e8090fee8a48b2497b55bbdb6e25d18dfe1c72",
@@ -163,6 +167,7 @@
       0.7
     ],
     "object_recall": 0.2,
+    "object_recall_exported_kind": 0.4,
     "object_recall_strict_resource_type": 0.0,
     "outcome_accuracy": 0.3333,
     "outcome_accuracy_ci95": [
@@ -178,6 +183,7 @@
       0.0362,
       0.6245
     ],
+    "precision_at_1_exported_kind": 0.4,
     "precision_at_1_strict_resource_type": 0.0,
     "precision_at_3": 0.2,
     "precision_at_5": 0.16,
@@ -190,7 +196,7 @@
     "technical_errors_predicted": 5,
     "wrong_object_top1": 0
   },
-  "peak_mem_kib_max": 34814.2,
+  "peak_mem_kib_max": 34802.1,
   "scenarios": [
     {
       "confirmed": 0,
@@ -204,6 +210,7 @@
       "ideal_reviewable": true,
       "info_loss": [],
       "leaks": 0,
+      "ledger_raw_reviewable": false,
       "manual_steps": 0,
       "missing_control": {
         "expected": 3,
@@ -227,6 +234,8 @@
       "proposal_types": [],
       "proposals": 0,
       "ranking": {
+        "kind_p@1": 0.0,
+        "kind_recall": false,
         "ndcg@5": 0.0,
         "p@1": 0.0,
         "p@3": 0.0,
@@ -260,6 +269,7 @@
       "ideal_reviewable": true,
       "info_loss": [],
       "leaks": 0,
+      "ledger_raw_reviewable": false,
       "manual_steps": 0,
       "missing_control": {
         "expected": 3,
@@ -283,6 +293,8 @@
       "proposal_types": [],
       "proposals": 0,
       "ranking": {
+        "kind_p@1": 0.0,
+        "kind_recall": false,
         "ndcg@5": 0.0,
         "p@1": 0.0,
         "p@3": 0.0,
@@ -316,6 +328,7 @@
       "ideal_reviewable": true,
       "info_loss": [],
       "leaks": 0,
+      "ledger_raw_reviewable": false,
       "manual_steps": 0,
       "missing_control": {
         "expected": 3,
@@ -333,12 +346,14 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32797.9,
+      "peak_mem_kib": 32798.7,
       "predicted_outcome": "technical_error",
       "predicted_reviewable": false,
       "proposal_types": [],
       "proposals": 0,
       "ranking": {
+        "kind_p@1": 1.0,
+        "kind_recall": true,
         "ndcg@5": 0.0,
         "p@1": 0.0,
         "p@3": 0.0,
@@ -356,11 +371,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 13.91,
-        "handoff_ms": 1.76,
-        "import_discovery_ms": 3.91,
-        "planner_ms": 0.91,
-        "ranking_ms": 0.92
+        "e2e_total_ms": 16.53,
+        "handoff_ms": 2.03,
+        "import_discovery_ms": 4.43,
+        "planner_ms": 0.98,
+        "ranking_ms": 1.0
       },
       "tag": "deep-nesting-60"
     },
@@ -376,6 +391,7 @@
       "ideal_reviewable": true,
       "info_loss": [],
       "leaks": 0,
+      "ledger_raw_reviewable": false,
       "manual_steps": 0,
       "missing_control": {
         "expected": 3,
@@ -393,12 +409,14 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32798.3,
+      "peak_mem_kib": 32799.0,
       "predicted_outcome": "technical_error",
       "predicted_reviewable": false,
       "proposal_types": [],
       "proposals": 0,
       "ranking": {
+        "kind_p@1": 0.0,
+        "kind_recall": false,
         "ndcg@5": 0.0,
         "p@1": 0.0,
         "p@3": 0.0,
@@ -416,11 +434,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 12.94,
-        "handoff_ms": 2.08,
-        "import_discovery_ms": 3.43,
-        "planner_ms": 1.18,
-        "ranking_ms": 0.21
+        "e2e_total_ms": 11.86,
+        "handoff_ms": 2.47,
+        "import_discovery_ms": 2.97,
+        "planner_ms": 0.93,
+        "ranking_ms": 0.23
       },
       "tag": "mostly-damaged"
     },
@@ -436,6 +454,7 @@
       "ideal_reviewable": false,
       "info_loss": [],
       "leaks": 0,
+      "ledger_raw_reviewable": false,
       "manual_steps": 0,
       "missing_control": null,
       "mutation_error": null,
@@ -449,7 +468,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32778.0,
+      "peak_mem_kib": 32778.1,
       "predicted_outcome": "technical_error",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -479,6 +498,7 @@
       "ideal_reviewable": true,
       "info_loss": [],
       "leaks": 0,
+      "ledger_raw_reviewable": true,
       "manual_steps": 10,
       "missing_control": {
         "expected": 3,
@@ -500,7 +520,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 34814.2,
+      "peak_mem_kib": 34802.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -508,6 +528,8 @@
       ],
       "proposals": 3,
       "ranking": {
+        "kind_p@1": 1.0,
+        "kind_recall": true,
         "ndcg@5": 1.0,
         "p@1": 1.0,
         "p@3": 1.0,
@@ -525,11 +547,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 84.41,
-        "handoff_ms": 26.06,
-        "import_discovery_ms": 22.44,
-        "planner_ms": 3.0,
-        "ranking_ms": 1.4
+        "e2e_total_ms": 84.48,
+        "handoff_ms": 22.78,
+        "import_discovery_ms": 20.66,
+        "planner_ms": 3.45,
+        "ranking_ms": 1.54
       },
       "tag": "large-body"
     }

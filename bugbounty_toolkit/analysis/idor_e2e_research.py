@@ -461,6 +461,8 @@ def run_e2e_research(
                 "authorization_reasons": list(authz.reasons),
                 "actor_response_class": authz.actor.response_class,
                 "owner_response_class": authz.owner.response_class,
+                "actor_access_proof": authz.actor.access_proof,
+                "owner_access_proof": authz.owner.access_proof,
             }
             review_rows[index] = review
             payload: dict[str, Any] = {
@@ -560,7 +562,13 @@ def run_e2e_research(
             public_or_shared = visibility in {"public", "shared"}
             # Demonstrated denial (this pair or a sibling in the same capture run)
             # must never become requires_validation / positive IDOR evidence.
+            # idor-evidence-correctness-v3: a broken owner control or an actor body that only
+            # echoes the identifier is not access proof; keep the candidate unpromoted.
+            owner_broken = "owner_control_broken" in authz.reasons
+            echo_only = authz.actor.access_proof == "id_echo_without_resource"
             if denied or public_or_shared or (clf_row.get("case_eligible") and program_denied):
+                continue
+            if owner_broken or echo_only:
                 continue
             if clf_row.get("case_eligible"):
                 ledger_mod.review_candidate(

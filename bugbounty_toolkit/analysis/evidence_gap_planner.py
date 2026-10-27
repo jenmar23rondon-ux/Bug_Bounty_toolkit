@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from ..core.records import ProgramPaths
-from .evidence_ledger import MAX_LEDGER_BYTES, load_ledger, validate_ledger
+from .evidence_ledger import MAX_LEDGER_BYTES, effective_eligibility, load_ledger, validate_ledger
 from .handoff_case_eligibility import (
     CODE_NEEDS_SECOND_SESSION,
     CODE_REJECT_MULTI_RESOURCE_DIFF,
@@ -62,6 +62,8 @@ GAP_KINDS = (
     "contradictory_observation",
     "duplicate_candidate",
     "blocked_by_scope",
+    "session_control",
+    "access_proof",
     "human_review_required",
     "ready_for_manual_review",
 )
@@ -78,6 +80,11 @@ STEP_CATALOG: dict[str, tuple[int, int, int, str, bool]] = {
     "verify_evidence_digest": (90, 3, 1, "invalid_evidence", False),
     "repair_broken_reference": (90, 3, 1, "invalid_evidence", False),
     "review_stale_evidence": (88, 2, 1, "stale_evidence", False),
+    "verify_evidence_program": (89, 2, 1, "invalid_evidence", False),
+    "review_shared_capture_integrity": (87, 2, 1, "invalid_evidence", False),
+    "review_shared_capture_contradiction": (85, 2, 1, "contradictory_observation", True),
+    "restore_owner_control": (82, 3, 1, "session_control", False),
+    "review_access_proof": (81, 3, 1, "access_proof", False),
     "stop_contradicted_hypothesis": (86, 3, 1, "contradictory_observation", True),
     "stop_incompatible_method": (85, 2, 1, "contradictory_observation", True),
     "review_content_denial": (84, 3, 1, "contradictory_observation", True),
@@ -105,6 +112,17 @@ _GUIDANCE = {
     "repair_broken_reference": "Candidate references evidence that is not recorded; repair the reference.",
     "review_stale_evidence": "Evidence was captured against a different code/surface fingerprint or expired; "
     "identify which control must be re-captured under existing authorization.",
+    "verify_evidence_program": "Evidence is annotated for a different program; it cannot support this "
+    "program's candidate. Re-register it only if a human confirms it belongs here.",
+    "review_shared_capture_integrity": "Another candidate built from the same captured objects has altered, "
+    "missing, unrecorded or expired evidence; resolve that integrity blocker before reviewing this one.",
+    "review_shared_capture_contradiction": "A stored control on another candidate built from the same "
+    "captured objects contradicts the hypothesis; review it before treating this candidate as reviewable.",
+    "restore_owner_control": "The owner's own positive control was denied or redirected to login; actor "
+    "results that depend on it are inconclusive. One 401 is not proof of session expiry: re-capture the "
+    "owner control under existing authorization before reading the actor side.",
+    "review_access_proof": "The actor response only echoes the requested identifier (or is otherwise "
+    "ambiguous); it does not show the resource. An identifier match alone never proves access.",
     "stop_contradicted_hypothesis": "A stored negative control contradicts the hypothesis; review it and "
     "consider rejecting the candidate.",
     "stop_incompatible_method": "Capture is not a read (GET) request; the read-IDOR case generator cannot be "
@@ -168,6 +186,15 @@ def _read_annotation(path: Path) -> dict[str, Any] | None:
             facts.setdefault("provides", []).append("owner_response")
         if classification.get("has_actor_response") is True:
             facts.setdefault("provides", []).append("actor_response")
+    proposal = data.get("proposal")
+    if isinstance(proposal, dict):
+        objects = sorted(
+            str((proposal.get(side) or {}).get("object_ref"))
+            for side in ("owner", "actor")
+            if isinstance(proposal.get(side), dict) and isinstance(proposal[side].get("object_ref"), str)
+        )
+        if objects:
+            facts["object_refs"] = objects
     return facts or None
 
 
@@ -268,6 +295,10 @@ def _analyze_candidate(
             gap("invalid_evidence", "digest mismatch or missing file", [ref])
             steps.append(_step(cid, "verify_evidence_digest", f"evidence:{ref}", [ref]))
             continue
+        if state == "out_of_program":
+            gap("invalid_evidence", "evidence annotated for another program", [ref])
+            steps.append(_step(cid, "verify_evidence_program", f"evidence:{ref}", [ref]))
+            continue
         facts = facts_by_ref.get(ref) or {}
         expires = facts.get("expires_at")
         if state == "stale" or (isinstance(expires, str) and now is not None and expires <= now):
@@ -314,6 +345,12 @@ def _analyze_candidate(
         if facts.get("content_denial") is True:
             gap("contradictory_observation", "HTTP 200 with denial in body", [ref])
             terminal.append(_step(cid, "review_content_denial", f"response:{ref}", [ref]))
+        if facts.get("owner_control") == "broken":
+            gap("session_control", "owner positive control denied/redirected; dependent results inconclusive", [ref])
+            review.append(_step(cid, "restore_owner_control", f"session:{ref}", [ref]))
+        if facts.get("actor_access_proof") == "id_echo_without_resource":
+            gap("access_proof", "actor response echoes the identifier without the resource", [ref])
+            review.append(_step(cid, "review_access_proof", f"proof:{ref}", [ref]))
         visibility = facts.get("resource_visibility")
         if visibility in {"public", "shared"}:
             gap("contradictory_observation", f"resource documented as {visibility}", [ref])
@@ -346,9 +383,14 @@ def _analyze_candidate(
     if terminal:
         status = "stop_recommended"
         steps = integrity_steps + terminal + review
-    elif not usable and integrity_steps:
+    elif integrity_steps:
+        # idor-evidence-correctness-v3: any altered, removed, unrecorded, expired or
+        # out-of-program *required* evidence blocks advancement, even if other refs are usable.
         status = "integrity_blocked"
-        gap("missing_evidence", "no usable evidence after integrity checks")
+        if not usable:
+            gap("missing_evidence", "no usable evidence after integrity checks")
+        else:
+            gap("missing_evidence", "required evidence failed integrity checks; resolve before review")
     elif not usable or not is_idor or not has_structured:
         status = "abstain"
         gap("human_review_required", "insufficient structured evidence for a specific recommendation")
@@ -398,6 +440,71 @@ def _analyze_candidate(
     }
 
 
+# Source status -> (gap kind, step) applied to siblings sharing captured objects.
+_PROPAGATED: dict[str, tuple[str, str]] = {
+    "integrity_blocked": ("invalid_evidence", "review_shared_capture_integrity"),
+    "stop_recommended": ("contradictory_observation", "review_shared_capture_contradiction"),
+    "duplicate": ("duplicate_candidate", "review_duplicate"),
+}
+
+
+def _propagate_integrity_blocks(
+    candidates: list[dict[str, Any]],
+    results: list[dict[str, Any]],
+    facts_by_ref: Mapping[str, dict[str, Any]],
+) -> None:
+    """Block sibling candidates built from the same captured objects as a blocked one.
+
+    An unresolved integrity blocker, contradicting negative control or duplicate on one
+    candidate applies to siblings on the same surface that share an owner/actor object with
+    it (or, when its objects can no longer be read, the whole surface): they cannot be
+    reviewed independently of that capture. Ledger history is not modified.
+    """
+    by_id = {str(c.get("candidate_id")): c for c in candidates}
+
+    def objects(cand: Mapping[str, Any]) -> set[str]:
+        return {
+            o
+            for r in cand.get("evidence_refs") or []
+            for o in (facts_by_ref.get(str(r)) or {}).get("object_refs") or []
+        }
+
+    tainted: list[tuple[str, str, set[str], str]] = []
+    for res in results:
+        if res.get("status") in _PROPAGATED:
+            cand = by_id.get(str(res.get("candidate_id"))) or {}
+            tainted.append(
+                (str(res.get("candidate_id")), str(cand.get("surface_id")), objects(cand), str(res["status"]))
+            )
+    if not tainted:
+        return
+    for res in results:
+        if res.get("status") not in {"open", "ready_for_manual_review"}:
+            continue
+        cid = str(res.get("candidate_id"))
+        cand = by_id.get(cid) or {}
+        mine = objects(cand)
+        for src, surface, objs, src_status in tainted:
+            if src == cid or surface != str(cand.get("surface_id")):
+                continue
+            if objs and not (objs & mine):
+                continue
+            gap_kind, step_type = _PROPAGATED[src_status]
+            res["status"] = src_status
+            res.setdefault("gaps", []).append(
+                {
+                    "kind": gap_kind,
+                    "detail": f"shares captured objects with {src_status} candidate {src}",
+                    "evidence_refs": [],
+                }
+            )
+            res["steps"] = [
+                _step(cid, step_type, f"candidate:{src}", []),
+                *[st for st in res.get("steps") or [] if st.get("step_type") != "request_human_review"],
+            ]
+            break
+
+
 def build_plan(paths: ProgramPaths, *, ledger_file: Path | None = None, now: str | None = None) -> dict[str, Any]:
     """Return the versioned next-step plan for one program. Read-only; no network; no AI."""
     ledger_path = ledger_file or (paths.program_dir / "ledger" / "evidence-ledger.json")
@@ -438,6 +545,9 @@ def build_plan(paths: ProgramPaths, *, ledger_file: Path | None = None, now: str
         facts = _read_annotation(paths.program_dir / str(row.get("path")))
         if facts:
             facts_by_ref[eid] = facts
+            claimed = facts.get("program")
+            if isinstance(claimed, str) and claimed != str(ledger.get("program") or paths.program):
+                evidence_state[eid] = "out_of_program"
     # Fingerprint staleness is reported per candidate as a warning; mark referenced evidence stale.
     for issue in issues:
         if issue.get("code") == "evidence_invalidated_by_change":
@@ -491,6 +601,7 @@ def build_plan(paths: ProgramPaths, *, ledger_file: Path | None = None, now: str
                 evidence_rows,
             )
         )
+    _propagate_integrity_blocks(candidates, results, facts_by_ref)
     # Global plan: dedupe equivalent steps across related candidates, rank deterministically.
     plan: dict[str, dict[str, Any]] = {}
     for res in results:
@@ -506,12 +617,21 @@ def build_plan(paths: ProgramPaths, *, ledger_file: Path | None = None, now: str
         step["rank"] = rank
     for res in results:
         res["steps"] = [s["step_id"] for s in res["steps"]]
+    effective = effective_eligibility(ledger, results)
+    eff_by_id = {row["candidate_id"]: row for row in effective}
+    for res in results:
+        row = eff_by_id.get(str(res.get("candidate_id")))
+        if row is not None:
+            res["effective"] = {
+                k: row[k] for k in ("ledger_state", "effective_state", "effective_reviewable", "blockers")
+            }
     return {
         **base,
         "status": "ok",
         "ledger_valid": bool(validation.get("valid")),
         "ledger_issue_count": len(issues),
         "candidates": results,
+        "effective_eligibility": effective,
         "plan": ranked,
     }
 

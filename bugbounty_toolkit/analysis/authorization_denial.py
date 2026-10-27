@@ -31,6 +31,43 @@ ResponseClass = Literal[
     "error_ambiguous",
 ]
 
+# idor-evidence-correctness-v3: what a single response *proves* about access.
+# Only ``private_resource_200`` can ever support a reviewable case, and even then
+# it is a human-review signal, never a confirmation. An id match alone proves nothing.
+AccessProof = Literal[
+    "private_resource_200",
+    "public_200",
+    "denial_in_200",
+    "http_401",
+    "http_403",
+    "http_404",
+    "login_redirect",
+    "id_echo_without_resource",
+    "ambiguous",
+]
+ACCESS_PROOF_DENIALS = frozenset({"denial_in_200", "http_401", "http_403", "http_404", "login_redirect"})
+# Keys that identify / describe a request rather than carry resource content.
+_ECHO_KEYS = frozenset(
+    {
+        "id",
+        "uuid",
+        "requested_id",
+        "request_id",
+        "requested",
+        "resource_id",
+        "object_id",
+        "ref",
+        "status",
+        "ok",
+        "success",
+        "message",
+        "type",
+        "kind",
+        "timestamp",
+        "trace_id",
+    }
+)
+
 ANNOTATION_VERSION = "bbtk-control-annotation/1"
 
 # Explicit denial tokens (JSON keys/values or plain-text phrases).
@@ -107,6 +144,7 @@ class ResponseAssessment:
     resource_visibility: str | None
     redirect_location: str | None
     reasons: tuple[str, ...]
+    access_proof: AccessProof = "ambiguous"
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -270,7 +308,80 @@ def _visibility(body: str, root: Any | None) -> str | None:
     return None
 
 
+def _id_echo_only(root: Any, requested_id: str | None) -> bool:
+    """True when a JSON body only echoes identifiers / status, without resource content."""
+    node = root
+    if isinstance(node, dict):
+        for key in ("data", "result", "payload", "record", "resource", "item", "object"):
+            if isinstance(node.get(key), dict) and set(node) <= _ECHO_KEYS | {key}:
+                node = node[key]
+                break
+    if not isinstance(node, dict) or not node:
+        return False
+    keys = {str(k).lower() for k in node}
+    if not keys <= _ECHO_KEYS:
+        return False
+    id_values = [node[k] for k in node if str(k).lower() not in {"status", "ok", "success", "message", "type", "kind"}]
+    if not id_values:
+        return False
+    if requested_id is not None:
+        return any(str(v) == requested_id for v in id_values)
+    return True
+
+
+def _proof_for(assessment: ResponseAssessment, root: Any, requested_id: str | None) -> AccessProof:
+    status = assessment.status_code
+    cls = assessment.response_class
+    if cls == "public_or_shared":
+        return "public_200" if status == 200 else "ambiguous"
+    if cls == "auth_redirect":
+        return "login_redirect"
+    if cls == "http_denial":
+        return {401: "http_401", 403: "http_403", 404: "http_404"}.get(status or 0, "ambiguous")  # type: ignore[return-value]
+    if cls == "content_denial":
+        return "denial_in_200"
+    if cls == "successful_looking":
+        if "contradictory_denial_status_with_resource_body" in assessment.reasons:
+            return "ambiguous"
+        if root is not None and _id_echo_only(root, requested_id):
+            return "id_echo_without_resource"
+        if assessment.access_demonstrated and status == 200:
+            return "private_resource_200"
+    return "ambiguous"
+
+
 def assess_response(
+    status_code: int | None,
+    body: str = "",
+    headers: Mapping[str, str] | None = None,
+    *,
+    requested_id: str | None = None,
+) -> ResponseAssessment:
+    """Classify one response, including what it proves about access (``access_proof``).
+
+    A body that only echoes the requested identifier is ``id_echo_without_resource`` and
+    never demonstrates access. ``requested_id`` (optional) must come from the same
+    authorized capture; it is compared, never guessed or enumerated.
+    """
+    base = _assess_response_core(status_code, body, headers)
+    root = _json_root(body)
+    proof = _proof_for(base, root, requested_id)
+    if proof == "id_echo_without_resource":
+        return ResponseAssessment(
+            status_code=base.status_code,
+            response_class=base.response_class,
+            denial_demonstrated=False,
+            access_demonstrated=False,
+            content_denial=False,
+            resource_visibility=base.resource_visibility,
+            redirect_location=base.redirect_location,
+            reasons=(*base.reasons, "id_echo_without_resource"),
+            access_proof=proof,
+        )
+    return ResponseAssessment(**{**asdict(base), "access_proof": proof})
+
+
+def _assess_response_core(
     status_code: int | None,
     body: str = "",
     headers: Mapping[str, str] | None = None,
@@ -461,9 +572,58 @@ def assess_pair_authorization(
     Positive control (owner success) and negative control (actor denial) stay
     differentiated. Ambiguous actor responses stay ``inconclusive``.
     """
-    owner = assess_raw_response(owner_raw_response)
-    actor = assess_raw_response(actor_raw_response)
+    result = _assess_pair(assess_raw_response(owner_raw_response), assess_raw_response(actor_raw_response))
+    annotation = result.annotation
+    if annotation is not None:
+        annotation = {
+            **annotation,
+            "owner_access_proof": result.owner.access_proof,
+            "actor_access_proof": result.actor.access_proof,
+            "owner_control": owner_control_state(result.owner),
+        }
+    return AuthorizationOutcome(
+        outcome=result.outcome,
+        owner=result.owner,
+        actor=result.actor,
+        annotation=annotation,
+        reasons=result.reasons,
+    )
+
+
+def owner_control_state(owner: ResponseAssessment) -> str:
+    """``valid`` (owner sees a private resource), ``broken`` (owner itself is denied/redirected)
+    or ``unproven``. A broken owner control makes every dependent actor result inconclusive.
+    One 401 is reported as ``broken`` control for *this* pair only — never as proven expiry."""
+    if owner.access_proof == "private_resource_200":
+        return "valid"
+    if owner.access_proof in ACCESS_PROOF_DENIALS:
+        return "broken"
+    return "unproven"
+
+
+def _assess_pair(owner: ResponseAssessment, actor: ResponseAssessment) -> AuthorizationOutcome:
     reasons: list[str] = []
+    if owner.access_proof in {"http_401", "login_redirect"}:
+        # Owner positive control failed: nothing the actor saw can be interpreted.
+        reasons.append("owner_control_broken")
+        broken: Outcome = "inconclusive"
+        return AuthorizationOutcome(
+            outcome=broken,
+            owner=owner,
+            actor=actor,
+            annotation=_annotation_for(broken, owner, actor),
+            reasons=tuple(reasons),
+        )
+    if actor.access_proof == "id_echo_without_resource":
+        reasons.append("actor_id_echo_without_resource")
+        echo: Outcome = "inconclusive"
+        return AuthorizationOutcome(
+            outcome=echo,
+            owner=owner,
+            actor=actor,
+            annotation=_annotation_for(echo, owner, actor),
+            reasons=tuple(reasons),
+        )
 
     # Public / shared resources: not cross-account authorization failures.
     if actor.resource_visibility in {"public", "shared"} or owner.resource_visibility in {"public", "shared"}:
@@ -523,7 +683,10 @@ def assess_pair_authorization(
 
 
 __all__ = [
+    "ACCESS_PROOF_DENIALS",
     "ANNOTATION_VERSION",
+    "AccessProof",
+    "owner_control_state",
     "AuthorizationOutcome",
     "ResponseAssessment",
     "assess_pair_authorization",

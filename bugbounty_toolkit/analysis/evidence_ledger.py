@@ -743,6 +743,75 @@ def import_native_evidence(
     return result
 
 
+# Effective eligibility (idor-evidence-correctness-v3) ------------------------------------
+# Gap kinds that prevent a recorded ``requires_validation`` candidate from being treated as
+# reviewable *now*. The ledger history is never rewritten; this is a derived, read-only view.
+EFFECTIVE_BLOCKING_GAPS = frozenset(
+    {
+        "invalid_evidence",
+        "stale_evidence",
+        "insufficient_capture",
+        "blocked_by_scope",
+        "duplicate_candidate",
+        "contradictory_observation",
+        "session_control",
+        "access_proof",
+    }
+)
+EFFECTIVE_NON_REVIEWABLE_STATUSES = frozenset(
+    {"integrity_blocked", "blocked", "duplicate", "stop_recommended", "abstain"}
+)
+
+
+def effective_eligibility(
+    ledger: Mapping[str, Any], plan_candidates: list[Mapping[str, Any]] | None
+) -> list[dict[str, Any]]:
+    """Derive the *current* reviewability of every candidate without mutating the ledger.
+
+    ``plan_candidates`` are the per-candidate results of the evidence-gap planner (status and
+    gaps already reflect digest checks, broken references, expiry, scope, origin, session
+    control and access proof). A candidate is ``effective_reviewable`` only when the ledger
+    records ``requires_validation`` **and** no current blocker applies. Missing human
+    attestations are not blockers here: ``requires_validation`` already means a human decides.
+    """
+    by_id = {str(row.get("candidate_id")): row for row in plan_candidates or [] if isinstance(row, Mapping)}
+    out: list[dict[str, Any]] = []
+    for cand in ledger.get("candidates") or []:
+        if not isinstance(cand, Mapping):
+            continue
+        cid = str(cand.get("candidate_id"))
+        state = str(cand.get("state"))
+        row = by_id.get(cid) or {}
+        status = str(row.get("status") or "unknown")
+        blockers = sorted(
+            {
+                str(g.get("kind"))
+                for g in row.get("gaps") or []
+                if isinstance(g, Mapping) and g.get("kind") in EFFECTIVE_BLOCKING_GAPS
+            }
+        )
+        if status in EFFECTIVE_NON_REVIEWABLE_STATUSES:
+            blockers = sorted({*blockers, f"status:{status}"})
+        reviewable = state == "requires_validation" and not blockers
+        if state in {"rejected", "confirmed"}:
+            effective = state
+        elif state == "requires_validation" and blockers:
+            effective = "blocked"
+        else:
+            effective = state
+        out.append(
+            {
+                "candidate_id": cid,
+                "ledger_state": state,
+                "effective_state": effective,
+                "effective_reviewable": reviewable,
+                "blockers": blockers,
+                "ledger_modified": False,
+            }
+        )
+    return out
+
+
 def render_markdown(ledger: Mapping[str, Any], validation: Mapping[str, Any]) -> str:
     summary = validation.get("summary") or summarize_ledger(ledger)
     lines = [

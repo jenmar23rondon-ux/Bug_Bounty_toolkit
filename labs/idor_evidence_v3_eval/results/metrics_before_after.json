@@ -1,0 +1,162 @@
+{
+  "base_sha": "09e345ff67a4de9612ecd7756b4694f4470ec861",
+  "irb_final_45": {
+    "after": {
+      "auto_confirmations": 0,
+      "correct_abstentions": 16,
+      "false_reviewable_after_planner": 0,
+      "false_reviewable_cases": 0,
+      "false_reviewable_ids": [],
+      "false_reviewable_rate": 0.0,
+      "missed_eligible_cases": 2,
+      "missed_eligible_ids": [
+        "E01",
+        "E06"
+      ],
+      "network_attempts": 0,
+      "object_recall_exported_kind": 0.9512,
+      "outcome_accuracy": 0.8,
+      "pairing_precision": 0.65,
+      "pairing_recall": 0.963,
+      "reference_correct_rate": 0.9565,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 240
+    },
+    "before": {
+      "auto_confirmations": 0,
+      "correct_abstentions": 16,
+      "false_reviewable_after_planner": 2,
+      "false_reviewable_cases": 6,
+      "false_reviewable_ids": [
+        "D11",
+        "D12",
+        "D13",
+        "D14",
+        "D15",
+        "D16"
+      ],
+      "false_reviewable_rate": 0.25,
+      "missed_eligible_cases": 2,
+      "missed_eligible_ids": [
+        "E01",
+        "E06"
+      ],
+      "network_attempts": 0,
+      "object_recall_exported_kind": 0.9512,
+      "outcome_accuracy": 0.7556,
+      "pairing_precision": 0.65,
+      "pairing_recall": 0.963,
+      "reference_correct_rate": 0.9524,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 268
+    },
+    "labels": "frozen (MANIFEST verified)",
+    "scoring_note": "after = planner effective-eligibility view (ledger history unchanged); raw ledger state still reported per scenario as ledger_raw_reviewable"
+  },
+  "v3_final_48": {
+    "after": {
+      "abstentions_expected": 14,
+      "auto_confirmations": 0,
+      "by_family": {
+        "A": {
+          "accuracy": 0.9231,
+          "correct": 12,
+          "n": 13
+        },
+        "B": {
+          "accuracy": 1.0,
+          "correct": 9,
+          "n": 9
+        },
+        "C": {
+          "accuracy": 1.0,
+          "correct": 11,
+          "n": 11
+        },
+        "D": {
+          "accuracy": 1.0,
+          "correct": 8,
+          "n": 8
+        },
+        "E": {
+          "accuracy": 1.0,
+          "correct": 7,
+          "n": 7
+        }
+      },
+      "correct_abstentions": 14,
+      "estimated_manual_steps": 44,
+      "false_reviewable_cases": 0,
+      "false_reviewable_ids": [],
+      "false_reviewable_rate": 0.0,
+      "invalid_evidence_blockers": 7,
+      "ledger_history_unmodified": true,
+      "missed_eligible_cases": 1,
+      "missed_eligible_ids": [
+        "V3-A11"
+      ],
+      "network_attempts": 0,
+      "outcome_accuracy": 0.9792,
+      "provenance_validity": 1.0,
+      "resource_kind_preservation": 1.0,
+      "scenarios": 48
+    },
+    "before": {
+      "abstentions_expected": 14,
+      "auto_confirmations": 0,
+      "by_family": {
+        "A": {
+          "accuracy": 0.2308,
+          "correct": 3,
+          "n": 13
+        },
+        "B": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "n": 9
+        },
+        "C": {
+          "accuracy": 0.0909,
+          "correct": 1,
+          "n": 11
+        },
+        "D": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "n": 8
+        },
+        "E": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "n": 7
+        }
+      },
+      "correct_abstentions": 1,
+      "estimated_manual_steps": 51,
+      "false_reviewable_cases": 10,
+      "false_reviewable_ids": [
+        "V3-A02",
+        "V3-A03",
+        "V3-A04",
+        "V3-A05",
+        "V3-A06",
+        "V3-A07",
+        "V3-A08",
+        "V3-A10",
+        "V3-A12",
+        "V3-A13"
+      ],
+      "false_reviewable_rate": 1.0,
+      "invalid_evidence_blockers": 4,
+      "ledger_history_unmodified": true,
+      "missed_eligible_cases": 0,
+      "missed_eligible_ids": [],
+      "network_attempts": 0,
+      "outcome_accuracy": 0.0833,
+      "provenance_validity": 0.0,
+      "resource_kind_preservation": 0.0,
+      "scenarios": 48
+    },
+    "before_note": "at base, B/D/E capabilities do not exist (scored incorrect) and family A has only the raw ledger state (requires_validation = reviewable)"
+  }
+}

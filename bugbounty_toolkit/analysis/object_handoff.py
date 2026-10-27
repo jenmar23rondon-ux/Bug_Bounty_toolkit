@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -1205,3 +1206,99 @@ def run_object_discovery_lab(
 
 def default_lab_root() -> Path:
     return Path(__file__).resolve().parents[2] / "labs" / "object_discovery_lab"
+
+
+# Encoded identifiers (idor-evidence-correctness-v3, offline, opt-in) ----------------------
+IDENTIFIER_NORMALIZATION_VERSION = "bbtk.identifier-normalization/1"
+MAX_IDENTIFIER_CHARS = 512
+_ID_JSON_KEYS = ("id", "uuid", "object_id", "resource_id")
+_UUID_RE = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+_B64_RE = re.compile(r"^[A-Za-z0-9+/]+={0,2}$")
+_B64URL_RE = re.compile(r"^[A-Za-z0-9_-]+={0,2}$")
+
+
+def _plain_shape(text: str) -> tuple[str, str] | None:
+    if text.isdigit() and len(text) <= 20:
+        return "numeric", str(int(text))
+    if _UUID_RE.match(text):
+        return "uuid", text.lower()
+    return None
+
+
+def normalize_captured_identifier(
+    value: str,
+    *,
+    captured_values: frozenset[str] | set[str],
+    kind: str | None = None,
+    enabled: bool = False,
+) -> dict[str, Any]:
+    """Normalize ONE identifier that already appears in authorized captures.
+
+    Opt-in (``enabled=False`` returns the value untouched). Recognized shapes: numeric, UUID,
+    Base64, Base64URL and JSON-then-Base64/Base64URL objects carrying an ``id``-like key.
+    Values not present in ``captured_values`` are refused: nothing is guessed, incremented
+    or generated. Every transform is recorded. The namespace key embeds the resource kind,
+    so ``order:numeric:123`` never collides with ``user:numeric:123``. A failed decode is
+    ``undecodable`` and is **not** denial evidence.
+    """
+    import base64
+    import binascii
+
+    base: dict[str, Any] = {
+        "version": IDENTIFIER_NORMALIZATION_VERSION,
+        "kind": kind or "unknown",
+        "transforms": [],
+        "denial_evidence": False,
+        "generated_values": 0,
+    }
+    if value not in captured_values:
+        return {**base, "status": "refused_not_in_capture", "shape": None, "canonical": None, "namespace_key": None}
+    if not enabled:
+        return {**base, "status": "disabled", "shape": "raw", "canonical": value, "namespace_key": None}
+    if len(value) > MAX_IDENTIFIER_CHARS:
+        return {**base, "status": "undecodable", "shape": None, "canonical": None, "namespace_key": None}
+
+    def done(shape: str, canonical: str, transforms: list[str]) -> dict[str, Any]:
+        return {
+            **base,
+            "status": "normalized",
+            "shape": shape,
+            "canonical": canonical,
+            "transforms": transforms,
+            "namespace_key": f"{base['kind']}:{shape}:{canonical}",
+        }
+
+    plain = _plain_shape(value)
+    if plain is not None:
+        return done(plain[0], plain[1], ["identity" if plain[1] == value else f"canonicalize_{plain[0]}"])
+    for encoding, pattern, decoder in (
+        ("base64", _B64_RE, base64.b64decode),
+        ("base64url", _B64URL_RE, base64.urlsafe_b64decode),
+    ):
+        if not pattern.match(value) or len(value) < 2:
+            continue
+        try:
+            raw = decoder(value + "=" * (-len(value) % 4))
+            text = raw.decode("utf-8")
+        except (binascii.Error, ValueError, UnicodeDecodeError):
+            continue
+        if not text.isprintable():
+            continue
+        inner = _plain_shape(text.strip())
+        if inner is not None:
+            return done(inner[0], inner[1], [f"{encoding}_decode", f"canonicalize_{inner[0]}"])
+        try:
+            obj = json.loads(text)
+        except (ValueError, RecursionError):
+            obj = None
+        if isinstance(obj, dict):
+            for key in _ID_JSON_KEYS:
+                if isinstance(obj.get(key), (str, int)) and not isinstance(obj.get(key), bool):
+                    nested = _plain_shape(str(obj[key]))
+                    if nested is not None:
+                        return done(
+                            nested[0],
+                            nested[1],
+                            [f"{encoding}_decode", f"json_field:{key}", f"canonicalize_{nested[0]}"],
+                        )
+    return {**base, "status": "undecodable", "shape": None, "canonical": None, "namespace_key": None}
