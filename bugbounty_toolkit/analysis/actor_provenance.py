@@ -75,7 +75,7 @@ def validate_manifest(document: Any) -> dict[str, Any]:
     seen = set()
     accounts = set()
     for row in rows:
-        required = {"source_path", "locator", "label"}
+        required = {"source_path", "locator", "label", "evidence_id"}
         optional = {"account", "declared_by_human", "browser", "pwnfox_color"}
         if not isinstance(row, dict) or not required <= set(row) or set(row) - required - optional:
             raise ValueError("Invalid actor label fields.")
@@ -149,7 +149,12 @@ def associate_actors(
         for provenance in record.provenance:
             index.setdefault((provenance.source_path, provenance.locator), []).append(record)
     declarations = {(row["source_path"], row["locator"]): row for row in manifest["labels"]}
-    if any(selector not in index or len(index[selector]) != 1 for selector in declarations):
+    if any(
+        selector not in index
+        or len(index[selector]) != 1
+        or index[selector][0].evidence_id != declarations[selector]["evidence_id"]
+        for selector in declarations
+    ):
         raise ValueError("Unresolved or ambiguous capture selector.")
     captures: list[dict[str, Any]] = []
     for selector, matches in sorted(index.items()):
@@ -169,7 +174,7 @@ def associate_actors(
         account = account_ref(row["account"], program=program, key=key) if "account" in row else None
         captures.append(
             {
-                "capture_ref": _ref("capture", selector, program=program, key=key),
+                "capture_ref": _ref("capture", [*selector, record.evidence_id], program=program, key=key),
                 "evidence_ref": _ref("evidence", record.evidence_id, program=program, key=key),
                 "source_ref": _ref("source", selector[0], program=program, key=key),
                 "locator_ref": _ref("locator", selector, program=program, key=key),

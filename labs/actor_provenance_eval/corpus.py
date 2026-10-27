@@ -48,6 +48,7 @@ def corpus() -> tuple[list[EvidenceRecord], dict[str, Any], list[str | None]]:
             "source_path": record.provenance[0].source_path,
             "locator": source.locator,
             "label": label,
+            "evidence_id": f"fixture-{index}",
         }
         if account:
             row.update(account=account, declared_by_human=True)

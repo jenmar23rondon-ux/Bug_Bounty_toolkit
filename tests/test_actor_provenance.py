@@ -111,6 +111,7 @@ class ActorProvenanceTests(unittest.TestCase):
         for candidate in (
             records[:-1],
             records + [records[0]],
+            [replace(records[0], evidence_id="replaced-capture")] + records[1:],
             [replace(records[0], session_fingerprint="plaintext")] + records[1:],
         ):
             with self.assertRaises(ValueError):

@@ -28,7 +28,8 @@
         "required": [
           "source_path",
           "locator",
-          "label"
+          "label",
+          "evidence_id"
         ],
         "properties": {
           "source_path": {
@@ -75,6 +76,11 @@
           },
           "declared_by_human": {
             "const": true
+          },
+          "evidence_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
           }
         },
         "allOf": [

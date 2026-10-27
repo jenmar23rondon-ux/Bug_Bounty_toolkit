@@ -58,10 +58,10 @@ The runtime additionally checks duplicates, resolved selectors and alias referen
   "program": "local-lab",
   "labels": [
     {"source_path": "/private/capture.har", "locator": "/log/entries[0]",
-     "label": "owner", "account": "account-a", "declared_by_human": true,
+     "evidence_id": "existing-evidence-id-a", "label": "owner", "account": "account-a", "declared_by_human": true,
      "browser": "browser-a", "pwnfox_color": "blue"},
     {"source_path": "/private/capture.har", "locator": "/log/entries[1]",
-     "label": "second_account", "account": "account-b", "declared_by_human": true}
+     "evidence_id": "existing-evidence-id-b", "label": "second_account", "account": "account-b", "declared_by_human": true}
   ],
   "distinct_accounts": [["account-a", "account-b"]]
 }
@@ -71,8 +71,9 @@ Keep this manifest private: use disposable aliases, never credentials, usernames
 email addresses. Raw paths, locators, account/browser aliases and existing fingerprints
 are not copied into the sidecar. Source/locator/evidence references bind the declaration
 through HMAC; these references are namespaced sidecar references, not graph IDs.
-No original evidence is edited. A selector must resolve to exactly one record provenance;
-duplicate or missing matches fail closed. Unlabelled captures retain `unknown`.
+No original evidence is edited. A selector must resolve to exactly one record provenance and match its existing
+`evidence_id`; replaced or reimported captures require a fresh declaration.
+Duplicate, stale or missing matches fail closed. Unlabelled captures retain `unknown`.
 Bound: 1 MB local JSON, 4096 label rows/captures/pairs, 300 characters per selector/alias.
 
 `pwnfox_color` reads `X-PwnFox-Color` from captured HAR request headers or a header
