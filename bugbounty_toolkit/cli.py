@@ -921,7 +921,9 @@ def cmd_xss(args: argparse.Namespace) -> None:
         raise ValueError("Max tests exceeds the configured program limit.")
     if not options.stored_local and options.capture_review_file is None:
         if args.routes is None or args.parameters is None:
-            raise ValueError("--routes and --parameters are required unless --stored-local or --capture-review is used.")
+            raise ValueError(
+                "--routes and --parameters are required unless --stored-local or --capture-review is used."
+            )
     elif options.stored_local and (not options.stored_write_url or not options.stored_render_url):
         raise ValueError("--stored-local requires --stored-write-url and --stored-render-url.")
     routes, parameters = tester.validate(options)
