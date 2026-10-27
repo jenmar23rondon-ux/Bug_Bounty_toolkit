@@ -1,0 +1,27 @@
+{
+  "authz_check_recall": 1.0,
+  "baseline_naive_grep": {
+    "abstentions": 0,
+    "false_gap_warnings": 8,
+    "gap_recall": 0.5
+  },
+  "correct_abstentions": 3,
+  "expected_abstentions": 3,
+  "false_gap_warnings": 0,
+  "finding_confirmed_true": 0,
+  "gap_hypothesis_recall": 1.0,
+  "human_review_required_all": true,
+  "malformed_files_skipped": [
+    "express_app/broken.js",
+    "fastapi_app/malformed.py"
+  ],
+  "network_attempts": 0,
+  "route_extraction_precision": 1.0,
+  "route_extraction_recall": 1.0,
+  "routes_expected": 24,
+  "routes_predicted": 24,
+  "target_code_executions": 0,
+  "total_file_line_refs": 79,
+  "unauthorized_files_read": 0,
+  "valid_file_line_refs": 79
+}

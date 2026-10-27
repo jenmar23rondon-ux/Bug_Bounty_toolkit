@@ -1,0 +1,29 @@
+{
+  "routes": [
+    {"file": "express_app/app.js", "route_ref": "GET /status", "object_authz": "not_applicable", "gap": false, "case": "public_route"},
+    {"file": "express_app/app.js", "route_ref": "GET /items/:itemId", "object_authz": "observed", "gap": false, "case": "route_middleware_object_check"},
+    {"file": "express_app/app.js", "route_ref": "GET /carts/:cartId", "object_authz": "not_observed", "gap": true, "case": "authn_without_ownership"},
+    {"file": "express_app/app.js", "route_ref": "GET /wallets/:walletId", "object_authz": "observed", "gap": false, "case": "indirect_helper"},
+    {"file": "express_app/app.js", "route_ref": "GET /admin/users/:userId", "object_authz": "not_observed", "gap": true, "case": "function_level_role_only"},
+    {"file": "express_app/app.js", "route_ref": "GET /bills/:billId", "object_authz": "observed", "gap": false, "case": "conditional_permission"},
+    {"file": "express_app/app.js", "route_ref": "GET /policies/:policyId", "object_authz": "unknown", "gap": null, "case": "dynamic_unresolved_middleware"},
+    {"file": "express_app/app.js", "route_ref": "GET /coupons/:couponId", "object_authz": "not_observed", "gap": true, "case": "empty_check_permission"},
+    {"file": "express_app/app.js", "route_ref": "GET /notes/:noteId", "object_authz": "not_observed", "gap": true, "case": "dead_code_check"},
+    {"file": "express_app/app.js", "route_ref": "GET /accounts/:accountId", "object_authz": "not_observed", "gap": true, "case": "router_middleware_authn_only"},
+    {"file": "express_app/app.js", "route_ref": "GET /accounts/:accountId/statements", "object_authz": "observed", "gap": false, "case": "ownership_scoped_query"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /health", "object_authz": "not_applicable", "gap": false, "case": "public_route"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /docs/{doc_id}", "object_authz": "observed", "gap": false, "case": "object_level_check"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /invoices/{invoice_id}", "object_authz": "not_observed", "gap": true, "case": "authn_without_ownership"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /orders/{order_id}", "object_authz": "observed", "gap": false, "case": "service_layer_protection"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /notes/{note_id}", "object_authz": "not_observed", "gap": true, "case": "router_dependency_authn_only"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /projects/{project_id}", "object_authz": "observed", "gap": false, "case": "authz_dependency"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /reports/{report_id}", "object_authz": "unknown", "gap": null, "case": "unresolved_import_dependency"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /files/{file_id}", "object_authz": "observed", "gap": false, "case": "indirect_helper"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /records/{record_id}", "object_authz": "observed", "gap": false, "case": "conditional_permission"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /tickets/{ticket_id}", "object_authz": "not_observed", "gap": true, "case": "empty_check_permission_and_authorize"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /drafts/{draft_id}", "object_authz": "not_observed", "gap": true, "case": "dead_code_check"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /archives/{archive_id}", "object_authz": "not_observed", "gap": true, "case": "check_after_return_not_executed"},
+    {"file": "fastapi_app/main.py", "route_ref": "GET /shares/{share_id}", "object_authz": "unknown", "gap": null, "case": "unresolved_import_call"}
+  ],
+  "malformed_files": ["express_app/broken.js", "fastapi_app/malformed.py"]
+}
