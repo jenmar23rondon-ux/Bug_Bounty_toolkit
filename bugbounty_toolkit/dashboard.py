@@ -28,6 +28,7 @@ from .dashboard_triage import (
     mask_display_secrets,
     review_queue_reports,
 )
+from .analysis.unified_security_triage import build_unified_security_triage
 from .reporting.evidence import write_evidence_json
 
 _PROGRAM_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$")
@@ -96,7 +97,7 @@ a{color:#8bc5ff}.notice{color:var(--warn)}.muted{color:var(--muted)}.bad{color:v
 <section aria-labelledby="h-issues"><h2 id="h-issues">Referencias rotas y evidencias inválidas</h2><ul id="issues"></ul></section>
 <section aria-labelledby="h-ai"><h2 id="h-ai">Diferencias entre revisores IA</h2><div id="ai"></div></section>
 <section aria-labelledby="h-runs"><h2 id="h-runs">Progreso y comparación de ejecuciones</h2><div id="runs"></div></section>
-<section aria-labelledby="h-queue-reports"><h2 id="h-queue-reports">Reportes para revisión humana</h2><div id="review-queue"></div><div id="reports"></div><pre id="report-content"></pre></section>
+<section aria-labelledby="h-queue-reports"><h2 id="h-queue-reports">Reportes para revisión humana</h2><div id="security-research" class="panel"></div><div id="review-queue"></div><div id="reports"></div><pre id="report-content"></pre></section>
 </div>
 <details><summary>Datos de investigación (vistas anteriores)</summary><div class="grid">
 <section><h2>Investigaciones</h2><pre id="overview"></pre></section>
@@ -150,6 +151,7 @@ async function loadSide(){
   const runs=await getJSON('/api/triage/runs');const r=$('runs');r.replaceChildren();const p=runs.progress;
   r.append(el('div',null,'cards'));r.firstChild.append(card('Ejecuciones',p.runs_total),card('Errores técnicos',p.technical_errors,p.technical_errors?'bad':''),card('Sin terminar',p.unfinished||0));
   const cmp=runs.comparison;if(!cmp.available){r.append(el('p',cmp.message,'muted'));}else{r.append(el('p','Comparando '+cmp.older+' → '+cmp.newer),el('p','Nuevos: '+(cmp.added.join(', ')||'—')),el('p','Retirados: '+(cmp.removed.join(', ')||'—')));const u=el('ul');for(const s of cmp.score_changes)u.append(el('li',s.group_id+': '+s.before+' → '+s.after));r.append(u);}
+  const sr=await getJSON('/api/triage/security-research');const sbox=$('security-research');if(sbox){sbox.replaceChildren();sbox.append(el('p','Investigación unificada (solo lectura; IA no aprueba):','muted'));const ul=el('ul');for(const [k,v] of Object.entries(sr.security_state_counts||{})){if(v)ul.append(el('li',k+': '+v));}sbox.append(ul);sbox.append(el('p','Total: '+(sr.counts&&sr.counts.total||0)+' · AI may confirm findings: '+String(sr.ai_may_confirm_findings),'muted'));}
   const rq=await getJSON('/api/triage/review-queue');const q=$('review-queue');q.replaceChildren(el('p',rq.notice,'muted'),el('p','Candidatos esperando revisión humana: '+(rq.candidates_awaiting_human_review.join(', ')||'ninguno')));
   const data=await getJSON('/api/reports');const box=$('reports');box.replaceChildren();if(!data.reports.length)box.append(el('p','No hay reportes guardados.','muted'));
   for(const item of data.reports){const link=el('a',item.name);link.href='#';link.addEventListener('click',async e=>{e.preventDefault();const x=await fetch('/api/reports/'+encodeURIComponent(item.name)+'/content');$('report-content').textContent=await x.text();});box.append(link,el('br'));}
@@ -790,6 +792,17 @@ def create_app(records_root: Path, program: str) -> FastAPI:
                 "by_command": by_command,
             }
         return {"progress": progress, "comparison": compare_prioritization_runs(paths)}
+
+    @app.get("/api/triage/security-research")
+    async def triage_security_research(
+        category: str | None = None,
+        family: str | None = None,
+    ) -> dict[str, object]:
+        """Unified read-only IDOR/XSS/disclosure triage; AI cannot approve."""
+        try:
+            return build_unified_security_triage(paths, category=category, family=family)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @app.get("/api/triage/review-queue")
     async def triage_review_queue() -> dict[str, object]:

@@ -1,5 +1,17 @@
 ## [Unreleased]
 
+### Unified security-research triage
+
+- Extend dashboard triage / evidence-gap planner / investigation workflow /
+  dossier verifier into `analysis/unified_security_triage.py` and
+  `GET /api/triage/security-research`. Unified read-only view for IDOR, XSS and
+  disclosure candidates with gaps, blockers, duplicates, pos/neg controls,
+  inconclusive and review-ready dossiers. Ranking by valid evidence, correlation,
+  complete controls and low uncertainty — never invented severity. AI cannot
+  approve findings; no exploit buttons; no session data; UI remains textContent
+  only. Version stays 0.2.2.
+
+
 ### Disclosure ↔ access correlation
 
 - New offline `analysis/disclosure_access_correlation.py` (`disclosure-access-correlation-v1`)
