@@ -1,5 +1,31 @@
 ## [Unreleased]
 
+### IDOR/BOLA evidence correctness v3
+
+- Integrity-aware reviewability: the evidence-gap planner now emits a read-only
+  `effective_eligibility` view (`evidence_ledger.effective_eligibility`). Altered, removed,
+  unrecorded, expired or out-of-program required evidence makes a candidate
+  `integrity_blocked` even when other refs are usable; incomplete capture, incompatible
+  origin, broken owner control and id-echo access proof are blockers too. Unresolved
+  integrity/contradiction/duplicate blockers propagate to sibling candidates built from the
+  same captured objects. Ledger history is never rewritten.
+- Real access proof (`authorization_denial`): `access_proof` distinguishes private-200,
+  public-200, denial-in-200, 401/403/404, login redirect, id echo without resource and
+  ambiguous. Owner 401/login redirect = broken owner control → inconclusive; an id match
+  alone never promotes a case.
+- Session control (`actor_provenance.classify_session_controls`): owner/second/cross/
+  anonymous/invalid/possibly-expired/identity-unproven; isolated 401 is never expiry;
+  results after owner control is lost are inconclusive.
+- Opt-in offline identifier normalization (`object_handoff.normalize_captured_identifier`):
+  numeric/UUID/Base64/Base64URL/JSON-then-encoded, only for values already in authorized
+  captures; transforms recorded; kind-namespaced keys; failed decode is not denial.
+- Resource correlation (`resource_kind_lineage.correlate_resources`): order≠user for the same
+  digits, cookies alone ≠ distinct accounts, shared/public/identical legitimate responses ≠ IDOR,
+  ambiguous kinds stay `unknown`, kind preserved.
+- IRB FINAL 45 (labels frozen): false reviewable 6→0, outcome accuracy 0.756→0.800, missed
+  eligible 2→2 (no new false negatives). New lab `labs/idor_evidence_v3_eval/` (48 FINAL
+  scenarios): accuracy 0.083→0.979; one documented tradeoff (V3-A11). Version stays 0.2.2.
+
 ### Offline information disclosure indicators
 
 - New offline `analysis/information_disclosure.py` (`information-disclosure-v1`) and

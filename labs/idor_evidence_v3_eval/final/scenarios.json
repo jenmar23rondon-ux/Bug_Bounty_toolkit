@@ -1,0 +1,1411 @@
+{
+  "corpus_version": "idor-evidence-v3-final-1.0",
+  "label_source": "authored from the FASE2 IDOR evidence V3 spec and frozen (MANIFEST) before the evaluator was first run; independent of IRB labels",
+  "scenarios": [
+    {
+      "description": "Clean pair, all evidence intact",
+      "expected": {
+        "effective_reviewable": true,
+        "status": "open"
+      },
+      "family": "A",
+      "id": "V3-A01",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          }
+        ],
+        "mutation": null,
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Required evidence edited after registration",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "integrity_blocked"
+      },
+      "family": "A",
+      "id": "V3-A02",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          }
+        ],
+        "mutation": {
+          "tamper": "e1"
+        },
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Required evidence file removed",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "integrity_blocked"
+      },
+      "family": "A",
+      "id": "V3-A03",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          }
+        ],
+        "mutation": {
+          "delete": "e1"
+        },
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Candidate cites unrecorded evidence besides a valid one",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "integrity_blocked"
+      },
+      "family": "A",
+      "id": "V3-A04",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1",
+              "e-missing"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          }
+        ],
+        "mutation": null,
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Owner control annotation expired",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "integrity_blocked"
+      },
+      "family": "A",
+      "id": "V3-A05",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1",
+              "e2"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          },
+          {
+            "control": {
+              "expires_at": "2026-01-01T00:00:00Z",
+              "role": "owner_response"
+            },
+            "id": "e2",
+            "objects": []
+          }
+        ],
+        "mutation": null,
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Evidence annotated for another program",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "integrity_blocked"
+      },
+      "family": "A",
+      "id": "V3-A06",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "program": "other-program",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          }
+        ],
+        "mutation": null,
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Capture marked incomplete",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "open"
+      },
+      "family": "A",
+      "id": "V3-A07",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "capture_complete": false,
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          }
+        ],
+        "mutation": null,
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Owner and actor captures from incompatible origins",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "open"
+      },
+      "family": "A",
+      "id": "V3-A08",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "eligibility_code": "REJECT_ORIGIN_MISMATCH_SIDES",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          }
+        ],
+        "mutation": null,
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Integrity issue on an unrelated surface",
+      "expected": {
+        "effective_reviewable": true,
+        "status": "open"
+      },
+      "family": "A",
+      "id": "V3-A09",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          },
+          {
+            "id": "c2",
+            "refs": [
+              "e2"
+            ],
+            "surface": "s2"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          },
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e2",
+            "objects": [
+              "o7",
+              "o8"
+            ]
+          }
+        ],
+        "mutation": {
+          "tamper": "e2"
+        },
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Sibling shares captured object with tampered candidate",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "integrity_blocked"
+      },
+      "family": "A",
+      "id": "V3-A10",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          },
+          {
+            "id": "c2",
+            "refs": [
+              "e2"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          },
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e2",
+            "objects": [
+              "o2",
+              "o3"
+            ]
+          }
+        ],
+        "mutation": {
+          "tamper": "e2"
+        },
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Sibling on same surface with disjoint objects stays reviewable",
+      "expected": {
+        "effective_reviewable": true,
+        "status": "open"
+      },
+      "family": "A",
+      "id": "V3-A11",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          },
+          {
+            "id": "c2",
+            "refs": [
+              "e2"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          },
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e2",
+            "objects": [
+              "o5",
+              "o6"
+            ]
+          }
+        ],
+        "mutation": {
+          "tamper": "e2"
+        },
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Owner positive control broken (owner 401)",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "open"
+      },
+      "family": "A",
+      "id": "V3-A12",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "private_resource_200",
+              "owner_access_proof": "http_401",
+              "owner_control": "broken",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          }
+        ],
+        "mutation": null,
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Actor body only echoes requested id",
+      "expected": {
+        "effective_reviewable": false,
+        "status": "open"
+      },
+      "family": "A",
+      "id": "V3-A13",
+      "input": {
+        "candidates": [
+          {
+            "id": "c1",
+            "refs": [
+              "e1"
+            ],
+            "surface": "s1"
+          }
+        ],
+        "evidence": [
+          {
+            "control": {
+              "access_confirmed": false,
+              "actor_access_proof": "id_echo_without_resource",
+              "owner_access_proof": "private_resource_200",
+              "owner_control": "valid",
+              "provides": [
+                "owner_response",
+                "actor_response"
+              ],
+              "role": "capture_pair"
+            },
+            "id": "e1",
+            "objects": [
+              "o1",
+              "o2"
+            ]
+          }
+        ],
+        "mutation": null,
+        "target": "c1"
+      }
+    },
+    {
+      "description": "Owner valid, second valid, cross observed",
+      "expected": {
+        "dependent": [
+          "evaluable"
+        ],
+        "sessions": {
+          "s1": "owner_control_valid",
+          "s2": "second_account_control_valid"
+        }
+      },
+      "family": "B",
+      "id": "V3-B01",
+      "input": {
+        "observations": [
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "second_account",
+            "session_ref": "s2"
+          },
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "second_account",
+            "session_ref": "s2",
+            "target_label": "owner"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Two cookies, no account declaration",
+      "expected": {
+        "dependent": [
+          "inconclusive"
+        ],
+        "sessions": {
+          "s1": "identity_unproven",
+          "s2": "identity_unproven"
+        }
+      },
+      "family": "B",
+      "id": "V3-B02",
+      "input": {
+        "observations": [
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": false,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": false,
+            "label": "second_account",
+            "session_ref": "s2",
+            "target_label": "owner"
+          }
+        ]
+      }
+    },
+    {
+      "description": "401 between two owner successes is not expiry",
+      "expected": {
+        "dependent": [],
+        "sessions": {
+          "s1": "owner_control_valid"
+        }
+      },
+      "family": "B",
+      "id": "V3-B03",
+      "input": {
+        "observations": [
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "http_401",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Single trailing 401 is unproven, not expired",
+      "expected": {
+        "dependent": [],
+        "sessions": {
+          "s1": "identity_unproven"
+        }
+      },
+      "family": "B",
+      "id": "V3-B04",
+      "input": {
+        "observations": [
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "http_401",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Owner loses control; later actor result inconclusive",
+      "expected": {
+        "dependent": [
+          "evaluable",
+          "inconclusive"
+        ],
+        "sessions": {
+          "s1": "possibly_expired_session",
+          "s2": "cross_control_observed"
+        }
+      },
+      "family": "B",
+      "id": "V3-B05",
+      "input": {
+        "observations": [
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "second_account",
+            "session_ref": "s2",
+            "target_label": "owner"
+          },
+          {
+            "access_proof": "http_401",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "http_401",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "second_account",
+            "session_ref": "s2",
+            "target_label": "owner"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Every own request fails auth",
+      "expected": {
+        "dependent": [],
+        "sessions": {
+          "s1": "invalid_session"
+        }
+      },
+      "family": "B",
+      "id": "V3-B06",
+      "input": {
+        "observations": [
+          {
+            "access_proof": "http_401",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "login_redirect",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          }
+        ]
+      }
+    },
+    {
+      "description": "True anonymous control",
+      "expected": {
+        "dependent": [
+          "inconclusive"
+        ],
+        "sessions": {
+          "anonymous:0": "anonymous_control"
+        }
+      },
+      "family": "B",
+      "id": "V3-B07",
+      "input": {
+        "observations": [
+          {
+            "access_proof": "http_401",
+            "label": "anonymous",
+            "target_label": "owner"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Anonymous label carrying session material",
+      "expected": {
+        "dependent": [],
+        "sessions": {
+          "s9": "identity_unproven"
+        }
+      },
+      "family": "B",
+      "id": "V3-B08",
+      "input": {
+        "observations": [
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": false,
+            "label": "anonymous",
+            "session_ref": "s9"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Owner success then login redirect",
+      "expected": {
+        "dependent": [],
+        "sessions": {
+          "s1": "possibly_expired_session"
+        }
+      },
+      "family": "B",
+      "id": "V3-B09",
+      "input": {
+        "observations": [
+          {
+            "access_proof": "private_resource_200",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          },
+          {
+            "access_proof": "login_redirect",
+            "account_attested": true,
+            "label": "owner",
+            "session_ref": "s1"
+          }
+        ]
+      }
+    },
+    {
+      "description": "200 with private resource",
+      "expected": {
+        "access_proof": "private_resource_200"
+      },
+      "family": "C",
+      "id": "V3-C01",
+      "input": {
+        "raw": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"data\":{\"id\":\"7\",\"owner_label\":\"alice\",\"balance\":\"12.00\"}}"
+      }
+    },
+    {
+      "description": "200 with public content",
+      "expected": {
+        "access_proof": "public_200"
+      },
+      "family": "C",
+      "id": "V3-C02",
+      "input": {
+        "raw": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"data\":{\"id\":\"7\",\"visibility\":\"public\",\"title\":\"Hi\"}}"
+      }
+    },
+    {
+      "description": "200 with denial message",
+      "expected": {
+        "access_proof": "denial_in_200"
+      },
+      "family": "C",
+      "id": "V3-C03",
+      "input": {
+        "raw": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"ok\":false,\"error\":\"access denied\"}"
+      }
+    },
+    {
+      "description": "403",
+      "expected": {
+        "access_proof": "http_403"
+      },
+      "family": "C",
+      "id": "V3-C04",
+      "input": {
+        "raw": "HTTP/1.1 403 Forbidden\r\nContent-Type: application/json\r\n\r\n{\"error\":\"forbidden\"}"
+      }
+    },
+    {
+      "description": "404",
+      "expected": {
+        "access_proof": "http_404"
+      },
+      "family": "C",
+      "id": "V3-C05",
+      "input": {
+        "raw": "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\n\r\n{\"error\":\"not found\"}"
+      }
+    },
+    {
+      "description": "302 to login",
+      "expected": {
+        "access_proof": "login_redirect"
+      },
+      "family": "C",
+      "id": "V3-C06",
+      "input": {
+        "raw": "HTTP/1.1 302 Found\r\nLocation: /login?next=/x\r\n\r\n"
+      }
+    },
+    {
+      "description": "Ambiguous 500",
+      "expected": {
+        "access_proof": "ambiguous"
+      },
+      "family": "C",
+      "id": "V3-C07",
+      "input": {
+        "raw": "HTTP/1.1 500 Internal Server Error\r\nContent-Type: application/json\r\n\r\noops"
+      }
+    },
+    {
+      "description": "Echo of requested id only",
+      "expected": {
+        "access_proof": "id_echo_without_resource"
+      },
+      "family": "C",
+      "id": "V3-C08",
+      "input": {
+        "raw": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"data\":{\"id\":\"7\"}}"
+      }
+    },
+    {
+      "description": "Pair: actor echo never promotes",
+      "expected": {
+        "outcome": "inconclusive",
+        "promote": false
+      },
+      "family": "C",
+      "id": "V3-C09",
+      "input": {
+        "actor_raw": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"requested_id\":\"7\",\"status\":\"ok\"}",
+        "raw": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"data\":{\"id\":\"7\",\"owner_label\":\"alice\",\"balance\":\"12.00\"}}"
+      }
+    },
+    {
+      "description": "Pair: owner 401 breaks control",
+      "expected": {
+        "outcome": "inconclusive",
+        "owner_control": "broken",
+        "promote": false
+      },
+      "family": "C",
+      "id": "V3-C10",
+      "input": {
+        "actor_raw": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"data\":{\"id\":\"7\",\"owner_label\":\"alice\",\"balance\":\"12.00\"}}",
+        "raw": "HTTP/1.1 401 Unauthorized\r\nContent-Type: application/json\r\n\r\n{\"error\":\"unauthorized\"}"
+      }
+    },
+    {
+      "description": "Pair: both private stays possible, unconfirmed",
+      "expected": {
+        "outcome": "possible_access",
+        "owner_control": "valid",
+        "promote": true
+      },
+      "family": "C",
+      "id": "V3-C11",
+      "input": {
+        "actor_raw": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"data\":{\"id\":\"7\",\"owner_label\":\"alice\",\"balance\":\"12.00\"}}",
+        "raw": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"data\":{\"id\":\"7\",\"owner_label\":\"alice\",\"balance\":\"12.00\"}}"
+      }
+    },
+    {
+      "description": "Numeric with leading zero",
+      "expected": {
+        "namespace_key": "order:numeric:123",
+        "status": "normalized"
+      },
+      "family": "D",
+      "id": "V3-D01",
+      "input": {
+        "captured": [
+          "00123"
+        ],
+        "enabled": true,
+        "kind": "order",
+        "value": "00123"
+      }
+    },
+    {
+      "description": "Uppercase UUID",
+      "expected": {
+        "namespace_key": "invoice:uuid:0f8fad5b-d9cb-469f-a165-70867728950e",
+        "status": "normalized"
+      },
+      "family": "D",
+      "id": "V3-D02",
+      "input": {
+        "captured": [
+          "0F8FAD5B-D9CB-469F-A165-70867728950E"
+        ],
+        "enabled": true,
+        "kind": "invoice",
+        "value": "0F8FAD5B-D9CB-469F-A165-70867728950E"
+      }
+    },
+    {
+      "description": "Base64 numeric",
+      "expected": {
+        "namespace_key": "order:numeric:4512",
+        "status": "normalized"
+      },
+      "family": "D",
+      "id": "V3-D03",
+      "input": {
+        "captured": [
+          "NDUxMg=="
+        ],
+        "enabled": true,
+        "kind": "order",
+        "value": "NDUxMg=="
+      }
+    },
+    {
+      "description": "JSON then Base64URL",
+      "expected": {
+        "namespace_key": "ticket:numeric:99",
+        "status": "normalized"
+      },
+      "family": "D",
+      "id": "V3-D04",
+      "input": {
+        "captured": [
+          "eyJ1aWQiOiJ4IiwiaWQiOiI5OSJ9"
+        ],
+        "enabled": true,
+        "kind": "ticket",
+        "value": "eyJ1aWQiOiJ4IiwiaWQiOiI5OSJ9"
+      }
+    },
+    {
+      "description": "Undecodable opaque token",
+      "expected": {
+        "denial_evidence": false,
+        "status": "undecodable"
+      },
+      "family": "D",
+      "id": "V3-D05",
+      "input": {
+        "captured": [
+          "zz!!not*b64"
+        ],
+        "enabled": true,
+        "kind": "order",
+        "value": "zz!!not*b64"
+      }
+    },
+    {
+      "description": "Value not in authorized capture",
+      "expected": {
+        "generated_values": 0,
+        "status": "refused_not_in_capture"
+      },
+      "family": "D",
+      "id": "V3-D06",
+      "input": {
+        "captured": [
+          "123"
+        ],
+        "enabled": true,
+        "kind": "order",
+        "value": "124"
+      }
+    },
+    {
+      "description": "Opt-in disabled by default",
+      "expected": {
+        "status": "disabled"
+      },
+      "family": "D",
+      "id": "V3-D07",
+      "input": {
+        "captured": [
+          "NDUxMg=="
+        ],
+        "enabled": false,
+        "kind": "order",
+        "value": "NDUxMg=="
+      }
+    },
+    {
+      "description": "Same digits, different kinds never collide",
+      "expected": {
+        "namespace_key": "user:numeric:123",
+        "not_equal": "order:numeric:123",
+        "status": "normalized"
+      },
+      "family": "D",
+      "id": "V3-D08",
+      "input": {
+        "captured": [
+          "123"
+        ],
+        "enabled": true,
+        "kind": "user",
+        "value": "123"
+      }
+    },
+    {
+      "description": "Order 123 vs user 123",
+      "expected": {
+        "idor_review_signal": false,
+        "relation": "different_kind"
+      },
+      "family": "E",
+      "id": "V3-E01",
+      "input": {
+        "actor": {
+          "account_ref": "acct:b",
+          "body_digest": "d2",
+          "distinct_accounts_attested": true,
+          "kind": "kind:user",
+          "kind_status": "explicit",
+          "namespace_key": "user:numeric:123",
+          "session_ref": "s2",
+          "visibility": "private"
+        },
+        "owner": {
+          "account_ref": "acct:a",
+          "body_digest": "d1",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s1",
+          "visibility": "private"
+        }
+      }
+    },
+    {
+      "description": "Different cookies, no attestation",
+      "expected": {
+        "accounts": "unknown",
+        "idor_review_signal": false
+      },
+      "family": "E",
+      "id": "V3-E02",
+      "input": {
+        "actor": {
+          "account_ref": null,
+          "body_digest": "d2",
+          "distinct_accounts_attested": false,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s2",
+          "visibility": "private"
+        },
+        "owner": {
+          "account_ref": null,
+          "body_digest": "d1",
+          "distinct_accounts_attested": false,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s1",
+          "visibility": "private"
+        }
+      }
+    },
+    {
+      "description": "Shared legitimate response",
+      "expected": {
+        "idor_review_signal": false,
+        "legitimate_shared": true
+      },
+      "family": "E",
+      "id": "V3-E03",
+      "input": {
+        "actor": {
+          "account_ref": "acct:b",
+          "body_digest": "d1",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s2",
+          "visibility": "shared"
+        },
+        "owner": {
+          "account_ref": "acct:a",
+          "body_digest": "d1",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s1",
+          "visibility": "shared"
+        }
+      }
+    },
+    {
+      "description": "Public resource",
+      "expected": {
+        "idor_review_signal": false,
+        "legitimate_shared": true
+      },
+      "family": "E",
+      "id": "V3-E04",
+      "input": {
+        "actor": {
+          "account_ref": "acct:b",
+          "body_digest": "d2",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s2",
+          "visibility": "public"
+        },
+        "owner": {
+          "account_ref": "acct:a",
+          "body_digest": "d1",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s1",
+          "visibility": "public"
+        }
+      }
+    },
+    {
+      "description": "Ambiguous kind stays unknown",
+      "expected": {
+        "idor_review_signal": false,
+        "relation": "unknown",
+        "resource_kind": null
+      },
+      "family": "E",
+      "id": "V3-E05",
+      "input": {
+        "actor": {
+          "account_ref": "acct:b",
+          "body_digest": "d2",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "ambiguous",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s2",
+          "visibility": "private"
+        },
+        "owner": {
+          "account_ref": "acct:a",
+          "body_digest": "d1",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "ambiguous",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s1",
+          "visibility": "private"
+        }
+      }
+    },
+    {
+      "description": "Same private order, attested distinct accounts",
+      "expected": {
+        "idor_review_signal": true,
+        "relation": "same_object",
+        "resource_kind": "kind:order"
+      },
+      "family": "E",
+      "id": "V3-E06",
+      "input": {
+        "actor": {
+          "account_ref": "acct:b",
+          "body_digest": "d2",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s2",
+          "visibility": "private"
+        },
+        "owner": {
+          "account_ref": "acct:a",
+          "body_digest": "d1",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s1",
+          "visibility": "private"
+        }
+      }
+    },
+    {
+      "description": "Identical body without private marker",
+      "expected": {
+        "idor_review_signal": false,
+        "legitimate_shared": true
+      },
+      "family": "E",
+      "id": "V3-E07",
+      "input": {
+        "actor": {
+          "account_ref": "acct:b",
+          "body_digest": "d1",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s2",
+          "visibility": null
+        },
+        "owner": {
+          "account_ref": "acct:a",
+          "body_digest": "d1",
+          "distinct_accounts_attested": true,
+          "kind": "kind:order",
+          "kind_status": "explicit",
+          "namespace_key": "order:numeric:123",
+          "session_ref": "s1",
+          "visibility": null
+        }
+      }
+    }
+  ],
+  "split": "final"
+}

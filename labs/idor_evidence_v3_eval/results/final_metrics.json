@@ -1,0 +1,294 @@
+{
+  "by_family": {
+    "A": {
+      "accuracy": 0.9231,
+      "correct": 12,
+      "n": 13
+    },
+    "B": {
+      "accuracy": 1.0,
+      "correct": 9,
+      "n": 9
+    },
+    "C": {
+      "accuracy": 1.0,
+      "correct": 11,
+      "n": 11
+    },
+    "D": {
+      "accuracy": 1.0,
+      "correct": 8,
+      "n": 8
+    },
+    "E": {
+      "accuracy": 1.0,
+      "correct": 7,
+      "n": 7
+    }
+  },
+  "corpus_version": "idor-evidence-v3-final-1.0",
+  "metric_scope": "synthetic offline lab only; not evidence of real-world performance",
+  "overall": {
+    "abstentions_expected": 14,
+    "auto_confirmations": 0,
+    "correct_abstentions": 14,
+    "estimated_manual_steps": 44,
+    "false_reviewable_cases": 0,
+    "false_reviewable_ids": [],
+    "false_reviewable_rate": 0.0,
+    "invalid_evidence_blockers": 7,
+    "ledger_history_unmodified": true,
+    "missed_eligible_cases": 1,
+    "missed_eligible_ids": [
+      "V3-A11"
+    ],
+    "network_attempts": 0,
+    "outcome_accuracy": 0.9792,
+    "provenance_validity": 1.0,
+    "resource_kind_preservation": 1.0,
+    "scenarios": 48
+  },
+  "scenarios": [
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A01"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A02"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A03"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A04"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A05"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A06"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A07"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A08"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A09"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A10"
+    },
+    {
+      "correct": false,
+      "family": "A",
+      "id": "V3-A11"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A12"
+    },
+    {
+      "correct": true,
+      "family": "A",
+      "id": "V3-A13"
+    },
+    {
+      "correct": true,
+      "family": "B",
+      "id": "V3-B01"
+    },
+    {
+      "correct": true,
+      "family": "B",
+      "id": "V3-B02"
+    },
+    {
+      "correct": true,
+      "family": "B",
+      "id": "V3-B03"
+    },
+    {
+      "correct": true,
+      "family": "B",
+      "id": "V3-B04"
+    },
+    {
+      "correct": true,
+      "family": "B",
+      "id": "V3-B05"
+    },
+    {
+      "correct": true,
+      "family": "B",
+      "id": "V3-B06"
+    },
+    {
+      "correct": true,
+      "family": "B",
+      "id": "V3-B07"
+    },
+    {
+      "correct": true,
+      "family": "B",
+      "id": "V3-B08"
+    },
+    {
+      "correct": true,
+      "family": "B",
+      "id": "V3-B09"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C01"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C02"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C03"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C04"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C05"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C06"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C07"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C08"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C09"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C10"
+    },
+    {
+      "correct": true,
+      "family": "C",
+      "id": "V3-C11"
+    },
+    {
+      "correct": true,
+      "family": "D",
+      "id": "V3-D01"
+    },
+    {
+      "correct": true,
+      "family": "D",
+      "id": "V3-D02"
+    },
+    {
+      "correct": true,
+      "family": "D",
+      "id": "V3-D03"
+    },
+    {
+      "correct": true,
+      "family": "D",
+      "id": "V3-D04"
+    },
+    {
+      "correct": true,
+      "family": "D",
+      "id": "V3-D05"
+    },
+    {
+      "correct": true,
+      "family": "D",
+      "id": "V3-D06"
+    },
+    {
+      "correct": true,
+      "family": "D",
+      "id": "V3-D07"
+    },
+    {
+      "correct": true,
+      "family": "D",
+      "id": "V3-D08"
+    },
+    {
+      "correct": true,
+      "family": "E",
+      "id": "V3-E01"
+    },
+    {
+      "correct": true,
+      "family": "E",
+      "id": "V3-E02"
+    },
+    {
+      "correct": true,
+      "family": "E",
+      "id": "V3-E03"
+    },
+    {
+      "correct": true,
+      "family": "E",
+      "id": "V3-E04"
+    },
+    {
+      "correct": true,
+      "family": "E",
+      "id": "V3-E05"
+    },
+    {
+      "correct": true,
+      "family": "E",
+      "id": "V3-E06"
+    },
+    {
+      "correct": true,
+      "family": "E",
+      "id": "V3-E07"
+    }
+  ],
+  "type": "bbtk-idor-evidence-v3-eval"
+}

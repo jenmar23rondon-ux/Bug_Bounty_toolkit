@@ -257,3 +257,116 @@ def pwnfox_color(source: object) -> str | None:
         if isinstance(name, str) and name.lower() == "x-pwnfox-color" and isinstance(value, str)
     ]
     return colors[0] if len(colors) == 1 and colors[0] in COLORS else None
+
+
+# Session control (idor-evidence-correctness-v3) -------------------------------------------
+SESSION_CONTROL_SCHEMA = "bbtk.session-control/1"
+SESSION_CONTROL_CLASSES = frozenset(
+    {
+        "owner_control_valid",
+        "second_account_control_valid",
+        "cross_control_observed",
+        "anonymous_control",
+        "invalid_session",
+        "possibly_expired_session",
+        "identity_unproven",
+    }
+)
+_AUTH_FAILURES = frozenset({"http_401", "login_redirect"})
+
+
+def classify_session_controls(observations: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    """Classify each session's control quality from ordered, already-redacted observations.
+
+    Each observation: ``session_ref`` (opaque), ``label`` (``LABELS``), ``account_attested``
+    (human declaration, bool), ``target_label`` (whose object was requested) and
+    ``access_proof`` (from :func:`authorization_denial.assess_response`). Order = capture order.
+
+    Rules (never inferred from cookies alone):
+      * no human account declaration -> ``identity_unproven`` (except true anonymous controls);
+      * every own-object request failed auth -> ``invalid_session``;
+      * own-object success followed by >=2 trailing auth failures or a login redirect ->
+        ``possibly_expired_session``. A single isolated 401 is recorded as ``isolated_401``
+        and never as expiry (it may be a legitimate denial);
+      * a request for another label's object is ``cross_control_observed`` (a fact, not a finding).
+
+    When the owner control is not ``owner_control_valid`` at the end, every observation that
+    depends on it (actor requests for the owner's objects) is reported ``inconclusive``.
+    Offline; no I/O; nothing is confirmed.
+    """
+    rows = [dict(o) for o in observations if isinstance(o, dict)]
+    sessions: dict[str, list[tuple[int, dict[str, Any]]]] = {}
+    for index, row in enumerate(rows):
+        sessions.setdefault(str(row.get("session_ref") or f"anonymous:{index}"), []).append((index, row))
+    out: dict[str, dict[str, Any]] = {}
+    for ref, items in sorted(sessions.items()):
+        label = str(items[0][1].get("label") or "unknown")
+        attested = all(bool(r.get("account_attested")) for _, r in items)
+        own = [str(r.get("access_proof")) for _, r in items if r.get("target_label") in (None, label)]
+        cross = [i for i, r in items if r.get("target_label") not in (None, label)]
+        notes: list[str] = []
+        if label == "anonymous":
+            cls = "anonymous_control" if not items[0][1].get("session_ref") else "identity_unproven"
+            if cls == "identity_unproven":
+                notes.append("anonymous_label_with_session_material")
+        elif not attested or label == "unknown":
+            cls = "identity_unproven"
+            notes.append("cookies_alone_do_not_prove_identity")
+        elif own and all(p in _AUTH_FAILURES for p in own):
+            cls = "invalid_session"
+        else:
+            ok_seen = False
+            trailing = 0
+            redirect_after_ok = False
+            for proof in own:
+                if proof == "private_resource_200":
+                    ok_seen, trailing = True, 0
+                elif proof in _AUTH_FAILURES and ok_seen:
+                    trailing += 1
+                    redirect_after_ok = redirect_after_ok or proof == "login_redirect"
+            if ok_seen and (trailing >= 2 or (trailing >= 1 and redirect_after_ok)):
+                cls = "possibly_expired_session"
+            elif trailing == 1:
+                # One 401 after success may be a legitimate denial: control unverified, not expired.
+                cls = "identity_unproven"
+                notes.append("isolated_401_not_expiry")
+            elif ok_seen:
+                cls = "owner_control_valid" if label == "owner" else "second_account_control_valid"
+            elif cross and not own:
+                cls = "cross_control_observed"
+            else:
+                cls = "identity_unproven"
+                notes.append("no_own_object_positive_control")
+        out[ref] = {
+            "label": label,
+            "classification": cls,
+            "cross_control_observed": bool(cross),
+            "notes": sorted(set(notes)),
+            "expiry_proven": False,
+        }
+    owner_ok = any(v["classification"] == "owner_control_valid" for v in out.values())
+    # Owner positive-control timeline: first success, and first auth failure after it.
+    owner_rows = [
+        (i, str(r.get("access_proof")))
+        for i, r in enumerate(rows)
+        if r.get("label") == "owner" and r.get("target_label") in (None, "owner") and r.get("account_attested")
+    ]
+    first_ok = next((i for i, p in owner_rows if p == "private_resource_200"), None)
+    broken_at = next((i for i, p in owner_rows if p in _AUTH_FAILURES and first_ok is not None and i > first_ok), None)
+    dependent: list[dict[str, Any]] = []
+    for index, row in enumerate(rows):
+        if row.get("target_label") == "owner" and row.get("label") != "owner":
+            if first_ok is None or index < first_ok:
+                result, reason = "inconclusive", "no_prior_owner_positive_control"
+            elif broken_at is not None and index > broken_at:
+                result, reason = "inconclusive", "owner_control_lost_before_result"
+            else:
+                result, reason = "evaluable", None
+            dependent.append({"observation": index, "result": result, "reason": reason})
+    return {
+        "schema": SESSION_CONTROL_SCHEMA,
+        "sessions": out,
+        "owner_control_intact": owner_ok,
+        "dependent_results": dependent,
+        "confirmed": False,
+    }

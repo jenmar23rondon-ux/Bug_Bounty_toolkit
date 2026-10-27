@@ -238,6 +238,7 @@ def _empty() -> dict[str, Any]:
         "proposal_types": [],
         "classifications": [],
         "ledger_states": [],
+        "effective_reviewable": [],
         "plan_statuses": [],
         "plan_controls": [],
         "first_step": "none",
@@ -329,6 +330,9 @@ def _extract(work: Path, report: dict[str, Any], plan: dict[str, Any], labels: d
             for c in report.get("classifications") or []
         ],
         "ledger_states": [str(c.get("state")) for c in ledger.get("candidates") or []],
+        # idor-evidence-correctness-v3: current reviewability from the planner's read-only
+        # effective eligibility view (ledger history is never rewritten).
+        "effective_reviewable": [bool(r.get("effective_reviewable")) for r in plan.get("effective_eligibility") or []],
         "plan_statuses": [str(c.get("status")) for c in active],
         "plan_controls": [c.get("controls") or {} for c in active],
         "first_step": str(steps[0]["step_type"]) if steps else "none",
@@ -368,7 +372,11 @@ def score(sc: dict[str, Any], pred: dict[str, Any]) -> dict[str, Any]:
     no_input = not (pred["import"] or {}).get("accepted")
     outcome = M.scenario_outcome(pred["plan_statuses"], technical=technical, no_input=no_input)
     ideal = lab["ideal_outcome"]
-    reviewable = any(s == "requires_validation" for s in pred["ledger_states"])
+    raw_reviewable = any(s == "requires_validation" for s in pred["ledger_states"])
+    eff = list(pred.get("effective_reviewable") or [])
+    # Use the effective view when the planner emitted one row per ledger candidate; older heads
+    # (no view) fall back to the raw ledger state so before/after stays comparable.
+    reviewable = any(eff) if eff and len(eff) == len(pred["ledger_states"]) else raw_reviewable
     ranking = None
     if lab["target_types"]:
         rel = M.relevance_vector(pred["ranked_types_resolved"], lab["target_types"])
@@ -426,6 +434,7 @@ def score(sc: dict[str, Any], pred: dict[str, Any]) -> dict[str, Any]:
         "outcome_correct_lenient": outcome == ideal or (ideal in M.ABSTAIN_LIKE and outcome in M.ABSTAIN_LIKE),
         "ideal_reviewable": lab["ideal_reviewable"],
         "predicted_reviewable": reviewable,
+        "ledger_raw_reviewable": raw_reviewable,
         "eligibility_correct": any(c["case_eligible"] for c in clf) == lab["ideal_reviewable"],
         "eligibility_codes": sorted({str(c["code"]) for c in clf}),
         "ranking": ranking,
