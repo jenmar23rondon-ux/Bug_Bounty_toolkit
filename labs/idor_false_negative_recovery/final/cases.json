@@ -1,0 +1,692 @@
+{
+  "cases": [
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e-shared"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "e-shared"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Corrupt shared evidence invalidates every candidate that cites it",
+      "evidence": [
+        {
+          "evidence_id": "e-shared",
+          "integrity": "invalid",
+          "object_refs": [
+            "obj:shared"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "blocked_invalid_evidence",
+          "c2": "blocked_invalid_evidence"
+        },
+        "reviewable_ids": [],
+        "whole_surface": [
+          "s1"
+        ]
+      },
+      "family": 1,
+      "id": "FN-F01"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c-good",
+          "evidence_refs": [
+            "e-good"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c-bad",
+          "evidence_refs": [
+            "e-bad"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s2"
+        }
+      ],
+      "check_order": false,
+      "description": "Unrelated corrupt evidence must not poison an independent candidate",
+      "evidence": [
+        {
+          "evidence_id": "e-good",
+          "integrity": "ok",
+          "object_refs": [
+            "obj:a"
+          ]
+        },
+        {
+          "evidence_id": "e-bad",
+          "integrity": "invalid",
+          "object_refs": [
+            "obj:z"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c-bad": "blocked_invalid_evidence",
+          "c-good": "reviewable"
+        },
+        "reviewable_ids": [
+          "c-good"
+        ],
+        "whole_surface": []
+      },
+      "family": 2,
+      "id": "FN-F02"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e1"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "e2"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Same endpoint, different objects: only the dependent candidate is blocked",
+      "evidence": [
+        {
+          "evidence_id": "e1",
+          "integrity": "ok",
+          "object_refs": [
+            "o1",
+            "o2"
+          ]
+        },
+        {
+          "evidence_id": "e2",
+          "integrity": "invalid",
+          "object_refs": [
+            "o5",
+            "o6"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "safely_independent",
+          "c2": "blocked_invalid_evidence"
+        },
+        "reviewable_ids": [
+          "c1"
+        ],
+        "whole_surface": []
+      },
+      "family": 3,
+      "id": "FN-F03"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c-orders",
+          "evidence_refs": [
+            "e-orders"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c-users",
+          "evidence_refs": [
+            "e-users"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Same raw id in different namespaces is not the same object",
+      "evidence": [
+        {
+          "evidence_id": "e-orders",
+          "integrity": "invalid",
+          "namespace": "orders",
+          "object_refs": [
+            "1"
+          ]
+        },
+        {
+          "evidence_id": "e-users",
+          "integrity": "ok",
+          "namespace": "users",
+          "object_refs": [
+            "1"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c-orders": "blocked_invalid_evidence",
+          "c-users": "safely_independent"
+        },
+        "reviewable_ids": [
+          "c-users"
+        ],
+        "whole_surface": []
+      },
+      "family": 4,
+      "id": "FN-F04"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e-owner",
+            "e-actor"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Two independent complete controls stay reviewable",
+      "evidence": [
+        {
+          "evidence_id": "e-owner",
+          "integrity": "ok",
+          "object_refs": [
+            "o1"
+          ]
+        },
+        {
+          "evidence_id": "e-actor",
+          "integrity": "ok",
+          "object_refs": [
+            "o2"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "reviewable"
+        },
+        "reviewable_ids": [
+          "c1"
+        ],
+        "whole_surface": []
+      },
+      "family": 5,
+      "id": "FN-F05"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e1"
+          ],
+          "missing_mandatory_controls": [
+            "negative_control"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Missing mandatory control is not reviewable",
+      "evidence": [
+        {
+          "evidence_id": "e1",
+          "integrity": "ok",
+          "object_refs": [
+            "o1",
+            "o2"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "blocked_missing_control"
+        },
+        "reviewable_ids": [],
+        "whole_surface": []
+      },
+      "family": 6,
+      "id": "FN-F06"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e-missing"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Invalid evidence ref blocks that candidate",
+      "evidence": [],
+      "expected": {
+        "by_candidate": {
+          "c1": "blocked_invalid_evidence"
+        },
+        "reviewable_ids": [],
+        "whole_surface": []
+      },
+      "family": 7,
+      "id": "FN-F07"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e-stale"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "e-fresh"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Stale file blocks its candidate and not a disjoint neighbour",
+      "evidence": [
+        {
+          "evidence_id": "e-stale",
+          "integrity": "stale",
+          "object_refs": [
+            "o1"
+          ]
+        },
+        {
+          "evidence_id": "e-fresh",
+          "integrity": "ok",
+          "object_refs": [
+            "o9"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "blocked_stale_evidence",
+          "c2": "safely_independent"
+        },
+        "reviewable_ids": [
+          "c2"
+        ],
+        "whole_surface": []
+      },
+      "family": 8,
+      "id": "FN-F08"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e1"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "e2"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Intact shared provenance does not block either candidate",
+      "evidence": [
+        {
+          "bundle_id": "bundle-intact",
+          "evidence_id": "e1",
+          "integrity": "ok",
+          "object_refs": [
+            "o1"
+          ]
+        },
+        {
+          "bundle_id": "bundle-intact",
+          "evidence_id": "e2",
+          "integrity": "ok",
+          "object_refs": [
+            "o2"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "reviewable",
+          "c2": "reviewable"
+        },
+        "reviewable_ids": [
+          "c1",
+          "c2"
+        ],
+        "whole_surface": []
+      },
+      "family": 9,
+      "id": "FN-F09"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "conflict": true,
+          "evidence_refs": [
+            "e1",
+            "e2"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Conflict between two otherwise valid observations stays inconclusive",
+      "evidence": [
+        {
+          "evidence_id": "e1",
+          "integrity": "ok",
+          "object_refs": [
+            "o1"
+          ]
+        },
+        {
+          "evidence_id": "e2",
+          "integrity": "ok",
+          "object_refs": [
+            "o1"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "inconclusive"
+        },
+        "reviewable_ids": [],
+        "whole_surface": []
+      },
+      "family": 10,
+      "id": "FN-F10"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e1"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "e2"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Transitive dependency through a third artifact blocks only the dependent candidate",
+      "evidence": [
+        {
+          "depends_on": [
+            "e3"
+          ],
+          "evidence_id": "e1",
+          "integrity": "ok",
+          "object_refs": [
+            "o1"
+          ]
+        },
+        {
+          "evidence_id": "e2",
+          "integrity": "ok",
+          "object_refs": [
+            "o2"
+          ]
+        },
+        {
+          "evidence_id": "e3",
+          "integrity": "invalid",
+          "object_refs": [
+            "o9"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "blocked_invalid_evidence",
+          "c2": "safely_independent"
+        },
+        "reviewable_ids": [
+          "c2"
+        ],
+        "whole_surface": []
+      },
+      "family": 11,
+      "id": "FN-F11"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c-blocked",
+          "evidence_refs": [
+            "e-bad"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c-next",
+          "evidence_refs": [
+            "e-next"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Adjacent valid candidate next to a blocked one stays independent",
+      "evidence": [
+        {
+          "evidence_id": "e-bad",
+          "integrity": "invalid",
+          "object_refs": [
+            "left-a"
+          ]
+        },
+        {
+          "evidence_id": "e-next",
+          "integrity": "ok",
+          "object_refs": [
+            "right-b"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c-blocked": "blocked_invalid_evidence",
+          "c-next": "safely_independent"
+        },
+        "reviewable_ids": [
+          "c-next"
+        ],
+        "whole_surface": []
+      },
+      "family": 12,
+      "id": "FN-F12"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e1"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "e2"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": true,
+      "description": "Import order does not change the overlay",
+      "evidence": [
+        {
+          "evidence_id": "e1",
+          "integrity": "ok",
+          "object_refs": [
+            "o1"
+          ]
+        },
+        {
+          "evidence_id": "e2",
+          "integrity": "invalid",
+          "object_refs": [
+            "o8"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "safely_independent",
+          "c2": "blocked_invalid_evidence"
+        },
+        "reviewable_ids": [
+          "c1"
+        ],
+        "whole_surface": []
+      },
+      "family": 13,
+      "id": "FN-F13"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e1"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "s1"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "e1"
+          ],
+          "original_state": "requires_validation",
+          "semantic_duplicate_of": "c1",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Semantic duplicate is not a second reviewable candidate",
+      "evidence": [
+        {
+          "evidence_id": "e1",
+          "integrity": "ok",
+          "object_refs": [
+            "o1",
+            "o2"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "reviewable",
+          "c2": "inconclusive"
+        },
+        "reviewable_ids": [
+          "c1"
+        ],
+        "whole_surface": []
+      },
+      "family": 14,
+      "id": "FN-F14"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "e1"
+          ],
+          "missing_mandatory_controls": [
+            "actor_response"
+          ],
+          "original_state": "candidate",
+          "surface_id": "s1"
+        }
+      ],
+      "check_order": false,
+      "description": "Incomplete missing-response case is not reviewable and is not confirmed",
+      "evidence": [
+        {
+          "evidence_id": "e1",
+          "integrity": "ok",
+          "object_refs": [
+            "o1"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "blocked_missing_control"
+        },
+        "reviewable_ids": [],
+        "whole_surface": []
+      },
+      "family": 15,
+      "id": "FN-F15"
+    }
+  ],
+  "corpus_version": "idor-fn-recovery-1.0",
+  "finding_confirmed": false,
+  "label_source": "authored from the blocker-dependency-graph spec before the first FINAL run",
+  "schema_version": "bbtk-idor-fn-recovery-lab/1",
+  "split": "final"
+}

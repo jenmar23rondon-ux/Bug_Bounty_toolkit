@@ -308,7 +308,7 @@ def run_e2e_research(
     classifications: list[dict[str, Any]] = []
     idor_rows: list[dict[str, Any]] = []
 
-    graph = build_object_graph(program, list(captures), key, authorized=authorized)
+    graph = build_object_graph(program, list(captures), key, authorized=authorized, independent_windows=True)
     stages["capture_import"] = "ok"
     stages["object_discovery"] = "ok"
     session.stages_completed.extend(["capture_import", "object_discovery"])
