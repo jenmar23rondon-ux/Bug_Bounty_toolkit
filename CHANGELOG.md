@@ -1,5 +1,19 @@
 ## [Unreleased]
 
+### Disclosure context quality v2
+
+- New offline `analysis/disclosure_context.py` (`disclosure-context-quality-v2`) and
+  `bbtk analyze disclosure-context`. Every candidate carries an exposure model
+  (shape, origin, observed and intended audience, auth state, integrity,
+  completeness, confidence basis, human verification). A candidate is reviewable
+  only when evidence shows the data should not be available to that audience;
+  otherwise the result is inconclusive. `finding_confirmed` stays false.
+  Reuses information-disclosure scanning and disclosure↔access correlation;
+  does not add a second IDOR engine. Lab `labs/disclosure_context_v2_eval/`
+  (DEV + frozen FINAL + frozen STRESS) plus a re-score of the prior 18 FINAL
+  disclosure cases with labels unchanged. Version stays 0.2.2.
+
+
 ### Local AI evidence assistant
 
 - New `analysis/local_ai_evidence_assistant.py` and `bbtk ai evidence-assist`:
