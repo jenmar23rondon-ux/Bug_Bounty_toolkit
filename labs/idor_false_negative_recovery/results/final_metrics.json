@@ -1,0 +1,271 @@
+{
+  "cases": [
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 1,
+      "got": {
+        "c1": "blocked_invalid_evidence",
+        "c2": "blocked_invalid_evidence"
+      },
+      "id": "FN-F01",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 2,
+      "got": {
+        "c-bad": "blocked_invalid_evidence",
+        "c-good": "reviewable"
+      },
+      "id": "FN-F02",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c-good"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 3,
+      "got": {
+        "c1": "safely_independent",
+        "c2": "blocked_invalid_evidence"
+      },
+      "id": "FN-F03",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c1"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 4,
+      "got": {
+        "c-orders": "blocked_invalid_evidence",
+        "c-users": "safely_independent"
+      },
+      "id": "FN-F04",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c-users"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 5,
+      "got": {
+        "c1": "reviewable"
+      },
+      "id": "FN-F05",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c1"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 6,
+      "got": {
+        "c1": "blocked_missing_control"
+      },
+      "id": "FN-F06",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 7,
+      "got": {
+        "c1": "blocked_invalid_evidence"
+      },
+      "id": "FN-F07",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 8,
+      "got": {
+        "c1": "blocked_stale_evidence",
+        "c2": "safely_independent"
+      },
+      "id": "FN-F08",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c2"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 9,
+      "got": {
+        "c1": "reviewable",
+        "c2": "reviewable"
+      },
+      "id": "FN-F09",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c1",
+        "c2"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 10,
+      "got": {
+        "c1": "inconclusive"
+      },
+      "id": "FN-F10",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 11,
+      "got": {
+        "c1": "blocked_invalid_evidence",
+        "c2": "safely_independent"
+      },
+      "id": "FN-F11",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c2"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 12,
+      "got": {
+        "c-blocked": "blocked_invalid_evidence",
+        "c-next": "safely_independent"
+      },
+      "id": "FN-F12",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c-next"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 13,
+      "got": {
+        "c1": "safely_independent",
+        "c2": "blocked_invalid_evidence"
+      },
+      "id": "FN-F13",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c1"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 14,
+      "got": {
+        "c1": "reviewable",
+        "c2": "inconclusive"
+      },
+      "id": "FN-F14",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [
+        "c1"
+      ],
+      "states_ok": true,
+      "whole_surface_ok": true
+    },
+    {
+      "confirmed": 0,
+      "correct": true,
+      "family": 15,
+      "got": {
+        "c1": "blocked_missing_control"
+      },
+      "id": "FN-F15",
+      "manual": 0,
+      "order_ok": true,
+      "reviewable_got": [],
+      "states_ok": true,
+      "whole_surface_ok": true
+    }
+  ],
+  "corpus_version": "idor-fn-recovery-1.0",
+  "finding_confirmed": false,
+  "manifest_sha256": "25d7a1c79fabbbe9266346c8f173d4925305fd71eb4236286d67bf28eb1a3590",
+  "overall": {
+    "abstention_rate": 1.0,
+    "auto_confirmations": 0,
+    "cases": 15,
+    "correct": 15,
+    "correct_blockers": 15,
+    "correct_blockers_rate": 1.0,
+    "eligible_recall": 1.0,
+    "external_requests": 0,
+    "false_reviewable_count": 0,
+    "finding_confirmed": false,
+    "fn_count": 0,
+    "integrity_propagation_precision": 1.0,
+    "invalid_evidence_detection_rate": 1.0,
+    "ledger_modified": false,
+    "manual_effort_proxy": 0,
+    "network_attempts": 0,
+    "outcome_accuracy": 1.0,
+    "provenance_completeness": 1.0,
+    "secret_leaks": 0
+  },
+  "schema_version": "bbtk-idor-fn-recovery-results/1",
+  "split": "final"
+}

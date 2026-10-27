@@ -1,0 +1,279 @@
+{
+  "cases": [
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "ed1"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "ed2"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        }
+      ],
+      "check_order": false,
+      "description": "DEV: disjoint sibling of a tampered artifact",
+      "evidence": [
+        {
+          "evidence_id": "ed1",
+          "integrity": "ok",
+          "object_refs": [
+            "da",
+            "db"
+          ]
+        },
+        {
+          "evidence_id": "ed2",
+          "integrity": "invalid",
+          "object_refs": [
+            "dx"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "safely_independent",
+          "c2": "blocked_invalid_evidence"
+        },
+        "reviewable_ids": [
+          "c1"
+        ],
+        "whole_surface": []
+      },
+      "family": 3,
+      "id": "FN-D01"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "ed1"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "ed2"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        }
+      ],
+      "check_order": false,
+      "description": "DEV: unknown object identity on a bad artifact is not proven independence",
+      "evidence": [
+        {
+          "evidence_id": "ed1",
+          "integrity": "ok",
+          "object_refs": [
+            "da"
+          ]
+        },
+        {
+          "evidence_id": "ed2",
+          "integrity": "invalid",
+          "object_refs": null
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "requires_manual_independence_review",
+          "c2": "blocked_invalid_evidence"
+        },
+        "reviewable_ids": [],
+        "whole_surface": [
+          "sd"
+        ]
+      },
+      "family": 0,
+      "id": "FN-D02"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "ed1"
+          ],
+          "missing_mandatory_controls": [
+            "owner_response"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        }
+      ],
+      "check_order": false,
+      "description": "DEV: missing control",
+      "evidence": [
+        {
+          "evidence_id": "ed1",
+          "integrity": "ok",
+          "object_refs": [
+            "da"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "blocked_missing_control"
+        },
+        "reviewable_ids": [],
+        "whole_surface": []
+      },
+      "family": 6,
+      "id": "FN-D03"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "conflict": true,
+          "evidence_refs": [
+            "ed1",
+            "ed2"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        }
+      ],
+      "check_order": true,
+      "description": "DEV: conflict stays inconclusive",
+      "evidence": [
+        {
+          "evidence_id": "ed1",
+          "integrity": "ok",
+          "object_refs": [
+            "da"
+          ]
+        },
+        {
+          "evidence_id": "ed2",
+          "integrity": "ok",
+          "object_refs": [
+            "db"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "inconclusive"
+        },
+        "reviewable_ids": [],
+        "whole_surface": []
+      },
+      "family": 10,
+      "id": "FN-D04"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c-a",
+          "evidence_refs": [
+            "ea"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        },
+        {
+          "candidate_id": "c-b",
+          "evidence_refs": [
+            "eb"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        }
+      ],
+      "check_order": false,
+      "description": "DEV: namespace split",
+      "evidence": [
+        {
+          "evidence_id": "ea",
+          "integrity": "invalid",
+          "namespace": "ns-a",
+          "object_refs": [
+            "9"
+          ]
+        },
+        {
+          "evidence_id": "eb",
+          "integrity": "ok",
+          "namespace": "ns-b",
+          "object_refs": [
+            "9"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c-a": "blocked_invalid_evidence",
+          "c-b": "safely_independent"
+        },
+        "reviewable_ids": [
+          "c-b"
+        ],
+        "whole_surface": []
+      },
+      "family": 4,
+      "id": "FN-D05"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "c1",
+          "evidence_refs": [
+            "esh"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        },
+        {
+          "candidate_id": "c2",
+          "evidence_refs": [
+            "esh"
+          ],
+          "original_state": "requires_validation",
+          "surface_id": "sd"
+        }
+      ],
+      "check_order": false,
+      "description": "DEV: shared bad artifact is a whole-surface block",
+      "evidence": [
+        {
+          "evidence_id": "esh",
+          "integrity": "invalid",
+          "object_refs": [
+            "same"
+          ]
+        }
+      ],
+      "expected": {
+        "by_candidate": {
+          "c1": "blocked_invalid_evidence",
+          "c2": "blocked_invalid_evidence"
+        },
+        "reviewable_ids": [],
+        "whole_surface": [
+          "sd"
+        ]
+      },
+      "family": 1,
+      "id": "FN-D06"
+    }
+  ],
+  "corpus_version": "idor-fn-recovery-1.0",
+  "finding_confirmed": false,
+  "label_source": "authored from the blocker-dependency-graph spec before the first FINAL run",
+  "schema_version": "bbtk-idor-fn-recovery-lab/1",
+  "split": "dev"
+}

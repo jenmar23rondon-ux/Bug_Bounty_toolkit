@@ -32,6 +32,11 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from ..core.records import ProgramPaths
+from .blocker_dependency_graph import (
+    build_blocker_dependency_graph,
+    ledger_candidate_records,
+    ledger_evidence_records,
+)
 from .evidence_ledger import MAX_LEDGER_BYTES, effective_eligibility, load_ledger, validate_ledger
 from .handoff_case_eligibility import (
     CODE_NEEDS_SECOND_SESSION,
@@ -448,19 +453,34 @@ _PROPAGATED: dict[str, tuple[str, str]] = {
 }
 
 
+def _blocker_evidence_ids(blockers: list[str]) -> list[str]:
+    """Ledger evidence ids named by overlay blocker labels. Labels themselves are not refs."""
+    refs: list[str] = []
+    for item in blockers:
+        if ":" not in item:
+            continue
+        prefix, ref = item.split(":", 1)
+        if prefix in {"invalid", "stale", "shared_object", "ambiguous_objects"} and ref:
+            refs.append(ref)
+    return sorted(set(refs))
+
+
 def _propagate_integrity_blocks(
     candidates: list[dict[str, Any]],
     results: list[dict[str, Any]],
     facts_by_ref: Mapping[str, dict[str, Any]],
+    overlay: Mapping[str, Any],
+    known_ids: set[str] | None = None,
 ) -> None:
-    """Block sibling candidates built from the same captured objects as a blocked one.
+    """Apply candidate-scoped blocks. Ledger history is not modified.
 
-    An unresolved integrity blocker, contradicting negative control or duplicate on one
-    candidate applies to siblings on the same surface that share an owner/actor object with
-    it (or, when its objects can no longer be read, the whole surface): they cannot be
-    reviewed independently of that capture. Ledger history is not modified.
+    Contradiction and duplicate blockers still propagate only across verifiably shared
+    objects. Integrity blockers follow the dependency graph: a sibling stays
+    ``open`` when its registered objects are disjoint and it does not depend on the
+    bad artifact. Unknown object identity stays fail-closed (whole-surface).
     """
     by_id = {str(c.get("candidate_id")): c for c in candidates}
+    overlay_by = {str(row.get("candidate_id")): row for row in overlay.get("candidates") or []}
 
     def objects(cand: Mapping[str, Any]) -> set[str]:
         return {
@@ -471,13 +491,11 @@ def _propagate_integrity_blocks(
 
     tainted: list[tuple[str, str, set[str], str]] = []
     for res in results:
-        if res.get("status") in _PROPAGATED:
+        if res.get("status") in {"stop_recommended", "duplicate"}:
             cand = by_id.get(str(res.get("candidate_id"))) or {}
             tainted.append(
                 (str(res.get("candidate_id")), str(cand.get("surface_id")), objects(cand), str(res["status"]))
             )
-    if not tainted:
-        return
     for res in results:
         if res.get("status") not in {"open", "ready_for_manual_review"}:
             continue
@@ -503,6 +521,35 @@ def _propagate_integrity_blocks(
                 *[st for st in res.get("steps") or [] if st.get("step_type") != "request_human_review"],
             ]
             break
+        if res.get("status") not in {"open", "ready_for_manual_review"}:
+            continue
+        row = overlay_by.get(cid) or {}
+        state = str(row.get("effective_state") or "")
+        if state not in {
+            "blocked_invalid_evidence",
+            "blocked_stale_evidence",
+            "requires_manual_independence_review",
+        }:
+            continue
+        if state == "blocked_stale_evidence":
+            gap_kind, step_type = "stale_evidence", "review_stale_evidence"
+        else:
+            gap_kind, step_type = "invalid_evidence", "review_shared_capture_integrity"
+        res["status"] = "integrity_blocked"
+        cited = _blocker_evidence_ids(list(row.get("blockers") or []))
+        if known_ids is not None:
+            cited = [ref for ref in cited if ref in known_ids]
+        res.setdefault("gaps", []).append(
+            {
+                "kind": gap_kind,
+                "detail": str(row.get("decision_reason") or "blocked by the dependency graph"),
+                "evidence_refs": cited,
+            }
+        )
+        res["steps"] = [
+            _step(cid, step_type, f"dependency:{cid}", cited),
+            *[st for st in res.get("steps") or [] if st.get("step_type") != "request_human_review"],
+        ]
 
 
 def build_plan(paths: ProgramPaths, *, ledger_file: Path | None = None, now: str | None = None) -> dict[str, Any]:
@@ -601,7 +648,11 @@ def build_plan(paths: ProgramPaths, *, ledger_file: Path | None = None, now: str
                 evidence_rows,
             )
         )
-    _propagate_integrity_blocks(candidates, results, facts_by_ref)
+    overlay = build_blocker_dependency_graph(
+        ledger_candidate_records(candidates),
+        ledger_evidence_records(evidence_rows, evidence_state, facts_by_ref, now=now),
+    )
+    _propagate_integrity_blocks(candidates, results, facts_by_ref, overlay, set(evidence_rows))
     # Global plan: dedupe equivalent steps across related candidates, rank deterministically.
     plan: dict[str, dict[str, Any]] = {}
     for res in results:
@@ -632,6 +683,7 @@ def build_plan(paths: ProgramPaths, *, ledger_file: Path | None = None, now: str
         "ledger_issue_count": len(issues),
         "candidates": results,
         "effective_eligibility": effective,
+        "blocker_dependency_graph": overlay,
         "plan": ranked,
     }
 
