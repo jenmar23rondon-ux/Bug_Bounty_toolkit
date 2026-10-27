@@ -171,6 +171,10 @@ files = [
     "bugbounty_toolkit/fuzzing/context_planner.py",
     "bugbounty_toolkit/fuzzing/capture_adapter.py",
     "bugbounty_toolkit/context_fuzz_lab_server.py",
+    "bugbounty_toolkit/analysis/offline_authorization_audit.py",
+    "labs/offline_authz_code_eval/evaluate.py",
+    "labs/offline_authz_code_eval/run.py",
+    "tests/test_offline_authorization_audit.py",
 ]
 
 [tool.coverage.run]
