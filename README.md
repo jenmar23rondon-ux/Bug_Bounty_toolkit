@@ -25,6 +25,8 @@ bbtk dashboard my-program
 
 It can import sanitized evidence, browse investigations, search the evidence graph, inspect hypotheses/controls, and open or download reports. It does not expose active checks, Ollama calls, or command execution.
 
+For opt-in, **loopback-only DOM XSS experiments** (query/hash without server reflection), see [DOM XSS local evaluation](docs/dom-xss-local.md).
+
 Run the deterministic local IDOR/BOLA workflow end to end with one command. It starts an isolated loopback service, imports the checked-in fake Burp captures, runs the bounded private and public controls, and verifies JSON/HTML reports. Preview the exact steps without starting the app or sending requests with `--dry-run`:
 
 ```bash

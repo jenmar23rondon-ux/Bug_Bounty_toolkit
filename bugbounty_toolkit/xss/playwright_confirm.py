@@ -169,7 +169,13 @@ class PlaywrightExecutionChecker:
                 ) from exc
             raise RuntimeError(f"Could not start headless Playwright: {type(exc).__name__}") from exc
 
-    def confirm(self, url: str, marker: str, headers: dict[str, str] | None = None) -> dict[str, object]:
+    def confirm(
+        self, url: str, marker: str, headers: dict[str, str] | None = None,
+        *, local_only: bool = False,
+    ) -> dict[str, object]:
+        if local_only:
+            from .dom_local import require_literal_loopback
+            require_literal_loopback(url.split('#', 1)[0])
         self.scope.require(url)
         if self._browser is None:
             self._start()
@@ -179,7 +185,10 @@ class PlaywrightExecutionChecker:
             for key, value in (headers or {}).items()
             if key.lower() not in {"host", "content-length", "transfer-encoding"}
         }
-        context = self._browser.new_context(extra_http_headers=browser_headers)
+        context = self._browser.new_context(
+            extra_http_headers=browser_headers,
+            service_workers='block' if local_only else 'allow',
+        )
         expected_origin = _origin(url)
         observed_sinks: set[str] = set()
         request_budget = _BrowserRequestBudget(
@@ -187,7 +196,7 @@ class PlaywrightExecutionChecker:
             expected_origin,
             self.execution_budget,
             self.rate_limiter,
-            url,
+            url.split('#', 1)[0],
             observed_sinks,
         )
         init_script = """(() => {
@@ -208,6 +217,24 @@ class PlaywrightExecutionChecker:
                   }
                 });
               }
+              const outer = Object.getOwnPropertyDescriptor(Element.prototype, 'outerHTML');
+              if (outer && outer.set && outer.configurable) {
+                Object.defineProperty(Element.prototype, 'outerHTML', {
+                  configurable: outer.configurable, enumerable: outer.enumerable,
+                  get: outer.get,
+                  set(value) {
+                    if (String(value).includes(marker)) record('outerHTML');
+                    return outer.set.call(this, value);
+                  }
+                });
+              }
+              const insertAdjacent = Element.prototype.insertAdjacentHTML;
+              if (typeof insertAdjacent === 'function') {
+                Element.prototype.insertAdjacentHTML = function(position, value) {
+                  if (String(value).includes(marker)) record('insertAdjacentHTML');
+                  return insertAdjacent.call(this, position, value);
+                };
+              }
               for (const name of ['write', 'writeln']) {
                 const original = Document.prototype[name];
                 Document.prototype[name] = function(...values) {
@@ -218,6 +245,9 @@ class PlaywrightExecutionChecker:
             })();""".replace("__BBTK_MARKER__", json.dumps(marker))
         context.add_init_script(init_script)
         context.route("**/*", request_budget.handle)
+        if local_only:
+            # Prevent websocket traffic from bypassing HTTP routing.
+            context.route_web_socket("**/*", lambda websocket: websocket.close())
         page = context.new_page()
         page.on("requestfinished", lambda request: request_budget.finish(request, True))
         page.on("requestfailed", lambda request: request_budget.finish(request, False))
@@ -259,7 +289,22 @@ class PlaywrightExecutionChecker:
             }""",
                 marker,
             )
+            if local_only:
+                # Give bounded event-driven DOM updates a chance to run.
+                try:
+                    page.wait_for_function(
+                        'marker => window.__bbtk_xss_marker === marker',
+                        arg=marker, timeout=min(timeout_ms, 300),
+                    )
+                except Exception as exc:
+                    if type(exc).__name__ != 'TimeoutError':
+                        raise
             marker_observed = page.evaluate("marker => window.__bbtk_xss_marker === marker", marker)
+            source_marker_present = (
+                bool(page.evaluate(
+                    'marker => location.search.includes(marker) || location.hash.includes(marker)', marker
+                )) if local_only else False
+            )
             observed_sinks.update(page.evaluate("() => window.__bbtk_dom_sinks || []"))
             if request_budget.error is not None:
                 raise request_budget.error
@@ -269,6 +314,7 @@ class PlaywrightExecutionChecker:
             return {
                 "classification": classify_execution(True, bool(marker_observed), alert_observed),
                 "marker_observed": bool(marker_observed),
+                "source_marker_present": source_marker_present,
                 "alert_observed": alert_observed,
                 "dom_sinks": sorted(observed_sinks),
                 "dialogs": dialogs,

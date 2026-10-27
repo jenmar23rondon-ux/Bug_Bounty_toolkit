@@ -905,15 +905,19 @@ def cmd_xss(args: argparse.Namespace) -> None:
         headers,
         args.html_parser,
         args.confirm_exec,
+        args.dom_local,
     )
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
     routes, parameters = tester.validate(options)
-    variants = 11 if options.confirm_exec else 4
+    variants = 4 if options.dom_local else 11 if options.confirm_exec else 4
     total = len(routes) * len(parameters) * variants
     if args.dry_run:
         print(
-            f"[+] {len(routes)} routes, {len(parameters)} parameters, up to {min(total, options.max_tests)} HTTP requests. Browser confirmation {'enabled' if options.confirm_exec else 'disabled'}. No requests sent."
+            f"[+] {len(routes)} routes, {len(parameters)} parameters, up to {min(total, options.max_tests)} "
+            + ("local browser probes (HTTP subrequests governed by --run-max-*)." if options.dom_local
+               else f"HTTP requests. Browser confirmation {'enabled' if options.confirm_exec else 'disabled'}.")
+            + " No requests sent."
         )
         return
     path, results = tester.run(options, store.paths.evidence_dir / "xss")
@@ -923,7 +927,10 @@ def cmd_xss(args: argparse.Namespace) -> None:
     not_executed = sum(item["classification"] == "reflected_not_executed" for item in results)
     store.add_run("xss", str(args.routes), ["xss", str(args.routes), str(args.parameters)], 1 if failures else 0, path)
     summary = f"{len(results)} tests, {possible} possible reflections, {failures} errors"
-    if options.confirm_exec:
+    if options.dom_local:
+        observed = sum(item['classification'] == 'execution_observed' for item in results)
+        summary += f", {observed} DOM executions observed in a local fixture (not vulnerability verdicts)"
+    elif options.confirm_exec:
         summary += f", {confirmed} confirmed executions, {not_executed} reflected but not executed"
     else:
         summary += ". No XSS automatically confirmed"
@@ -3619,6 +3626,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--confirm-exec",
         action="store_true",
         help="Opt in to headless Playwright confirmation for possible reflected payloads",
+    )
+    xss.add_argument(
+        "--dom-local", action="store_true",
+        help="Opt-in query/hash DOM checks on literal loopback IP fixtures only",
     )
     xss.add_argument("--dry-run", action="store_true")
     add_run_budget_arguments(xss)
