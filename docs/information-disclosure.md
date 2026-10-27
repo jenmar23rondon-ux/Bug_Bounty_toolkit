@@ -63,3 +63,7 @@ holding validation text, values reflected from the request.
 - Body text, including prompt-injection attempts, is inert data.
 
 Lab: `labs/information_disclosure_eval/` (DEV + frozen FINAL, see its README).
+
+Context quality v2 (`analysis/disclosure_context.py`) adds audience, provenance and
+intended-visibility dimensions on top of these indicators. It does not change v1
+states or the frozen FINAL labels. See `docs/disclosure-context-quality-v2.md`.
