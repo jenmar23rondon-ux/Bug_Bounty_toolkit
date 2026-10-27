@@ -563,9 +563,7 @@ def _build(
     imports: dict[str, dict[str, Any]] = {}
     total_bytes = 0
     for path in inputs:
-        data, captures, import_summary = _read_sources(
-            path, base_url, strict, allow_truncate, independent_windows
-        )
+        data, captures, import_summary = _read_sources(path, base_url, strict, allow_truncate, independent_windows)
         total_bytes += len(data)
         if total_bytes > MAX_TOTAL_BYTES:
             raise ValueError("Capture set exceeds total byte limit.")

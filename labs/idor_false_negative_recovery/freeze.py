@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
 
 from labs.idor_false_negative_recovery.corpus import document  # noqa: E402
 
+
 def dumps(payload: dict) -> str:
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 

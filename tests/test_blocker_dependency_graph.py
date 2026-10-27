@@ -168,9 +168,7 @@ class PlannerOverlayTests(unittest.TestCase):
         # Drop the registration snapshot and rebuild the overlay the planner stored by
         # tampering the ledger copy in memory is forbidden; instead confirm the snapshot
         # is what made independence provable.
-        prov = json.loads(
-            (self.paths.program_dir / "ledger" / "evidence-ledger.json").read_text(encoding="utf-8")
-        )
+        prov = json.loads((self.paths.program_dir / "ledger" / "evidence-ledger.json").read_text(encoding="utf-8"))
         e2 = next(row for row in prov["evidence"] if row["evidence_id"] == "e2")
         self.assertIn("registered_object_refs", e2["provenance"])
         self.assertEqual(plan["blocker_dependency_graph"]["ledger_modified"], False)

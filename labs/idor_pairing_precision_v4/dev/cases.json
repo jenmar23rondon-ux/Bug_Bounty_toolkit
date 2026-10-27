@@ -1,0 +1,288 @@
+{
+  "cases": [
+    {
+      "actor": {
+        "accounts_attested": false,
+        "evidence_ref": "ck-actor",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/42",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": 42, \"marker\": \"synth-order-42\", \"owner_label\": \"actor\"}}",
+        "response_present": true,
+        "session_ref": "sess-b",
+        "status_code": 200
+      },
+      "alias_rules": null,
+      "as_of": null,
+      "context": [],
+      "continuity": null,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-cross-kind",
+      "owner": {
+        "accounts_attested": false,
+        "evidence_ref": "ck-owner",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/users/42",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"user\": {\"id\": 42, \"marker\": \"synth-user-42\", \"owner_label\": \"owner\"}}",
+        "response_present": true,
+        "session_ref": "sess-a",
+        "status_code": 200
+      },
+      "tags": [
+        "hard_negative",
+        "cross_kind"
+      ]
+    },
+    {
+      "actor": {
+        "account_ref": "SYNTH_acct_actor",
+        "accounts_attested": true,
+        "evidence_ref": "js-actor",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/7",
+        "program": "synth-program",
+        "response_body": "{\"order\": {\"owner_label\": \"shared\", \"marker\": \"synth-order-7\", \"id\": 7}, \"ok\": true}",
+        "response_present": true,
+        "session_ref": "sess-b",
+        "status_code": 200
+      },
+      "alias_rules": null,
+      "as_of": null,
+      "context": [],
+      "continuity": null,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "hn-json-equivalent",
+      "owner": {
+        "account_ref": "SYNTH_acct_owner",
+        "accounts_attested": true,
+        "evidence_ref": "js-owner",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/7",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": 7, \"marker\": \"synth-order-7\", \"owner_label\": \"shared\"}}",
+        "response_present": true,
+        "session_ref": "sess-a",
+        "status_code": 200
+      },
+      "tags": [
+        "hard_negative",
+        "json_equivalence",
+        "positive"
+      ]
+    },
+    {
+      "actor": {
+        "account_ref": "SYNTH_acct_actor",
+        "accounts_attested": true,
+        "evidence_ref": "al-actor",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/7",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": 7, \"marker\": \"synth-order-7\", \"owner_label\": \"actor\"}}",
+        "response_present": true,
+        "session_ref": "sess-b",
+        "status_code": 200
+      },
+      "alias_rules": {
+        "strip_prefixes": [
+          "api",
+          "v1"
+        ]
+      },
+      "as_of": null,
+      "context": [],
+      "continuity": null,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "hn-route-alias",
+      "owner": {
+        "account_ref": "SYNTH_acct_owner",
+        "accounts_attested": true,
+        "evidence_ref": "al-owner",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/api/v1/orders/7",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": 7, \"marker\": \"synth-order-7\", \"owner_label\": \"owner\"}}",
+        "response_present": true,
+        "session_ref": "sess-a",
+        "status_code": 200
+      },
+      "tags": [
+        "hard_negative",
+        "route_alias",
+        "positive"
+      ]
+    },
+    {
+      "actor": {
+        "account_ref": "SYNTH_acct_same",
+        "accounts_attested": true,
+        "evidence_ref": "sa-actor",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/8",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": 8, \"marker\": \"synth-order-8\", \"owner_label\": \"actor\"}}",
+        "response_present": true,
+        "session_ref": "sess-b",
+        "status_code": 200
+      },
+      "alias_rules": null,
+      "as_of": null,
+      "context": [],
+      "continuity": null,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-same-account",
+      "owner": {
+        "account_ref": "SYNTH_acct_same",
+        "accounts_attested": true,
+        "evidence_ref": "sa-owner",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/7",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": 7, \"marker\": \"synth-order-7\", \"owner_label\": \"owner\"}}",
+        "response_present": true,
+        "session_ref": "sess-a",
+        "status_code": 200
+      },
+      "tags": [
+        "hard_negative",
+        "same_account"
+      ]
+    },
+    {
+      "actor": {
+        "accounts_attested": false,
+        "evidence_ref": "sh-actor",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/documents/5",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"document\": {\"id\": 5, \"acl\": \"shared\", \"shared_with\": [\"a\", \"b\"]}}",
+        "response_present": true,
+        "session_ref": "sess-b",
+        "status_code": 200
+      },
+      "alias_rules": null,
+      "as_of": null,
+      "context": [],
+      "continuity": null,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-shared-acl",
+      "owner": {
+        "accounts_attested": false,
+        "evidence_ref": "sh-owner",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/documents/5",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"document\": {\"id\": 5, \"acl\": \"shared\", \"shared_with\": [\"a\", \"b\"]}}",
+        "response_present": true,
+        "session_ref": "sess-a",
+        "status_code": 200
+      },
+      "tags": [
+        "hard_negative",
+        "legitimate_shared"
+      ]
+    },
+    {
+      "actor": {
+        "accounts_attested": false,
+        "evidence_ref": "mr-actor",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/8",
+        "program": "synth-program",
+        "response_body": null,
+        "response_present": false,
+        "session_ref": "sess-b",
+        "status_code": null
+      },
+      "alias_rules": null,
+      "as_of": null,
+      "context": [],
+      "continuity": null,
+      "expect_compatibility": "insufficient_evidence",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-missing-response",
+      "owner": {
+        "accounts_attested": false,
+        "evidence_ref": "mr-owner",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/7",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": 7, \"marker\": \"synth-order-7\", \"owner_label\": \"owner\"}}",
+        "response_present": true,
+        "session_ref": "sess-a",
+        "status_code": 200
+      },
+      "tags": [
+        "hard_negative",
+        "missing_artifact"
+      ]
+    },
+    {
+      "actor": {
+        "account_ref": "SYNTH_acct_actor",
+        "accounts_attested": true,
+        "evidence_ref": "pd-actor",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/8",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": 8, \"marker\": \"synth-order-8\", \"owner_label\": \"actor\"}}",
+        "response_present": true,
+        "session_ref": "sess-b",
+        "status_code": 200
+      },
+      "alias_rules": null,
+      "as_of": null,
+      "context": [],
+      "continuity": null,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "pos-distinct-ids",
+      "owner": {
+        "account_ref": "SYNTH_acct_owner",
+        "accounts_attested": true,
+        "evidence_ref": "pd-owner",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8199",
+        "path": "/orders/7",
+        "program": "synth-program",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": 7, \"marker\": \"synth-order-7\", \"owner_label\": \"owner\"}}",
+        "response_present": true,
+        "session_ref": "sess-a",
+        "status_code": 200
+      },
+      "tags": [
+        "positive"
+      ]
+    }
+  ],
+  "finding_confirmed": false,
+  "label_policy": "Frozen synthetic expectations. Do not retune after MANIFEST.sha256 is committed.",
+  "schema": "bbtk.idor-pairing-precision-cases/1",
+  "split": "dev"
+}

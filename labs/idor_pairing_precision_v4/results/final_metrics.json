@@ -1,0 +1,1100 @@
+{
+  "external_requests": 0,
+  "finding_confirmed": false,
+  "irb_reeval": {
+    "after": {
+      "f1": 0.9643,
+      "fn": 0,
+      "forbidden_hits": 0,
+      "fp": 2,
+      "precision": 0.931,
+      "recall": 1.0,
+      "tp": 27
+    },
+    "benchmark": "independent-research-benchmark FINAL",
+    "finding_confirmed": false,
+    "labels_modified": false,
+    "reference": {
+      "pairing_precision": 0.65,
+      "pairing_recall": 0.963,
+      "source": "labs/independent_research_eval/results/final_metrics.json"
+    },
+    "reference_f1": 0.7761,
+    "scenarios": 45,
+    "secret_leaks": 0
+  },
+  "irb_rows": [
+    {
+      "family": "A",
+      "forbidden_pair_types": [],
+      "id": "A01",
+      "ideal_pair_types": [
+        "statement"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "statement"
+      ]
+    },
+    {
+      "family": "A",
+      "forbidden_pair_types": [],
+      "id": "A02",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "A",
+      "forbidden_pair_types": [
+        "catalog"
+      ],
+      "id": "A03",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "A",
+      "forbidden_pair_types": [
+        "document"
+      ],
+      "id": "A04",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "A",
+      "forbidden_pair_types": [],
+      "id": "A05",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "A",
+      "forbidden_pair_types": [],
+      "id": "A06",
+      "ideal_pair_types": [
+        "claim"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "claim"
+      ]
+    },
+    {
+      "family": "A",
+      "forbidden_pair_types": [],
+      "id": "A07",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "A",
+      "forbidden_pair_types": [],
+      "id": "A08",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "A",
+      "forbidden_pair_types": [],
+      "id": "A09",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "A",
+      "forbidden_pair_types": [],
+      "id": "A10",
+      "ideal_pair_types": [
+        "ticket"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "ticket"
+      ]
+    },
+    {
+      "family": "B",
+      "forbidden_pair_types": [],
+      "id": "B01",
+      "ideal_pair_types": [
+        "invoice"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "invoice"
+      ]
+    },
+    {
+      "family": "B",
+      "forbidden_pair_types": [],
+      "id": "B02",
+      "ideal_pair_types": [
+        "vault"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "vault"
+      ]
+    },
+    {
+      "family": "B",
+      "forbidden_pair_types": [
+        "team",
+        "project"
+      ],
+      "id": "B03",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "B",
+      "forbidden_pair_types": [
+        "post"
+      ],
+      "id": "B04",
+      "ideal_pair_types": [
+        "comment"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "comment"
+      ]
+    },
+    {
+      "family": "B",
+      "forbidden_pair_types": [
+        "member"
+      ],
+      "id": "B05",
+      "ideal_pair_types": [
+        "group"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "group"
+      ]
+    },
+    {
+      "family": "B",
+      "forbidden_pair_types": [],
+      "id": "B06",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "predicted": [
+        "wallet"
+      ]
+    },
+    {
+      "family": "B",
+      "forbidden_pair_types": [
+        "org"
+      ],
+      "id": "B07",
+      "ideal_pair_types": [
+        "report"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "report"
+      ]
+    },
+    {
+      "family": "B",
+      "forbidden_pair_types": [
+        "summary"
+      ],
+      "id": "B08",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 1,
+        "tp": 0
+      },
+      "predicted": [
+        "card"
+      ]
+    },
+    {
+      "family": "B",
+      "forbidden_pair_types": [],
+      "id": "B09",
+      "ideal_pair_types": [
+        "note"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "note"
+      ]
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C01",
+      "ideal_pair_types": [
+        "shipment"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "shipment"
+      ]
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C02",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C03",
+      "ideal_pair_types": [
+        "license"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "license"
+      ]
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C04",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C05",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C06",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C07",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C08",
+      "ideal_pair_types": [
+        "booking"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "booking"
+      ]
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C09",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C10",
+      "ideal_pair_types": [
+        "subscription"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "subscription"
+      ]
+    },
+    {
+      "family": "C",
+      "forbidden_pair_types": [],
+      "id": "C11",
+      "ideal_pair_types": [
+        "estimate"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "estimate"
+      ]
+    },
+    {
+      "family": "D",
+      "forbidden_pair_types": [],
+      "id": "D11",
+      "ideal_pair_types": [
+        "manifest"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "manifest"
+      ]
+    },
+    {
+      "family": "D",
+      "forbidden_pair_types": [],
+      "id": "D12",
+      "ideal_pair_types": [
+        "dossier"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "dossier"
+      ]
+    },
+    {
+      "family": "D",
+      "forbidden_pair_types": [],
+      "id": "D13",
+      "ideal_pair_types": [
+        "transcript"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "transcript"
+      ]
+    },
+    {
+      "family": "D",
+      "forbidden_pair_types": [],
+      "id": "D14",
+      "ideal_pair_types": [
+        "certificate"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "certificate"
+      ]
+    },
+    {
+      "family": "D",
+      "forbidden_pair_types": [],
+      "id": "D15",
+      "ideal_pair_types": [
+        "agreement"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "agreement"
+      ]
+    },
+    {
+      "family": "D",
+      "forbidden_pair_types": [],
+      "id": "D16",
+      "ideal_pair_types": [
+        "voucherbook"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "voucherbook"
+      ]
+    },
+    {
+      "family": "D",
+      "forbidden_pair_types": [],
+      "id": "D17",
+      "ideal_pair_types": [
+        "deposit"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "deposit"
+      ]
+    },
+    {
+      "family": "D",
+      "forbidden_pair_types": [],
+      "id": "D18",
+      "ideal_pair_types": [
+        "transfer"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "transfer"
+      ]
+    },
+    {
+      "family": "E",
+      "forbidden_pair_types": [],
+      "id": "E01",
+      "ideal_pair_types": [
+        "estimates2",
+        "quotation"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "estimates2"
+      ]
+    },
+    {
+      "family": "E",
+      "forbidden_pair_types": [
+        "locale"
+      ],
+      "id": "E02",
+      "ideal_pair_types": [
+        "appointment"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "appointment"
+      ]
+    },
+    {
+      "family": "E",
+      "forbidden_pair_types": [
+        "category"
+      ],
+      "id": "E03",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "E",
+      "forbidden_pair_types": [],
+      "id": "E04",
+      "ideal_pair_types": [
+        "user"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "user"
+      ]
+    },
+    {
+      "family": "E",
+      "forbidden_pair_types": [],
+      "id": "E05",
+      "ideal_pair_types": [],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "predicted": []
+    },
+    {
+      "family": "E",
+      "forbidden_pair_types": [],
+      "id": "E06",
+      "ideal_pair_types": [
+        "export"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "export"
+      ]
+    },
+    {
+      "family": "E",
+      "forbidden_pair_types": [],
+      "id": "E07",
+      "ideal_pair_types": [
+        "message"
+      ],
+      "pairing": {
+        "fn": 0,
+        "forbidden_hits": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "predicted": [
+        "message"
+      ]
+    }
+  ],
+  "lab": {
+    "after_compatibility_v4": {
+      "abstentions": 6,
+      "cases": 18,
+      "cross_kind_collisions": 0,
+      "cross_origin_contamination": 0,
+      "cross_program_contamination": 0,
+      "f1": 1.0,
+      "false_pairs": 0,
+      "finding_confirmed": false,
+      "fn": 0,
+      "fp": 0,
+      "missed_valid_pairs": 0,
+      "precision": 1.0,
+      "provenance_completeness": 1.0,
+      "recall": 1.0,
+      "tn": 14,
+      "tp": 4
+    },
+    "before_naive_id_match": {
+      "abstentions": 0,
+      "cases": 18,
+      "cross_kind_collisions": 1,
+      "cross_origin_contamination": 0,
+      "cross_program_contamination": 0,
+      "f1": 0.5,
+      "false_pairs": 5,
+      "finding_confirmed": false,
+      "fn": 1,
+      "fp": 5,
+      "missed_valid_pairs": 1,
+      "precision": 0.375,
+      "provenance_completeness": 1.0,
+      "recall": 0.75,
+      "tn": 9,
+      "tp": 3
+    },
+    "mismatches": []
+  },
+  "lab_rows": [
+    {
+      "actor_evidence_ref": "ck-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-cross-kind",
+      "identity_assessment": "different_kind",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "ck-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "cross_kind"
+      ]
+    },
+    {
+      "actor_evidence_ref": "js-actor",
+      "compatibility": "compatible",
+      "compatibility_match": true,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "hn-json-equivalent",
+      "identity_assessment": "same_resource",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "js-owner",
+      "pairing_decision": true,
+      "tags": [
+        "hard_negative",
+        "json_equivalence",
+        "positive"
+      ]
+    },
+    {
+      "actor_evidence_ref": "al-actor",
+      "compatibility": "compatible",
+      "compatibility_match": true,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "hn-route-alias",
+      "identity_assessment": "same_resource",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "al-owner",
+      "pairing_decision": true,
+      "tags": [
+        "hard_negative",
+        "route_alias",
+        "positive"
+      ]
+    },
+    {
+      "actor_evidence_ref": "sa-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-same-account",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "sa-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "same_account"
+      ]
+    },
+    {
+      "actor_evidence_ref": "sh-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-shared-acl",
+      "identity_assessment": "same_resource",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "sh-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "legitimate_shared"
+      ]
+    },
+    {
+      "actor_evidence_ref": "mr-actor",
+      "compatibility": "insufficient_evidence",
+      "compatibility_match": true,
+      "expect_compatibility": "insufficient_evidence",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-missing-response",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "mr-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "missing_artifact"
+      ]
+    },
+    {
+      "actor_evidence_ref": "dn-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-denial-200",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "dn-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "denial"
+      ]
+    },
+    {
+      "actor_evidence_ref": "ec-actor",
+      "compatibility": "insufficient_evidence",
+      "compatibility_match": true,
+      "expect_compatibility": "insufficient_evidence",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-id-echo",
+      "identity_assessment": "same_resource",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "ec-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "id_echo"
+      ]
+    },
+    {
+      "actor_evidence_ref": "tm-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-temporal",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "tm-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "temporal"
+      ]
+    },
+    {
+      "actor_evidence_ref": "ak-actor",
+      "compatibility": "insufficient_evidence",
+      "compatibility_match": true,
+      "expect_compatibility": "insufficient_evidence",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-ambiguous-kind",
+      "identity_assessment": "ambiguous",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "ak-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "ambiguous_kind"
+      ]
+    },
+    {
+      "actor_evidence_ref": "in-actor",
+      "compatibility": "conflicting_evidence",
+      "compatibility_match": true,
+      "expect_compatibility": "conflicting_evidence",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-integrity",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "in-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "integrity"
+      ]
+    },
+    {
+      "actor_evidence_ref": "mo-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-mixed-origin",
+      "identity_assessment": "different_namespace",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "mo-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "mixed_origin"
+      ]
+    },
+    {
+      "actor_evidence_ref": "mp-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-mixed-program",
+      "identity_assessment": "different_namespace",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "mp-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "cross_program"
+      ]
+    },
+    {
+      "actor_evidence_ref": "pa-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-partial-array",
+      "identity_assessment": "partial_array",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "pa-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "partial_array"
+      ]
+    },
+    {
+      "actor_evidence_ref": "ba-actor",
+      "compatibility": "insufficient_evidence",
+      "compatibility_match": true,
+      "expect_compatibility": "insufficient_evidence",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-batch-continuity",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "ba-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "continuity"
+      ]
+    },
+    {
+      "actor_evidence_ref": "co-actor",
+      "compatibility": "conflicting_evidence",
+      "compatibility_match": true,
+      "expect_compatibility": "conflicting_evidence",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-contradiction",
+      "identity_assessment": "same_resource",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "co-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "contradiction"
+      ]
+    },
+    {
+      "actor_evidence_ref": "pd-actor",
+      "compatibility": "compatible",
+      "compatibility_match": true,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "pos-distinct-ids",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "pd-owner",
+      "pairing_decision": true,
+      "tags": [
+        "positive"
+      ]
+    },
+    {
+      "actor_evidence_ref": "pc-actor",
+      "compatibility": "compatible",
+      "compatibility_match": true,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "pos-cross-read",
+      "identity_assessment": "same_resource",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "pc-owner",
+      "pairing_decision": true,
+      "tags": [
+        "positive"
+      ]
+    }
+  ],
+  "manifest_sha256": "3756b547c4d378b1eaa2761b515173f03d55317f409743ff8ce10d54024a881f",
+  "network_attempts": 0,
+  "peak_memory_kib": 851.1,
+  "schema": "bbtk.idor-pairing-precision-lab/1",
+  "secret_leaks": 0,
+  "split": "final",
+  "version": "0.2.2",
+  "wall_time_seconds": 3.1533
+}

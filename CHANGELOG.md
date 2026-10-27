@@ -15,6 +15,22 @@
   `estimates2` is an open-vocabulary kind when its alphabetic stem is not generic
   (E01). Version stays 0.2.2.
 
+### IDOR pairing precision v4
+
+- Additive `analysis/idor_pairing_precision.py` (`evaluate_compatibility`) decides
+  owner/actor compatibility as `compatible`, `incompatible`, `insufficient_evidence`,
+  or `conflicting_evidence`. Decisions cite evidence. There is no probability score
+  and `finding_confirmed` stays false. Legacy `propose_object_handoff` defaults are
+  unchanged. Lab `labs/idor_pairing_precision_v4/` (DEV + frozen FINAL) plus a
+  read-only IRB FINAL 45 re-eval. Version stays 0.2.2.
+
+### XSS real-browser validation
+
+- New disposable loopback lab `labs/xss_real_browser_eval/` (endpoints A–P) that
+  scores the existing reflected classifier and DOM evidence states in real
+  Chromium when it is installed. Mock CI path records live metrics as
+  `NOT_MEASURED` instead of inventing browser results. `finding_confirmed` stays
+  false. No detector retune. Version stays 0.2.2.
 
 ### Local AI evidence assistant
 

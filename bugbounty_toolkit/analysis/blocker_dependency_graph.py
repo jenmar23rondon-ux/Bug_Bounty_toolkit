@@ -160,16 +160,30 @@ def _annotate_one(
     if invalid or association["kind"] == "associated_invalid":
         state = "blocked_invalid_evidence"
         blockers = [f"invalid:{ref}" for ref in invalid]
-        blockers += [f"shared_object:{ref}" for ref in association.get("refs") or [] if association["kind"] == "associated_invalid"]
-        basis = association["basis"] if association["kind"] == "associated_invalid" and not invalid else "depends_on_invalid_artifact"
+        blockers += [
+            f"shared_object:{ref}"
+            for ref in association.get("refs") or []
+            if association["kind"] == "associated_invalid"
+        ]
+        basis = (
+            association["basis"]
+            if association["kind"] == "associated_invalid" and not invalid
+            else "depends_on_invalid_artifact"
+        )
         reason = "invalid, missing or out-of-program evidence is in this candidate's dependency closure"
         if association["kind"] == "associated_invalid" and not invalid:
             reason = "registered object identities intersect an invalid sibling artifact"
     elif stale or association["kind"] == "associated_stale":
         state = "blocked_stale_evidence"
         blockers = [f"stale:{ref}" for ref in stale]
-        blockers += [f"shared_object:{ref}" for ref in association.get("refs") or [] if association["kind"] == "associated_stale"]
-        basis = association["basis"] if association["kind"] == "associated_stale" and not stale else "depends_on_stale_artifact"
+        blockers += [
+            f"shared_object:{ref}" for ref in association.get("refs") or [] if association["kind"] == "associated_stale"
+        ]
+        basis = (
+            association["basis"]
+            if association["kind"] == "associated_stale" and not stale
+            else "depends_on_stale_artifact"
+        )
         reason = "stale evidence is in this candidate's dependency closure"
         if association["kind"] == "associated_stale" and not stale:
             reason = "registered object identities intersect a stale sibling artifact"
@@ -276,7 +290,11 @@ def _intact_shared_bundle(
     return False
 
 
-def _whole_surface_blocks(rows: Sequence[Mapping[str, Any]], candidates: Sequence[Mapping[str, Any]], evidence: Mapping[str, Mapping[str, Any]]) -> list[str]:
+def _whole_surface_blocks(
+    rows: Sequence[Mapping[str, Any]],
+    candidates: Sequence[Mapping[str, Any]],
+    evidence: Mapping[str, Mapping[str, Any]],
+) -> list[str]:
     by_surface: dict[str, list[Mapping[str, Any]]] = {}
     for row in rows:
         cand = next(c for c in candidates if str(c.get("candidate_id")) == row["candidate_id"])
@@ -292,12 +310,7 @@ def _whole_surface_blocks(rows: Sequence[Mapping[str, Any]], candidates: Sequenc
         for row in group:
             cand = next(c for c in candidates if str(c.get("candidate_id")) == row["candidate_id"])
             closures.append(set(closure(_as_str_list(cand.get("evidence_refs")), evidence)))
-        bad = {
-            ref
-            for refs in closures
-            for ref in refs
-            if _integrity(evidence.get(ref)) != "ok"
-        }
+        bad = {ref for refs in closures for ref in refs if _integrity(evidence.get(ref)) != "ok"}
         if bad and all(refs & bad for refs in closures):
             whole.append(surface)
     return sorted(surface for surface in whole if surface)
@@ -321,9 +334,7 @@ def build_blocker_dependency_graph(
                 "integrity": _integrity(row),
                 "object_refs_known": row.get("object_refs") is not None,
                 "depends_on": sorted(_as_str_list(row.get("depends_on"))),
-                "dependent_candidates": [
-                    item["candidate_id"] for item in annotated if eid in item["dependent_refs"]
-                ],
+                "dependent_candidates": [item["candidate_id"] for item in annotated if eid in item["dependent_refs"]],
             }
         )
     return {

@@ -63,12 +63,19 @@ def score_case(case: dict[str, Any], graph: dict[str, Any]) -> dict[str, Any]:
     order_ok = True
     if case.get("check_order"):
         other = _graph(case, reverse=True)
-        order_ok = other["candidates"] == graph["candidates"] and other["whole_surface_blocks"] == graph["whole_surface_blocks"]
-    confirmed = int(graph.get("finding_confirmed") is True) + sum(1 for row in graph["candidates"] if row.get("finding_confirmed"))
+        order_ok = (
+            other["candidates"] == graph["candidates"]
+            and other["whole_surface_blocks"] == graph["whole_surface_blocks"]
+        )
+    confirmed = int(graph.get("finding_confirmed") is True) + sum(
+        1 for row in graph["candidates"] if row.get("finding_confirmed")
+    )
     return {
         "id": case["id"],
         "family": case["family"],
-        "correct": bool(states_ok and whole_ok and order_ok and confirmed == 0 and graph.get("ledger_modified") is False),
+        "correct": bool(
+            states_ok and whole_ok and order_ok and confirmed == 0 and graph.get("ledger_modified") is False
+        ),
         "states_ok": states_ok,
         "whole_surface_ok": whole_ok,
         "order_ok": order_ok,

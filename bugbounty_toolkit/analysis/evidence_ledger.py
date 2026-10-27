@@ -601,7 +601,11 @@ def registration_snapshot(path: Path) -> dict[str, list[str]]:
     depends_raw = control.get("depends_on") if isinstance(control, dict) else None
     if not isinstance(depends_raw, list):
         depends_raw = data.get("depends_on")
-    depends = [item for item in depends_raw if isinstance(item, str) and _ID.fullmatch(item)] if isinstance(depends_raw, list) else []
+    depends = (
+        [item for item in depends_raw if isinstance(item, str) and _ID.fullmatch(item)]
+        if isinstance(depends_raw, list)
+        else []
+    )
     cleaned = sorted({item for item in objects if item and len(item) <= 200 and "\n" not in item})
     out: dict[str, list[str]] = {"registered_object_refs": cleaned[:100]}
     if depends:
