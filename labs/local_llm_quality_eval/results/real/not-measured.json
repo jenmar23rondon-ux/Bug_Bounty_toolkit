@@ -1,0 +1,968 @@
+{
+ "ai_classification_authority": false,
+ "classification_primary": "deterministic",
+ "corpus": {
+  "labels_modified": false,
+  "manifest": [
+   "205f30eee340332b247edc203b13205587d6aa09bdb8079bef26587d71978dd7  dev.labels.json",
+   "ac4bcfff83b1a5bd0284e65334ed045b22e8a2836ac4dc146b28f040be46bec4  dev.scenarios.json",
+   "89280c4d97c68d676124efb9bba2cdad635af2f00c20e1d45b68abf11bbe8e91  final.labels.json",
+   "5e42a8063eff864ed4140ae6323ec7214ddd5f75ef739adc201906f37ceac937  final.scenarios.json"
+  ],
+  "manifest_sha256": "0006eea40be2f95a21ee7e98de0c3e97bf3f400b4a5e05ba3da4867c67786118",
+  "problems": [],
+  "verified": true
+ },
+ "deterministic_remains_primary": true,
+ "discovery": {
+  "ai_classification_authority": false,
+  "commands": [],
+  "deepseek_tags": [],
+  "external_requests": 0,
+  "finding_confirmed": false,
+  "gpu": {
+   "devices": [],
+   "driver": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   },
+   "name": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   },
+   "present": false,
+   "reason": "no_gpu",
+   "rtx_3060": false,
+   "vram_total_mib": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   }
+  },
+  "installed_model_names": [],
+  "live_measurement_possible": false,
+  "loopback_probes": 2,
+  "model_download_attempted": false,
+  "network_attempts": 0,
+  "ollama_cli": {
+   "cli_present": false,
+   "exit_code": null,
+   "models": [],
+   "reason": "ollama_cli_absent"
+  },
+  "primary_reason": "no_gpu",
+  "providers": {
+   "lmstudio": {
+    "error_code": "unavailable",
+    "host": "127.0.0.1",
+    "models": [],
+    "port": 1234,
+    "provider": "lmstudio",
+    "reachable": false
+   },
+   "ollama": {
+    "error_code": "unavailable",
+    "host": "127.0.0.1",
+    "models": [],
+    "port": 11434,
+    "provider": "ollama",
+    "reachable": false
+   }
+  },
+  "qwen_tags": [],
+  "reasons": [
+   "no_gpu",
+   "ollama_cli_absent",
+   "ollama_server_absent",
+   "lmstudio_server_absent",
+   "model_absent"
+  ],
+  "schema_version": "bbtk.local-llm-rtx3060-discovery.v1",
+  "tools_enabled": false
+ },
+ "dual_review_may_confirm": false,
+ "dual_review_recommended_for_classification": false,
+ "evidence_ledger_modified": false,
+ "external_requests": 0,
+ "final_labels_modified": false,
+ "finding_confirmed": false,
+ "frozen_historical_reference": {
+  "configs": {
+   "A": {
+    "abstention_rate": 0.35,
+    "accuracy": 0.7,
+    "automatic_confirmations": 0,
+    "f1": 0.5,
+    "false_positive_rate": 0.2222,
+    "invented_citations": 0,
+    "kind": "deterministic_no_model",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "missing_control_recall": 0.4615,
+    "name": "deterministic (no AI)",
+    "precision": 0.3333,
+    "real_model": false,
+    "recall": 1.0,
+    "valid_structured_output_rate": 1.0
+   },
+   "B": {
+    "abstention_rate": 0.6,
+    "accuracy": 0.75,
+    "automatic_confirmations": 0,
+    "f1": 0.6667,
+    "false_positive_rate": 0.1111,
+    "invented_citations": 0,
+    "kind": "SIMULATED_not_a_real_model",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "missing_control_recall": 0.4615,
+    "name": "cautious-sim",
+    "precision": 0.5,
+    "real_model": false,
+    "recall": 1.0,
+    "valid_structured_output_rate": 1.0
+   },
+   "C": {
+    "abstention_rate": 0.05,
+    "accuracy": 0.1,
+    "automatic_confirmations": 0,
+    "f1": 0.1905,
+    "false_positive_rate": 0.9444,
+    "invented_citations": 6,
+    "kind": "SIMULATED_not_a_real_model",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "missing_control_recall": 0.0,
+    "name": "eager-sim",
+    "precision": 0.1053,
+    "real_model": false,
+    "recall": 1.0,
+    "valid_structured_output_rate": 0.95
+   },
+   "D": {
+    "abstention_rate": 1.0,
+    "accuracy": 0.55,
+    "automatic_confirmations": 0,
+    "f1": 0.0,
+    "false_positive_rate": 0.0,
+    "invented_citations": 0,
+    "kind": "SIMULATED_not_a_real_model",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "missing_control_recall": 0.4615,
+    "name": "dual cautious-sim -> eager-sim",
+    "precision": null,
+    "real_model": false,
+    "recall": 0.0,
+    "valid_structured_output_rate": 1.0
+   },
+   "E": {
+    "abstention_rate": 1.0,
+    "accuracy": 0.55,
+    "automatic_confirmations": 0,
+    "f1": 0.0,
+    "false_positive_rate": 0.0,
+    "invented_citations": 6,
+    "kind": "SIMULATED_not_a_real_model",
+    "latency_kind": "mock_latency_NOT_model_latency",
+    "missing_control_recall": 0.4615,
+    "name": "dual eager-sim -> cautious-sim",
+    "precision": null,
+    "real_model": false,
+    "recall": 0.0,
+    "valid_structured_output_rate": 1.0
+   }
+  },
+  "mode": "mock",
+  "notice": "SIMULATED profiles (cautious-sim, eager-sim). These are NOT Qwen or DeepSeek scores.",
+  "repeats": 3,
+  "schema_version": "bbtk.local-llm-quality-result.v1",
+  "source": "labs/local_llm_quality_eval/results/mock-final.json",
+  "split": "final"
+ },
+ "loopback_probes": 2,
+ "matrix": {
+  "A": {
+   "live": {
+    "abstention_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "accuracy": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "automatic_confirmations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "candidates_without_support": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "contradictions_handled": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "decision_stability_across_repeats": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "f1": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_negative_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_positive_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "invented_citations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_median": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_p95": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "missing_control_recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "precision": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_in": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_out": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_per_second": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "valid_structured_output_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "vram_used_mb": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "wall_time_s": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    }
+   },
+   "name": "deterministic only (no AI)",
+   "real_model": false
+  },
+  "B": {
+   "live": {
+    "abstention_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "accuracy": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "automatic_confirmations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "candidates_without_support": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "contradictions_handled": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "decision_stability_across_repeats": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "f1": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_negative_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_positive_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "invented_citations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_median": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_p95": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "missing_control_recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "precision": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_in": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_out": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_per_second": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "valid_structured_output_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "vram_used_mb": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "wall_time_s": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    }
+   },
+   "name": "Qwen alone",
+   "real_model": false
+  },
+  "C": {
+   "live": {
+    "abstention_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "accuracy": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "automatic_confirmations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "candidates_without_support": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "contradictions_handled": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "decision_stability_across_repeats": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "f1": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_negative_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_positive_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "invented_citations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_median": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_p95": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "missing_control_recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "precision": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_in": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_out": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_per_second": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "valid_structured_output_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "vram_used_mb": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "wall_time_s": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    }
+   },
+   "name": "DeepSeek alone",
+   "real_model": false
+  },
+  "D": {
+   "live": {
+    "abstention_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "accuracy": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "automatic_confirmations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "candidates_without_support": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "contradictions_handled": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "decision_stability_across_repeats": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "f1": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_negative_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_positive_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "invented_citations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_median": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_p95": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "missing_control_recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "precision": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_in": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_out": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_per_second": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "valid_structured_output_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "vram_used_mb": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "wall_time_s": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    }
+   },
+   "name": "Qwen analyst + DeepSeek critic",
+   "real_model": false
+  },
+  "E": {
+   "live": {
+    "abstention_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "accuracy": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "automatic_confirmations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "candidates_without_support": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "contradictions_handled": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "decision_stability_across_repeats": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "f1": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_negative_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "false_positive_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "invented_citations": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_median": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "latency_ms_p95": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "missing_control_recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "precision": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "recall": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_in": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_out": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "tokens_per_second": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "valid_structured_output_rate": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "vram_used_mb": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    },
+    "wall_time_s": {
+     "reason": "no_gpu",
+     "value": "NOT_MEASURED"
+    }
+   },
+   "name": "DeepSeek analyst + Qwen critic",
+   "real_model": false
+  }
+ },
+ "measurement_status": "NOT_MEASURED",
+ "metadata_schema": "bbtk.local-llm-rtx3060-metadata.v1",
+ "mode": "not_measured",
+ "model_download_attempted": false,
+ "model_output_executed": false,
+ "network_attempts": 0,
+ "notice": "Live Qwen/DeepSeek metrics are NOT_MEASURED. frozen_historical_reference configs B-E are SIMULATED profiles, not Qwen or DeepSeek scores. Config A in that file is the deterministic engine on the frozen FINAL split, not a new FINAL run.",
+ "preferred_second_opinion": "NOT_MEASURED",
+ "primary_reason": "no_gpu",
+ "reasons": [
+  "no_gpu",
+  "ollama_cli_absent",
+  "ollama_server_absent",
+  "lmstudio_server_absent",
+  "model_absent"
+ ],
+ "recommendation": "Deterministic engine remains the classification primary. Live Qwen and DeepSeek metrics are NOT_MEASURED (no_gpu, ollama_cli_absent, ollama_server_absent, lmstudio_server_absent, model_absent). Dual review is not recommended for classification: no real-model measurement exists, and on simulated profiles the production advisory rule only abstains. AI has no tools and no final classification authority. Simulated mock scores are not real-model results.",
+ "reproducibility": {
+  "driver": {
+   "reason": "no_gpu",
+   "value": "NOT_MEASURED"
+  },
+  "gpu": {
+   "reason": "no_gpu",
+   "value": "NOT_MEASURED"
+  },
+  "model_digest": {
+   "B": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   },
+   "C": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   }
+  },
+  "packet_hash": {
+   "dev": {
+    "count": 12,
+    "labels_included": false,
+    "measured": true,
+    "packet_sha256": "c2e73c54ace0dc9b638ea26c8120f6942a43c64e218a3047f5a1bc81a23ac54b",
+    "packets": [
+     {
+      "id": "dev-de8e12a460",
+      "sha256": "710d8edad25596fcdb19774d05b7d32acf4d066cd301812c544eb49982ec5bbe"
+     },
+     {
+      "id": "dev-898f1c3b44",
+      "sha256": "071ead1967d814a85fa06e070d117d8906adebdc31f916f6ead6914b0b9c60ee"
+     },
+     {
+      "id": "dev-cfff4ddee0",
+      "sha256": "c9599ab5ae5f94a403ed572dc9ee868af221d95b503c9473b2548736f17f9085"
+     },
+     {
+      "id": "dev-e068b48aa4",
+      "sha256": "0d5f69964fc0d8e768efb41755805cbe60db625aa1dab751b4e9e7fbf458383a"
+     },
+     {
+      "id": "dev-deef375db4",
+      "sha256": "2f666b12ff44a42e237bca01dadd178fffb300e7054988b7b666a28b4583fbd4"
+     },
+     {
+      "id": "dev-4b2df9fba0",
+      "sha256": "1f222aa8632c9445851feba0ad8da3115a087f4b832d13715782dcbb5f0eae48"
+     },
+     {
+      "id": "dev-134f022a43",
+      "sha256": "6b6d6dc78899ce2b2cde5557385d30c5a10693824bcede7b81bbc4b312311b8d"
+     },
+     {
+      "id": "dev-85c08162db",
+      "sha256": "fd6cef3dceeccce5a8c533096e5d08c9bce058f0f0a43226c124c83d4b248e40"
+     },
+     {
+      "id": "dev-eed7f84eaf",
+      "sha256": "18cf299bf49bb75f2eb11af3352cea6fbdd708cb93851efbdd736159ce22bc26"
+     },
+     {
+      "id": "dev-16fdc2b6ee",
+      "sha256": "46885e67b39c39658ccedbd6bfeb416cd15acc8e79c225ae1b6e9ada502c7cb3"
+     },
+     {
+      "id": "dev-83344a6478",
+      "sha256": "a14352a456bc0be6e2bc35148d703a45cbabf83dda0dd6f0e3978b701c22ffed"
+     },
+     {
+      "id": "dev-6144f2bfc1",
+      "sha256": "710d8edad25596fcdb19774d05b7d32acf4d066cd301812c544eb49982ec5bbe"
+     }
+    ],
+    "requires_model": false,
+    "secret_leaks_in_packets": 0,
+    "split": "dev"
+   },
+   "final": {
+    "count": 40,
+    "labels_included": false,
+    "measured": true,
+    "packet_sha256": "d86c351c964fbfd3c5fc4215d331540f5857bfc7745b27d41df42f9042449c8f",
+    "packets": [
+     {
+      "id": "final-41c481aa1f",
+      "sha256": "699296f8501b156c5b0575c9834093c21723d6913394069b449e2646e64f8a18"
+     },
+     {
+      "id": "final-ef9d3db734",
+      "sha256": "3f29b68906c55dd454325789bc8ea08999abb7b6476e69decada9ebd3d54790f"
+     },
+     {
+      "id": "final-484d7f04bb",
+      "sha256": "e3b5e0e563a74828f230f02b64270c4255ec11f26ddc74b43711e4a7f4fc65ff"
+     },
+     {
+      "id": "final-eb97473e22",
+      "sha256": "a3eb0a4352fb6ac6af9148314356831b47bed0e6f580bb95c6f4a8e70daa5bf2"
+     },
+     {
+      "id": "final-cb18c37a33",
+      "sha256": "aee95ec327446f7dc64ae15494f117560cbe66059d4093b0d1d8ec2f11ecf5e8"
+     },
+     {
+      "id": "final-bc253d60a7",
+      "sha256": "7b70d0a67efc5f810965146e51d5afc7090ca4dc96a39716f76909cdb14e5377"
+     },
+     {
+      "id": "final-fb54317ab1",
+      "sha256": "018c94e6ac01ccd62b40c5a9cda42d4bdf955fac39f3ab47b8bff88a58f56ceb"
+     },
+     {
+      "id": "final-8703660e90",
+      "sha256": "5a1603ec0d021dab776351b7a9e3caee3ada05dc59d06aa88ee28b8fb9ab58f0"
+     },
+     {
+      "id": "final-8da6128e12",
+      "sha256": "7ce5a8283d4f2a30b69dbcc96e064890c9ce093dc52854d860009ac17e284681"
+     },
+     {
+      "id": "final-af558300e9",
+      "sha256": "b31ea0c405a5f512dcdef6b6229edfbd5424477e75370bfbd4bd714522ca410a"
+     },
+     {
+      "id": "final-5e705bb6e4",
+      "sha256": "c2b4d76556d87a2112483d9425bf03c9c956b8f7f6701b5760cd7c8ffc12848d"
+     },
+     {
+      "id": "final-075fa39e74",
+      "sha256": "1b3e651d61009e4edcba430ea4464321e7adc2510d9c895e7310870cbaf4a558"
+     },
+     {
+      "id": "final-475ce9cdb3",
+      "sha256": "58dd69da5635fdc9cd0274c8585ec5027f1a7d6143adf59c7875b5028d2ec7b6"
+     },
+     {
+      "id": "final-9b16738ca7",
+      "sha256": "e04d40abef095186d2cab363bc19f687bfefcbb8c48bf1b461e5774e6401ba7a"
+     },
+     {
+      "id": "final-7ab5c7f365",
+      "sha256": "23704d74ce07080f6a9aa7e7df2cb1cf07b0fc72b5b0af56feb785ed0de1bb65"
+     },
+     {
+      "id": "final-bb6906d181",
+      "sha256": "8d4d1c264d8d336f31268e63a0ed373a2132fdd8d5f81c15c05b0b96324ebb62"
+     },
+     {
+      "id": "final-451681bb76",
+      "sha256": "cace4a3fc56c7c64d339b63ec91fea5fa2765385a2720681126d68bba3388a46"
+     },
+     {
+      "id": "final-03cc055974",
+      "sha256": "21129b54d0316b1d623059e705603504b2725f21a258fe70d783b13b16b62fd3"
+     },
+     {
+      "id": "final-3fdeb4f16f",
+      "sha256": "d7470996740c61a6986019e6793af1c2752fb663935a32d1339e96d37c21fef0"
+     },
+     {
+      "id": "final-ac42fd671b",
+      "sha256": "eda2b73562615ab5a875b7f1377b0e9fbfcfbc5aaf16d8d0b230844e86a5a789"
+     },
+     {
+      "id": "final-aba59b89a4",
+      "sha256": "6eeebe0f67d53d5d875b791bcf52df54f9f55b346b2d01f9ce488dcc9bfd6428"
+     },
+     {
+      "id": "final-3743c74a79",
+      "sha256": "f1f0a88a5287d9b760a10348f427f304fa17255dd4176bc3406fe47d79528d11"
+     },
+     {
+      "id": "final-0a77ab99a7",
+      "sha256": "e22619f1d637e5b018f16ef8edab8205acfd8222a9c59b226fffe73bc85e7ccf"
+     },
+     {
+      "id": "final-718158db07",
+      "sha256": "292b93ec7238fa16b66b7f27e82b9697371a5f98fbea5c59c39645277a7deb97"
+     },
+     {
+      "id": "final-fa16f93f04",
+      "sha256": "d1c13411cbbae242c5d285dab52b6c027958380b287d70c1a92c5c395510dbbd"
+     },
+     {
+      "id": "final-8eb6a014e2",
+      "sha256": "b9cdee0e726b528a800fd2f279f0f2a7e86117807e3930be9bde0c9686104143"
+     },
+     {
+      "id": "final-d1137cc111",
+      "sha256": "a1db10d6bf1e17c54b33475ca978539dd9e5c5965b9cf76e0fb982568b5368ce"
+     },
+     {
+      "id": "final-3af9825e94",
+      "sha256": "2fd46fb99ca9b821ee25dbe9a6830c3c64aa63b1029667a1bedabd11100895c3"
+     },
+     {
+      "id": "final-9656466b25",
+      "sha256": "2172fe4fb194080da2f24b3db96eca2158d18dad3a7589554157448539b07193"
+     },
+     {
+      "id": "final-0d2be953ad",
+      "sha256": "713843802d21db6887c51576d5fad9092e338f9bd10bb454553947ef44e4e6ac"
+     },
+     {
+      "id": "final-7eada1b520",
+      "sha256": "0ac1423260203e42d2e3ace09573d3b22f26ecabf4340f50262fe6ec98260cc8"
+     },
+     {
+      "id": "final-a68b72dd50",
+      "sha256": "f837ff84973be643e8d8cc666fc3e195a429fb0b90e74f893087047adb0953ac"
+     },
+     {
+      "id": "final-10f12d11a1",
+      "sha256": "220d92d0921cea12cf95e515b9222e44edf4c9cf43e2fd9e6915d6450bc3c311"
+     },
+     {
+      "id": "final-b2d16b78f7",
+      "sha256": "9b07c445a9dc24f817734ac2845210e8645369d9c162b76843957049e83cbea6"
+     },
+     {
+      "id": "final-84966459dd",
+      "sha256": "0267c8e9234d8d0193f0dcefb16269d344540239c0a7e1c3ca0a92dcf4c5452e"
+     },
+     {
+      "id": "final-8e73bdebde",
+      "sha256": "a68e7f15d89d7ed2d967c7c238bb1f3a4390128bba97a8c0bbecc7c4987828bc"
+     },
+     {
+      "id": "final-e16ac444ed",
+      "sha256": "4f5435784bf34bdf9acd6fdb8d2099b754eae30a3589022740692a8083852cf2"
+     },
+     {
+      "id": "final-89a02fdc62",
+      "sha256": "8324ae06f7c11b119af94a3d79717c0c9f24bd9ac7747d87db8e8e65eb723b8f"
+     },
+     {
+      "id": "final-b348c322b6",
+      "sha256": "699296f8501b156c5b0575c9834093c21723d6913394069b449e2646e64f8a18"
+     },
+     {
+      "id": "final-90fab67c24",
+      "sha256": "3f29b68906c55dd454325789bc8ea08999abb7b6476e69decada9ebd3d54790f"
+     }
+    ],
+    "requires_model": false,
+    "secret_leaks_in_packets": 0,
+    "split": "final"
+   }
+  },
+  "prompt_schema": {
+   "analyst_prompt_sha256": "11103f7a3d6df749f8c308ad1aa5967205b4e2706ad36a54c3201524de971b5a",
+   "analyst_schema_sha256": "4850400668dcf31b1a76450ae0cd3695b4e10b88f01922a631a4c93d7828046a",
+   "bundle_schema": "bbtk.ai-evidence-bundle.v1",
+   "critic_prompt_sha256": "4bd48fff304c21498a62091bb769a5fdec95b56ddcef422bf532db08955ad979",
+   "critic_schema_sha256": "aabfa2f9e4b6017c914783833f199e0669857f7db60d7f141d73cb9bf2cb4564",
+   "dual_review_schema": "bbtk.ai-dual-review.v1",
+   "measured": true,
+   "requires_model": false,
+   "single_output_schema_sha256": "a56f1a24cad945d96abea5094fc2f54def6fd8bd064a90f1fb9abfc8291543d5",
+   "single_prompt_sha256": "6b062f58ad03fdc2d35f045821a4dd3db69402109c15fd8b63eb5e733c714373",
+   "single_review_schema": "bbtk.ai-evidence-review.v1"
+  },
+  "quantization": {
+   "B": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   },
+   "C": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   }
+  },
+  "schema_version": "bbtk.local-llm-rtx3060-metadata.v1",
+  "seed": {
+   "applied": false,
+   "reason": "ai_provider_adapter_has_no_seed_parameter",
+   "requested_seed": null,
+   "value": "NOT_MEASURED"
+  },
+  "temperature": {
+   "applied": false,
+   "configured_default": 0.0,
+   "reason": "no_gpu",
+   "value": "NOT_MEASURED"
+  },
+  "token_method": "chars/4 estimate inside the harness when a live response exists; not tokenizer counts",
+  "tokens_in": {
+   "reason": "no_gpu",
+   "value": "NOT_MEASURED"
+  },
+  "tokens_out": {
+   "reason": "no_gpu",
+   "value": "NOT_MEASURED"
+  },
+  "vram": {
+   "total_mib": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   },
+   "used_mb_after": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   },
+   "used_mb_before": {
+    "reason": "no_gpu",
+    "value": "NOT_MEASURED"
+   }
+  },
+  "wall_time_s": {
+   "reason": "no_gpu",
+   "value": "NOT_MEASURED"
+  }
+ },
+ "schema_version": "bbtk.local-llm-rtx3060-eval.v1",
+ "secret_leaks": 0,
+ "tool_calling_enabled": false,
+ "tools_enabled": false,
+ "version": "0.2.2"
+}
