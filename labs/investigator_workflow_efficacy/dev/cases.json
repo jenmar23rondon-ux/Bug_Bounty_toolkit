@@ -1,0 +1,144 @@
+{
+  "cases": [
+    {
+      "behavior": {
+        "actor_status": 200,
+        "contradiction": false,
+        "cross_account": true,
+        "owner_status": 200,
+        "resource_id": "1001",
+        "resource_kind": "order",
+        "type": "idor_pair",
+        "visibility": "private"
+      },
+      "id": "A-dev-vuln-order",
+      "split": "dev",
+      "truth": "review",
+      "truth_reason": "Actor token receives the owner private marker for order 1001.",
+      "workflow": "A"
+    },
+    {
+      "behavior": {
+        "actor_status": 403,
+        "contradiction": false,
+        "cross_account": false,
+        "owner_status": 200,
+        "resource_id": "1002",
+        "resource_kind": "order",
+        "type": "idor_pair",
+        "visibility": "private"
+      },
+      "id": "A-dev-safe-deny",
+      "split": "dev",
+      "truth": "reject",
+      "truth_reason": "Protected order route returns 403 to the other account.",
+      "workflow": "A"
+    },
+    {
+      "behavior": {
+        "actor_status": 200,
+        "contradiction": false,
+        "cross_account": true,
+        "owner_status": 200,
+        "resource_id": "handbook",
+        "resource_kind": "document",
+        "type": "idor_pair",
+        "visibility": "shared"
+      },
+      "id": "A-dev-shared",
+      "split": "dev",
+      "truth": "reject",
+      "truth_reason": "Both accounts receive the same shared handbook.",
+      "workflow": "A"
+    },
+    {
+      "behavior": {
+        "escape": false,
+        "injection": false,
+        "marker": "bbtkmdev1",
+        "truncated": false,
+        "type": "reflected"
+      },
+      "id": "B-dev-reflect",
+      "split": "dev",
+      "truth": "review",
+      "truth_reason": "HTML text reflects the marker with live angle brackets.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "escape": true,
+        "injection": false,
+        "marker": "bbtkmdev2",
+        "truncated": false,
+        "type": "reflected"
+      },
+      "id": "B-dev-escaped",
+      "split": "dev",
+      "truth": "reject",
+      "truth_reason": "The same marker is HTML-escaped.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "sink": "innerHTML",
+        "truncated": false,
+        "type": "dom"
+      },
+      "id": "B-dev-dom-sink",
+      "split": "dev",
+      "truth": "review",
+      "truth_reason": "Page assigns location.hash to innerHTML. Browser execution is not claimed.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/export",
+        "shape": "password",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "C-dev-public-secret",
+      "split": "dev",
+      "truth": "review",
+      "truth_reason": "Public response carries a password field.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/docs/api",
+        "shape": "example",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "C-dev-docs",
+      "split": "dev",
+      "truth": "reject",
+      "truth_reason": "Documentation path serves an example placeholder.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/export-partial",
+        "shape": "password",
+        "status": 200,
+        "truncated": true,
+        "type": "disclosure"
+      },
+      "id": "C-dev-truncated",
+      "split": "dev",
+      "truth": "abstain",
+      "truth_reason": "Response is marked truncated before a disposition is reliable.",
+      "workflow": "C"
+    }
+  ],
+  "finding_confirmed": false,
+  "note": "Labels describe this disposable lab only. They were declared from the server behavior before the bbtk arm was scored. Not field bug-bounty efficacy.",
+  "schema": "bbtk-investigator-workflow-efficacy-cases/1",
+  "split": "dev"
+}

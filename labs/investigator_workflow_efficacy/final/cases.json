@@ -1,0 +1,190 @@
+{
+  "cases": [
+    {
+      "behavior": {
+        "actor_status": 200,
+        "contradiction": false,
+        "cross_account": true,
+        "owner_status": 200,
+        "resource_id": "4402",
+        "resource_kind": "invoice",
+        "type": "idor_pair",
+        "visibility": "private"
+      },
+      "id": "A-final-vuln-invoice",
+      "split": "final",
+      "truth": "review",
+      "truth_reason": "Actor token receives the owner private marker for invoice 4402.",
+      "workflow": "A"
+    },
+    {
+      "behavior": {
+        "actor_status": 403,
+        "contradiction": false,
+        "cross_account": false,
+        "owner_status": 200,
+        "resource_id": "4403",
+        "resource_kind": "invoice",
+        "type": "idor_pair",
+        "visibility": "private"
+      },
+      "id": "A-final-safe-deny",
+      "split": "final",
+      "truth": "reject",
+      "truth_reason": "Invoice route returns 403 to the other account.",
+      "workflow": "A"
+    },
+    {
+      "behavior": {
+        "actor_status": 200,
+        "contradiction": false,
+        "cross_account": true,
+        "owner_status": 200,
+        "resource_id": "sku-9",
+        "resource_kind": "catalog",
+        "type": "idor_pair",
+        "visibility": "public"
+      },
+      "id": "A-final-public-catalog",
+      "split": "final",
+      "truth": "reject",
+      "truth_reason": "Catalog object is marked public for every caller.",
+      "workflow": "A"
+    },
+    {
+      "behavior": {
+        "actor_status": 500,
+        "contradiction": false,
+        "cross_account": false,
+        "owner_status": 200,
+        "resource_id": "4404",
+        "resource_kind": "invoice",
+        "type": "idor_pair",
+        "visibility": "private"
+      },
+      "id": "A-final-error-500",
+      "split": "final",
+      "truth": "abstain",
+      "truth_reason": "Cross-account read returns HTTP 500 without a private marker.",
+      "workflow": "A"
+    },
+    {
+      "behavior": {
+        "escape": false,
+        "injection": false,
+        "marker": "bbtkmfin1",
+        "truncated": false,
+        "type": "reflected"
+      },
+      "id": "B-final-reflect",
+      "split": "final",
+      "truth": "review",
+      "truth_reason": "Held-out HTML reflection with live angle brackets.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "escape": true,
+        "injection": false,
+        "marker": "bbtkmfin2",
+        "truncated": false,
+        "type": "reflected"
+      },
+      "id": "B-final-escaped",
+      "split": "final",
+      "truth": "reject",
+      "truth_reason": "Held-out reflection is HTML-escaped.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "sink": "textContent",
+        "truncated": false,
+        "type": "dom"
+      },
+      "id": "B-final-dom-safe",
+      "split": "final",
+      "truth": "reject",
+      "truth_reason": "Page reads location.hash into textContent and has no innerHTML sink.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "escape": false,
+        "injection": false,
+        "marker": "bbtkmfin3",
+        "truncated": true,
+        "type": "reflected"
+      },
+      "id": "B-final-truncated-reflect",
+      "split": "final",
+      "truth": "abstain",
+      "truth_reason": "Reflection response is explicitly truncated.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/status-export",
+        "shape": "password",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "C-final-public-token",
+      "split": "final",
+      "truth": "review",
+      "truth_reason": "Unauthenticated export carries a password field.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "authenticated_self",
+        "path": "/api/me",
+        "shape": "password",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "C-final-self-profile",
+      "split": "final",
+      "truth": "reject",
+      "truth_reason": "Authenticated caller sees their own password field.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/me-partial",
+        "shape": "password",
+        "status": 200,
+        "truncated": true,
+        "type": "disclosure"
+      },
+      "id": "C-final-truncated",
+      "split": "final",
+      "truth": "abstain",
+      "truth_reason": "Held-out disclosure body is truncated.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/empty",
+        "shape": "empty",
+        "status": 204,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "C-final-empty",
+      "split": "final",
+      "truth": "abstain",
+      "truth_reason": "HTTP 204 with an empty body is technically inconclusive.",
+      "workflow": "C"
+    }
+  ],
+  "finding_confirmed": false,
+  "note": "Labels describe this disposable lab only. They were declared from the server behavior before the bbtk arm was scored. Not field bug-bounty efficacy.",
+  "schema": "bbtk-investigator-workflow-efficacy-cases/1",
+  "split": "final"
+}
