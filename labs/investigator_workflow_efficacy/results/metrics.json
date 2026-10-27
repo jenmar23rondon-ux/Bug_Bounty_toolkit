@@ -1,0 +1,248 @@
+{
+  "NOT_MEASURED": {
+    "browser_dom_execution": "Chromium was not launched. DOM rows use static source text only.",
+    "field_bug_bounty_efficacy": "Disposable fixture only. Do not cite these rows as program results.",
+    "human_dossier_quality": "The checklist score is paperwork completeness, not a human quality judgment.",
+    "human_manual_actions": "Scripted action counts are a checklist replay, not observed human clicks.",
+    "human_minutes": "No human investigator was timed. Scripted wall-clock is not researcher time.",
+    "human_researcher_errors": "No human reviewer participated.",
+    "human_time_to_complete_report": "No human clock was started.",
+    "human_time_to_first_reviewable": "No human clock was started.",
+    "real_world_program": "The opt-in real-world protocol was not executed."
+  },
+  "external_requests": 0,
+  "finding_confirmed": false,
+  "finding_confirmed_true": 0,
+  "lab": "investigator-workflow-efficacy",
+  "prior_knowledge_bias": "The same change set declared the lab behavior, the labels, the manual checklist, and the bbtk adapter. The adapter follows public function contracts and was not refit after the FINAL split ran. This is not a blinded study.",
+  "secret_leaks": 0,
+  "splits": {
+    "dev": {
+      "bbtk": {
+        "accuracy": 1.0,
+        "arm": "bbtk",
+        "candidates_reviewed": 9,
+        "cases": 9,
+        "conservative_abstain": 0,
+        "correct": 9,
+        "distinct_tools": 7,
+        "dossier_checklist_mean": 5.0,
+        "dossier_validation_results": {
+          "human_validation_required": 9
+        },
+        "finding_confirmed_true": 0,
+        "fn": 0,
+        "fp_accepted": 0,
+        "incomplete_repro": 0,
+        "mismatches": [],
+        "missing_evidence": 0,
+        "over_reject": 0,
+        "scripted_actions": 81,
+        "scripted_seconds_to_first_reviewable": 5.3e-05,
+        "scripted_seconds_to_report_draft": 0.019675,
+        "scripted_tool_switches": 72,
+        "scripted_wall_clock_seconds": 0.019675,
+        "tn": 5,
+        "valid_found": 4,
+        "workflow_auto_confirmations": 0,
+        "workflow_documental_complete": false,
+        "workflow_executions": 0,
+        "workflow_finding_confirmed": false,
+        "workflow_network_requests_sent": 0,
+        "workflow_next_reviewable_tasks": [
+          "wf-control_review"
+        ]
+      },
+      "external_requests": 0,
+      "finding_confirmed_policy": false,
+      "loopback_requests": 12,
+      "manual": {
+        "accuracy": 1.0,
+        "arm": "manual",
+        "candidates_reviewed": 9,
+        "cases": 9,
+        "conservative_abstain": 0,
+        "correct": 9,
+        "distinct_tools": 3,
+        "dossier_checklist_mean": 5.0,
+        "finding_confirmed_true": 0,
+        "fn": 0,
+        "fp_accepted": 0,
+        "incomplete_repro": 0,
+        "mismatches": [],
+        "missing_evidence": 0,
+        "over_reject": 0,
+        "scripted_actions": 63,
+        "scripted_seconds_to_first_reviewable": 0.00014,
+        "scripted_seconds_to_report_draft": 0.000247,
+        "scripted_tool_switches": 36,
+        "scripted_wall_clock_seconds": 0.000247,
+        "tn": 5,
+        "valid_found": 4
+      },
+      "network_attempts": 12,
+      "secret_leaks": 0,
+      "split": "dev"
+    },
+    "final": {
+      "bbtk": {
+        "accuracy": 0.75,
+        "arm": "bbtk",
+        "candidates_reviewed": 12,
+        "cases": 12,
+        "conservative_abstain": 2,
+        "correct": 9,
+        "distinct_tools": 7,
+        "dossier_checklist_mean": 5.0,
+        "dossier_validation_results": {
+          "human_validation_required": 12
+        },
+        "finding_confirmed_true": 0,
+        "fn": 0,
+        "fp_accepted": 0,
+        "incomplete_repro": 0,
+        "mismatches": [
+          {
+            "got": "abstain",
+            "id": "B-final-dom-safe",
+            "reason": "source_observed",
+            "truth": "reject"
+          },
+          {
+            "got": "abstain",
+            "id": "C-final-self-profile",
+            "reason": "indicator_detected",
+            "truth": "reject"
+          },
+          {
+            "got": "reject",
+            "id": "C-final-empty",
+            "reason": "not_observed",
+            "truth": "abstain"
+          }
+        ],
+        "missing_evidence": 0,
+        "over_reject": 1,
+        "scripted_actions": 108,
+        "scripted_seconds_to_first_reviewable": 4.9e-05,
+        "scripted_seconds_to_report_draft": 0.010899,
+        "scripted_tool_switches": 96,
+        "scripted_wall_clock_seconds": 0.010899,
+        "tn": 9,
+        "valid_found": 3,
+        "workflow_auto_confirmations": 0,
+        "workflow_documental_complete": false,
+        "workflow_executions": 0,
+        "workflow_finding_confirmed": false,
+        "workflow_network_requests_sent": 0,
+        "workflow_next_reviewable_tasks": [
+          "wf-control_review"
+        ]
+      },
+      "external_requests": 0,
+      "finding_confirmed_policy": false,
+      "loopback_requests": 16,
+      "manual": {
+        "accuracy": 1.0,
+        "arm": "manual",
+        "candidates_reviewed": 12,
+        "cases": 12,
+        "conservative_abstain": 0,
+        "correct": 12,
+        "distinct_tools": 3,
+        "dossier_checklist_mean": 5.0,
+        "finding_confirmed_true": 0,
+        "fn": 0,
+        "fp_accepted": 0,
+        "incomplete_repro": 0,
+        "mismatches": [],
+        "missing_evidence": 0,
+        "over_reject": 0,
+        "scripted_actions": 84,
+        "scripted_seconds_to_first_reviewable": 0.000127,
+        "scripted_seconds_to_report_draft": 0.000254,
+        "scripted_tool_switches": 48,
+        "scripted_wall_clock_seconds": 0.000254,
+        "tn": 9,
+        "valid_found": 3
+      },
+      "network_attempts": 16,
+      "secret_leaks": 0,
+      "split": "final"
+    },
+    "stress": {
+      "bbtk": {
+        "accuracy": 0.9,
+        "arm": "bbtk",
+        "candidates_reviewed": 10,
+        "cases": 10,
+        "conservative_abstain": 0,
+        "correct": 9,
+        "distinct_tools": 7,
+        "dossier_checklist_mean": 5.0,
+        "dossier_validation_results": {
+          "human_validation_required": 5
+        },
+        "finding_confirmed_true": 0,
+        "fn": 0,
+        "fp_accepted": 1,
+        "incomplete_repro": 0,
+        "mismatches": [
+          {
+            "got": "review",
+            "id": "S-idor-contradiction",
+            "reason": "idor_review_signal",
+            "truth": "abstain"
+          }
+        ],
+        "missing_evidence": 0,
+        "over_reject": 0,
+        "scripted_actions": 90,
+        "scripted_seconds_to_first_reviewable": 0.000631,
+        "scripted_seconds_to_report_draft": 0.004869,
+        "scripted_tool_switches": 80,
+        "scripted_wall_clock_seconds": 0.004869,
+        "tn": 6,
+        "valid_found": 3,
+        "workflow_auto_confirmations": 0,
+        "workflow_documental_complete": false,
+        "workflow_executions": 0,
+        "workflow_finding_confirmed": false,
+        "workflow_network_requests_sent": 0,
+        "workflow_next_reviewable_tasks": [
+          "wf-control_review"
+        ]
+      },
+      "external_requests": 0,
+      "finding_confirmed_policy": false,
+      "loopback_requests": 11,
+      "manual": {
+        "accuracy": 1.0,
+        "arm": "manual",
+        "candidates_reviewed": 10,
+        "cases": 10,
+        "conservative_abstain": 0,
+        "correct": 10,
+        "distinct_tools": 3,
+        "dossier_checklist_mean": 5.0,
+        "finding_confirmed_true": 0,
+        "fn": 0,
+        "fp_accepted": 0,
+        "incomplete_repro": 0,
+        "mismatches": [],
+        "missing_evidence": 0,
+        "over_reject": 0,
+        "scripted_actions": 70,
+        "scripted_seconds_to_first_reviewable": 5.9e-05,
+        "scripted_seconds_to_report_draft": 0.000159,
+        "scripted_tool_switches": 40,
+        "scripted_wall_clock_seconds": 0.000159,
+        "tn": 7,
+        "valid_found": 3
+      },
+      "network_attempts": 11,
+      "secret_leaks": 0,
+      "split": "stress"
+    }
+  }
+}

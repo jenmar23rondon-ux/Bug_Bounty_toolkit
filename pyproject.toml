@@ -252,6 +252,22 @@ files = [
     "labs/xss_real_browser_eval/spec.py",
     "labs/xss_real_browser_eval/states.py",
     "tests/test_xss_real_browser_eval.py",
+    "labs/investigator_workflow_efficacy/__init__.py",
+    "labs/investigator_workflow_efficacy/bbtk_arm.py",
+    "labs/investigator_workflow_efficacy/capture.py",
+    "labs/investigator_workflow_efficacy/corpus.py",
+    "labs/investigator_workflow_efficacy/evaluate.py",
+    "labs/investigator_workflow_efficacy/freeze.py",
+    "labs/investigator_workflow_efficacy/guard.py",
+    "labs/investigator_workflow_efficacy/manual.py",
+    "labs/investigator_workflow_efficacy/metrics.py",
+    "labs/investigator_workflow_efficacy/real_world.py",
+    "labs/investigator_workflow_efficacy/render.py",
+    "labs/investigator_workflow_efficacy/run_lab.py",
+    "labs/investigator_workflow_efficacy/secrets.py",
+    "labs/investigator_workflow_efficacy/server.py",
+    "labs/investigator_workflow_efficacy/tutorial.py",
+    "tests/test_investigator_workflow_efficacy.py",
 ]
 
 [tool.coverage.run]

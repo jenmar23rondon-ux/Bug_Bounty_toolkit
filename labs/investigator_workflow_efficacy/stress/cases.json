@@ -1,0 +1,154 @@
+{
+  "cases": [
+    {
+      "behavior": {
+        "escape": false,
+        "injection": false,
+        "marker": "bbtkmstr1",
+        "truncated": false,
+        "type": "reflected"
+      },
+      "id": "S-xss-primary",
+      "split": "stress",
+      "truth": "review",
+      "truth_reason": "Unescaped reflection used as the dedup original.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "of": "S-xss-primary",
+        "type": "mirror"
+      },
+      "id": "S-xss-duplicate",
+      "split": "stress",
+      "truth": "reject",
+      "truth_reason": "Same response body as S-xss-primary; a second candidate is duplicate paperwork.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "escape": false,
+        "injection": true,
+        "marker": "bbtkmstr2",
+        "truncated": false,
+        "type": "reflected"
+      },
+      "id": "S-xss-injection",
+      "split": "stress",
+      "truth": "review",
+      "truth_reason": "Unescaped reflection plus an instruction string in an HTML comment.",
+      "workflow": "B"
+    },
+    {
+      "behavior": {
+        "actor_status": 200,
+        "contradiction": true,
+        "cross_account": true,
+        "owner_status": 200,
+        "resource_id": "9001",
+        "resource_kind": "order",
+        "type": "idor_pair",
+        "visibility": "private"
+      },
+      "id": "S-idor-contradiction",
+      "split": "stress",
+      "truth": "abstain",
+      "truth_reason": "Actor body contains the owner marker and a denial contradiction.",
+      "workflow": "A"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/canary",
+        "shape": "canary",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "S-canary-public",
+      "split": "stress",
+      "truth": "review",
+      "truth_reason": "Public body contains the lab canary. Shareable output must omit the value.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/health-noise-1",
+        "shape": "status",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "S-noise-1",
+      "split": "stress",
+      "truth": "reject",
+      "truth_reason": "Public status object with no secret-shaped field.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/health-noise-2",
+        "shape": "status",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "S-noise-2",
+      "split": "stress",
+      "truth": "reject",
+      "truth_reason": "Public status object with no secret-shaped field.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/health-noise-3",
+        "shape": "status",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "S-noise-3",
+      "split": "stress",
+      "truth": "reject",
+      "truth_reason": "Public status object with no secret-shaped field.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/health-noise-4",
+        "shape": "status",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "S-noise-4",
+      "split": "stress",
+      "truth": "reject",
+      "truth_reason": "Public status object with no secret-shaped field.",
+      "workflow": "C"
+    },
+    {
+      "behavior": {
+        "audience": "public",
+        "path": "/api/health-noise-5",
+        "shape": "status",
+        "status": 200,
+        "truncated": false,
+        "type": "disclosure"
+      },
+      "id": "S-noise-5",
+      "split": "stress",
+      "truth": "reject",
+      "truth_reason": "Public status object with no secret-shaped field.",
+      "workflow": "C"
+    }
+  ],
+  "finding_confirmed": false,
+  "note": "Labels describe this disposable lab only. They were declared from the server behavior before the bbtk arm was scored. Not field bug-bounty efficacy.",
+  "schema": "bbtk-investigator-workflow-efficacy-cases/1",
+  "split": "stress"
+}

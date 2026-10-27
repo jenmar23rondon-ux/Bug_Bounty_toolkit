@@ -24,3 +24,4 @@ logs/*
 # Offline lab verification output (scripts/offline_lab/verify.sh)
 offline-lab-results/
 labs/verified_dossier_eval/results/work/
+labs/investigator_workflow_efficacy/real_world/private/
