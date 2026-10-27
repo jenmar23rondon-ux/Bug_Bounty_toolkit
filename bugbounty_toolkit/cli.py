@@ -2924,6 +2924,33 @@ def cmd_ai_dual_review(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2, sort_keys=True))
 
 
+def cmd_ai_evidence_assist(args: argparse.Namespace) -> None:
+    """Local AI evidence assistant: explain/summarize/questions/contradictions/drafts/missing data."""
+    from .analysis.ai_backend import AISelection
+    from .analysis.local_ai_evidence_assistant import assist_evidence
+
+    ProgramPaths(RECORDS_ROOT, args.program)
+    try:
+        data = json.loads(bounded_text(args.evidence_file, 2_000_000))
+    except json.JSONDecodeError as exc:
+        raise ValueError("Evidence file must contain valid JSON.") from exc
+    if not isinstance(data, dict):
+        raise ValueError("Evidence file must contain a JSON object.")
+    selection = None
+    compare = None
+    if not args.dry_run:
+        selection = AISelection(args.ai_provider, args.ai_model, args.ai_endpoint, float(args.ai_timeout)).validate()
+        if args.compare_provider or args.compare_model:
+            if not (args.compare_provider and args.compare_model):
+                raise ValueError("--compare-provider and --compare-model must be used together.")
+            compare = AISelection(args.compare_provider, args.compare_model, None, float(args.ai_timeout)).validate()
+    elif args.ai_provider:
+        selection = AISelection(args.ai_provider, args.ai_model, args.ai_endpoint, float(args.ai_timeout)).validate()
+    result = assist_evidence(data, selection=selection, compare=compare, dry_run=bool(args.dry_run))
+    print(f"[i] {SECOND_OPINION} Deterministic baseline stays primary; AI never confirms findings.")
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
 def cmd_ai_providers(args: argparse.Namespace) -> None:
     from .analysis.ai_providers import build_provider, list_providers
 
@@ -4608,6 +4635,25 @@ def build_parser() -> argparse.ArgumentParser:
     ai_dual.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Per-call timeout in seconds")
     ai_dual.add_argument("--dry-run", action="store_true", help="Minimize locally without contacting any model")
     ai_dual.set_defaults(func=cmd_ai_dual_review)
+
+    ai_assist = ai_sub.add_parser(
+        "evidence-assist",
+        help="Local AI evidence assistant (explain/summarize/questions/contradictions/drafts/missing data)",
+    )
+    ai_assist.add_argument("program")
+    ai_assist.add_argument("--evidence-file", type=Path, required=True, help="Native JSON evidence (minimized first)")
+    ai_assist.add_argument("--ai-provider", choices=("ollama", "lmstudio"), default="ollama")
+    ai_assist.add_argument("--ai-model", default=DEFAULT_OLLAMA_MODEL, help="Local model for advisory assist")
+    ai_assist.add_argument("--ai-endpoint", help="Optional authorized loopback host:port restatement")
+    ai_assist.add_argument("--ai-timeout", type=positive_float, default=120.0)
+    ai_assist.add_argument("--compare-provider", choices=("ollama", "lmstudio"), help="Optional second model provider")
+    ai_assist.add_argument("--compare-model", help="Optional second local model for comparison")
+    ai_assist.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Deterministic assist only; do not contact any local model",
+    )
+    ai_assist.set_defaults(func=cmd_ai_evidence_assist)
 
     ai_providers = ai_sub.add_parser("providers", help="List allowlisted local AI providers and capabilities")
     ai_providers.add_argument("--check", action="store_true", help="Probe availability on authorized loopback only")
