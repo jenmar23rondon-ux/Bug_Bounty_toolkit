@@ -1,0 +1,388 @@
+{
+  "cases": [
+    {
+      "id": "D-disc-jwt-public",
+      "category": "information_disclosure",
+      "audience": "public",
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA\"}"
+      },
+      "expected_state": "ready_for_manual_review",
+      "expected_categories": [
+        "token"
+      ],
+      "canaries": [
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA"
+      ],
+      "request": {},
+      "url": "https://lab.invalid/D-disc-jwt-public"
+    },
+    {
+      "id": "D-disc-placeholder",
+      "category": "information_disclosure",
+      "audience": "public",
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"api_key\": \"YOUR_API_KEY_HERE\"}"
+      },
+      "expected_state": "not_observed",
+      "expected_categories": [],
+      "canaries": [],
+      "request": {},
+      "url": "https://lab.invalid/D-disc-placeholder"
+    },
+    {
+      "id": "D-xss-vuln",
+      "category": "reflected_xss",
+      "kind": "reflected",
+      "body": "<!doctype html><p><bbtkxssaabbccddee></p>",
+      "marker": "bbtkxssaabbccddee",
+      "payload": "<bbtkxssaabbccddee>",
+      "content_type": "text/html",
+      "expected_decision": "candidate",
+      "expected_context": "html_text",
+      "canaries": [
+        "bbtkxssaabbccddee"
+      ]
+    },
+    {
+      "id": "D-xss-escaped",
+      "category": "reflected_xss",
+      "kind": "reflected",
+      "body": "<!doctype html><p>&lt;bbtkxssaabbccddee&gt;</p>",
+      "marker": "bbtkxssaabbccddee",
+      "payload": "<bbtkxssaabbccddee>",
+      "content_type": "text/html",
+      "expected_decision": "escaped_safe",
+      "expected_context": "html_text",
+      "canaries": [
+        "bbtkxssaabbccddee"
+      ]
+    },
+    {
+      "id": "D-dom-exec",
+      "category": "dom_xss",
+      "kind": "dom",
+      "observation": {
+        "source_observed": true,
+        "sinks": [
+          "innerHTML"
+        ],
+        "marker_executed": true,
+        "sanitized": false,
+        "csp_blocked": false,
+        "classification": "ok"
+      },
+      "expected_state": "execution_observed",
+      "canaries": []
+    },
+    {
+      "id": "D-dom-safe",
+      "category": "dom_xss",
+      "kind": "dom",
+      "observation": {
+        "source_observed": true,
+        "sinks": [
+          "innerHTML"
+        ],
+        "marker_executed": false,
+        "sanitized": true,
+        "csp_blocked": false,
+        "classification": "ok"
+      },
+      "expected_state": "sanitization_applied",
+      "canaries": []
+    },
+    {
+      "id": "D-idor-cross",
+      "category": "idor",
+      "kind": "resource_correlation",
+      "owner": {
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "namespace_key": "doc:1",
+        "account_ref": "a",
+        "distinct_accounts_attested": true,
+        "session_ref": "s1",
+        "visibility": "private",
+        "body_digest": "sha256:aaa"
+      },
+      "actor": {
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "namespace_key": "doc:1",
+        "account_ref": "b",
+        "distinct_accounts_attested": true,
+        "session_ref": "s2",
+        "visibility": "private",
+        "body_digest": "sha256:bbb"
+      },
+      "expected_idor_review_signal": true,
+      "canaries": []
+    },
+    {
+      "id": "D-idor-public",
+      "category": "idor",
+      "kind": "resource_correlation",
+      "owner": {
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "namespace_key": "doc:1",
+        "account_ref": "a",
+        "distinct_accounts_attested": true,
+        "session_ref": "s1",
+        "visibility": "public",
+        "body_digest": "sha256:x"
+      },
+      "actor": {
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "namespace_key": "doc:1",
+        "account_ref": "b",
+        "distinct_accounts_attested": true,
+        "session_ref": "s2",
+        "visibility": "public",
+        "body_digest": "sha256:x"
+      },
+      "expected_idor_review_signal": false,
+      "canaries": []
+    },
+    {
+      "id": "D-corr-ready",
+      "category": "idor_disclosure_correlation",
+      "program_id": "prog-srev2",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D-corr-ready-o",
+          "status": 200,
+          "body_digest": "sha256:e3bbfff8d917b57ce58a3da7043359f554905baa1d1a2ded9cc0fe0f28c4cb84",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D-corr-ready-a",
+          "status": 403,
+          "body_digest": "sha256:c2abe93d24184e0fccb1c9626918a2dbe6a8c5f0aa90a1c34a2d5974ecc42957",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D-corr-ready-c",
+          "status": 200,
+          "body_digest": "sha256:1f4767f828de5bb425d0968f099e6d574b01a64ea7acee10ded7a199b1b7b90f",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"note\": \"BBTK_PRIVATE_DOC_MARKER_bench_v2\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA"
+      ],
+      "expected_state": "ready_for_manual_review"
+    },
+    {
+      "id": "D-corr-denied",
+      "category": "idor_disclosure_correlation",
+      "program_id": "prog-srev2",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D-corr-denied-o",
+          "status": 200,
+          "body_digest": "sha256:fd2602ccfe15c8dd5b4bfa3c508af5dd4d084ff31c0a6dee4ec0a387a8b53ffe",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D-corr-denied-a",
+          "status": 403,
+          "body_digest": "sha256:fc5dbaeb3b7dede918af36d57f1b771241bc07d8ee5a6166e676b51b1750907a",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D-corr-denied-c",
+          "status": 403,
+          "body_digest": "sha256:a2c4b359b0710dc15315016d51ac48cb69746d144b5e1fea2966bf20ed9dbc83",
+          "private_marker_present": false,
+          "private_marker": null,
+          "integrity": "valid",
+          "program_id": "prog-srev2",
+          "access_proof": "http_403",
+          "response": {
+            "status": 403,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"error\":\"denied\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_PRIVATE_DOC_MARKER_bench_v2",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmV2MnN5bnRoIn0.U1JFVjItU1lOVA"
+      ],
+      "expected_state": "denied_correctly"
+    },
+    {
+      "id": "D-dossier-rejected",
+      "category": "capture_to_dossier",
+      "evidence_content": {
+        "type": "access-control",
+        "note": "synthetic"
+      },
+      "package": {
+        "candidate_id": "D-dossier-rejected",
+        "category": "idor",
+        "declared_ledger_state": "rejected",
+        "expected_behavior": "Only the owner may read the document.",
+        "expected_behavior_source": "lab_spec",
+        "observed_behavior": "Access denied with 403.",
+        "observed_behavior_refs": [
+          "D-dossier-rejected-ev"
+        ],
+        "negative_controls": [
+          "anonymous_denied"
+        ],
+        "control_evidence_refs": [
+          "D-dossier-rejected-ev"
+        ],
+        "ai_confirmation": false,
+        "claims": [
+          {
+            "claim_id": "cl-state",
+            "kind": "ledger_state",
+            "text": "rejected",
+            "evidence_refs": [
+              "D-dossier-rejected-ev"
+            ]
+          },
+          {
+            "claim_id": "cl-obs",
+            "kind": "observed_behavior",
+            "text": "observed",
+            "evidence_refs": [
+              "D-dossier-rejected-ev"
+            ]
+          }
+        ],
+        "deterministic_result": {
+          "classification": "rejected_in_this_test"
+        }
+      },
+      "ledger": {
+        "schema_version": "bbtk-evidence-ledger/1",
+        "program": "srev2",
+        "candidates": [
+          {
+            "candidate_id": "D-dossier-rejected",
+            "surface_id": "D-dossier-rejected-s",
+            "category": "idor",
+            "state": "rejected",
+            "evidence_refs": [
+              "D-dossier-rejected-ev"
+            ],
+            "raised_by": "lab",
+            "rejection": {
+              "reason": "expected_behavior",
+              "detail": "denied"
+            },
+            "review": {
+              "reviewer": "bob",
+              "method": "human_manual",
+              "basis": "403",
+              "reviewed_at": "2026-10-27T00:00:00Z"
+            }
+          }
+        ],
+        "surfaces": [
+          {
+            "surface_id": "D-dossier-rejected-s",
+            "kind": "endpoint",
+            "ref": "https://lab.invalid/doc/1",
+            "status": "investigated",
+            "fingerprint": "fp-srev2"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "D-dossier-rejected-ev",
+            "path": "evidence/D-dossier-rejected.json",
+            "sha256": "PLACEHOLDER",
+            "provenance": {
+              "tool": "lab",
+              "captured_at": "2026-10-27T00:00:00Z"
+            },
+            "surface_fingerprint": "fp-srev2"
+          }
+        ]
+      },
+      "expected_validation_result": "complete_for_review",
+      "canaries": []
+    }
+  ]
+}

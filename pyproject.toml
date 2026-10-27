@@ -195,6 +195,8 @@ files = [
     "tests/test_disclosure_access_correlation.py",
     "bugbounty_toolkit/analysis/unified_security_triage.py",
     "tests/test_unified_security_triage.py",
+    "labs/security_research_eval_v2/evaluate.py",
+    "tests/test_security_research_eval_v2.py",
 ]
 
 [tool.coverage.run]

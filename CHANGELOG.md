@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+### Security research benchmark v2
+
+- New offline meta-benchmark `labs/security_research_eval_v2/` (DEV / frozen FINAL /
+  frozen STRESS) covering IDOR, reflected XSS, DOM XSS, information disclosure,
+  IDOR↔disclosure correlation, and capture→dossier. Reuses existing deterministic
+  pipelines; does not retune FINAL labels; reports regressions honestly. Offline
+  only; `finding_confirmed` stays false; secret canaries must not leak. Version
+  stays 0.2.2.
+
+
 ### Unified security-research triage
 
 - Extend dashboard triage / evidence-gap planner / investigation workflow /
