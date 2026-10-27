@@ -9,6 +9,8 @@ python -m labs.dom_observability_v3_eval.evaluate --split all
 
 The evaluator is offline. It blocks sockets and refuses a FINAL corpus whose
 bytes do not match `labs/dom_observability_v3_eval/final/MANIFEST.sha256`.
+Measured reproductions of the four v2 limits are in
+[dom-observability-v3-reproductions.md](dom-observability-v3-reproductions.md).
 
 ## Rules
 

@@ -140,6 +140,7 @@ files = [
     "labs/xss_evidence_v2_eval/evaluate.py",
     "labs/dom_observability_v3_eval/corpus.py",
     "labs/dom_observability_v3_eval/evaluate.py",
+    "labs/dom_observability_v3_eval/reproduce.py",
     "tests/test_xss_evidence_v2.py",
     "tests/test_dom_observability_v3.py",
     "tests/test_dom_observability_v3_browser.py",
