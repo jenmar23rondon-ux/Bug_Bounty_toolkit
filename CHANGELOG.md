@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+### Evidence-preserving semantic HTTP response diff
+
+- New offline `analysis/semantic_response_diff.py` compares stored HTTP responses
+  (status, content-type, location, content-length, JSON keys/types/values as
+  fingerprints, array order, HTML structure as data, non-sensitive headers) with
+  safe depth/size limits. Never sends requests, never confirms findings, never
+  hides authz-relevant or sensitive fields behind volatile rules.
+- Attaches PR #52 `assess_response` verbatim for context; denial classifier and
+  authorization workbench / dashboard UI are untouched.
+- Synthetic lab `labs/semantic_response_diff_eval/` (16 scenarios) with before/after
+  metrics. Version stays 0.2.2; `v0.2.1` untouched.
+
+
 ### Authorization denial-aware case assessment
 
 - New deterministic classifier `analysis/authorization_denial.py` separates

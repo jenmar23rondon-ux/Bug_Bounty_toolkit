@@ -50,6 +50,7 @@ jobs:
       - run: coverage report --include="bugbounty_toolkit/analysis/ai_backend.py,bugbounty_toolkit/analysis/dual_review.py" --fail-under=85
       - run: coverage report --include="bugbounty_toolkit/fuzzing/wordlist_manager.py" --fail-under=80
       - run: coverage report --include="bugbounty_toolkit/fuzzing/context_planner.py,bugbounty_toolkit/fuzzing/capture_adapter.py,bugbounty_toolkit/context_fuzz_lab_server.py" --fail-under=80
+      - run: coverage report --include="bugbounty_toolkit/analysis/semantic_response_diff.py" --fail-under=85
       - run: coverage report
 
   offline-lab:
