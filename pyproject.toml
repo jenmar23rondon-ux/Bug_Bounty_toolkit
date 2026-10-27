@@ -71,6 +71,7 @@ files = [
     "labs/actor_provenance_eval/corpus.py",
     "labs/actor_provenance_eval/evaluate.py",
     "tests/test_actor_provenance.py",
+    "bugbounty_toolkit/burp_passive_bridge.py",
     "bugbounty_toolkit/analysis/request_variation_plan.py",
     "labs/request_variation_eval/baseline.py",
     "labs/request_variation_eval/fixtures.py",
