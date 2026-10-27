@@ -4,7 +4,11 @@ Offline. `finding_confirmed` is false. `secret_leaks` is 0. `network_attempts` i
 IRB FINAL labels and `labs/independent_research_eval/final/MANIFEST.sha256` were not modified.
 Legacy `propose_object_handoff` was not changed.
 
-The new FINAL split was frozen in the previous commit (`MANIFEST.sha256`) before the first FINAL run.
+The first FINAL split was frozen (`446e72e`) before its first run. That run used
+`127.0.0.1:8177` / `8178` and tripped the independent-research historical-overlap
+guard. A second freeze (`34d247c`) moved the corpus to `127.0.0.1:8194` (alt
+`8195`) without retuning expected decisions, and the numbers below are that
+republished run. Decision metrics matched the first run.
 
 ## New lab (authored same-instance cases)
 
@@ -13,7 +17,7 @@ The new FINAL split was frozen in the previous commit (`MANIFEST.sha256`) before
 | DEV | 0.6667 / 1.0 / 0.8 | 1.0 / 1.0 / 1.0 | 0 | 0 | 1 | 0 | 0 |
 | FINAL (20 cases) | 0.2857 / 1.0 / 0.4444 | **1.0 / 1.0 / 1.0** | 0 | 0 | 6 | 0 | 0 |
 
-FINAL provenance completeness 1.0 on admitted pairs. Wall time 0.015 s. Peak memory 32.1 KiB.
+FINAL provenance completeness 1.0 on admitted pairs. Wall time 0.016879 s. Peak memory 32.1 KiB.
 Reference next to these numbers: IRB FINAL 45 pairing precision **0.65**, recall **0.963**.
 
 ## IRB FINAL 45 re-eval (labels frozen)

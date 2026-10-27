@@ -18,11 +18,11 @@
   "false_pairs": 0,
   "finding_confirmed": false,
   "ground_truth_sha256": "943e1dde07bc4e585a1edefc0a40ab94f6b0bf62051f8400217f1cd96cabd509",
-  "lab": "irb-1.0-compatibility-reeval",
+  "lab": "independent-research-final-compatibility-reeval",
   "labels_modified": false,
   "missed_valid_pairs": 26,
   "network_attempts": 0,
-  "peak_memory_kib": 33065.6,
+  "peak_memory_kib": 33070.3,
   "recall_regression": {
     "cause": "IRB ideal_pair_types credit any proposed resource type, including distinct instances (owner id N and actor id N+1). evaluate_compatibility admits a pair only when the canonical resource identity matches and the other controls hold. Distinct-instance handoff proposals therefore become missed pairs under the frozen type-level metric. Labels were not edited. Legacy handoff still emits those proposals; this re-eval does not flip that default.",
     "new_recall": 0.037,
@@ -724,5 +724,5 @@
   "scenarios": 45,
   "secret_leaks": 0,
   "split": "final",
-  "wall_time_s": 0.081614
+  "wall_time_s": 0.082044
 }

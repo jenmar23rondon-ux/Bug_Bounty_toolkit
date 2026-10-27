@@ -10,5 +10,5 @@
 Abstentions: 6. False pairs: 0. Missed valid pairs: 0.
 Cross-kind collisions admitted: 0. Cross-program contamination admitted: 0.
 Provenance completeness: 1.0.
-Wall time s: 0.015285. Peak memory KiB: 32.1.
+Wall time s: 0.016879. Peak memory KiB: 32.1.
 secret_leaks: 0. network_attempts: 0. finding_confirmed: False.
