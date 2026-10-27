@@ -298,6 +298,7 @@ def evidence_bundle(preview: BridgePreview) -> dict[str, Any]:
         for provenance in row["provenance"]:
             provenance["source_path"] = "private-burp-transfer"
             provenance["locator"] = locators[provenance["locator"]]
+    bundle["bundle_id"] = hashlib.sha256(_canonical(rows)).hexdigest()[:24]
     bundle["inputs"] = [{"format": SCHEMA, "records_parsed": len(preview.captures)}]
     bundle["bridge_review"] = preview.summary()
     return bundle

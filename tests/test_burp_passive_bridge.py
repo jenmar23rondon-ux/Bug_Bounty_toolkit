@@ -40,6 +40,7 @@ class PassiveBridgeTests(unittest.TestCase):
                 self.assertEqual(captured_response(item.exchange).body_text, '{"item":' + str(index) + "}")
             bundle = bridge.evidence_bundle(preview)
             self.assertEqual(len(bundle["records"]), 50)
+            self.assertEqual(bundle["bundle_id"], hashlib.sha256(bridge._canonical(bundle["records"])).hexdigest()[:24])
             self.assertTrue(
                 all(row["provenance"][0]["locator"].startswith("burp-passive:") for row in bundle["records"])
             )
