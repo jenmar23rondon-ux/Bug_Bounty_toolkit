@@ -63,6 +63,10 @@ from .analysis.information_disclosure import (
     assess_batch as assess_disclosure_batch,
     load_records as load_disclosure_records,
 )
+from .analysis.disclosure_access_correlation import (
+    correlate_batch as correlate_disclosure_access_batch,
+    load_cases as load_disclosure_access_cases,
+)
 from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
@@ -2336,6 +2340,9 @@ def cmd_analyze(args: argparse.Namespace) -> None:
     elif args.analysis == "disclosure":
         # Offline only: minimized indicators, never secret values; finding_confirmed stays false.
         data = assess_disclosure_batch(load_disclosure_records(text))
+    elif args.analysis == "disclosure-access":
+        # Offline correlation of disclosure indicators with IDOR/access evidence; never confirms.
+        data = correlate_disclosure_access_batch(load_disclosure_access_cases(text))
     elif args.analysis == "evidence":
         data = review_evidence(json.loads(text))
         if args.ai == "ollama":
@@ -4021,6 +4028,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", type=Path, help="Write the minimized summary (no secret values) to a local file"
     )
     disclosure.set_defaults(func=cmd_analyze)
+    disclosure_access = analyze_sub.add_parser(
+        "disclosure-access",
+        help="Offline correlate disclosure indicators with IDOR/access evidence; never confirms, never sends requests",
+    )
+    disclosure_access.add_argument(
+        "--input",
+        required=True,
+        type=Path,
+        help="Local JSON with owner/actor/cross correlation cases (see docs/disclosure-access-correlation.md)",
+    )
+    disclosure_access.add_argument(
+        "--output", type=Path, help="Write the minimized correlation summary (no secret values) to a local file"
+    )
+    disclosure_access.set_defaults(func=cmd_analyze)
     evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations with optional local Ollama review")
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)

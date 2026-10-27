@@ -1,0 +1,813 @@
+{
+  "cases": [
+    {
+      "id": "D1-cross-marker",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D1-cross-marker-owner",
+          "status": 200,
+          "body_digest": "sha256:2109aec0d7fb306fd0520723ff6239263785fb18c9d4b444ad45b329dbe58323",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D1-cross-marker-actor",
+          "status": 403,
+          "body_digest": "sha256:7dfbc7d9e707953d8fc03c4c2ee56e420629d65c6383eb7a3195e09396bf9068",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D1-cross-marker-cross",
+          "status": 200,
+          "body_digest": "sha256:0c4db9e2d6981fd77f3ca6a80afc5672df064af70c443562b24659cca749b3c9",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"doc_id\": \"1\", \"note\": \"BBTK_PRIVATE_DOC_MARKER_a1b2c3\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "ready_for_manual_review"
+    },
+    {
+      "id": "D2-denied",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D2-denied-owner",
+          "status": 200,
+          "body_digest": "sha256:1e5bde2e2a8546cfcfebec24c91a26053c1df5c1c749c2519bd0915257357e03",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D2-denied-actor",
+          "status": 403,
+          "body_digest": "sha256:364fb0507ef6c1b6649c9b291c9c9430f0e69ebe46bb9ce10b99d29a03629dd5",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D2-denied-cross",
+          "status": 403,
+          "body_digest": "sha256:1fa200ef506f8fbb9144e5cf86691c8a2934d6a88797fe67b8422a639f4f590d",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403",
+          "response": {
+            "status": 403,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"error\": \"forbidden\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "denied_correctly"
+    },
+    {
+      "id": "D3-shared",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "shared",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D3-shared-owner",
+          "status": 200,
+          "body_digest": "sha256:8d489a27b0a618e313bdb413f2ac1eadf6cff2dfea5da41f984fc75c84478e99",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D3-shared-actor",
+          "status": 403,
+          "body_digest": "sha256:db949f99944ba9f5bafd70375122ef152fda09e0e0261a926a09ae2145cdd767",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D3-shared-cross",
+          "status": 200,
+          "body_digest": "sha256:66a3b1cfeba17bf3566bd38b5f4ab02040c250535f3d55735bb0f1b3cbb1e63d",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"doc_id\": \"1\", \"note\": \"BBTK_PRIVATE_DOC_MARKER_a1b2c3\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "shared_resource"
+    },
+    {
+      "id": "D4-public",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "public",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D4-public-owner",
+          "status": 200,
+          "body_digest": "sha256:8dfe787ebd307c88b265e0b17594311ca3c64fad9f7d753639bbfa7b8e7473ab",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D4-public-actor",
+          "status": 403,
+          "body_digest": "sha256:76c6bfc615bdff539400179325d700ea304559b548e7e856fcfd9d068d636a04",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D4-public-cross",
+          "status": 200,
+          "body_digest": "sha256:5179924035f2ef5eb50ffc9af746779ae49da68b37ea96ec9b195943b2ba85bf",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"doc_id\": \"1\", \"note\": \"BBTK_PRIVATE_DOC_MARKER_a1b2c3\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "public_resource"
+    },
+    {
+      "id": "D5-reflected",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D5-reflected-owner",
+          "status": 200,
+          "body_digest": "sha256:ac6f79d17bd876b854858d6c18008b91a7eec6e18943c9aff94c404c5816fe27",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D5-reflected-actor",
+          "status": 403,
+          "body_digest": "sha256:5ce576478ab9e64a5fc134f481410ea987c8cbe9d9f6a45c902d23d1da2fa5ed",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D5-reflected-cross",
+          "status": 200,
+          "body_digest": "sha256:a9c9806b777df80d7e38d9ba5ec6d5111d995a37dcaa7181a71141bc7fe9c7c8",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"echo\": \"reflected\"}"
+          },
+          "reflected_from_request": true
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "reflected_or_example"
+    },
+    {
+      "id": "D6-example",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D6-example-owner",
+          "status": 200,
+          "body_digest": "sha256:f2cd301a4cfcd43fd4b6c0e185fdd9d41a062c26cc18cf59fa3d1d283dad000e",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D6-example-actor",
+          "status": 403,
+          "body_digest": "sha256:3bd13194524be720f1430bfe768f4e622bf0c95503cf423db870a65563af4c75",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D6-example-cross",
+          "status": 200,
+          "body_digest": "sha256:6a26a8343df4250c38f380981d3af1ac83de77a465fb2609d08d26e654ce180a",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"doc_id\": \"1\", \"note\": \"BBTK_PRIVATE_DOC_MARKER_a1b2c3\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw\"}"
+          },
+          "credential_shape": "example"
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "fake_or_invalid_credential_shape"
+    },
+    {
+      "id": "D7-fake-jwt",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D7-fake-jwt-owner",
+          "status": 200,
+          "body_digest": "sha256:a126679b4a83d132a14c9ae8300ca9b20ea57a4302de3589760f84c2c85adf83",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D7-fake-jwt-actor",
+          "status": 403,
+          "body_digest": "sha256:72114fe189b1e07c6be3a63ee4fab8a7c029acac4942df863bb93b006feaf5b0",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D7-fake-jwt-cross",
+          "status": 200,
+          "body_digest": "sha256:e9625233d4399f048644ef9a0bfbd954a14094410380ee02503b0ffad115d5e3",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"doc_id\": \"1\", \"note\": \"BBTK_PRIVATE_DOC_MARKER_a1b2c3\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw\"}"
+          },
+          "credential_shape": "fake_jwt"
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "fake_or_invalid_credential_shape"
+    },
+    {
+      "id": "D8-altered",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D8-altered-owner",
+          "status": 200,
+          "body_digest": "sha256:2005075a0c7447a521155fb186f8016a172479cfdbaca833268bc1bb341d2eba",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D8-altered-actor",
+          "status": 403,
+          "body_digest": "sha256:89597900ac9b056db7c289279de8f8c2aae26bdabdf0c41db4f16f5a3d1afe10",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D8-altered-cross",
+          "status": 200,
+          "body_digest": "sha256:b1c149fe594ffdd76dc9a93a7fc0f232101115780130901aa53599c109f8b1ad",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "altered",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"doc_id\": \"1\", \"note\": \"BBTK_PRIVATE_DOC_MARKER_a1b2c3\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "integrity_blocked"
+    },
+    {
+      "id": "D9-expired",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D9-expired-owner",
+          "status": 200,
+          "body_digest": "sha256:ce2ae89732915be69fa982f958f77c98dcfdad1a83783dc308576ccc76bc9896",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "expired",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D9-expired-actor",
+          "status": 403,
+          "body_digest": "sha256:4708a5c242fa8256ef45cdc19be2005b6003fa34043ff75a71967fb4964b39fd",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D9-expired-cross",
+          "status": 200,
+          "body_digest": "sha256:ab1e8b4a94c466d7375d4874e114a1d51f4b7f2f6bd468d5f097055f8ac17a59",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"doc_id\": \"1\", \"note\": \"BBTK_PRIVATE_DOC_MARKER_a1b2c3\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "integrity_blocked"
+    },
+    {
+      "id": "D10-cross-program",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D10-cross-program-owner",
+          "status": 200,
+          "body_digest": "sha256:2e6f6cb8cfc21b5f8c339ceb1500d9a693bb472f07a68fefa87ff355e52b1ec4",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D10-cross-program-actor",
+          "status": 403,
+          "body_digest": "sha256:f7ef3a5dd3f64fcbe0093275459215b178be5154c88a211f04ec6af6e955bb4f",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D10-cross-program-cross",
+          "status": 200,
+          "body_digest": "sha256:dfdb09a2d2fc6c1c038f487b8298478b43a06229ae90ac963294a15b4852854d",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "other-program",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"doc_id\": \"1\", \"note\": \"BBTK_PRIVATE_DOC_MARKER_a1b2c3\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "integrity_blocked"
+    },
+    {
+      "id": "D11-no-auth",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": false
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D11-no-auth-owner",
+          "status": 200,
+          "body_digest": "sha256:110dc2a5e0ae6eb3d860498fcc76007ee06bc8c267ced3b98a22c8a66f8d95fa",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D11-no-auth-actor",
+          "status": 403,
+          "body_digest": "sha256:5d3153e74e26405ccd023226f2a384546a84bbc65e4e1991e68d61e4ef33f38f",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        },
+        "cross": {
+          "capture_ref": "D11-no-auth-cross",
+          "status": 200,
+          "body_digest": "sha256:eef1bd3b2aee557beef47ce1fc0aa8e43991466aeb5aa92fa12ec29a7362721f",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200",
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"doc_id\": \"1\", \"note\": \"BBTK_PRIVATE_DOC_MARKER_a1b2c3\", \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw\"}"
+          }
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "auth_context_undeclared"
+    },
+    {
+      "id": "D12-no-cross",
+      "program_id": "prog-dac",
+      "auth_context": {
+        "actor_a": {
+          "account_ref": "acct-a",
+          "session_ref": "sess-a",
+          "role": "owner",
+          "attested": true
+        },
+        "actor_b": {
+          "account_ref": "acct-b",
+          "session_ref": "sess-b",
+          "role": "second",
+          "attested": true
+        }
+      },
+      "resource": {
+        "object_ref": "doc-1",
+        "kind": "kind:document",
+        "kind_status": "explicit",
+        "visibility_declared": "private",
+        "namespace_key": "doc:1"
+      },
+      "evidence": {
+        "owner_a": {
+          "capture_ref": "D12-no-cross-owner",
+          "status": 200,
+          "body_digest": "sha256:6ed05384e003cdf443ceba4c5909213407429d873810b25da46a1505500dda50",
+          "private_marker_present": true,
+          "private_marker": "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "private_resource_200"
+        },
+        "actor_b": {
+          "capture_ref": "D12-no-cross-actor",
+          "status": 403,
+          "body_digest": "sha256:56f17416d9a0e266d066a26cb75d98dd19c715ef557612ca06d9078bdd6d315d",
+          "private_marker_present": false,
+          "integrity": "valid",
+          "program_id": "prog-dac",
+          "access_proof": "http_403"
+        }
+      },
+      "canaries": [
+        "BBTK_CANARY_DAC_privmarker_9f8e7d",
+        "BBTK_PRIVATE_DOC_MARKER_a1b2c3",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWMtc3ludGgifQ.REFDLVNZTlRILVNJRw"
+      ],
+      "expected_state": "insufficient_evidence"
+    }
+  ]
+}

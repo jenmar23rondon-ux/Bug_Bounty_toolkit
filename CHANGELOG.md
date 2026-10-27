@@ -1,5 +1,17 @@
 ## [Unreleased]
 
+### Disclosure ↔ access correlation
+
+- New offline `analysis/disclosure_access_correlation.py` (`disclosure-access-correlation-v1`)
+  and `bbtk analyze disclosure-access`: correlates owner/second-actor/cross evidence with
+  information-disclosure indicators. Requires declared A/B auth context, cross capture and
+  integrity checks; distinguishes public/shared/private; never issues requests; emits only
+  salted marker fingerprints (no reversible secret fingerprints); `finding_confirmed` stays
+  false. States cover denied/shared/public/cross-marker/reflected/example/fake JWT/altered/
+  expired/cross-program. Reuses `assess_disclosure` and `correlate_resources`.
+- Lab `labs/disclosure_access_correlation_eval/` (DEV + frozen FINAL). Version stays 0.2.2.
+
+
 ### XSS evidence quality v2
 
 - Additive reflected context classifier (`xss/context_classifier.py`) covering
