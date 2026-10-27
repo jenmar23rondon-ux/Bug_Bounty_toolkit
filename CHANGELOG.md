@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+### XSS real-browser validation
+
+- New disposable loopback lab `labs/xss_real_browser_eval/` (endpoints A–P) that
+  scores the existing reflected classifier and DOM evidence states in real
+  Chromium when it is installed. Mock CI path records live metrics as
+  `NOT_MEASURED` instead of inventing browser results. `finding_confirmed` stays
+  false. No detector retune. Version stays 0.2.2.
+
 ### Local AI evidence assistant
 
 - New `analysis/local_ai_evidence_assistant.py` and `bbtk ai evidence-assist`:

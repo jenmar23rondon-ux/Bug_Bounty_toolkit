@@ -200,6 +200,18 @@ files = [
     "bugbounty_toolkit/analysis/local_ai_evidence_assistant.py",
     "labs/local_ai_evidence_assistant_eval/evaluate.py",
     "tests/test_local_ai_evidence_assistant.py",
+    "labs/xss_real_browser_eval/__init__.py",
+    "labs/xss_real_browser_eval/chromium_gate.py",
+    "labs/xss_real_browser_eval/evaluate.py",
+    "labs/xss_real_browser_eval/freeze.py",
+    "labs/xss_real_browser_eval/isolation.py",
+    "labs/xss_real_browser_eval/metrics.py",
+    "labs/xss_real_browser_eval/observe.py",
+    "labs/xss_real_browser_eval/secrets.py",
+    "labs/xss_real_browser_eval/server.py",
+    "labs/xss_real_browser_eval/spec.py",
+    "labs/xss_real_browser_eval/states.py",
+    "tests/test_xss_real_browser_eval.py",
 ]
 
 [tool.coverage.run]
