@@ -1,0 +1,401 @@
+{
+  "cases": [
+    {
+      "actor": {
+        "account_ref": "acct:SYNTH_ACTOR",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/orders/{id}",
+        "evidence_ref": "ev-actor",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_ACTOR"
+        },
+        "resource_id": "11",
+        "resource_kind": "order",
+        "resource_namespace": "http://127.0.0.1:8177|order",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"owner_label\": \"SYNTH_OWNER\"}}",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": true,
+        "session_ref": "sess:SYNTH_ACTOR",
+        "stale": false,
+        "status_code": 200,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/orders/11"
+      },
+      "alias_rules": [],
+      "expected_compatibility": "compatible",
+      "expected_pairing_decision": true,
+      "id": "DEV-same-instance",
+      "note": "DEV positive: one order id, two attested accounts.",
+      "owner": {
+        "account_ref": "acct:SYNTH_OWNER",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/orders/{id}",
+        "evidence_ref": "ev-owner",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_OWNER"
+        },
+        "resource_id": "11",
+        "resource_kind": "order",
+        "resource_namespace": "http://127.0.0.1:8177|order",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"note\": \"SYNTH_PRIVATE_MARKER\", \"owner_label\": \"SYNTH_OWNER\"}}",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": true,
+        "session_ref": "sess:SYNTH_OWNER",
+        "stale": false,
+        "status_code": 200,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/orders/11"
+      },
+      "tags": [
+        "positive"
+      ],
+      "valid_pair": true
+    },
+    {
+      "actor": {
+        "account_ref": "acct:SYNTH_ACTOR",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/orders/{id}",
+        "evidence_ref": "ev-actor",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_ACTOR"
+        },
+        "resource_id": "42",
+        "resource_kind": "order",
+        "resource_namespace": "http://127.0.0.1:8177|order",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"owner_label\": \"SYNTH_OWNER\"}}",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": true,
+        "session_ref": "sess:SYNTH_ACTOR",
+        "stale": false,
+        "status_code": 200,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/orders/42"
+      },
+      "alias_rules": [],
+      "expected_compatibility": "incompatible",
+      "expected_pairing_decision": false,
+      "id": "DEV-cross-kind",
+      "note": "DEV negative: same digits, different kind.",
+      "owner": {
+        "account_ref": "acct:SYNTH_OWNER",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/users/{id}",
+        "evidence_ref": "ev-owner",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_OWNER"
+        },
+        "resource_id": "42",
+        "resource_kind": "user",
+        "resource_namespace": "http://127.0.0.1:8177|user",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"note\": \"SYNTH_PRIVATE_MARKER\", \"owner_label\": \"SYNTH_OWNER\"}}",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": true,
+        "session_ref": "sess:SYNTH_OWNER",
+        "stale": false,
+        "status_code": 200,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/users/42"
+      },
+      "tags": [
+        "cross_kind"
+      ],
+      "valid_pair": false
+    },
+    {
+      "actor": {
+        "account_ref": "acct:SYNTH_ACTOR",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/orders/{id}",
+        "evidence_ref": "ev-actor",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_ACTOR"
+        },
+        "resource_id": "7",
+        "resource_kind": "order",
+        "resource_namespace": "http://127.0.0.1:8177|order",
+        "response_body": "",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": false,
+        "session_ref": "sess:SYNTH_ACTOR",
+        "stale": false,
+        "status_code": null,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/orders/7"
+      },
+      "alias_rules": [],
+      "expected_compatibility": "insufficient_evidence",
+      "expected_pairing_decision": false,
+      "id": "DEV-missing-response",
+      "note": "DEV negative: actor response artifact absent.",
+      "owner": {
+        "account_ref": "acct:SYNTH_OWNER",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/orders/{id}",
+        "evidence_ref": "ev-owner",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_OWNER"
+        },
+        "resource_id": "7",
+        "resource_kind": "order",
+        "resource_namespace": "http://127.0.0.1:8177|order",
+        "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"note\": \"SYNTH_PRIVATE_MARKER\", \"owner_label\": \"SYNTH_OWNER\"}}",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": true,
+        "session_ref": "sess:SYNTH_OWNER",
+        "stale": false,
+        "status_code": 200,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/orders/7"
+      },
+      "tags": [
+        "abstain"
+      ],
+      "valid_pair": false
+    },
+    {
+      "actor": {
+        "account_ref": "acct:SYNTH_ACTOR",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/orders/{id}",
+        "evidence_ref": "ev-actor",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_ACTOR"
+        },
+        "resource_id": "7",
+        "resource_kind": "order",
+        "resource_namespace": "http://127.0.0.1:8177|order",
+        "response_body": "{\"order\":{\"owner_label\":\"SYNTH_OWNER\",\"id\":\"11\"},\"ok\":true}",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": true,
+        "session_ref": "sess:SYNTH_ACTOR",
+        "stale": false,
+        "status_code": 200,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/orders/7"
+      },
+      "alias_rules": [],
+      "expected_compatibility": "compatible",
+      "expected_pairing_decision": true,
+      "id": "DEV-json-equivalent",
+      "note": "DEV control: reordered JSON must stay compatible.",
+      "owner": {
+        "account_ref": "acct:SYNTH_OWNER",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/orders/{id}",
+        "evidence_ref": "ev-owner",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_OWNER"
+        },
+        "resource_id": "7",
+        "resource_kind": "order",
+        "resource_namespace": "http://127.0.0.1:8177|order",
+        "response_body": "{\"ok\":true,\"order\":{\"id\":\"11\",\"owner_label\":\"SYNTH_OWNER\"}}",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": true,
+        "session_ref": "sess:SYNTH_OWNER",
+        "stale": false,
+        "status_code": 200,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/orders/7"
+      },
+      "tags": [
+        "positive",
+        "json"
+      ],
+      "valid_pair": true
+    },
+    {
+      "actor": {
+        "account_ref": "acct:SYNTH_ACTOR",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/orders/{id}",
+        "evidence_ref": "ev-actor",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_ACTOR"
+        },
+        "resource_id": "7",
+        "resource_kind": "order",
+        "resource_namespace": "http://127.0.0.1:8177|order",
+        "response_body": "{\"acl\":\"shared\",\"ok\":true,\"order\":{\"id\":\"7\",\"shared_with\":[\"a\"]}}",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": true,
+        "session_ref": "sess:SYNTH_ACTOR",
+        "stale": false,
+        "status_code": 200,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/orders/7"
+      },
+      "alias_rules": [],
+      "expected_compatibility": "incompatible",
+      "expected_pairing_decision": false,
+      "id": "DEV-shared",
+      "note": "DEV negative: shared ACL.",
+      "owner": {
+        "account_ref": "acct:SYNTH_OWNER",
+        "array_object_ids": [],
+        "artifact_sha256": "sha256:intact",
+        "batch_id": "batch-1",
+        "captured_at": "2026-10-01T00:00:00+00:00",
+        "continuity_declared": true,
+        "endpoint_template": "/orders/{id}",
+        "evidence_ref": "ev-owner",
+        "integrity_sha256": "sha256:intact",
+        "kind_status": "explicit",
+        "method": "GET",
+        "origin": "http://127.0.0.1:8177",
+        "parent_ids": [],
+        "program": "synth-lab",
+        "query_id_values": [],
+        "request_headers": {
+          "authorization": "Bearer SYNTH_OWNER"
+        },
+        "resource_id": "7",
+        "resource_kind": "order",
+        "resource_namespace": "http://127.0.0.1:8177|order",
+        "response_body": "{\"acl\":\"shared\",\"ok\":true,\"order\":{\"id\":\"7\",\"shared_with\":[\"a\"]}}",
+        "response_headers": {
+          "content-type": "application/json"
+        },
+        "response_present": true,
+        "session_ref": "sess:SYNTH_OWNER",
+        "stale": false,
+        "status_code": 200,
+        "temporal_not_after": "2026-11-01T00:00:00+00:00",
+        "temporal_not_before": "2026-09-01T00:00:00+00:00",
+        "url": "http://127.0.0.1:8177/orders/7"
+      },
+      "tags": [
+        "shared"
+      ],
+      "valid_pair": false
+    }
+  ],
+  "split": "dev"
+}
