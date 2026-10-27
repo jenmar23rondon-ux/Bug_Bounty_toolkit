@@ -1,5 +1,21 @@
 ## [Unreleased]
 
+### IDOR false-negative recovery
+
+- Overlay `analysis/blocker_dependency_graph.py` (`bbtk-blocker-dependency-graph/1`)
+  on the evidence-gap planner. Effective states are computed at plan time.
+  Historical Evidence Ledger states are not rewritten. `finding_confirmed` stays false.
+  Registration-time `registered_object_refs` / `depends_on` let a same-surface
+  candidate with disjoint objects stay reviewable when a sibling artifact is invalid
+  (V3-A11) while shared objects and unknown object identity stay blocked (V3-A10, D11–D16).
+- Session-channel query names (`api_key`) are not a second resource id when one
+  other difference remains (E06). Session-only query pairs stay rejected.
+- IDOR e2e research may read a HAR past the 32-entry window up to the 256-entry
+  observation budget. Default import stays 32. A numbered collection token such as
+  `estimates2` is an open-vocabulary kind when its alphabetic stem is not generic
+  (E01). Version stays 0.2.2.
+
+
 ### Local AI evidence assistant
 
 - New `analysis/local_ai_evidence_assistant.py` and `bbtk ai evidence-assist`:
