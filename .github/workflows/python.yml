@@ -27,6 +27,7 @@ jobs:
       - run: bash -n labs/idor_lab/run.sh
       - run: python scripts/ai_provider_benchmark.py > /dev/null
       - run: python labs/unified_ai_eval/run.py > /dev/null
+      - run: python -m labs.investigation_workflow_eval.run_lab > /dev/null
       - run: ruff check bugbounty_toolkit tests scripts skills labs
       - run: ruff format --check bugbounty_toolkit tests scripts skills labs
       - run: mypy --strict
