@@ -67,6 +67,7 @@ from .analysis.disclosure_access_correlation import (
     correlate_batch as correlate_disclosure_access_batch,
     load_cases as load_disclosure_access_cases,
 )
+from .analysis.disclosure_context import assess_context_batch
 from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
@@ -2343,6 +2344,9 @@ def cmd_analyze(args: argparse.Namespace) -> None:
     elif args.analysis == "disclosure-access":
         # Offline correlation of disclosure indicators with IDOR/access evidence; never confirms.
         data = correlate_disclosure_access_batch(load_disclosure_access_cases(text))
+    elif args.analysis == "disclosure-context":
+        # Exposure model over stored responses. Reuses disclosure and access correlation. Never confirms.
+        data = assess_context_batch(load_disclosure_records(text))
     elif args.analysis == "evidence":
         data = review_evidence(json.loads(text))
         if args.ai == "ollama":
@@ -2916,10 +2920,32 @@ def cmd_ai_dual_review(args: argparse.Namespace) -> None:
             "critic": critic.describe(),
             "finding_confirmed": False,
             "execution_performed": False,
+            "advisory_normalization": bool(getattr(args, "normalize_advisory", False)),
             "reason": "Evidence minimized locally; no AI provider was contacted.",
         }
+        if args.normalize_advisory:
+            from .analysis.ai_evidence_contract_v2 import build_contract_packet
+
+            packet = build_contract_packet(data)
+            result["contract_v2"] = packet
+            result["normalized_advisory"] = {
+                "enabled": False,
+                "applied": False,
+                "reason": "dry_run_models_not_called",
+                "finding_confirmed": False,
+                "evidence_ledger_modified": False,
+                "requests_emitted": False,
+                "investigation_approved": False,
+                "ai_has_classification_authority": False,
+                "tools_available": False,
+            }
     else:
-        result = dual_review(data, analyst, critic)
+        result = dual_review(
+            data,
+            analyst,
+            critic,
+            advisory_normalization=bool(getattr(args, "normalize_advisory", False)),
+        )
     print(f"[i] {SECOND_OPINION} Consensus between models is not confirmation.")
     print(json.dumps(result, indent=2, sort_keys=True))
 
@@ -4069,6 +4095,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", type=Path, help="Write the minimized correlation summary (no secret values) to a local file"
     )
     disclosure_access.set_defaults(func=cmd_analyze)
+    disclosure_context = analyze_sub.add_parser(
+        "disclosure-context",
+        help="Offline disclosure exposure model (audience, provenance, intended visibility); never confirms",
+    )
+    disclosure_context.add_argument(
+        "--input",
+        required=True,
+        type=Path,
+        help="Local JSON with stored response records (see docs/disclosure-context-quality-v2.md)",
+    )
+    disclosure_context.add_argument(
+        "--output", type=Path, help="Write the minimized exposure summary (no secret values) to a local file"
+    )
+    disclosure_context.set_defaults(func=cmd_analyze)
     evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations with optional local Ollama review")
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)
@@ -4634,6 +4674,11 @@ def build_parser() -> argparse.ArgumentParser:
     ai_dual.add_argument("--critic-model", required=True, help="Model B (contradictions and missing controls)")
     ai_dual.add_argument("--ai-timeout", type=positive_float, default=120.0, help="Per-call timeout in seconds")
     ai_dual.add_argument("--dry-run", action="store_true", help="Minimize locally without contacting any model")
+    ai_dual.add_argument(
+        "--normalize-advisory",
+        action="store_true",
+        help="Opt in to contract-v2 advisory normalization. Never confirms a finding or rewrites the ledger.",
+    )
     ai_dual.set_defaults(func=cmd_ai_dual_review)
 
     ai_assist = ai_sub.add_parser(

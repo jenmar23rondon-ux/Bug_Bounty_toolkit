@@ -1,5 +1,72 @@
 ## [Unreleased]
 
+### AI evidence contract v2
+
+- New `analysis/ai_evidence_contract_v2.py`: schema v2 packets (booleans, enums,
+  synthetic refs) so shared-resource signals, structured contradictions, and
+  explicit unknowns survive minimization. A privacy linter rejects cookies,
+  bearers, passwords, bodies, query secrets, localStorage, account ids, raw
+  HTML, secret hashes, and embedded instructions. Semantic-completeness metrics
+  compare the packet with the v1 minimized bundle.
+- Opt-in `dual_review(..., advisory_normalization=True)` and
+  `bbtk ai dual-review --normalize-advisory`. The production comparator is
+  unchanged. The normalized advisory cannot confirm a finding, write the
+  Evidence Ledger, rewrite controls, or call tools. `finding_confirmed` stays
+  false.
+- Lab `labs/ai_evidence_contract_v2_eval/` (DEV + frozen FINAL) runs in-process
+  only. Version stays 0.2.2.
+
+### Real local LLM eval (RTX 3060)
+
+- Extend `labs/local_llm_quality_eval` with read-only GPU/model discovery, a
+  committed run-metadata schema, and `--discover` / `--not-measured`.
+  Live Qwen/DeepSeek metrics stay `NOT_MEASURED` when no GPU or local model
+  is present. The runner does not download models, does not give the model
+  tools, and does not grant classification authority. `finding_confirmed`
+  stays false. Frozen FINAL labels are unchanged. Version stays 0.2.2.
+
+### Disclosure context quality v2
+
+- New offline `analysis/disclosure_context.py` (`disclosure-context-quality-v2`) and
+  `bbtk analyze disclosure-context`. Every candidate carries an exposure model
+  (shape, origin, observed and intended audience, auth state, integrity,
+  completeness, confidence basis, human verification). A candidate is reviewable
+  only when evidence shows the data should not be available to that audience;
+  otherwise the result is inconclusive. `finding_confirmed` stays false.
+  Reuses information-disclosure scanning and disclosure↔access correlation;
+  does not add a second IDOR engine. Lab `labs/disclosure_context_v2_eval/`
+  (DEV + frozen FINAL + frozen STRESS) plus a re-score of the prior 18 FINAL
+  disclosure cases with labels unchanged. Version stays 0.2.2.
+
+### Stored XSS lifecycle validation
+
+- Lab `labs/stored_xss_lifecycle_eval/` drives cases 1–17 through the existing
+  `xss/stored_local.py` write → store → render → browser chain. It does not
+  duplicate that chain and does not change DOM hooks. Disposable loopback
+  storage only; `finding_confirmed` stays false; live Chromium metrics are
+  `NOT_MEASURED` when Chromium is absent. Version stays 0.2.2.
+
+### DOM observability v3
+
+- Additive loopback DOM observer (`xss/dom_observability.py`, `xss/dom_observer.py`):
+  early `add_init_script` hooks, async sinks inside a bounded window, and
+  same-origin frame reads. Isolated and cross-origin frames stay `unsupported`
+  (no Same-Origin Policy bypass). A marker in the URL is `source_available`,
+  not `source_observed`. `innerHTML` alone is never execution.
+  `finding_confirmed` stays false. DOM local v2 classifications are unchanged.
+- Lab `labs/dom_observability_v3_eval/` (DEV + frozen FINAL) scores the new
+  observer against the DOM local v2 baseline. Version stays 0.2.2.
+
+### Authorization control matrix
+
+- New offline `analysis/authorization_control_matrix.py` annotates owner,
+  second-actor, and anonymous comparisons when captures already exist. It does
+  not send requests, rewrite session identity, invent actors, or confirm
+  findings. Isolated 401 is not expiry; a different token is not a new identity
+  without provenance; a missing mandatory control is `blocked`, never an
+  automatic negative. Lab `labs/authorization_control_matrix_eval/` (DEV +
+  frozen FINAL). Ranking and pairing engines are unchanged. Version stays 0.2.2.
+
 ### IDOR false-negative recovery
 
 - Overlay `analysis/blocker_dependency_graph.py` (`bbtk-blocker-dependency-graph/1`)

@@ -1,0 +1,416 @@
+{
+  "final_frozen": true,
+  "final_sha256": "29d70750cc3bdffbb19c258a5b504d9ee66119ffcce1f8e080327fc28aa17719",
+  "lab": "dom_observability_v3",
+  "splits": {
+    "dev": {
+      "automatic_confirmations": 0,
+      "elapsed_seconds": 0.074639,
+      "external_requests": 0,
+      "finding_confirmed_always_false": true,
+      "latency_ms_per_case": 2.7644,
+      "memory_peak_bytes": 103472,
+      "network_attempts": 0,
+      "secret_leaks": 0,
+      "v2": {
+        "automatic_confirmations": 0,
+        "cases": 27,
+        "dom_state_accuracy": 0.4074,
+        "execution_accuracy": 0.8148,
+        "external_requests": 0,
+        "false_source_reads": 0,
+        "finding_confirmed_always_false": true,
+        "legacy_url_source_claims": 2,
+        "mismatches": [
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-prehook-inert"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-prehook-inert"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-settimeout"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-settimeout"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-promise"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-promise"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-local-fetch"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-local-fetch"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-button-click"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-button-click"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-delayed-render"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-delayed-render"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-spa-route"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-spa-route"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-hashchange"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-hashchange"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-popstate"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-popstate"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-late-insert"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-late-insert"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-contextual-fragment"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-contextual-fragment"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-eval-inert"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-eval-inert"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-same-origin-frame"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-same-origin-frame"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-swapped-frame"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-swapped-frame"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "dev-sanitized"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "dev-sanitized"
+          },
+          {
+            "field": "dom_state",
+            "got": "sink_reached",
+            "id": "dev-csp"
+          }
+        ],
+        "missed_case_coverage": 0.0,
+        "missed_cases": 15,
+        "negative_retention": 1.0,
+        "no_exec_from_innerhtml_alone": 1.0,
+        "outcome_accuracy": 0.4444,
+        "secret_leaks": 0,
+        "source_available_without_read": 2,
+        "source_read_accuracy": 0.8148
+      },
+      "v3": {
+        "automatic_confirmations": 0,
+        "cases": 27,
+        "dom_state_accuracy": 1.0,
+        "execution_accuracy": 1.0,
+        "external_requests": 0,
+        "false_source_reads": 0,
+        "finding_confirmed_always_false": true,
+        "legacy_url_source_claims": 0,
+        "mismatches": [],
+        "missed_case_coverage": 1.0,
+        "missed_cases": 15,
+        "negative_retention": 1.0,
+        "no_exec_from_innerhtml_alone": 1.0,
+        "outcome_accuracy": 1.0,
+        "secret_leaks": 0,
+        "source_available_without_read": 2,
+        "source_read_accuracy": 1.0
+      }
+    },
+    "final": {
+      "automatic_confirmations": 0,
+      "elapsed_seconds": 0.074641,
+      "external_requests": 0,
+      "finding_confirmed_always_false": true,
+      "latency_ms_per_case": 2.7645,
+      "memory_peak_bytes": 70684,
+      "network_attempts": 0,
+      "secret_leaks": 0,
+      "v2": {
+        "automatic_confirmations": 0,
+        "cases": 27,
+        "dom_state_accuracy": 0.4074,
+        "execution_accuracy": 0.8148,
+        "external_requests": 0,
+        "false_source_reads": 0,
+        "finding_confirmed_always_false": true,
+        "legacy_url_source_claims": 2,
+        "mismatches": [
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-prehook-inert"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-prehook-inert"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-settimeout"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-settimeout"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-promise"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-promise"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-local-fetch"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-local-fetch"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-button-click"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-button-click"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-delayed-render"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-delayed-render"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-spa-route"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-spa-route"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-hashchange"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-hashchange"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-popstate"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-popstate"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-late-insert"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-late-insert"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-contextual-fragment"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-contextual-fragment"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-eval-inert"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-eval-inert"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-same-origin-frame"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-same-origin-frame"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-swapped-frame"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-swapped-frame"
+          },
+          {
+            "field": "outcome",
+            "got": "not_observed",
+            "id": "final-sanitized"
+          },
+          {
+            "field": "dom_state",
+            "got": "inconclusive",
+            "id": "final-sanitized"
+          },
+          {
+            "field": "dom_state",
+            "got": "sink_reached",
+            "id": "final-csp"
+          }
+        ],
+        "missed_case_coverage": 0.0,
+        "missed_cases": 15,
+        "negative_retention": 1.0,
+        "no_exec_from_innerhtml_alone": 1.0,
+        "outcome_accuracy": 0.4444,
+        "secret_leaks": 0,
+        "source_available_without_read": 2,
+        "source_read_accuracy": 0.8148
+      },
+      "v3": {
+        "automatic_confirmations": 0,
+        "cases": 27,
+        "dom_state_accuracy": 1.0,
+        "execution_accuracy": 1.0,
+        "external_requests": 0,
+        "false_source_reads": 0,
+        "finding_confirmed_always_false": true,
+        "legacy_url_source_claims": 0,
+        "mismatches": [],
+        "missed_case_coverage": 1.0,
+        "missed_cases": 15,
+        "negative_retention": 1.0,
+        "no_exec_from_innerhtml_alone": 1.0,
+        "outcome_accuracy": 1.0,
+        "secret_leaks": 0,
+        "source_available_without_read": 2,
+        "source_read_accuracy": 1.0
+      }
+    }
+  },
+  "version": "0.2.2"
+}

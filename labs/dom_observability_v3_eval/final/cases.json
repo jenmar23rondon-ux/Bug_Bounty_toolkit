@@ -1,0 +1,1039 @@
+{
+  "cases": [
+    {
+      "case_id": "final-prehook-inert",
+      "declared_interactions": [],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": true,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "api": "document.URL",
+              "t_ms": 1,
+              "type": "source_read"
+            },
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 3,
+              "type": "sink"
+            },
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": true,
+      "marker_in_url": true,
+      "navigation_id": "nav-final-prehook-inert",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": true,
+      "v2_instrumentation": "late"
+    },
+    {
+      "case_id": "final-settimeout",
+      "declared_interactions": [],
+      "expected_dom_state": "execution_observed",
+      "expected_executed": true,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 5,
+              "type": "domcontentloaded"
+            },
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 520,
+              "type": "sink"
+            },
+            {
+              "mechanism": "marker_assignment",
+              "t_ms": 521,
+              "type": "execution"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-settimeout",
+      "negative": false,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-promise",
+      "declared_interactions": [],
+      "expected_dom_state": "execution_observed",
+      "expected_executed": true,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 5,
+              "type": "domcontentloaded"
+            },
+            {
+              "raw_marker": true,
+              "sink": "insertAdjacentHTML",
+              "t_ms": 610,
+              "type": "sink"
+            },
+            {
+              "mechanism": "marker_assignment",
+              "t_ms": 611,
+              "type": "execution"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-promise",
+      "negative": false,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-local-fetch",
+      "declared_interactions": [],
+      "expected_dom_state": "execution_observed",
+      "expected_executed": true,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 5,
+              "type": "domcontentloaded"
+            },
+            {
+              "loopback": true,
+              "t_ms": 10,
+              "type": "fetch"
+            },
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 640,
+              "type": "sink"
+            },
+            {
+              "mechanism": "dialog",
+              "t_ms": 641,
+              "type": "execution"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-local-fetch",
+      "negative": false,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-button-click",
+      "declared_interactions": [
+        "click:#go"
+      ],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            },
+            {
+              "raw_marker": true,
+              "requires": [
+                "click:#go"
+              ],
+              "sink": "insertAdjacentHTML",
+              "t_ms": 70,
+              "type": "sink"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-button-click",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-delayed-render",
+      "declared_interactions": [],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 5,
+              "type": "domcontentloaded"
+            },
+            {
+              "raw_marker": true,
+              "sink": "outerHTML",
+              "t_ms": 720,
+              "type": "sink"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-delayed-render",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-spa-route",
+      "declared_interactions": [
+        "spa:#/item"
+      ],
+      "expected_dom_state": "execution_observed",
+      "expected_executed": true,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            },
+            {
+              "raw_marker": true,
+              "requires": [
+                "spa:#/item"
+              ],
+              "sink": "innerHTML",
+              "t_ms": 80,
+              "type": "sink"
+            },
+            {
+              "mechanism": "marker_assignment",
+              "requires": [
+                "spa:#/item"
+              ],
+              "t_ms": 81,
+              "type": "execution"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-spa-route",
+      "negative": false,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-hashchange",
+      "declared_interactions": [
+        "hashchange"
+      ],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": true,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            },
+            {
+              "api": "location.hash",
+              "requires": [
+                "hashchange"
+              ],
+              "t_ms": 65,
+              "type": "source_read"
+            },
+            {
+              "raw_marker": true,
+              "requires": [
+                "hashchange"
+              ],
+              "sink": "innerHTML",
+              "t_ms": 67,
+              "type": "sink"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": true,
+      "marker_in_url": true,
+      "navigation_id": "nav-final-hashchange",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": true,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-popstate",
+      "declared_interactions": [
+        "popstate"
+      ],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            },
+            {
+              "raw_marker": true,
+              "requires": [
+                "popstate"
+              ],
+              "sink": "document.write",
+              "t_ms": 90,
+              "type": "sink"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-popstate",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-late-insert",
+      "declared_interactions": [],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 5,
+              "type": "domcontentloaded"
+            },
+            {
+              "raw_marker": true,
+              "sink": "insertAdjacentHTML",
+              "t_ms": 880,
+              "type": "sink"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-late-insert",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-contextual-fragment",
+      "declared_interactions": [],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "raw_marker": true,
+              "sink": "createContextualFragment",
+              "t_ms": 4,
+              "type": "sink"
+            },
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-contextual-fragment",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-eval-inert",
+      "declared_interactions": [],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "raw_marker": true,
+              "sink": "eval",
+              "t_ms": 6,
+              "type": "sink"
+            },
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-eval-inert",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-same-origin-frame",
+      "declared_interactions": [],
+      "expected_dom_state": "execution_observed",
+      "expected_executed": true,
+      "expected_outcome": "observed",
+      "expected_source_observed": true,
+      "focus_frame_id": "child",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        },
+        {
+          "accessible": true,
+          "events": [
+            {
+              "api": "document.URL",
+              "t_ms": 4,
+              "type": "source_read"
+            },
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 5,
+              "type": "sink"
+            },
+            {
+              "mechanism": "marker_assignment",
+              "t_ms": 6,
+              "type": "execution"
+            }
+          ],
+          "frame_id": "child",
+          "relation": "same_origin"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-same-origin-frame",
+      "negative": false,
+      "previously_missed": true,
+      "source_was_read": true,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-swapped-frame",
+      "declared_interactions": [],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "frame-b",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        },
+        {
+          "accessible": true,
+          "events": [
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 20,
+              "type": "sink"
+            }
+          ],
+          "frame_id": "frame-b",
+          "relation": "swapped"
+        }
+      ],
+      "innerhtml_without_execution": true,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-swapped-frame",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-sanitized",
+      "declared_interactions": [],
+      "expected_dom_state": "sanitization_applied",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": true,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "api": "document.URL",
+              "t_ms": 2,
+              "type": "source_read"
+            },
+            {
+              "escaped_marker": true,
+              "raw_marker": false,
+              "sink": "innerHTML",
+              "t_ms": 3,
+              "type": "sink"
+            },
+            {
+              "t_ms": 4,
+              "type": "sanitize"
+            },
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-sanitized",
+      "negative": true,
+      "previously_missed": true,
+      "source_was_read": true,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-isolated-frame",
+      "declared_interactions": [],
+      "expected_dom_state": "inconclusive",
+      "expected_executed": false,
+      "expected_outcome": "unsupported",
+      "expected_source_observed": false,
+      "focus_frame_id": "sand",
+      "frames": [
+        {
+          "accessible": false,
+          "events": [
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 4,
+              "type": "sink"
+            },
+            {
+              "mechanism": "marker_assignment",
+              "t_ms": 6,
+              "type": "execution"
+            }
+          ],
+          "frame_id": "sand",
+          "relation": "isolated",
+          "sandbox": ""
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-isolated-frame",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-no-access-frame",
+      "declared_interactions": [],
+      "expected_dom_state": "inconclusive",
+      "expected_executed": false,
+      "expected_outcome": "unsupported",
+      "expected_source_observed": false,
+      "focus_frame_id": "other",
+      "frames": [
+        {
+          "accessible": false,
+          "events": [
+            {
+              "raw_marker": true,
+              "sink": "eval",
+              "t_ms": 4,
+              "type": "sink"
+            }
+          ],
+          "frame_id": "other",
+          "relation": "no_access"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-no-access-frame",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-missing-frame",
+      "declared_interactions": [],
+      "expected_dom_state": "inconclusive",
+      "expected_executed": false,
+      "expected_outcome": "inconclusive",
+      "expected_source_observed": false,
+      "focus_frame_id": "gone",
+      "frames": [
+        {
+          "accessible": false,
+          "events": [],
+          "frame_id": "gone",
+          "relation": "missing"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-missing-frame",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-unmounted-frame",
+      "declared_interactions": [],
+      "expected_dom_state": "inconclusive",
+      "expected_executed": false,
+      "expected_outcome": "inconclusive",
+      "expected_source_observed": false,
+      "focus_frame_id": "temp",
+      "frames": [
+        {
+          "accessible": false,
+          "events": [
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 4,
+              "type": "sink"
+            }
+          ],
+          "frame_id": "temp",
+          "relation": "unmounted"
+        }
+      ],
+      "innerhtml_without_execution": true,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-unmounted-frame",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-partial-navigation",
+      "declared_interactions": [],
+      "expected_dom_state": "inconclusive",
+      "expected_executed": false,
+      "expected_outcome": "inconclusive",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            },
+            {
+              "t_ms": 30,
+              "type": "navigation_partial"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-partial-navigation",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-never-fired",
+      "declared_interactions": [],
+      "expected_dom_state": "inconclusive",
+      "expected_executed": false,
+      "expected_outcome": "not_observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            },
+            {
+              "fired": false,
+              "name": "click",
+              "t_ms": 15,
+              "type": "event"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-never-fired",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-url-unread",
+      "declared_interactions": [],
+      "expected_dom_state": "inconclusive",
+      "expected_executed": false,
+      "expected_outcome": "not_observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "t_ms": 0,
+              "type": "document_start"
+            },
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": true,
+      "navigation_id": "nav-final-url-unread",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-innerhtml-early",
+      "declared_interactions": [],
+      "expected_dom_state": "sink_reached",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": true,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "api": "document.URL",
+              "t_ms": 1,
+              "type": "source_read"
+            },
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 3,
+              "type": "sink"
+            },
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": true,
+      "marker_in_url": true,
+      "navigation_id": "nav-final-innerhtml-early",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": true,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-textcontent",
+      "declared_interactions": [],
+      "expected_dom_state": "inconclusive",
+      "expected_executed": false,
+      "expected_outcome": "not_observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "sink": "textContent",
+              "t_ms": 2,
+              "type": "property_write"
+            },
+            {
+              "raw_marker": true,
+              "sink": "textContent",
+              "t_ms": 3,
+              "type": "sink"
+            },
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": true,
+      "navigation_id": "nav-final-textcontent",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-immediate-exec",
+      "declared_interactions": [],
+      "expected_dom_state": "execution_observed",
+      "expected_executed": true,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 2,
+              "type": "sink"
+            },
+            {
+              "mechanism": "marker_assignment",
+              "t_ms": 3,
+              "type": "execution"
+            },
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-immediate-exec",
+      "negative": false,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-csp",
+      "declared_interactions": [],
+      "expected_dom_state": "execution_blocked_csp",
+      "expected_executed": false,
+      "expected_outcome": "observed",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "raw_marker": true,
+              "sink": "innerHTML",
+              "t_ms": 2,
+              "type": "sink"
+            },
+            {
+              "t_ms": 3,
+              "type": "csp_block"
+            },
+            {
+              "t_ms": 11,
+              "type": "domcontentloaded"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": true,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-csp",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    },
+    {
+      "case_id": "final-instrumentation-error",
+      "declared_interactions": [],
+      "expected_dom_state": "inconclusive_browser_error",
+      "expected_executed": false,
+      "expected_outcome": "inconclusive",
+      "expected_source_observed": false,
+      "focus_frame_id": "main",
+      "frames": [
+        {
+          "accessible": true,
+          "events": [
+            {
+              "detail": "defineProperty failed",
+              "t_ms": 0,
+              "type": "instrumentation_error"
+            }
+          ],
+          "frame_id": "main",
+          "relation": "main"
+        }
+      ],
+      "innerhtml_without_execution": false,
+      "marker_in_url": false,
+      "navigation_id": "nav-final-instrumentation-error",
+      "negative": true,
+      "previously_missed": false,
+      "source_was_read": false,
+      "v2_instrumentation": "init"
+    }
+  ],
+  "schema": "bbtk.dom-observability-v3-corpus",
+  "split": "final"
+}

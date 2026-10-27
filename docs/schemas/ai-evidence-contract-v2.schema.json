@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/docs/schemas/ai-evidence-contract-v2.schema.json",
+  "title": "bbtk AI evidence contract v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_ref",
+    "resource_kind",
+    "visibility",
+    "owner_control_present",
+    "second_actor_control_present",
+    "distinct_accounts",
+    "cross_read_observed",
+    "private_marker_present",
+    "explicit_denial_present",
+    "status_family",
+    "session_continuity",
+    "truncation",
+    "completeness",
+    "integrity",
+    "contradicting_refs",
+    "missing_controls",
+    "valid_negatives",
+    "tool_execution_observed",
+    "auth_context_declared",
+    "observations",
+    "annotation_issues",
+    "finding_confirmed",
+    "ai_classification_authority",
+    "tools_available",
+    "requests_emitted",
+    "evidence_ledger_modified",
+    "historical_ledger_rewritten"
+  ],
+  "properties": {
+    "schema_version": {"const": "bbtk.ai-evidence-contract.v2"},
+    "evidence_ref": {"type": "string", "pattern": "^ec2-[0-9a-f]{24}$"},
+    "resource_kind": {"enum": ["object", "collection", "document", "session", "endpoint", "unknown"]},
+    "visibility": {"enum": ["public", "private", "shared", "unknown"]},
+    "owner_control_present": {"type": ["boolean", "null"]},
+    "second_actor_control_present": {"type": ["boolean", "null"]},
+    "distinct_accounts": {"type": ["boolean", "null"]},
+    "cross_read_observed": {"type": ["boolean", "null"]},
+    "private_marker_present": {"type": ["boolean", "null"]},
+    "explicit_denial_present": {"type": ["boolean", "null"]},
+    "status_family": {
+      "enum": ["informational", "success", "redirect", "client_error", "server_error", "mixed", "unknown"]
+    },
+    "session_continuity": {"enum": ["same", "distinct", "broken", "unknown"]},
+    "truncation": {"enum": ["none", "partial", "complete_loss", "unknown"]},
+    "completeness": {"enum": ["complete", "incomplete", "unknown"]},
+    "integrity": {"enum": ["intact", "suspect", "failed", "unknown"]},
+    "contradicting_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref", "opposes", "aspect"],
+        "properties": {
+          "ref": {"type": "string", "pattern": "^E[0-9]{2}$"},
+          "opposes": {"type": "string", "pattern": "^E[0-9]{2}$"},
+          "aspect": {
+            "enum": ["cross_read_outcome", "private_marker", "visibility", "status_family", "explicit_denial"]
+          }
+        }
+      }
+    },
+    "missing_controls": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "ownership",
+          "negative_control",
+          "second_session",
+          "owner_control",
+          "second_actor_control",
+          "private_marker",
+          "explicit_denial",
+          "complete_response",
+          "valid_evidence",
+          "auth_context",
+          "session_continuity",
+          "distinct_accounts"
+        ]
+      }
+    },
+    "valid_negatives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref", "kind"],
+        "properties": {
+          "ref": {"type": "string", "pattern": "^E[0-9]{2}$"},
+          "kind": {"enum": ["explicit_denial", "public_non_disclosure"]}
+        }
+      }
+    },
+    "tool_execution_observed": {"type": ["boolean", "null"]},
+    "auth_context_declared": {"type": ["boolean", "null"]},
+    "observations": {"type": "array"},
+    "annotation_issues": {"type": "array", "items": {"type": "string"}},
+    "finding_confirmed": {"const": false},
+    "ai_classification_authority": {"const": false},
+    "tools_available": {"const": false},
+    "requests_emitted": {"const": false},
+    "evidence_ledger_modified": {"const": false},
+    "historical_ledger_rewritten": {"const": false}
+  }
+}
