@@ -759,7 +759,10 @@ class AccessControlTester:
             "type": "access-control",
             "mode": "account-matrix" if multi_account else case.mode,
             "classification": "inconclusive",
+            "finding_state": "inconclusive",
             "confirmed": False,
+            "confirmation_gap": None,
+            "rejection_reason": None,
             "controls_valid": False,
             "requests_attempted": 0,
             "request_budget": required,
@@ -881,10 +884,25 @@ class AccessControlTester:
             result["matrix_crosses"] = sum(cell["access_type"] == "cross" for cell in pair_results)
             result["matrix_accounts"] = [account.name for account in accounts]
             if overall_candidate:
-                result["classification"] = "candidate"
-                result["stop_reason"] = result["stop_reason"] or "private_evidence_observed"
+                step_names = {str(step.get("step")) for step in result["steps"] if isinstance(step, dict)}
+                controls_present = all(f"{account.name}_control" in step_names for account in accounts)
+                cross_present = any(
+                    str(step.get("step", "")).startswith("cross_") for step in result["steps"] if isinstance(step, dict)
+                )
+                if result["controls_valid"] and controls_present and cross_present:
+                    result["classification"] = "confirmed"
+                    result["finding_state"] = "confirmed"
+                    result["confirmed"] = True
+                    result["stop_reason"] = result["stop_reason"] or "private_evidence_observed"
+                else:
+                    result["classification"] = "candidate"
+                    result["finding_state"] = "candidate"
+                    result["confirmed"] = False
+                    result["confirmation_gap"] = "no_second_proof"
+                    result["stop_reason"] = result["stop_reason"] or "private_evidence_observed"
             elif len(pair_results) == len(accounts) * (len(accounts) - 1) and all_rejected:
                 result["classification"] = "rejected_in_this_test"
+                result["finding_state"] = "not_observed"
                 result["stop_reason"] = "cross_matrix_rejected"
         else:
             actor, owner = accounts[1], accounts[0]
@@ -900,6 +918,7 @@ class AccessControlTester:
                 elif not case.resource_private:
                     result["cross_result"] = "public_endpoint"
                     result["classification"] = "public_endpoint"
+                    result["finding_state"] = "not_observed"
                     result["stop_reason"] = "public_endpoint"
                 else:
                     result["cross_result"] = (
@@ -910,10 +929,26 @@ class AccessControlTester:
                         else "inconclusive"
                     )
                     if result["cross_result"] == "candidate":
-                        result["classification"] = "candidate"
+                        step_names = {str(step.get("step")) for step in result["steps"] if isinstance(step, dict)}
+                        # Session B reads A's resource; both controls + cross response in evidence.
+                        if (
+                            result["controls_valid"]
+                            and "owner_control" in step_names
+                            and "actor_control" in step_names
+                            and "cross_read" in step_names
+                        ):
+                            result["classification"] = "confirmed"
+                            result["finding_state"] = "confirmed"
+                            result["confirmed"] = True
+                        else:
+                            result["classification"] = "candidate"
+                            result["finding_state"] = "candidate"
+                            result["confirmed"] = False
+                            result["confirmation_gap"] = "no_second_proof"
                         result["stop_reason"] = "private_evidence_observed"
                     elif result["cross_result"] == "rejected_in_this_test":
                         result["classification"] = "rejected_in_this_test"
+                        result["finding_state"] = "not_observed"
                         result["stop_reason"] = "cross_read_rejected"
                     elif facts["owner_marker_seen"] or facts["owner_resource_match"]:
                         result["stop_reason"] = "partial_private_evidence"
@@ -944,9 +979,10 @@ class AccessControlTester:
                     "candidate" if candidate else "rejected_in_this_test" if denied else "inconclusive"
                 )
                 result["steps"].append({"step": "inverse_cross", **facts})
-                result["bidirectional_access"] = result.get("cross_result") == "candidate" and candidate
-                if candidate and result["classification"] != "candidate":
+                result["bidirectional_access"] = result.get("cross_result") in {"candidate", "confirmed"} and candidate
+                if candidate and result["classification"] not in {"candidate", "confirmed"}:
                     result["classification"] = "candidate"
+                    result["finding_state"] = "candidate"
                 result["stop_reason"] = blocked(inverse_response) or result["stop_reason"]
 
         can_continue = result["stop_reason"] not in {

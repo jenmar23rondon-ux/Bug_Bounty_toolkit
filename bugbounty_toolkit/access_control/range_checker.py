@@ -175,7 +175,9 @@ class AccessRangeTester:
             "type": "access-control",
             "mode": "bounded-range",
             "classification": "inconclusive",
+            "finding_state": "inconclusive",
             "confirmed": False,
+            "confirmation_gap": None,
             "controls_valid": False,
             "steps": [],
             "results": [],
@@ -276,8 +278,27 @@ class AccessRangeTester:
                     result["results"].append(row)
                     if candidate:
                         result["candidate_offset"] = offset
-                        result["classification"] = "candidate"
-                        result["stop_reason"] = "candidate_observed_stop_early"
+                        step_names = {str(step.get("step")) for step in result["steps"] if isinstance(step, dict)}
+                        # Confirmed only with controls + cross evidence of A's resource via B's session.
+                        if (
+                            result["controls_valid"]
+                            and owner_proof
+                            and "owner_control" in step_names
+                            and "actor_control" in step_names
+                        ):
+                            row["classification"] = "confirmed"
+                            row["finding_state"] = "confirmed"
+                            row["confirmed"] = True
+                            result["classification"] = "confirmed"
+                            result["finding_state"] = "confirmed"
+                            result["confirmed"] = True
+                            result["stop_reason"] = "private_evidence_observed"
+                        else:
+                            row["finding_state"] = "candidate"
+                            row["confirmation_gap"] = "no_second_proof"
+                            result["classification"] = "candidate"
+                            result["finding_state"] = "candidate"
+                            result["stop_reason"] = "candidate_observed_stop_early"
                         stop = True
                     elif response.status_code == 429 or response.body_truncated or 300 <= response.status_code < 400:
                         result["stop_reason"] = (
@@ -293,10 +314,13 @@ class AccessRangeTester:
                         stop = True
                 if stop:
                     break
-        if result["classification"] != "candidate" and result["stop_reason"] is None:
+        if result["classification"] not in {"candidate", "confirmed"} and result["stop_reason"] is None:
             completed = len(result["results"]) == len(requests)
             denied = all(row["classification"] == "rejected_in_this_test" for row in result["results"])
             result["classification"] = "rejected_in_this_test" if completed and denied else "inconclusive"
+            result["finding_state"] = (
+                "not_observed" if result["classification"] == "rejected_in_this_test" else "inconclusive"
+            )
         controls_attempted = sum(step.get("step") in {"owner_control", "actor_control"} for step in result["steps"])
         result["not_completed"] = max(0, len(requests) - (result["requests_attempted"] - controls_attempted))
         return self._save(evidence_dir, result)

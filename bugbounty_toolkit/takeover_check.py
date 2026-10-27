@@ -1,4 +1,4 @@
-"""Passive, signature-based subdomain takeover candidate checks."""
+"""Passive, signature-based subdomain takeover checks (never auto-confirmed)."""
 
 from __future__ import annotations
 
@@ -40,8 +40,26 @@ def match_services(cname: str) -> list[str]:
     ]
 
 
-def analyze_cnames(host: str, cnames: list[str], dns_status: str, dns_queries_attempted: int = 0) -> dict[str, object]:
-    """Analyze supplied CNAMEs without network access or provider claim checks."""
+def analyze_cnames(
+    host: str,
+    cnames: list[str],
+    dns_status: str,
+    dns_queries_attempted: int = 0,
+    *,
+    dangling: bool | None = None,
+    unclaimed: bool | None = None,
+    rejection_reason: str | None = None,
+) -> dict[str, object]:
+    """Analyze supplied CNAMEs without network access or provider claim checks.
+
+    NEVER auto-confirmed. Max finding_state is candidate, and only when a dangling
+    CNAME plus a known-service fingerprint is explicitly marked unclaimed in lab
+    evidence. Otherwise inconclusive or not_observed.
+    """
+    from .core.checks import validate_rejection_reason
+
+    if rejection_reason is not None:
+        validate_rejection_reason(rejection_reason)
     normalized_host = normalize_dns_name(host)
     if len(cnames) > MAX_CNAME_RECORDS:
         raise ValueError(f"At most {MAX_CNAME_RECORDS} CNAME values can be analyzed at once.")
@@ -51,20 +69,46 @@ def analyze_cnames(host: str, cnames: list[str], dns_status: str, dns_queries_at
         services = match_services(cname)
         if services:
             matches.append({"cname": cname, "services": services})
+    if unclaimed is True:
+        unclaimed_status = "unclaimed"
+    elif unclaimed is False:
+        unclaimed_status = "claimed"
+    else:
+        unclaimed_status = "not_verified"
+    dangling_flag = bool(dangling) if dangling is not None else bool(matches)
+    if rejection_reason is not None:
+        classification = "possible_takeover" if matches else "not_observed"
+        finding_state = "rejected"
+    elif matches and dangling_flag and unclaimed_status == "unclaimed":
+        classification = "possible_takeover"
+        finding_state = "candidate"
+    elif matches:
+        # Fingerprint without verified unclaimed claim → inconclusive, not candidate.
+        classification = "possible_takeover"
+        finding_state = "inconclusive"
+    else:
+        classification = "not_observed"
+        finding_state = "not_observed"
     return {
         "type": "takeover-check",
         "host": normalized_host,
         "cname_records": normalized_cnames,
         "provider_matches": matches,
-        "classification": "possible_takeover" if matches else "not_observed",
-        "unclaimed_status": "not_verified",
+        "classification": classification,
+        "finding_state": finding_state,
+        "dangling": dangling_flag if matches else False,
+        "unclaimed_status": unclaimed_status,
         "confirmed": False,
+        "confirmation_gap": None if finding_state == "candidate" else "no_second_proof" if matches else None,
+        "rejection_reason": rejection_reason,
         "dns_status": dns_status,
         "dns_queries_attempted": dns_queries_attempted,
         "network_requests_sent": dns_queries_attempted,
         "http_requests_sent": 0,
         "known_limitations": [
-            "A provider CNAME match is only a lead; it does not establish that the service resource is unclaimed.",
+            "CNAME takeover is never auto-confirmed by this toolkit.",
+            "candidate requires dangling CNAME + known-service fingerprint + unclaimed lab evidence.",
+            "A provider CNAME match alone is inconclusive until unclaimed status is proven offline.",
             "No HTTP requests, provider API calls, registration attempts or resource claims are performed.",
             "Signatures are local and may be incomplete or stale; verify ownership with the provider and program owner.",
         ],

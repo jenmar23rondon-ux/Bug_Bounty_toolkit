@@ -1,3 +1,13 @@
+"""Vulnerability review checklist and shared confirmation-bar helpers.
+
+confirmed requires a second independent proof defined per check. A single signal
+is candidate. Rejected checks must record why. No new bug classes live here.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
 CHECKLIST = [
     {
         "category": "IDOR / Object Authorization",
@@ -50,6 +60,18 @@ CHECKLIST = [
     },
 ]
 
+FINDING_STATES = ("candidate", "confirmed", "not_observed", "inconclusive", "rejected")
+REJECTION_REASONS = frozenset({"false_positive", "out_of_scope", "no_second_proof"})
+# Checks that can reach confirmed under the confirmation bar (used by hunt).
+CONFIRMABLE_MODULES = (
+    "cors-check",
+    "ssrf-check",
+    "open-redirect",
+    "xss",
+    "sqli",
+    "access-check",
+)
+
 
 def render_checklist() -> str:
     lines = ["# Vulnerability Review Checklist", ""]
@@ -59,3 +81,43 @@ def render_checklist() -> str:
             lines.append(f"- [ ] {item}")
         lines.append("")
     return "\n".join(lines)
+
+
+def validate_rejection_reason(reason: str | None) -> str | None:
+    if reason is None:
+        return None
+    if reason not in REJECTION_REASONS:
+        raise ValueError(f"Unsupported rejection reason: {reason}")
+    return reason
+
+
+def aggregate_finding_state(states: list[str], *, stop_reason: str | None = None) -> str:
+    """Aggregate per-probe states: confirmed > candidate > inconclusive > not_observed."""
+    unique = {state for state in states if state}
+    if "confirmed" in unique:
+        return "confirmed"
+    if "candidate" in unique:
+        return "candidate"
+    if stop_reason or "inconclusive" in unique or "rejected" in unique:
+        return "inconclusive" if "inconclusive" in unique or stop_reason else "rejected"
+    return "not_observed"
+
+
+def candidates_per_confirmed(candidate_count: int, confirmed_count: int) -> float | None:
+    """Lab metric: candidates observed per confirmed finding. None if no confirmations."""
+    if confirmed_count <= 0:
+        return None
+    if candidate_count < 0 or confirmed_count < 0:
+        raise ValueError("Counts must be non-negative.")
+    return candidate_count / confirmed_count
+
+
+def apply_rejection(row: dict[str, Any], reason: str) -> dict[str, Any]:
+    """Mark a check result rejected with a required reason; never confirms."""
+    validate_rejection_reason(reason)
+    updated = dict(row)
+    updated["finding_state"] = "rejected"
+    updated["confirmed"] = False
+    updated["rejection_reason"] = reason
+    updated["confirmation_gap"] = None
+    return updated

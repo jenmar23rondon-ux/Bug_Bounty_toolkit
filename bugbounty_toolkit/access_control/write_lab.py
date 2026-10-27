@@ -236,6 +236,8 @@ class AccessWriteLabTester(AccessControlTester):
                     )
                     if verified:
                         result["classification"] = "write_confirmed_persisted"
+                        result["finding_state"] = "confirmed"
+                        result["confirmed"] = True
                     elif result["classification"] == "candidate":
                         result["classification"] = result["persistence_result"]
                     result["stop_reason"] = blocked(response) or result["stop_reason"]

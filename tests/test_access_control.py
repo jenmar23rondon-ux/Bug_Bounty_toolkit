@@ -9,9 +9,10 @@ import threading
 import time
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from urllib.parse import parse_qs, urlsplit
 
+from bugbounty_toolkit.access_control import comparison as comparison_module
 from bugbounty_toolkit.access_control.comparison import (
     AccessControlTester,
     load_case,
@@ -194,9 +195,10 @@ class AccessControlTests(unittest.TestCase):
     def test_native_cross_uses_actor_context_and_exposes_only_predicates(self):
         AccessLab.mode = "vulnerable"
         path, result = self.run_case()
-        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["classification"], "confirmed")
+        self.assertEqual(result["finding_state"], "confirmed")
         self.assertTrue(result["controls_valid"])
-        self.assertFalse(result["confirmed"])
+        self.assertTrue(result["confirmed"])
         self.assertFalse(result["inverse_sent"])
         self.assertFalse(result["anonymous_sent"])
         self.assertEqual([hit["path"] for hit in AccessLab.hits], ["/objects/B", "/objects/A", "/objects/B"])
@@ -282,7 +284,8 @@ class AccessControlTests(unittest.TestCase):
         path, result = tester.run(self.case, self.root / "matrix", max_tests=9, multi_account=True)
         self.assertEqual(result["requests_attempted"], 9)
         self.assertEqual(result["request_budget"], 9)
-        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["classification"], "confirmed")
+        self.assertTrue(result["confirmed"])
         self.assertEqual(len(result["matrix"]), 9)
         self.assertEqual(result["matrix_crosses"], 6)
         self.assertEqual(sum(cell["access_type"] == "control" for cell in result["matrix"]), 3)
@@ -308,10 +311,46 @@ class AccessControlTests(unittest.TestCase):
                 self.assertEqual(result["requests_attempted"], 3)
                 self.assertFalse(result["confirmed"])
 
+    def _unlabelled_observations(self):
+        real = comparison_module.account_observations
+
+        def wrapper(*args, **kwargs):
+            return {**real(*args, **kwargs), "step": "unlabelled"}
+
+        return patch.object(comparison_module, "account_observations", side_effect=wrapper)
+
+    def test_cross_without_labelled_controls_stays_candidate(self):
+        AccessLab.mode = "vulnerable"
+        with self._unlabelled_observations():
+            _, result = self.run_case()
+        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["finding_state"], "candidate")
+        self.assertFalse(result["confirmed"])
+        self.assertEqual(result["confirmation_gap"], "no_second_proof")
+
+    def test_matrix_without_labelled_controls_stays_candidate(self):
+        host = urlsplit(self.base).netloc
+        (self.root / "third.http").write_text(
+            f"GET /objects/C HTTP/1.1\r\nHost: {host}\r\nAuthorization: {TOKENS['C']}\r\n\r\n",
+            encoding="utf-8",
+            newline="",
+        )
+        self.data["additional_accounts"] = {
+            "actor2": {"request": "third.http", "resource": "C", "marker": MARKERS["C"]}
+        }
+        self.save_case()
+        tester, _ = self.mock_tester("vulnerable")
+        with self._unlabelled_observations():
+            _, result = tester.run(self.case, self.root / "matrix", max_tests=9, multi_account=True)
+        self.assertEqual(result["classification"], "candidate")
+        self.assertFalse(result["confirmed"])
+        self.assertEqual(result["confirmation_gap"], "no_second_proof")
+
     def test_private_leak_is_not_hidden_by_error_status(self):
         AccessLab.mode = "leak_on_error"
         _, result = self.run_case()
-        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["classification"], "confirmed")
+        self.assertTrue(result["confirmed"])
         self.assertFalse(result["steps"][-1]["application_success"])
 
     def test_invalid_controls_stop_before_cross(self):
@@ -378,7 +417,8 @@ class AccessControlTests(unittest.TestCase):
         self.save_case()
         AccessLab.mode = "vulnerable"
         _, result = self.run_case()
-        self.assertEqual(result["classification"], "candidate")
+        self.assertEqual(result["classification"], "confirmed")
+        self.assertTrue(result["confirmed"])
         for query in ("id=B&id=B&page=1", "id=B&page=2", "id=B&token=private"):
             AccessLab.hits.clear()
             (self.root / "owner.http").write_text(

@@ -180,11 +180,11 @@ class IdorEndToEndTests(unittest.TestCase):
                     "--min-interval",
                     "0.01",
                 )
-                self.assertIn("comparison: candidate", range_result.stdout)
+                self.assertIn("comparison: confirmed", range_result.stdout)
                 private_capture = self._latest_evidence(records / "idor-lab" / "evidence" / "access-control")
                 private_data = json.loads(private_capture.read_text(encoding="utf-8"))
-                self.assertEqual(private_data["classification"], "candidate")
-                self.assertIs(private_data["confirmed"], False)
+                self.assertEqual(private_data["classification"], "confirmed")
+                self.assertIs(private_data["confirmed"], True)
 
                 self._assert_cli_ok(
                     records,
@@ -201,7 +201,8 @@ class IdorEndToEndTests(unittest.TestCase):
                         encoding="utf-8"
                     )
                 )
-                self.assertEqual(inverse_data["classification"], "candidate")
+                self.assertEqual(inverse_data["classification"], "confirmed")
+                self.assertTrue(inverse_data["confirmed"])
                 self.assertEqual(inverse_data["inverse_result"], "rejected_in_this_test")
                 self.assertFalse(inverse_data["bidirectional_access"])
 
@@ -255,7 +256,7 @@ class IdorEndToEndTests(unittest.TestCase):
                 html_report = records / "idor-lab" / "reports" / "program-report.html"
                 report = json.loads(json_report.read_text(encoding="utf-8"))
                 report_evidence = [item["data"] for item in report["evidence"] if "data" in item]
-                self.assertIn("candidate", [item["classification"] for item in report_evidence])
+                self.assertIn("confirmed", [item["classification"] for item in report_evidence])
                 self.assertIn("public_endpoint", [item["classification"] for item in report_evidence])
                 self.assertTrue(html_report.is_file())
                 self.assertGreater(html_report.stat().st_size, 0)

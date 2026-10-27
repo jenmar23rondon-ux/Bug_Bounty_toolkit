@@ -17,6 +17,7 @@ registros/*
 .env
 reports/*
 !reports/.gitkeep
+!reports/template.md
 logs/*
 !logs/.gitkeep
 

@@ -186,7 +186,13 @@ class XssParameterTester:
                             "status_code": response.status_code,
                             "duration_ms": response.duration_ms,
                             "classification": validation["classification"],
+                            "finding_state": validation.get(
+                                "finding_state",
+                                "candidate" if validation["classification"] == "possible" else "not_observed",
+                            ),
                             "confirmed": validation["confirmed"],
+                            "confirmation_gap": validation.get("confirmation_gap"),
+                            "rejection_reason": validation.get("rejection_reason"),
                             "finding_confirmed": False,
                             "reason": validation["reason"],
                             "reflected": reflection.reflected,
@@ -257,6 +263,10 @@ class XssParameterTester:
                                 result["dom_sinks"] = execution.get("dom_sinks", [])
                                 result["classification"] = execution["classification"]
                                 result["confirmed"] = execution["classification"] == "confirmed"
+                                result["finding_state"] = (
+                                    "confirmed" if result["confirmed"] else result.get("finding_state", "candidate")
+                                )
+                                result["confirmation_gap"] = None if result["confirmed"] else "no_second_proof"
                                 result["reason"] = (
                                     "Harmless marker execution was observed in a headless browser."
                                     if result["confirmed"]

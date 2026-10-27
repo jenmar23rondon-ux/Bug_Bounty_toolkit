@@ -127,6 +127,8 @@ def run_dom_local(
                         if present
                         else "inconclusive"
                     )
+                    # Confirmation bar: DOM loopback probe with observed execution → confirmed.
+                    # Reflection/sink without execution stays candidate (confirmed=False).
                     entry2: dict[str, object] = {
                         "route": redact_url(route),
                         "parameter": parameter,
@@ -136,10 +138,13 @@ def run_dom_local(
                         "dom_sinks": sorted(sink for sink in sinks if isinstance(sink, str)),
                         "browser_execution_observed": execution,
                         "classification": classification,
-                        # Even observed execution remains a lab observation, not a
-                        # reportable vulnerability confirmation.
-                        "confirmed": False,
+                        "finding_state": "confirmed"
+                        if execution
+                        else ("candidate" if (sinks or present) else "inconclusive"),
+                        "confirmed": bool(execution),
                         "finding_confirmed": False,
+                        "confirmation_gap": None if execution else "no_second_proof",
+                        "rejection_reason": None,
                     }
                     # Additive precise DOM state (never infers execution from sinks alone).
                     entry2.update(assess_dom_result(entry2))

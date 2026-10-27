@@ -1079,22 +1079,36 @@ def cmd_cors_check(args: argparse.Namespace) -> None:
     counts = {
         label: sum(row.get("classification") == label for row in results) for label in ("VULNERABLE", "DÉBIL", "SEGURO")
     }
+    state_counts = {
+        label: sum(row.get("finding_state") == label for row in results)
+        for label in ("confirmed", "candidate", "not_observed", "inconclusive", "rejected")
+    }
+    confirmed_n = state_counts["confirmed"]
     for row in results:
         print(
             f"{row.get('origin', '-'):<40} ACAO={row.get('access_control_allow_origin', '-')} "
             f"ACAC={row.get('access_control_allow_credentials', '-')} verdict={row['classification']} "
+            f"state={row.get('finding_state', '-')} confirmed={row.get('confirmed', False)} "
             f"status={row.get('status_code', '-')}"
         )
     store.add_run(
-        "cors-check", redact_url(args.url), ["cors-check", redact_url(args.url)], 1 if counts["VULNERABLE"] else 0, path
+        "cors-check",
+        redact_url(args.url),
+        ["cors-check", redact_url(args.url)],
+        1 if confirmed_n or counts["VULNERABLE"] else 0,
+        path,
     )
     print(
-        f"[+] CORS summary: {counts['VULNERABLE']} vulnerable, {counts['DÉBIL']} weak, {counts['SEGURO']} safe. Evidence: {path}"
+        f"[+] CORS summary: {counts['VULNERABLE']} header-vulnerable, {counts['DÉBIL']} weak, "
+        f"{counts['SEGURO']} safe; finding_state confirmed={state_counts['confirmed']} "
+        f"candidate={state_counts['candidate']} not_observed={state_counts['not_observed']}. "
+        f"Header reflection alone is never confirmation. Evidence: {path}"
     )
     print_live_ai_review(
         path,
         ai_review_config,
-        f"{counts['VULNERABLE']} vulnerable, {counts['DÉBIL']} weak, {counts['SEGURO']} safe",
+        f"{confirmed_n} confirmed, {state_counts['candidate']} candidate, "
+        f"{counts['VULNERABLE']} header-vulnerable, {counts['DÉBIL']} weak, {counts['SEGURO']} safe",
     )
 
 
@@ -1387,10 +1401,7 @@ def _hunt_tasks(
                 )
             )
 
-    if "csrf-audit" in selected:
-        csrf_url = normalize_url(args.csrf_url or base_url)
-        scope.require(csrf_url)
-        tasks.append(HuntTask("csrf-audit", "csrf-audit", ("csrf-audit", args.program, "--url", csrf_url), 1, 1, 1))
+    # csrf-audit cannot reach confirmed; keep as standalone `bbtk csrf-audit` only.
 
     if "open-redirect" in selected:
         if params_error:

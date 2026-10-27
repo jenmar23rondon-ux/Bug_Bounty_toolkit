@@ -10,7 +10,8 @@ from typing import Any
 from .core.redaction import redact_url
 
 
-MODULE_ORDER = ("cors-check", "ssrf-check", "csrf-audit", "open-redirect", "xss", "sqli", "access-check")
+MODULE_ORDER = ("cors-check", "ssrf-check", "open-redirect", "xss", "sqli", "access-check")
+# csrf-audit and takeover-check cannot reach confirmed; they stay as standalone commands.
 _SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2, "info": 3}
 _FINDING_SEVERITY = {
     "candidate": "high",
