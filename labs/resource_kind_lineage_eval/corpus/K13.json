@@ -1,0 +1,13 @@
+{
+  "expect": {
+    "kinds": [
+      "ticket",
+      "claim"
+    ],
+    "no_cross_kind_collision": true,
+    "ownership": "unknown",
+    "preserve": true
+  },
+  "id": "K13",
+  "tag": "contradictory-kind-evidence"
+}

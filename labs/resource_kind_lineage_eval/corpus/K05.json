@@ -1,0 +1,11 @@
+{
+  "expect": {
+    "kinds": [
+      "crate"
+    ],
+    "ownership": "unknown",
+    "preserve": true
+  },
+  "id": "K05",
+  "tag": "unconventional-noun"
+}

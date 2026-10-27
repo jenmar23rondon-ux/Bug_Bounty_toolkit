@@ -1,0 +1,438 @@
+{
+  "by_family": {
+    "arrays": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "bare-id-field": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "contradictory-kind-evidence": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "foreign-id-fields": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "identical-id-different-collections": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "nested-resources": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "out-of-order-captures": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "schema-change-same-kind": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "singular-plural": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "unconventional-noun": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "unknown-generic-id": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "users-vs-orders-same-id": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    },
+    "uuid-different-namespace": {
+      "kind_accuracy": 1.0,
+      "scenarios": 1
+    }
+  },
+  "corpus_version": "rkl-1.0",
+  "correct_abstentions": 2,
+  "cross_kind_collisions": 0,
+  "false_namespace_unions": 0,
+  "handoff_coherence_rate": 1.0,
+  "irb_final": {
+    "cross_kind_collisions": 0,
+    "object_recall_exported_kind_after": 0.9512,
+    "ownership_claims": 0,
+    "pairing_precision_unchanged": 0.65,
+    "precision_at_1_exported_kind_after": 0.878,
+    "precision_at_1_resolved_unchanged": 0.8293,
+    "precision_at_1_strict_resource_type_before": 0.0976
+  },
+  "kind_accuracy": 1.0,
+  "kind_preservation_rate": 1.0,
+  "limitation": "Kinds are structural inferences only; ownership, privacy and authorization are never claimed.",
+  "network_connect_attempts": 0,
+  "ownership_claims": 0,
+  "precision_at_1_after": 0.878,
+  "precision_at_1_before": 0.0976,
+  "program": "rkl-lab",
+  "rows": [
+    {
+      "candidates": 2,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind:order",
+        "kind:user"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K01",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind:order",
+        "kind:user"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 2,
+        "unknown": 0
+      },
+      "tag": "users-vs-orders-same-id",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 4,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind-acd867df77a66073c2ac4ea26e4ac4bb",
+        "kind-b9ddfb364171c6e3b7d2ede9297e3060"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K02",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind-acd867df77a66073c2ac4ea26e4ac4bb",
+        "kind-b9ddfb364171c6e3b7d2ede9297e3060"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 2,
+        "unknown": 2
+      },
+      "tag": "identical-id-different-collections",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 4,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind-0ed0e7be5bce98c90a6a8d5fe916c7d8",
+        "kind-d388a35beef0b314a42cdecbc3ec8abe"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K03",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind-0ed0e7be5bce98c90a6a8d5fe916c7d8",
+        "kind-d388a35beef0b314a42cdecbc3ec8abe"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 2,
+        "unknown": 2
+      },
+      "tag": "uuid-different-namespace",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 1,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind:invoice"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K04",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind:invoice"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 1,
+        "unknown": 0
+      },
+      "tag": "singular-plural",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 2,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind-fd7e21972d9e0b771860ed185f014190"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K05",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind-fd7e21972d9e0b771860ed185f014190"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 1,
+        "unknown": 1
+      },
+      "tag": "unconventional-noun",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 3,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind:order",
+        "kind:user"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K06",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind:order",
+        "kind:user"
+      ],
+      "ownership_claim": false,
+      "proposals": 1,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 3,
+        "unknown": 0
+      },
+      "tag": "nested-resources",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 3,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind-b9ddfb364171c6e3b7d2ede9297e3060"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K07",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind-b9ddfb364171c6e3b7d2ede9297e3060"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 3,
+        "explicit": 0,
+        "unknown": 0
+      },
+      "tag": "arrays",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 1,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind:order"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K08",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind:order"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 1,
+        "unknown": 0
+      },
+      "tag": "schema-change-same-kind",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 1,
+      "coherence_violations": [],
+      "correct_abstention": true,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K09",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 0,
+        "unknown": 1
+      },
+      "tag": "unknown-generic-id",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 1,
+      "coherence_violations": [],
+      "correct_abstention": true,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K10",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 0,
+        "unknown": 1
+      },
+      "tag": "bare-id-field",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 3,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind:order",
+        "kind:user"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K11",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind:order",
+        "kind:user"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 3,
+        "unknown": 0
+      },
+      "tag": "foreign-id-fields",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 1,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind:product"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K12",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind:product"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 1,
+        "unknown": 0
+      },
+      "tag": "out-of-order-captures",
+      "technical_errors": 0
+    },
+    {
+      "candidates": 2,
+      "coherence_violations": [],
+      "correct_abstention": false,
+      "cross_kind_collisions": 0,
+      "expected_kinds": [
+        "kind-acd867df77a66073c2ac4ea26e4ac4bb",
+        "kind-b9ddfb364171c6e3b7d2ede9297e3060"
+      ],
+      "false_namespace_unions": 0,
+      "handoff_coherent": true,
+      "id": "K13",
+      "kind_accuracy": true,
+      "kind_preserved": true,
+      "observed_kinds": [
+        "kind-acd867df77a66073c2ac4ea26e4ac4bb",
+        "kind-b9ddfb364171c6e3b7d2ede9297e3060"
+      ],
+      "ownership_claim": false,
+      "proposals": 0,
+      "status_counts": {
+        "ambiguous": 0,
+        "derived": 0,
+        "explicit": 2,
+        "unknown": 0
+      },
+      "tag": "contradictory-kind-evidence",
+      "technical_errors": 0
+    }
+  ],
+  "scenarios": 13,
+  "technical_errors": 0,
+  "vulnerabilities_confirmed": 0
+}

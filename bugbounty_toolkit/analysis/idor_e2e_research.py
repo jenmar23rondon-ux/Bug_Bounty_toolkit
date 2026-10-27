@@ -40,6 +40,7 @@ from .handoff_case_eligibility import (
 )
 from .object_handoff import propose_object_handoff
 from .object_relationships import build_object_graph, object_candidates
+from .resource_kind_lineage import check_kind_coherence
 
 STAGE = Literal[
     "capture_import",
@@ -624,12 +625,15 @@ def run_e2e_research(
             {
                 "object_ref": c["object_ref"],
                 "resource_type": c["resource_type"],
+                "resource_kind": c.get("resource_kind"),
+                "kind_status": (c.get("kind_lineage") or {}).get("status", "unknown"),
                 "score": c["score"],
                 "confirmed": c["confirmed"],
             }
             for c in ranked
         ],
         "structural_proposals": len(handoff.get("proposals") or []),
+        "kind_coherence": check_kind_coherence(graph, ranked_doc, handoff),
         "classifications": classifications,
         "eligibility_summary": session.eligibility_summary,
         "idor_proposals": idor_rows,
@@ -788,6 +792,8 @@ def _resume(
             {
                 "object_ref": c["object_ref"],
                 "resource_type": c["resource_type"],
+                "resource_kind": c.get("resource_kind"),
+                "kind_status": (c.get("kind_lineage") or {}).get("status", "unknown"),
                 "score": c["score"],
                 "confirmed": c["confirmed"],
             }

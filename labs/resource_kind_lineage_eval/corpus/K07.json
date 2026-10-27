@@ -1,0 +1,11 @@
+{
+  "expect": {
+    "kinds": [
+      "ticket"
+    ],
+    "ownership": "unknown",
+    "preserve": true
+  },
+  "id": "K07",
+  "tag": "arrays"
+}
