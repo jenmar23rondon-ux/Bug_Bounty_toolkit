@@ -7,13 +7,19 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from fastapi.testclient import TestClient
-
 from bugbounty_toolkit.authorization_workbench import build_workbench
-from bugbounty_toolkit.dashboard import create_app
 from labs.authorization_workbench_eval.fixtures import populate
 
 
+try:
+    from fastapi.testclient import TestClient
+    from bugbounty_toolkit.dashboard import create_app
+except ImportError:  # Optional dashboard extra is absent in the core offline image.
+    TestClient = None  # type: ignore[assignment,misc]
+    create_app = None  # type: ignore[assignment]
+
+
+@unittest.skipIf(TestClient is None, "Install the optional .[dashboard] dependencies to run workbench tests.")
 class WorkbenchTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
