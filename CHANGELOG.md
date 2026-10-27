@@ -10,6 +10,37 @@
   automatic negative. Lab `labs/authorization_control_matrix_eval/` (DEV +
   frozen FINAL). Ranking and pairing engines are unchanged. Version stays 0.2.2.
 
+### IDOR false-negative recovery
+
+- Overlay `analysis/blocker_dependency_graph.py` (`bbtk-blocker-dependency-graph/1`)
+  on the evidence-gap planner. Effective states are computed at plan time.
+  Historical Evidence Ledger states are not rewritten. `finding_confirmed` stays false.
+  Registration-time `registered_object_refs` / `depends_on` let a same-surface
+  candidate with disjoint objects stay reviewable when a sibling artifact is invalid
+  (V3-A11) while shared objects and unknown object identity stay blocked (V3-A10, D11–D16).
+- Session-channel query names (`api_key`) are not a second resource id when one
+  other difference remains (E06). Session-only query pairs stay rejected.
+- IDOR e2e research may read a HAR past the 32-entry window up to the 256-entry
+  observation budget. Default import stays 32. A numbered collection token such as
+  `estimates2` is an open-vocabulary kind when its alphabetic stem is not generic
+  (E01). Version stays 0.2.2.
+
+### IDOR pairing precision v4
+
+- Additive `analysis/idor_pairing_precision.py` (`evaluate_compatibility`) decides
+  owner/actor compatibility as `compatible`, `incompatible`, `insufficient_evidence`,
+  or `conflicting_evidence`. Decisions cite evidence. There is no probability score
+  and `finding_confirmed` stays false. Legacy `propose_object_handoff` defaults are
+  unchanged. Lab `labs/idor_pairing_precision_v4/` (DEV + frozen FINAL) plus a
+  read-only IRB FINAL 45 re-eval. Version stays 0.2.2.
+
+### XSS real-browser validation
+
+- New disposable loopback lab `labs/xss_real_browser_eval/` (endpoints A–P) that
+  scores the existing reflected classifier and DOM evidence states in real
+  Chromium when it is installed. Mock CI path records live metrics as
+  `NOT_MEASURED` instead of inventing browser results. `finding_confirmed` stays
+  false. No detector retune. Version stays 0.2.2.
 
 ### Local AI evidence assistant
 

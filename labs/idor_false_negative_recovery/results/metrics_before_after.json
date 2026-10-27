@@ -1,0 +1,105 @@
+{
+  "base_sha": "bbd0068f90b0f411360519434008ccdcfcbaaae0",
+  "finding_confirmed": false,
+  "independent_research_final_45": {
+    "after": {
+      "auto_confirmations": 0,
+      "false_reviewable_after_planner": 0,
+      "false_reviewable_cases": 0,
+      "missed_eligible_cases": 0,
+      "missed_eligible_ids": [],
+      "network_attempts": 0,
+      "outcome_accuracy": 0.8444,
+      "pairing_precision": 0.6585,
+      "pairing_recall": 1.0,
+      "reference_correct_rate": 0.9655,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 264
+    },
+    "before_source": "labs/idor_evidence_v3_eval/results/metrics_before_after.json irb_final_45.after",
+    "before": {
+      "auto_confirmations": 0,
+      "false_reviewable_after_planner": 0,
+      "false_reviewable_cases": 0,
+      "missed_eligible_cases": 2,
+      "missed_eligible_ids": ["E01", "E06"],
+      "network_attempts": 0,
+      "outcome_accuracy": 0.8,
+      "pairing_precision": 0.65,
+      "pairing_recall": 0.963,
+      "reference_correct_rate": 0.9565,
+      "secret_leaks": 0,
+      "synthetic_manual_steps": 240
+    },
+    "false_reviewable_regression": {
+      "D11": {"outcome": "integrity_block", "predicted_reviewable": false, "outcome_correct": true},
+      "D12": {"outcome": "integrity_block", "predicted_reviewable": false, "outcome_correct": true},
+      "D13": {"outcome": "integrity_block", "predicted_reviewable": false, "outcome_correct": true},
+      "D14": {"outcome": "integrity_block", "predicted_reviewable": false, "outcome_correct": true},
+      "D15": {"outcome": "stop", "predicted_reviewable": false, "outcome_correct": true},
+      "D16": {"outcome": "duplicate", "predicted_reviewable": false, "outcome_correct": true}
+    }
+  },
+  "v3_final_48": {
+    "after": {
+      "auto_confirmations": 0,
+      "false_reviewable_cases": 0,
+      "invalid_evidence_blockers": 6,
+      "ledger_history_unmodified": true,
+      "missed_eligible_cases": 0,
+      "missed_eligible_ids": [],
+      "network_attempts": 0,
+      "outcome_accuracy": 1.0,
+      "scenarios": 48
+    },
+    "before_source": "labs/idor_evidence_v3_eval/results/final_metrics.json",
+    "before": {
+      "auto_confirmations": 0,
+      "false_reviewable_cases": 0,
+      "invalid_evidence_blockers": 7,
+      "ledger_history_unmodified": true,
+      "missed_eligible_cases": 1,
+      "missed_eligible_ids": ["V3-A11"],
+      "network_attempts": 0,
+      "outcome_accuracy": 0.9792,
+      "scenarios": 48
+    }
+  },
+  "fn_recovery_lab": {
+    "dev_manifest_sha256": "9ee8c8e6eb921766b1d2c673b97b0979407846c6bfb3b6f1b30b537044679e34",
+    "final_manifest_sha256": "25d7a1c79fabbbe9266346c8f173d4925305fd71eb4236286d67bf28eb1a3590",
+    "dev": {
+      "abstention_rate": 1.0,
+      "auto_confirmations": 0,
+      "cases": 6,
+      "correct": 6,
+      "eligible_recall": 1.0,
+      "external_requests": 0,
+      "false_reviewable_count": 0,
+      "fn_count": 0,
+      "integrity_propagation_precision": 1.0,
+      "invalid_evidence_detection_rate": 1.0,
+      "manual_effort_proxy": 1,
+      "network_attempts": 0,
+      "provenance_completeness": 1.0,
+      "secret_leaks": 0
+    },
+    "final": {
+      "abstention_rate": 1.0,
+      "auto_confirmations": 0,
+      "cases": 15,
+      "correct": 15,
+      "eligible_recall": 1.0,
+      "external_requests": 0,
+      "false_reviewable_count": 0,
+      "fn_count": 0,
+      "integrity_propagation_precision": 1.0,
+      "invalid_evidence_detection_rate": 1.0,
+      "manual_effort_proxy": 0,
+      "network_attempts": 0,
+      "provenance_completeness": 1.0,
+      "secret_leaks": 0
+    }
+  },
+  "not_measured": ["independent research STRESS (6 scenarios)"]
+}

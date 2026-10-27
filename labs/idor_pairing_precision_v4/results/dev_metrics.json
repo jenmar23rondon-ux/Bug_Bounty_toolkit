@@ -1,0 +1,175 @@
+{
+  "external_requests": 0,
+  "finding_confirmed": false,
+  "irb_reeval": null,
+  "irb_rows": null,
+  "lab": {
+    "after_compatibility_v4": {
+      "abstentions": 1,
+      "cases": 7,
+      "cross_kind_collisions": 0,
+      "cross_origin_contamination": 0,
+      "cross_program_contamination": 0,
+      "f1": 1.0,
+      "false_pairs": 0,
+      "finding_confirmed": false,
+      "fn": 0,
+      "fp": 0,
+      "missed_valid_pairs": 0,
+      "precision": 1.0,
+      "provenance_completeness": 1.0,
+      "recall": 1.0,
+      "tn": 4,
+      "tp": 3
+    },
+    "before_naive_id_match": {
+      "abstentions": 0,
+      "cases": 7,
+      "cross_kind_collisions": 1,
+      "cross_origin_contamination": 0,
+      "cross_program_contamination": 0,
+      "f1": 0.5714,
+      "false_pairs": 2,
+      "finding_confirmed": false,
+      "fn": 1,
+      "fp": 2,
+      "missed_valid_pairs": 1,
+      "precision": 0.5,
+      "provenance_completeness": 1.0,
+      "recall": 0.6667,
+      "tn": 2,
+      "tp": 2
+    },
+    "mismatches": []
+  },
+  "lab_rows": [
+    {
+      "actor_evidence_ref": "ck-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-cross-kind",
+      "identity_assessment": "different_kind",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "ck-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "cross_kind"
+      ]
+    },
+    {
+      "actor_evidence_ref": "js-actor",
+      "compatibility": "compatible",
+      "compatibility_match": true,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "hn-json-equivalent",
+      "identity_assessment": "same_resource",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "js-owner",
+      "pairing_decision": true,
+      "tags": [
+        "hard_negative",
+        "json_equivalence",
+        "positive"
+      ]
+    },
+    {
+      "actor_evidence_ref": "al-actor",
+      "compatibility": "compatible",
+      "compatibility_match": true,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "hn-route-alias",
+      "identity_assessment": "same_resource",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "al-owner",
+      "pairing_decision": true,
+      "tags": [
+        "hard_negative",
+        "route_alias",
+        "positive"
+      ]
+    },
+    {
+      "actor_evidence_ref": "sa-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-same-account",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "sa-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "same_account"
+      ]
+    },
+    {
+      "actor_evidence_ref": "sh-actor",
+      "compatibility": "incompatible",
+      "compatibility_match": true,
+      "expect_compatibility": "incompatible",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-shared-acl",
+      "identity_assessment": "same_resource",
+      "naive_pairing_decision": true,
+      "owner_evidence_ref": "sh-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "legitimate_shared"
+      ]
+    },
+    {
+      "actor_evidence_ref": "mr-actor",
+      "compatibility": "insufficient_evidence",
+      "compatibility_match": true,
+      "expect_compatibility": "insufficient_evidence",
+      "expect_pairing_decision": false,
+      "finding_confirmed": false,
+      "id": "hn-missing-response",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "mr-owner",
+      "pairing_decision": false,
+      "tags": [
+        "hard_negative",
+        "missing_artifact"
+      ]
+    },
+    {
+      "actor_evidence_ref": "pd-actor",
+      "compatibility": "compatible",
+      "compatibility_match": true,
+      "expect_compatibility": "compatible",
+      "expect_pairing_decision": true,
+      "finding_confirmed": false,
+      "id": "pos-distinct-ids",
+      "identity_assessment": "same_kind_distinct_ids",
+      "naive_pairing_decision": false,
+      "owner_evidence_ref": "pd-owner",
+      "pairing_decision": true,
+      "tags": [
+        "positive"
+      ]
+    }
+  ],
+  "manifest_sha256": "4dde2a9725eb7d3accd4bcc2ad665bc4952bd0ad318732f31ffe1c3979b07047",
+  "network_attempts": 0,
+  "peak_memory_kib": 40.3,
+  "schema": "bbtk.idor-pairing-precision-lab/1",
+  "secret_leaks": 0,
+  "split": "dev",
+  "version": "0.2.2",
+  "wall_time_seconds": 0.007
+}
