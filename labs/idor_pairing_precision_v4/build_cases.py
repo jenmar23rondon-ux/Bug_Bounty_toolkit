@@ -13,6 +13,11 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 MARKER = "SYNTH_PRIVATE_MARKER"
+# Dedicated loopback. 8177/8178 belong to the independent-research corpus and
+# 8191 belongs to the context-fuzz and kind-lineage labs. Those markers must
+# not appear in this lab's JSON or the historical-overlap guard fails.
+ORIGIN = "http://127.0.0.1:8194"
+ALT_ORIGIN = "http://127.0.0.1:8195"
 
 
 def _body(kind: str, oid: str, *, extra: dict[str, object] | None = None, note: str | None = None) -> str:
@@ -30,12 +35,12 @@ def _side(role: str, **overrides: object) -> dict[str, object]:
     base: dict[str, object] = {
         "evidence_ref": f"ev-{role}",
         "method": "GET",
-        "url": f"http://127.0.0.1:8177/{kind}s/{oid}",
-        "origin": "http://127.0.0.1:8177",
+        "url": f"{ORIGIN}/{kind}s/{oid}",
+        "origin": ORIGIN,
         "program": "synth-lab",
         "resource_kind": kind,
         "kind_status": "explicit",
-        "resource_namespace": f"http://127.0.0.1:8177|{kind}",
+        "resource_namespace": f"{ORIGIN}|{kind}",
         "resource_id": oid,
         "parent_ids": [],
         "endpoint_template": f"/{kind}s/{{id}}",
@@ -92,8 +97,8 @@ def dev_cases() -> list[dict[str, object]]:
             "compatible",
             valid_pair=True,
             tags=["positive"],
-            owner={"resource_id": "11", "url": "http://127.0.0.1:8177/orders/11"},
-            actor={"resource_id": "11", "url": "http://127.0.0.1:8177/orders/11"},
+            owner={"resource_id": "11", "url": f"{ORIGIN}/orders/11"},
+            actor={"resource_id": "11", "url": f"{ORIGIN}/orders/11"},
             note="DEV positive: one order id, two attested accounts.",
         ),
         _case(
@@ -104,16 +109,16 @@ def dev_cases() -> list[dict[str, object]]:
             owner={
                 "resource_kind": "user",
                 "resource_id": "42",
-                "resource_namespace": "http://127.0.0.1:8177|user",
+                "resource_namespace": f"{ORIGIN}|user",
                 "endpoint_template": "/users/{id}",
-                "url": "http://127.0.0.1:8177/users/42",
+                "url": f"{ORIGIN}/users/42",
             },
             actor={
                 "resource_kind": "order",
                 "resource_id": "42",
-                "resource_namespace": "http://127.0.0.1:8177|order",
+                "resource_namespace": f"{ORIGIN}|order",
                 "endpoint_template": "/orders/{id}",
-                "url": "http://127.0.0.1:8177/orders/42",
+                "url": f"{ORIGIN}/orders/42",
             },
             note="DEV negative: same digits, different kind.",
         ),
@@ -166,8 +171,8 @@ def final_cases() -> list[dict[str, object]]:
             "compatible",
             valid_pair=True,
             tags=["positive", "alias"],
-            owner={"url": "http://127.0.0.1:8177/api/v1/orders/7", "endpoint_template": "/api/v1/orders/{id}"},
-            actor={"url": "http://127.0.0.1:8177/orders/7", "endpoint_template": "/orders/{id}"},
+            owner={"url": f"{ORIGIN}/api/v1/orders/7", "endpoint_template": "/api/v1/orders/{id}"},
+            actor={"url": f"{ORIGIN}/orders/7", "endpoint_template": "/orders/{id}"},
             alias_rules=[["/api/v1", ""]],
             note="Declared alias /api/v1/orders/7 and /orders/7.",
         ),
@@ -178,20 +183,20 @@ def final_cases() -> list[dict[str, object]]:
             tags=["positive", "nested"],
             owner={
                 "resource_kind": "comment",
-                "resource_namespace": "http://127.0.0.1:8177|comment",
+                "resource_namespace": f"{ORIGIN}|comment",
                 "resource_id": "75311",
                 "parent_ids": ["75301"],
                 "endpoint_template": "/posts/{id}/comments/{id}",
-                "url": "http://127.0.0.1:8177/posts/75301/comments/75311",
+                "url": f"{ORIGIN}/posts/75301/comments/75311",
                 "response_body": _body("comment", "75311"),
             },
             actor={
                 "resource_kind": "comment",
-                "resource_namespace": "http://127.0.0.1:8177|comment",
+                "resource_namespace": f"{ORIGIN}|comment",
                 "resource_id": "75311",
                 "parent_ids": ["75301"],
                 "endpoint_template": "/posts/{id}/comments/{id}",
-                "url": "http://127.0.0.1:8177/posts/75301/comments/75311",
+                "url": f"{ORIGIN}/posts/75301/comments/75311",
                 "response_body": _body("comment", "75311"),
             },
             note="Same comment id under the same parent post.",
@@ -201,11 +206,11 @@ def final_cases() -> list[dict[str, object]]:
             "incompatible",
             valid_pair=False,
             tags=["cross_kind", "hard_negative"],
-            owner={"resource_kind": "user", "resource_id": "42", "resource_namespace": "http://127.0.0.1:8177|user",
-                   "endpoint_template": "/users/{id}", "url": "http://127.0.0.1:8177/users/42",
+            owner={"resource_kind": "user", "resource_id": "42", "resource_namespace": f"{ORIGIN}|user",
+                   "endpoint_template": "/users/{id}", "url": f"{ORIGIN}/users/42",
                    "response_body": _body("user", "42")},
-            actor={"resource_kind": "order", "resource_id": "42", "resource_namespace": "http://127.0.0.1:8177|order",
-                   "endpoint_template": "/orders/{id}", "url": "http://127.0.0.1:8177/orders/42"},
+            actor={"resource_kind": "order", "resource_id": "42", "resource_namespace": f"{ORIGIN}|order",
+                   "endpoint_template": "/orders/{id}", "url": f"{ORIGIN}/orders/42"},
             note="Hard negative 1: /users/42 vs /orders/42.",
         ),
         _case(
@@ -294,9 +299,9 @@ def final_cases() -> list[dict[str, object]]:
             valid_pair=False,
             tags=["hard_negative", "cross_program"],
             actor={
-                "origin": "http://127.0.0.1:8178",
-                "url": "http://127.0.0.1:8178/orders/7",
-                "resource_namespace": "http://127.0.0.1:8178|order",
+                "origin": f"{ALT_ORIGIN}",
+                "url": f"{ALT_ORIGIN}/orders/7",
+                "resource_namespace": f"{ALT_ORIGIN}|order",
             },
             note="Hard negative 12: mixed origins.",
         ),
@@ -314,9 +319,9 @@ def final_cases() -> list[dict[str, object]]:
             valid_pair=False,
             tags=["hard_negative"],
             owner={"resource_id": "9", "array_object_ids": ["1", "2"], "endpoint_template": "/batches/{id}",
-                   "url": "http://127.0.0.1:8177/batches/9", "response_body": _body("batch", "9")},
+                   "url": f"{ORIGIN}/batches/9", "response_body": _body("batch", "9")},
             actor={"resource_id": "10", "array_object_ids": ["1", "3"], "endpoint_template": "/batches/{id}",
-                   "url": "http://127.0.0.1:8177/batches/10", "response_body": _body("batch", "10")},
+                   "url": f"{ORIGIN}/batches/10", "response_body": _body("batch", "10")},
             note="Hard negative 13: partial object-array overlap.",
         ),
         _case(
@@ -341,7 +346,7 @@ def final_cases() -> list[dict[str, object]]:
             "incompatible",
             valid_pair=False,
             tags=["distinct_instance"],
-            actor={"resource_id": "8", "url": "http://127.0.0.1:8177/orders/8", "response_body": _body("order", "8")},
+            actor={"resource_id": "8", "url": f"{ORIGIN}/orders/8", "response_body": _body("order", "8")},
             note="Different order ids are not the same resource.",
         ),
     ]

@@ -1,6 +1,7 @@
 # IDOR pairing precision v4
 
-Offline, synthetic, loopback fixtures only. The scorer is
+Offline, synthetic, loopback fixtures only (`http://127.0.0.1:8194`, alt
+`http://127.0.0.1:8195`). The scorer is
 `evaluate_compatibility` (`bbtk.idor-compatibility/1`). It does not call the
 network, does not confirm findings, and does not replace `propose_object_handoff`.
 

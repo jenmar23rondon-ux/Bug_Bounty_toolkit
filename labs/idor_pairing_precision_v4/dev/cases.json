@@ -13,7 +13,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -22,7 +22,7 @@
         },
         "resource_id": "11",
         "resource_kind": "order",
-        "resource_namespace": "http://127.0.0.1:8177|order",
+        "resource_namespace": "http://127.0.0.1:8194|order",
         "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"owner_label\": \"SYNTH_OWNER\"}}",
         "response_headers": {
           "content-type": "application/json"
@@ -33,7 +33,7 @@
         "status_code": 200,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/orders/11"
+        "url": "http://127.0.0.1:8194/orders/11"
       },
       "alias_rules": [],
       "expected_compatibility": "compatible",
@@ -52,7 +52,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -61,7 +61,7 @@
         },
         "resource_id": "11",
         "resource_kind": "order",
-        "resource_namespace": "http://127.0.0.1:8177|order",
+        "resource_namespace": "http://127.0.0.1:8194|order",
         "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"note\": \"SYNTH_PRIVATE_MARKER\", \"owner_label\": \"SYNTH_OWNER\"}}",
         "response_headers": {
           "content-type": "application/json"
@@ -72,7 +72,7 @@
         "status_code": 200,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/orders/11"
+        "url": "http://127.0.0.1:8194/orders/11"
       },
       "tags": [
         "positive"
@@ -92,7 +92,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -101,7 +101,7 @@
         },
         "resource_id": "42",
         "resource_kind": "order",
-        "resource_namespace": "http://127.0.0.1:8177|order",
+        "resource_namespace": "http://127.0.0.1:8194|order",
         "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"owner_label\": \"SYNTH_OWNER\"}}",
         "response_headers": {
           "content-type": "application/json"
@@ -112,7 +112,7 @@
         "status_code": 200,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/orders/42"
+        "url": "http://127.0.0.1:8194/orders/42"
       },
       "alias_rules": [],
       "expected_compatibility": "incompatible",
@@ -131,7 +131,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -140,7 +140,7 @@
         },
         "resource_id": "42",
         "resource_kind": "user",
-        "resource_namespace": "http://127.0.0.1:8177|user",
+        "resource_namespace": "http://127.0.0.1:8194|user",
         "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"note\": \"SYNTH_PRIVATE_MARKER\", \"owner_label\": \"SYNTH_OWNER\"}}",
         "response_headers": {
           "content-type": "application/json"
@@ -151,7 +151,7 @@
         "status_code": 200,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/users/42"
+        "url": "http://127.0.0.1:8194/users/42"
       },
       "tags": [
         "cross_kind"
@@ -171,7 +171,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -180,7 +180,7 @@
         },
         "resource_id": "7",
         "resource_kind": "order",
-        "resource_namespace": "http://127.0.0.1:8177|order",
+        "resource_namespace": "http://127.0.0.1:8194|order",
         "response_body": "",
         "response_headers": {
           "content-type": "application/json"
@@ -191,7 +191,7 @@
         "status_code": null,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/orders/7"
+        "url": "http://127.0.0.1:8194/orders/7"
       },
       "alias_rules": [],
       "expected_compatibility": "insufficient_evidence",
@@ -210,7 +210,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -219,7 +219,7 @@
         },
         "resource_id": "7",
         "resource_kind": "order",
-        "resource_namespace": "http://127.0.0.1:8177|order",
+        "resource_namespace": "http://127.0.0.1:8194|order",
         "response_body": "{\"ok\": true, \"order\": {\"id\": \"7\", \"note\": \"SYNTH_PRIVATE_MARKER\", \"owner_label\": \"SYNTH_OWNER\"}}",
         "response_headers": {
           "content-type": "application/json"
@@ -230,7 +230,7 @@
         "status_code": 200,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/orders/7"
+        "url": "http://127.0.0.1:8194/orders/7"
       },
       "tags": [
         "abstain"
@@ -250,7 +250,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -259,7 +259,7 @@
         },
         "resource_id": "7",
         "resource_kind": "order",
-        "resource_namespace": "http://127.0.0.1:8177|order",
+        "resource_namespace": "http://127.0.0.1:8194|order",
         "response_body": "{\"order\":{\"owner_label\":\"SYNTH_OWNER\",\"id\":\"11\"},\"ok\":true}",
         "response_headers": {
           "content-type": "application/json"
@@ -270,7 +270,7 @@
         "status_code": 200,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/orders/7"
+        "url": "http://127.0.0.1:8194/orders/7"
       },
       "alias_rules": [],
       "expected_compatibility": "compatible",
@@ -289,7 +289,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -298,7 +298,7 @@
         },
         "resource_id": "7",
         "resource_kind": "order",
-        "resource_namespace": "http://127.0.0.1:8177|order",
+        "resource_namespace": "http://127.0.0.1:8194|order",
         "response_body": "{\"ok\":true,\"order\":{\"id\":\"11\",\"owner_label\":\"SYNTH_OWNER\"}}",
         "response_headers": {
           "content-type": "application/json"
@@ -309,7 +309,7 @@
         "status_code": 200,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/orders/7"
+        "url": "http://127.0.0.1:8194/orders/7"
       },
       "tags": [
         "positive",
@@ -330,7 +330,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -339,7 +339,7 @@
         },
         "resource_id": "7",
         "resource_kind": "order",
-        "resource_namespace": "http://127.0.0.1:8177|order",
+        "resource_namespace": "http://127.0.0.1:8194|order",
         "response_body": "{\"acl\":\"shared\",\"ok\":true,\"order\":{\"id\":\"7\",\"shared_with\":[\"a\"]}}",
         "response_headers": {
           "content-type": "application/json"
@@ -350,7 +350,7 @@
         "status_code": 200,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/orders/7"
+        "url": "http://127.0.0.1:8194/orders/7"
       },
       "alias_rules": [],
       "expected_compatibility": "incompatible",
@@ -369,7 +369,7 @@
         "integrity_sha256": "sha256:intact",
         "kind_status": "explicit",
         "method": "GET",
-        "origin": "http://127.0.0.1:8177",
+        "origin": "http://127.0.0.1:8194",
         "parent_ids": [],
         "program": "synth-lab",
         "query_id_values": [],
@@ -378,7 +378,7 @@
         },
         "resource_id": "7",
         "resource_kind": "order",
-        "resource_namespace": "http://127.0.0.1:8177|order",
+        "resource_namespace": "http://127.0.0.1:8194|order",
         "response_body": "{\"acl\":\"shared\",\"ok\":true,\"order\":{\"id\":\"7\",\"shared_with\":[\"a\"]}}",
         "response_headers": {
           "content-type": "application/json"
@@ -389,7 +389,7 @@
         "status_code": 200,
         "temporal_not_after": "2026-11-01T00:00:00+00:00",
         "temporal_not_before": "2026-09-01T00:00:00+00:00",
-        "url": "http://127.0.0.1:8177/orders/7"
+        "url": "http://127.0.0.1:8194/orders/7"
       },
       "tags": [
         "shared"

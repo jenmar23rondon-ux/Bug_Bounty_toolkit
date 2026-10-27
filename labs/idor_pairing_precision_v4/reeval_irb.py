@@ -59,7 +59,7 @@ def _evidence(source: Any, ref: str, batch_id: str) -> dict[str, Any]:
         "evidence_ref": ref,
         "method": source.method,
         "url": source.url,
-        "program": "irb-final",
+        "program": "pairing-reeval",
         "session_ref": _session_ref(request_headers),
         "batch_id": batch_id,
         "continuity_declared": False,
@@ -128,7 +128,7 @@ def _admitted_kinds(evidences: list[dict[str, Any]]) -> tuple[set[str], int, int
         first = rows[0]
         second = next(row for row in rows if row.get("_kind") != first.get("_kind"))
         seen += 1
-        assessment = evaluate_compatibility(first, second, pair_id="irb-cross-kind")
+        assessment = evaluate_compatibility(first, second, pair_id="cross-kind")
         if assessment["pairing_decision"]:
             admitted_cross += 1
     return admitted, seen, admitted_cross
@@ -195,7 +195,7 @@ def reevaluate_final() -> dict[str, Any]:
     after_manifest = manifest.read_text(encoding="utf-8")
     after_labels = _sha(labels_path)
     report = {
-        "lab": "irb-1.0-compatibility-reeval",
+        "lab": "independent-research-final-compatibility-reeval",
         "split": "final",
         "scenarios": len(rows),
         "labels_modified": before_labels != after_labels or before_manifest != after_manifest,
