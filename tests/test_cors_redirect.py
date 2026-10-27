@@ -6,7 +6,13 @@ from unittest.mock import Mock
 
 from bugbounty_toolkit.core.http_client import ResponseRecord
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
-from bugbounty_toolkit.cors_check import CorsChecker, CorsOptions, classify_cors, origins_for_target
+from bugbounty_toolkit.cors_check import (
+    CorsChecker,
+    CorsOptions,
+    assess_cors_finding,
+    classify_cors,
+    origins_for_target,
+)
 from bugbounty_toolkit.open_redirect import (
     OpenRedirectOptions,
     OpenRedirectTester,
@@ -59,7 +65,132 @@ class CorsAndRedirectTests(unittest.TestCase):
         self.assertNotIn("access_token=private", evidence)
         self.assertEqual(json.loads(evidence)["type"], "cors")
 
+    def test_cors_confirmation_bar_true_positive_requires_all_three(self):
+        """TP: reflected Origin + ACAC true + credentialed non-empty body → confirmed."""
+        assessment = assess_cors_finding(
+            origin="https://evil.com",
+            allow_origin="https://evil.com",
+            allow_credentials="true",
+            request_headers={"Cookie": "session=lab"},
+            status_code=200,
+            body_text='{"bbtk_cors_private":true,"email":"lab@example.com"}',
+            body_size=48,
+        )
+        self.assertEqual(assessment["classification"], "VULNERABLE")
+        self.assertEqual(assessment["finding_state"], "confirmed")
+        self.assertTrue(assessment["confirmed"])
+        self.assertIsNone(assessment["confirmation_gap"])
+        self.assertIsNone(assessment["rejection_reason"])
+
+        client = Mock()
+        options = CorsOptions("https://example.com/api/me", {"Cookie": "session=lab-secret"})
+        # Reflect each probed Origin so the runner TP exercises confirmation for matching ACAO+ACAC+body.
+        origins_headers = [
+            {"access-control-allow-origin": "https://evil.com", "access-control-allow-credentials": "true"},
+            {"access-control-allow-origin": "null", "access-control-allow-credentials": "true"},
+            {"access-control-allow-origin": "https://evil.example.com", "access-control-allow-credentials": "true"},
+            {
+                "access-control-allow-origin": "https://example.com.evil.com",
+                "access-control-allow-credentials": "true",
+            },
+        ]
+
+        def send_tp(spec):
+            headers = origins_headers[client.send.call_count - 1]
+            return ResponseRecord(
+                spec,
+                spec.url,
+                200,
+                "OK",
+                2,
+                headers,
+                '{"bbtk_cors_private":true,"account":"lab-user"}',
+                45,
+            )
+
+        client.send.side_effect = send_tp
+        path, results = CorsChecker(self.scope, client).run(options, self.root / "cors-tp")
+        self.assertTrue(results[0]["confirmed"])
+        self.assertEqual(results[0]["finding_state"], "confirmed")
+        evidence = path.read_text(encoding="utf-8")
+        self.assertNotIn("lab-secret", evidence)
+        self.assertNotIn("bbtk_cors_private", evidence)
+        self.assertNotIn("lab-user", evidence)
+        payload = __import__("json").loads(evidence)
+        self.assertEqual(payload["classification"], "confirmed")
+        self.assertTrue(payload["confirmed"])
+
+    def test_cors_confirmation_bar_true_negative_header_only_is_candidate(self):
+        """TN: ACAO+ACAC without credentialed readable body → candidate, not confirmed."""
+        # No credentials, empty body
+        no_creds = assess_cors_finding(
+            origin="https://evil.com",
+            allow_origin="https://evil.com",
+            allow_credentials="true",
+            request_headers={},
+            status_code=200,
+            body_text="",
+            body_size=0,
+        )
+        self.assertEqual(no_creds["finding_state"], "candidate")
+        self.assertFalse(no_creds["confirmed"])
+        self.assertEqual(no_creds["confirmation_gap"], "no_second_proof")
+
+        # Credentials present but empty body still lacks second proof
+        empty_body = assess_cors_finding(
+            origin="https://evil.com",
+            allow_origin="https://evil.com",
+            allow_credentials="true",
+            request_headers={"Authorization": "Bearer lab"},
+            status_code=200,
+            body_text="   ",
+            body_size=3,
+        )
+        self.assertEqual(empty_body["finding_state"], "candidate")
+        self.assertFalse(empty_body["confirmed"])
+        self.assertEqual(empty_body["confirmation_gap"], "no_second_proof")
+
+        # Explicit rejection records why
+        rejected = assess_cors_finding(
+            origin="https://evil.com",
+            allow_origin="https://evil.com",
+            allow_credentials="true",
+            request_headers={"Cookie": "session=lab"},
+            status_code=200,
+            body_text='{"ok":true}',
+            body_size=10,
+            rejection_reason="false_positive",
+        )
+        self.assertEqual(rejected["finding_state"], "rejected")
+        self.assertFalse(rejected["confirmed"])
+        self.assertEqual(rejected["rejection_reason"], "false_positive")
+
+        client = Mock()
+        outcomes = [
+            {"access-control-allow-origin": "https://evil.com", "access-control-allow-credentials": "true"},
+            {"access-control-allow-origin": "null", "access-control-allow-credentials": "true"},
+            {"access-control-allow-origin": "*", "access-control-allow-credentials": "true"},
+            {},
+        ]
+
+        def send(spec):
+            headers = outcomes.pop(0)
+            return ResponseRecord(spec, spec.url, 200, "OK", 1, headers, "", 0)
+
+        client.send.side_effect = send
+        # No Cookie / Authorization → header signal alone stays candidate
+        options = CorsOptions("https://example.com/public")
+        path, results = CorsChecker(self.scope, client).run(options, self.root / "cors-tn")
+        self.assertEqual(results[0]["classification"], "VULNERABLE")
+        self.assertEqual(results[0]["finding_state"], "candidate")
+        self.assertFalse(results[0]["confirmed"])
+        self.assertEqual(results[0]["confirmation_gap"], "no_second_proof")
+        payload = __import__("json").loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(payload["classification"], "candidate")
+        self.assertFalse(payload["confirmed"])
+
     def test_open_redirect_payload_resolution_and_internal_cases(self):
+
         base = "https://app.example.com/login?next=%2Fhome"
         for payload in REDIRECT_PAYLOADS:
             with self.subTest(payload=payload):
