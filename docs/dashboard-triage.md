@@ -51,3 +51,10 @@ calls and times are TestClient timings — no human productivity is claimed.
 Residual risks: display masking is pattern-based and can miss novel secret formats in
 free-text ledger fields; the impact band is a category heuristic; the dashboard trusts the
 ledger file on disk as the source of review state.
+
+## Unified security-research view
+
+`GET /api/triage/security-research` (see `docs/unified-security-research-triage.md`)
+aggregates IDOR/XSS/disclosure candidates with gaps, blockers, duplicates,
+pos/neg controls, inconclusive and review-ready dossiers. Read-only; AI cannot
+approve; no exploit buttons; ranking is not invented severity.

@@ -193,6 +193,8 @@ files = [
     "bugbounty_toolkit/analysis/disclosure_access_correlation.py",
     "labs/disclosure_access_correlation_eval/evaluate.py",
     "tests/test_disclosure_access_correlation.py",
+    "bugbounty_toolkit/analysis/unified_security_triage.py",
+    "tests/test_unified_security_triage.py",
 ]
 
 [tool.coverage.run]
