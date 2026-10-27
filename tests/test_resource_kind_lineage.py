@@ -17,7 +17,7 @@ from bugbounty_toolkit.analysis.object_relationships import (
 )
 from bugbounty_toolkit.analysis.resource_kind_lineage import check_kind_coherence, graph_object_kinds
 from labs.resource_kind_lineage_eval import evaluate as lab
-from labs.resource_kind_lineage_eval.build_corpus import KEY, PROGRAM, SCENARIOS, write
+from labs.resource_kind_lineage_eval.build_corpus import KEY, PROGRAM, SCENARIOS
 
 HERE = Path(__file__).resolve().parents[1]
 CORPUS = HERE / "labs" / "resource_kind_lineage_eval" / "corpus"
@@ -191,13 +191,10 @@ class KindLineageUnitTests(unittest.TestCase):
 
 
 class KindLineageLabTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        write(CORPUS)
-
     def test_corpus_pinned(self) -> None:
         from labs.resource_kind_lineage_eval.build_corpus import check
 
+        # Corpus is committed + hash-pinned; never rewrite (offline-lab FS is read-only).
         check(CORPUS)
 
     def test_lab_metrics_pinned(self) -> None:
