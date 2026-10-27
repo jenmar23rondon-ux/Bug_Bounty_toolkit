@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### Stored XSS lifecycle validation
+
+- Lab `labs/stored_xss_lifecycle_eval/` drives cases 1–17 through the existing
+  `xss/stored_local.py` write → store → render → browser chain. It does not
+  duplicate that chain and does not change DOM hooks. Disposable loopback
+  storage only; `finding_confirmed` stays false; live Chromium metrics are
+  `NOT_MEASURED` when Chromium is absent. Version stays 0.2.2.
+
+
 ### Local AI evidence assistant
 
 - New `analysis/local_ai_evidence_assistant.py` and `bbtk ai evidence-assist`:
