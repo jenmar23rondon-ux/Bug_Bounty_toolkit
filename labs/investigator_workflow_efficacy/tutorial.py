@@ -44,11 +44,13 @@ def run_tutorial(root: Path) -> str:
         env.pop(key, None)
     env["NO_PROXY"] = "*"
     env["ROOT"] = str(root)
-    env["PATH"] = os.pathsep.join((str(Path.home() / ".local" / "bin"), "/usr/bin", "/bin", env.get("PATH", "")))
+    # Keep the caller's PATH first. A login shell would replace it, and the
+    # offline lab image only has PyYAML inside /opt/venv/bin.
+    env["PATH"] = os.pathsep.join((str(Path.home() / ".local" / "bin"), env.get("PATH", ""), "/usr/bin", "/bin"))
     chunks: list[str] = []
     script = "set -euo pipefail\n" + "\n".join(COMMANDS)
     completed = subprocess.run(
-        ["bash", "-lc", script],
+        ["bash", "-c", script],
         cwd=REPO,
         env=env,
         check=False,
