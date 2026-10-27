@@ -63,6 +63,7 @@ class PassiveBridgeTests(unittest.TestCase):
             self.assertEqual(len(json.loads(path.read_bytes())["payload"]["entries"]), 1)
             result = bridge.import_private(path, project="lab", origins=[ORIGIN], authorized=True)
             self.assertEqual(len(result.captures), 1)
+            self.assertEqual(preview.captures[0].locator, result.captures[0].locator)
             before = path.read_bytes()
             with self.assertRaises(ValueError):
                 bridge.export_selected(path, "lab", [ORIGIN], [capture(2)], authorized=True)

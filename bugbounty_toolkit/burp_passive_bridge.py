@@ -248,8 +248,10 @@ def export_selected(
         )
         for item in preview.captures
     ]
-    atomic_private_write(path, envelope(project, unique))
-    return preview
+    published = envelope(project, unique)
+    final = inspect_bytes(published, project=project, origins=origins)
+    atomic_private_write(path, published)
+    return BridgePreview(preview.declared, preview.duplicates, preview.rejected, final.captures)
 
 
 def import_private(path: Path, *, project: str, origins: Sequence[str], authorized: bool = False) -> BridgePreview:
