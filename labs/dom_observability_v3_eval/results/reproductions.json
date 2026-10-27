@@ -1,0 +1,89 @@
+{
+  "finding_confirmed": false,
+  "live": {
+    "browser": "system-chrome-via-playwright",
+    "external_requests": 0,
+    "finding_confirmed": false,
+    "limits": {
+      "async_after_load": {
+        "budget_150ms_executed": false,
+        "budget_800ms_executed": true,
+        "note": "A 400ms setTimeout is outside a 150ms window and inside an 800ms window. DOM local v2 waits at most 300ms."
+      },
+      "isolated_frame": {
+        "executed": false,
+        "outcome": "unsupported",
+        "sink_refs": []
+      },
+      "sink_before_hooks": {
+        "early_init_script_executed": false,
+        "early_init_script_sink": [
+          "innerHTML"
+        ],
+        "instrumentation_status": "partial",
+        "late_attach_sinks": [],
+        "note": "DOM local v2 already uses add_init_script, which records this inert innerHTML sink and does not treat it as execution. Installing the same hook after load misses the sink. location.hash is non-configurable in this Chrome, so that read is not claimed."
+      },
+      "source_in_url_never_read": {
+        "outcome": "not_observed",
+        "source_available": true,
+        "source_observed": false
+      }
+    },
+    "status": "MEASURED",
+    "stock_playwright_chromium": {
+      "reason": "bundled Playwright Chromium is not installed (Error)",
+      "status": "NOT_MEASURED"
+    }
+  },
+  "traces": [
+    {
+      "case_id": "dev-prehook-inert",
+      "finding_confirmed": false,
+      "method": "trace_model",
+      "v2_legacy_classification": "source_present_only",
+      "v2_outcome": "not_observed",
+      "v2_source_marker_present": true,
+      "v3_executed": false,
+      "v3_outcome": "observed",
+      "v3_source_available": true,
+      "v3_source_observed": true
+    },
+    {
+      "case_id": "dev-settimeout",
+      "finding_confirmed": false,
+      "method": "trace_model",
+      "v2_legacy_classification": "inconclusive",
+      "v2_outcome": "not_observed",
+      "v2_source_marker_present": false,
+      "v3_executed": true,
+      "v3_outcome": "observed",
+      "v3_source_available": false,
+      "v3_source_observed": false
+    },
+    {
+      "case_id": "dev-isolated-frame",
+      "finding_confirmed": false,
+      "method": "trace_model",
+      "v2_legacy_classification": "inconclusive",
+      "v2_outcome": "unsupported",
+      "v2_source_marker_present": false,
+      "v3_executed": false,
+      "v3_outcome": "unsupported",
+      "v3_source_available": false,
+      "v3_source_observed": false
+    },
+    {
+      "case_id": "dev-url-unread",
+      "finding_confirmed": false,
+      "method": "trace_model",
+      "v2_legacy_classification": "source_present_only",
+      "v2_outcome": "not_observed",
+      "v2_source_marker_present": true,
+      "v3_executed": false,
+      "v3_outcome": "not_observed",
+      "v3_source_available": true,
+      "v3_source_observed": false
+    }
+  ]
+}

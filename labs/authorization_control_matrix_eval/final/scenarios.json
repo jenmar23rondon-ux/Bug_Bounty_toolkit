@@ -1,0 +1,2758 @@
+{
+  "finding_confirmed": false,
+  "scenarios": [
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource",
+          "second_owner_resource"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": true,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "SESSION_POSSIBLY_EXPIRED",
+          "OWNER_CONTROL_MISSING"
+        ],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "owner_valid_before_cross"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F01-complete-denial",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "deny",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource",
+          "second_owner_resource"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "SESSION_POSSIBLY_EXPIRED"
+        ],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "owner_valid_before_cross"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F02-private-cross-access",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "allow",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "blocked",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [
+          "OWNER_CONTROL_MISSING"
+        ],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [
+          "OWNER_CONTROL_MISSING"
+        ],
+        "rules_include": [],
+        "session_states": {
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F03-missing-owner",
+      "observations": [
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 1,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "blocked",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [
+          "CROSS_CAPTURE_MISSING"
+        ],
+        "negative_finding": false,
+        "reason_codes_exclude": [],
+        "reason_codes_include": [
+          "CROSS_CAPTURE_MISSING"
+        ],
+        "rules_include": [],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F04-missing-cross",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "blocked",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [
+          "ACTOR_CONTROL_MISSING"
+        ],
+        "negative_finding": false,
+        "reason_codes_exclude": [],
+        "reason_codes_include": [
+          "ACTOR_CONTROL_MISSING"
+        ],
+        "rules_include": [],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "identity_unproven"
+        }
+      },
+      "id": "F05-missing-actor",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 1,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource",
+          "second_owner_resource"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": true,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "SESSION_POSSIBLY_EXPIRED"
+        ],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "isolated_401",
+          "owner_valid_before_cross"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F06-isolated-401",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "owner",
+          "body": "{\"error\": \"unauthorized\"}",
+          "capture_order": 1,
+          "evidence_ref": "ev-iso",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 401,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 2,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 3,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "inconclusive",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [
+          "SESSION_POSSIBLY_EXPIRED"
+        ],
+        "rules_include": [
+          "repeated_401",
+          "possibly_expired_session"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "possibly_expired",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F07-repeated-401",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "owner",
+          "body": "{\"error\": \"unauthorized\"}",
+          "capture_order": 1,
+          "evidence_ref": "ev-a",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 401,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "owner",
+          "body": "{\"error\": \"unauthorized\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-b",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 401,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 3,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 4,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "inconclusive",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [],
+        "reason_codes_include": [
+          "SESSION_POSSIBLY_EXPIRED"
+        ],
+        "rules_include": [
+          "login_redirect",
+          "possibly_expired_session"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "possibly_expired",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F08-login-redirect",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "owner",
+          "body": "",
+          "capture_order": 1,
+          "evidence_ref": "ev-login",
+          "expected_access_declared": "unknown",
+          "headers": {
+            "Location": "/login"
+          },
+          "integrity_status": "intact",
+          "observed_status": 302,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 2,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 3,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "blocked",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [
+          "OWNER_CONTROL_MISSING",
+          "OWNER_CONTROL_BROKEN"
+        ],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "SESSION_POSSIBLY_EXPIRED",
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [
+          "OWNER_CONTROL_MISSING",
+          "OWNER_CONTROL_BROKEN"
+        ],
+        "rules_include": [
+          "owner_invalid"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "invalid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F09-owner-invalid",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"error\": \"unauthorized\"}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 401,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "blocked",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [
+          "ACTOR_CONTROL_MISSING"
+        ],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "SESSION_POSSIBLY_EXPIRED"
+        ],
+        "reason_codes_include": [
+          "ACTOR_CONTROL_MISSING"
+        ],
+        "rules_include": [
+          "actor_invalid"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "invalid"
+        }
+      },
+      "id": "F10-actor-invalid",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"unauthorized\"}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 401,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource",
+          "second_owner_resource"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": true,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "rotated_token",
+          "owner_valid_before_cross"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F11-rotated-token",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner_a"
+        },
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-rot",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner_b"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 2,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 3,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "inconclusive",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": true,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [],
+        "rules_include": [
+          "rotated_token"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F12-proven-identity-change",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner_a"
+        },
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-id",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_other",
+            "identity_change_proven": true,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner_b"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 2,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 3,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "public_shared_control"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "inconclusive",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET",
+          "OWNER_CONTROL_MISSING"
+        ],
+        "reason_codes_include": [
+          "PUBLIC_RESOURCE_CONTROL"
+        ],
+        "rules_include": [
+          "public_resource"
+        ],
+        "session_states": {}
+      },
+      "id": "F13-public-resource",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"visibility\": \"public\", \"data\": {\"id\": \"SYNTH_pub\", \"marker\": \"synthetic-public\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-pub-o",
+          "expected_access_declared": "public",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"visibility\": \"public\", \"data\": {\"id\": \"SYNTH_pub\", \"marker\": \"synthetic-public\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-pub-s",
+          "expected_access_declared": "public",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_public_b",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"visibility\": \"public\", \"data\": {\"id\": \"SYNTH_pub\", \"marker\": \"synthetic-public\"}}",
+          "capture_order": 2,
+          "evidence_ref": "ev-pub-c",
+          "expected_access_declared": "public",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_public",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "public_shared_control"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "inconclusive",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [
+          "SHARED_RESOURCE_CONTROL"
+        ],
+        "rules_include": [
+          "shared_resource"
+        ],
+        "session_states": {}
+      },
+      "id": "F14-shared-resource",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"visibility\": \"shared\", \"shared_with\": [\"SYNTH_acct_b\"], \"data\": {\"id\": \"SYNTH_sh\", \"marker\": \"synthetic\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-sh-o",
+          "expected_access_declared": "shared",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_shared",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"visibility\": \"shared\", \"shared_with\": [\"SYNTH_acct_b\"], \"data\": {\"id\": \"SYNTH_sh\", \"marker\": \"synthetic\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-sh-s",
+          "expected_access_declared": "shared",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_shared_b",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"visibility\": \"shared\", \"shared_with\": [\"SYNTH_acct_b\"], \"data\": {\"id\": \"SYNTH_sh\", \"marker\": \"synthetic\"}}",
+          "capture_order": 2,
+          "evidence_ref": "ev-sh-c",
+          "expected_access_declared": "shared",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_shared",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "inconclusive",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [
+          "ID_ECHO_ONLY"
+        ],
+        "rules_include": [],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F15-id-echo",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"id\": \"SYNTH_obj\", \"status\": \"ok\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "requested_id": "SYNTH_obj",
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource",
+          "second_owner_resource"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": true,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "owner_valid_before_cross"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F16-body-denial",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": false, \"error\": \"access denied\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "deny",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "inconclusive",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "SESSION_POSSIBLY_EXPIRED",
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [],
+        "rules_include": [
+          "deleted_resource"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F17-deleted-resource",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"not found\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 404,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "owner",
+          "body": "{\"error\": \"not found\"}",
+          "capture_order": 3,
+          "evidence_ref": "ev-re",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 404,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource",
+          "second_owner_resource",
+          "owner_recheck"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": true,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "owner_valid_before_cross"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F18-owner-recheck",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"not found\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 404,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 3,
+          "evidence_ref": "ev-re",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource",
+          "second_owner_resource"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": true,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "session_change_mid_capture"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_owner_b": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F19-session-change",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-new",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": true
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner_b",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 2,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 3,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "inconclusive",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [],
+        "rules_include": [],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_owner_b": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F20-unproven-session-change",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-new",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner_b",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 2,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 3,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": true,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "CAPTURE_ORDER_AMBIGUOUS"
+        ],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "unreliable_timestamps",
+          "owner_valid_before_cross"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F21-unreliable-timestamps",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": "2026-10-27T00:00:02Z",
+          "timestamp_reliable": false,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": "2026-10-27T00:00:01Z",
+          "timestamp_reliable": false,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": "2026-10-27T00:00:00Z",
+          "timestamp_reliable": false,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "inconclusive",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET",
+          "SESSION_POSSIBLY_EXPIRED"
+        ],
+        "reason_codes_include": [
+          "CAPTURE_ORDER_AMBIGUOUS"
+        ],
+        "rules_include": [
+          "out_of_order_captures"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "out_of_order"
+        }
+      },
+      "id": "F22-out-of-order",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": "2026-10-27T00:00:02Z",
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": "2026-10-27T00:00:01Z",
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": "2026-10-27T00:00:00Z",
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second",
+        "denial_consistent": false,
+        "disposition": "blocked",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [
+          "OWNER_CONTROL_MISSING"
+        ],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [
+          "OWNER_CONTROL_MISSING",
+          "CAPTURE_ORDER_AMBIGUOUS"
+        ],
+        "rules_include": [
+          "out_of_order_captures"
+        ],
+        "session_states": {}
+      },
+      "id": "F23-recheck-before-cross",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "control_type": "owner_recheck",
+          "evidence_ref": "ev-re",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource",
+          "second_owner_resource",
+          "negative_control"
+        ],
+        "comparison_scope": "owner_second",
+        "denial_consistent": true,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "owner_valid_before_cross"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F24-negative-control",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "deny",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 3,
+          "control_type": "negative_control",
+          "evidence_ref": "ev-neg",
+          "expected_access_declared": "deny",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_other",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second_anonymous",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [
+          "owner_own_resource",
+          "second_own_resource",
+          "second_owner_resource",
+          "anonymous"
+        ],
+        "comparison_scope": "owner_second_anonymous",
+        "denial_consistent": true,
+        "disposition": "complete",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [],
+        "reason_codes_include": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "rules_include": [
+          "owner_valid_before_cross"
+        ],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid",
+          "anonymous": "anonymous"
+        }
+      },
+      "id": "F25-anonymous",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "anonymous",
+          "body": "{\"error\": \"unauthorized\"}",
+          "capture_order": 3,
+          "evidence_ref": "ev-anon",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 401,
+          "provenance": {
+            "account_attested": false,
+            "declared_account_ref": "SYNTH_f_acct_anon",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": null,
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_anon"
+        }
+      ]
+    },
+    {
+      "comparison_scope": "owner_second_anonymous",
+      "expected": {
+        "access_claim": false,
+        "cells_present": [],
+        "comparison_scope": "owner_second_anonymous",
+        "denial_consistent": false,
+        "disposition": "blocked",
+        "expiry_proven": false,
+        "finding_confirmed": false,
+        "identity_changed": false,
+        "missing_reasons": [],
+        "negative_finding": false,
+        "reason_codes_exclude": [
+          "COMPLETE_CONTROL_SET"
+        ],
+        "reason_codes_include": [],
+        "rules_include": [],
+        "session_states": {
+          "SYNTH_f_sess_owner": "valid",
+          "SYNTH_f_sess_second": "valid"
+        }
+      },
+      "id": "F26-missing-anonymous",
+      "observations": [
+        {
+          "actor_label": "owner",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 0,
+          "evidence_ref": "ev-owner",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_owner",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_owner",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_owner"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"ok\": true, \"data\": {\"id\": \"SYNTH_obj_b\", \"marker\": \"synthetic-private\"}}",
+          "capture_order": 1,
+          "evidence_ref": "ev-second",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 200,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "second",
+          "resource_ref": "SYNTH_f_res_second",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        },
+        {
+          "actor_label": "second",
+          "body": "{\"error\": \"forbidden\"}",
+          "capture_order": 2,
+          "evidence_ref": "ev-cross",
+          "expected_access_declared": "unknown",
+          "headers": {},
+          "integrity_status": "intact",
+          "observed_status": 403,
+          "provenance": {
+            "account_attested": true,
+            "declared_account_ref": "SYNTH_f_acct_second",
+            "identity_change_proven": false,
+            "session_change_proven": false
+          },
+          "resource_owner_label": "owner",
+          "resource_ref": "SYNTH_f_res_owner",
+          "session_ref": "SYNTH_f_sess_second",
+          "timestamp": null,
+          "timestamp_reliable": true,
+          "token_ref": "SYNTH_f_tok_second"
+        }
+      ]
+    }
+  ],
+  "schema": "bbtk.authorization-control-matrix-scenarios/1",
+  "split": "final"
+}

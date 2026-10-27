@@ -753,6 +753,7 @@ def propose_object_handoff(
         # Re-read sources in the same import mode the graph was built with (legacy graphs: partial
         # is equivalent, because a legacy graph only contains fully valid sources).
         recorded = graph.get("capture_import") or {}
+        windows = recorded.get("independent_windows") or {}
         index = indexed_capture_sources(
             program,
             inputs,
@@ -760,6 +761,7 @@ def propose_object_handoff(
             base_url=base_url,
             strict=recorded.get("mode") == "strict",
             allow_truncate=recorded.get("truncate_allowed") is True,
+            independent_windows=bool(windows.get("enabled")),
         )
 
     # Explicit insufficient-evidence path when a candidate cannot form a pair.

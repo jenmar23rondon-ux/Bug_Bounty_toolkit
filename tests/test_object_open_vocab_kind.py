@@ -54,12 +54,30 @@ class NounUnitTests(unittest.TestCase):
 
     def test_open_vocabulary_kinds(self) -> None:
         self.assertEqual(resource_kind_noun("gadgets"), ("gadget", "open_vocabulary"))
+        self.assertEqual(resource_kind_noun("estimates2"), ("estimates2", "open_vocabulary"))
         self.assertEqual(_field_kind("gadgetId"), "gadget")
         self.assertEqual(_field_kind("gadget_uuid"), "gadget")
         self.assertEqual(_field_kind("gadget_ids"), "gadget")
 
     def test_generic_ambiguous_and_unsafe_names_are_insufficient(self) -> None:
-        for word in ("ref", "key", "data", "id", "ids", "results", "v2", "123", "x", "a-b", "lookup", "page", "z" * 60):
+        for word in (
+            "ref",
+            "key",
+            "data",
+            "id",
+            "ids",
+            "results",
+            "v2",
+            "123",
+            "x",
+            "a-b",
+            "lookup",
+            "page",
+            "id2",
+            "data2",
+            "page2",
+            "z" * 60,
+        ):
             self.assertIsNone(resource_kind_noun(word), word)
         for name in ("id", "uuid", "ref_id", "key_id", "data_id", "password_id", "token_id", "gadget"):
             self.assertIsNone(_field_kind(name), name)

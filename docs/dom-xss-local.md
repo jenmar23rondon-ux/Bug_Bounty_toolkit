@@ -53,3 +53,12 @@ about real-world detection efficacy.
 `run_dom_local` results now also carry an additive `dom_state` from
 `xss.evidence_record.assess_dom_result`. Legacy `classification` values are
 unchanged. See [xss-evidence-quality-v2.md](xss-evidence-quality-v2.md).
+
+## Observability v3
+
+DOM local v2 is unchanged. The additive observer in
+`bugbounty_toolkit.xss.dom_observability` / `dom_observer` installs hooks before
+page scripts, separates URL presence from source reads, and records same-origin
+frames without bypassing the Same-Origin Policy. See
+[dom-observability-v3.md](dom-observability-v3.md) and the audit in
+[dom-observability-v3-audit.md](dom-observability-v3-audit.md).
