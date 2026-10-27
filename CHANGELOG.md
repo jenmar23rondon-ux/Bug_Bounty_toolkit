@@ -1,5 +1,17 @@
 ## [Unreleased]
 
+### Offline information disclosure indicators
+
+- New offline `analysis/information_disclosure.py` (`information-disclosure-v1`) and
+  `bbtk analyze disclosure`: detects credential/token/private-key/env/internal-config/
+  stack-trace/PII/private-file/debug indicators in stored responses. Separates
+  secret-shape detection, audience exposure and unauthorized access (never decided).
+  Seven states, all `finding_confirmed: false`; minimized indicators only (no values),
+  body SHA-256 provenance; reuses `core.redaction` shapes. No network, no AI by default.
+- Lab `labs/information_disclosure_eval/` with DEV + independent FINAL frozen before
+  rules (FINAL state accuracy 0.944, FP 0, secret leaks 0, external requests 0).
+  Version stays 0.2.2.
+
 ### End-to-end resource kind lineage
 
 - Preserve inferred resource kind/namespace from capture through Object Discovery,

@@ -59,6 +59,10 @@ from .apk_scan import ApkScanner
 from .takeover_check import analyze_cnames, normalize_dns_name, resolve_cname_records
 from .analysis.html_context import analyze_html
 from .analysis.jwt_inspector import inspect_jwt, ALGORITHMS
+from .analysis.information_disclosure import (
+    assess_batch as assess_disclosure_batch,
+    load_records as load_disclosure_records,
+)
 from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
@@ -2286,6 +2290,9 @@ def cmd_analyze(args: argparse.Namespace) -> None:
         data = analyze_html(text, args.marker, args.parser)
     elif args.analysis == "sql":
         data = analyze_sql(text)
+    elif args.analysis == "disclosure":
+        # Offline only: minimized indicators, never secret values; finding_confirmed stays false.
+        data = assess_disclosure_batch(load_disclosure_records(text))
     elif args.analysis == "evidence":
         data = review_evidence(json.loads(text))
         if args.ai == "ollama":
@@ -3939,6 +3946,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     jwt_forge.add_argument("--output", type=Path, help="Save generated candidate tokens to a local JSON file")
     jwt_forge.set_defaults(func=cmd_jwt_forge)
+    disclosure = analyze_sub.add_parser(
+        "disclosure",
+        help="Offline information-disclosure indicators in stored responses; never confirms, never sends requests",
+    )
+    disclosure.add_argument(
+        "--input",
+        required=True,
+        type=Path,
+        help="Local JSON with stored response records (see docs/information-disclosure.md)",
+    )
+    disclosure.add_argument(
+        "--output", type=Path, help="Write the minimized summary (no secret values) to a local file"
+    )
+    disclosure.set_defaults(func=cmd_analyze)
     evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations with optional local Ollama review")
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)

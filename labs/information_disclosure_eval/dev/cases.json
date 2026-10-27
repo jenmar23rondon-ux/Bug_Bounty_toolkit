@@ -1,0 +1,222 @@
+{
+  "cases": [
+    {
+      "audience": "authenticated_self",
+      "canaries": [
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZXYtc3ludGgifQ.REVWX1NZTlRIX1NJRw"
+      ],
+      "expected_categories": [
+        "token"
+      ],
+      "expected_state": "indicator_detected",
+      "id": "D01",
+      "request": {},
+      "response": {
+        "body": "{\"session_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZXYtc3ludGgifQ.REVWX1NZTlRIX1NJRw\"}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "status": 200
+      },
+      "url": "https://dev.invalid/api/me"
+    },
+    {
+      "audience": "public",
+      "canaries": [],
+      "expected_categories": [],
+      "expected_state": "public_or_intended_information",
+      "id": "D02",
+      "request": {},
+      "response": {
+        "body": "<pre>X-Api-Key: &lt;your-key&gt;\npassword: example_password</pre>",
+        "headers": {
+          "Content-Type": "text/html"
+        },
+        "status": 200
+      },
+      "url": "https://dev.invalid/swagger/index.html"
+    },
+    {
+      "audience": "public",
+      "canaries": [],
+      "expected_categories": [
+        "stack_trace"
+      ],
+      "expected_state": "indicator_detected",
+      "id": "D03",
+      "request": {},
+      "response": {
+        "body": "java.lang.NullPointerException\n\tat com.lab.Orders.get(Orders.java:42)\n",
+        "headers": {
+          "Content-Type": "text/plain"
+        },
+        "status": 500
+      },
+      "url": "https://dev.invalid/api/err"
+    },
+    {
+      "audience": "cross_actor",
+      "canaries": [
+        "SYN-DEV-0042"
+      ],
+      "expected_categories": [
+        "pii"
+      ],
+      "expected_state": "access_control_validation_required",
+      "id": "D04",
+      "request": {},
+      "response": {
+        "body": "{\"dob\": \"1990-01-01\", \"national_id\": \"SYN-DEV-0042\"}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "status": 200
+      },
+      "url": "https://dev.invalid/api/profile/7"
+    },
+    {
+      "audience": "authenticated_self",
+      "canaries": [],
+      "expected_categories": [
+        "pii"
+      ],
+      "expected_state": "public_or_intended_information",
+      "id": "D05",
+      "request": {},
+      "response": {
+        "body": "{\"dob\": \"1990-01-01\", \"email\": \"me@dev.invalid\"}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "status": 200
+      },
+      "url": "https://dev.invalid/api/profile/me"
+    },
+    {
+      "audience": "public",
+      "canaries": [],
+      "expected_categories": [],
+      "expected_state": "not_observed",
+      "id": "D06",
+      "request": {},
+      "response": {
+        "body": "{\"status\": \"ok\", \"build\": \"1.9.0\"}",
+        "headers": {
+          "Content-Type": "application/json",
+          "Server": "Apache/2.4.58"
+        },
+        "status": 200
+      },
+      "url": "https://dev.invalid/api/health"
+    },
+    {
+      "audience": "public",
+      "canaries": [
+        "ghp_DEVSYNTHETIC0000000000000000aa"
+      ],
+      "expected_categories": [
+        "credentials",
+        "env_vars"
+      ],
+      "expected_state": "ready_for_manual_review",
+      "id": "D07",
+      "request": {},
+      "response": {
+        "body": "export GH_TOKEN=ghp_DEVSYNTHETIC0000000000000000aa\nexport NODE_ENV=prod\n",
+        "headers": {
+          "Content-Type": "text/plain"
+        },
+        "status": 200
+      },
+      "url": "https://dev.invalid/config.js"
+    },
+    {
+      "audience": "unknown",
+      "canaries": [],
+      "expected_categories": [],
+      "expected_state": "invalid_evidence",
+      "id": "D08",
+      "request": {},
+      "response": {
+        "body": "KLUv/QBYAA==",
+        "headers": {
+          "Content-Encoding": "zstd"
+        },
+        "status": 200
+      },
+      "url": "https://dev.invalid/api/x"
+    },
+    {
+      "audience": "unknown",
+      "canaries": [],
+      "expected_categories": [],
+      "expected_state": "invalid_evidence",
+      "id": "D09",
+      "request": {},
+      "response": {
+        "headers": {}
+      },
+      "url": "https://dev.invalid/api/x"
+    },
+    {
+      "audience": "cross_actor",
+      "canaries": [
+        "000-98-7654"
+      ],
+      "expected_categories": [
+        "pii"
+      ],
+      "expected_state": "access_control_validation_required",
+      "id": "D10",
+      "request": {},
+      "response": {
+        "body": "{\"rows\":[{\"ssn\":\"000-98-7654\"},",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "status": 200,
+        "truncated": true
+      },
+      "url": "https://dev.invalid/api/list"
+    },
+    {
+      "audience": "public",
+      "canaries": [
+        "BBTK_CANARY_DEV_abcdef123456"
+      ],
+      "expected_categories": [
+        "debug_info",
+        "token"
+      ],
+      "expected_state": "ready_for_manual_review",
+      "id": "D11",
+      "request": {},
+      "response": {
+        "body": "{\"debug\": {\"sql_query\": \"SELECT * FROM t\"}, \"note\": \"BBTK_CANARY_DEV_abcdef123456\"}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "status": 200
+      },
+      "url": "https://dev.invalid/api/state"
+    },
+    {
+      "audience": "public",
+      "canaries": [],
+      "expected_categories": [],
+      "expected_state": "not_observed",
+      "id": "D12",
+      "request": {},
+      "response": {
+        "body": "{\"errors\": {\"password\": \"must be at least 12 characters\"}}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "status": 422
+      },
+      "url": "https://dev.invalid/api/signup"
+    }
+  ],
+  "frozen": false,
+  "split": "dev"
+}
