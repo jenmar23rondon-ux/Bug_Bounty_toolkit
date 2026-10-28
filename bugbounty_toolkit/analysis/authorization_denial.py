@@ -603,6 +603,24 @@ def owner_control_state(owner: ResponseAssessment) -> str:
 
 def _assess_pair(owner: ResponseAssessment, actor: ResponseAssessment) -> AuthorizationOutcome:
     reasons: list[str] = []
+    # A status/body conflict is not evidence of a successful cross-account read.
+    # ``_assess_response_core`` preserves the resource-shaped payload so it can be
+    # inspected by a human, but that observation must not be promoted by the
+    # pair-level production path. This keeps the real assessment aligned with
+    # the conservative laboratory adapter: contradictory evidence abstains.
+    if (
+        "contradictory_denial_status_with_resource_body" in owner.reasons
+        or "contradictory_denial_status_with_resource_body" in actor.reasons
+    ):
+        reasons.append("contradictory_authorization_evidence")
+        contradictory: Outcome = "inconclusive"
+        return AuthorizationOutcome(
+            outcome=contradictory,
+            owner=owner,
+            actor=actor,
+            annotation=_annotation_for(contradictory, owner, actor),
+            reasons=tuple(reasons),
+        )
     if owner.access_proof in {"http_401", "login_redirect"}:
         # Owner positive control failed: nothing the actor saw can be interpreted.
         reasons.append("owner_control_broken")
