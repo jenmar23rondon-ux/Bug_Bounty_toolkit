@@ -22,6 +22,7 @@ from ..analysis.evidence_ledger import (
     validate_ledger,
 )
 from ..core.redaction import RedactionDestination, redact_data
+from ..core.private_files import atomic_private_write
 from .dossier_schema import (
     CLAIM_KINDS,
     DOSSIER_NOTICE,
@@ -31,7 +32,6 @@ from .dossier_schema import (
 )
 from .finding_report import (
     build_evidence_finding_report,
-    render_evidence_report_json,
     render_evidence_report_markdown,
 )
 
@@ -978,9 +978,8 @@ def write_verified_dossier(
     fmt: str = "json",
 ) -> Path:
     """Write JSON or Markdown; reuses finding_report JSON/Markdown helpers for drafts."""
-    destination.parent.mkdir(parents=True, exist_ok=True)
     if fmt == "markdown":
-        destination.write_text(render_verified_dossier_markdown(dossier), encoding="utf-8")
+        atomic_private_write(destination, render_verified_dossier_markdown(dossier).encode("utf-8"))
         return destination
     if fmt == "json":
         payload = dict(dossier)
@@ -988,10 +987,14 @@ def write_verified_dossier(
         text = json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=True, default=str) + "\n"
         if len(text.encode("utf-8")) > _MAX_DOSSIER_BYTES:
             raise DossierError("Dossier exceeds 2 MiB write limit.")
-        destination.write_text(text, encoding="utf-8")
+        atomic_private_write(destination, text.encode("utf-8"))
         return destination
     if fmt == "report-json" and isinstance(dossier.get("report_draft"), dict):
-        return render_evidence_report_json(dossier["report_draft"], destination)
+        text = json.dumps(dossier["report_draft"], indent=2, sort_keys=True, ensure_ascii=True)
+        if len(text.encode("utf-8")) > _MAX_DOSSIER_BYTES:
+            raise DossierError("Dossier exceeds 2 MiB write limit.")
+        atomic_private_write(destination, text.encode("utf-8"))
+        return destination
     raise DossierError(f"Unsupported dossier format: {fmt}")
 
 

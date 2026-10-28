@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -154,7 +155,22 @@ class DossierVerifierUnitTests(unittest.TestCase):
         out = self.root / "d.json"
         write_verified_dossier(dossier, out, fmt="json")
         self.assertTrue(out.is_file())
+        self.assertEqual(out.stat().st_mode & 0o777, 0o600)
         self.assertEqual(len(dossier_fingerprint(dossier)), 64)
+
+    def test_dossier_output_refuses_symlink_and_existing_file(self) -> None:
+        outside = self.root / "outside.json"
+        outside.write_text("untouched", encoding="utf-8")
+        link = self.root / "dossier.json"
+        link.symlink_to(outside)
+        with self.assertRaises(ValueError):
+            write_verified_dossier({"candidate_id": "c1"}, link)
+        self.assertEqual(outside.read_text(encoding="utf-8"), "untouched")
+        link.unlink()
+        write_verified_dossier({"candidate_id": "c1"}, link)
+        with self.assertRaises(ValueError):
+            write_verified_dossier({"candidate_id": "c1"}, link)
+        self.assertEqual(os.stat(link).st_mode & 0o777, 0o600)
 
     def test_does_not_mutate_ledger(self) -> None:
         before = json.dumps(self.ledger, sort_keys=True)
