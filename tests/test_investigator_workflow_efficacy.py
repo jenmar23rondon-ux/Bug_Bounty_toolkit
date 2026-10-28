@@ -80,6 +80,10 @@ class InvestigatorWorkflowEfficacyTests(unittest.TestCase):
         self.assertEqual(fresh["dev:bbtk:A-dev-vuln-order"], "review")
         self.assertEqual(fresh["stress:manual:S-xss-duplicate"], "reject")
         self.assertEqual(fresh["stress:bbtk:S-xss-duplicate"], "reject")
+        self.assertEqual(fresh["stress:bbtk:S-idor-contradiction"], "abstain")
+        self.assertEqual(fresh["final:bbtk:B-final-dom-safe"], "reject")
+        self.assertEqual(fresh["final:bbtk:C-final-self-profile"], "reject")
+        self.assertEqual(fresh["final:bbtk:C-final-empty"], "abstain")
         self.assertNotIn(CANARY, json.dumps(report))
 
     def test_tutorial_commands_match_doc_and_execute(self) -> None:

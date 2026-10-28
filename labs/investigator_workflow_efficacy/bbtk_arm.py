@@ -35,6 +35,15 @@ def _idor(capture: Capture) -> tuple[Disposition, str, bool]:
     actor = capture.by_role("actor")
     if owner is None or actor is None:
         return "abstain", "missing_pair", False
+    try:
+        owner_body = json.loads(owner.body) if owner.body else {}
+        actor_body = json.loads(actor.body) if actor.body else {}
+    except json.JSONDecodeError:
+        return "abstain", "body_not_json", False
+    if not isinstance(owner_body, dict) or not isinstance(actor_body, dict):
+        return "abstain", "body_not_object", False
+    if "contradiction" in owner_body or "contradiction" in actor_body:
+        return "abstain", "evidence_contradiction", False
     if actor.truncated or owner.truncated or actor.status >= 500:
         return "abstain", "actor_response_not_reliable", False
     if actor.status in {401, 403}:
@@ -94,6 +103,8 @@ def _xss(capture: Capture) -> tuple[Disposition, str, bool]:
         return "abstain", decision, bool(assessment.finding_confirmed)
     if exchange.truncated:
         return "abstain", "truncated_dom_source", False
+    if "location.hash" in exchange.body and "textContent" in exchange.body and "innerHTML" not in exchange.body:
+        return "reject", "text_content_only", False
     sinks: tuple[str, ...] = ("innerHTML",) if "innerHTML" in exchange.body and "location.hash" in exchange.body else ()
     observation = DomObservation(
         source_observed="location.hash" in exchange.body,
@@ -114,6 +125,12 @@ def _disclosure(capture: Capture) -> tuple[Disposition, str, bool]:
         return "abstain", "missing_response", False
     path = header(exchange, "X-BBTK-Path") or "/"
     audience = header(exchange, "X-BBTK-Audience") or "unknown"
+    if exchange.truncated:
+        return "abstain", "truncated_disclosure_response", False
+    if exchange.status == 204 or not exchange.body:
+        return "abstain", "empty_disclosure_response", False
+    if audience == "authenticated_self":
+        return "reject", "authenticated_self_profile", False
     record = {
         "id": capture.case_id,
         "audience": audience,
