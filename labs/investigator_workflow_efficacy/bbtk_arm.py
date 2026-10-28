@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,37 @@ from bugbounty_toolkit.xss.evidence_record import DomObservation, classify_dom_s
 from .capture import Capture, header
 
 Disposition = str
+
+_DOM_SOURCES = (
+    "location.hash",
+    "location.search",
+    "location.href",
+    "document.URL",
+    "document.documentURI",
+    "document.referrer",
+    "window.name",
+)
+_DANGEROUS_DOM_SINKS = (
+    "innerHTML",
+    "outerHTML",
+    "insertAdjacentHTML",
+    "document.write",
+    "document.writeln",
+)
+_SAFE_DOM_SINKS = ("textContent", "innerText", "createTextNode")
+
+
+def _dom_signal(body: str) -> tuple[bool, bool, bool]:
+    """Return source, dangerous-sink and safe-sink signals from captured script.
+
+    This deliberately does not claim data flow or execution.  It only makes a
+    candidate reviewable when an existing capture contains a known DOM source
+    and dangerous sink; a safe text sink alone is rejected.
+    """
+    source_seen = any(source in body for source in _DOM_SOURCES)
+    dangerous_seen = any(re.search(r"\b" + re.escape(sink) + r"\b", body) for sink in _DANGEROUS_DOM_SINKS)
+    safe_seen = any(re.search(r"\b" + re.escape(sink) + r"\b", body) for sink in _SAFE_DOM_SINKS)
+    return source_seen, dangerous_seen, safe_seen
 
 
 def classify(capture: Capture) -> tuple[Disposition, str, bool]:
@@ -103,11 +135,12 @@ def _xss(capture: Capture) -> tuple[Disposition, str, bool]:
         return "abstain", decision, bool(assessment.finding_confirmed)
     if exchange.truncated:
         return "abstain", "truncated_dom_source", False
-    if "location.hash" in exchange.body and "textContent" in exchange.body and "innerHTML" not in exchange.body:
-        return "reject", "text_content_only", False
-    sinks: tuple[str, ...] = ("innerHTML",) if "innerHTML" in exchange.body and "location.hash" in exchange.body else ()
+    source_seen, dangerous_seen, safe_seen = _dom_signal(exchange.body)
+    if source_seen and safe_seen and not dangerous_seen:
+        return "reject", "safe_text_sink_only", False
+    sinks: tuple[str, ...] = ("dangerous_dom_sink",) if source_seen and dangerous_seen else ()
     observation = DomObservation(
-        source_observed="location.hash" in exchange.body,
+        source_observed=source_seen,
         sinks=sinks,
         marker_executed=False,
     )
