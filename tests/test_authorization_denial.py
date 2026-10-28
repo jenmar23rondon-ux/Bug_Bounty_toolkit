@@ -22,6 +22,11 @@ IRB_FINAL = Path(__file__).resolve().parents[1] / "labs" / "independent_research
 KEY = b"\x00" * 32
 
 
+# Frozen corpus labels document behaviour before the production consistency fix.
+# Keep them intact; production now conservatively abstains on contradictions.
+_HISTORICAL_CONTRADICTION_CASES = frozenset({"D07_contradictory_403_body", "F11_contradictory_401_with_payload"})
+
+
 def _raw(status: int, body: str, *, location: str | None = None) -> str:
     headers = ["Content-Type: application/json"]
     if location:
@@ -94,6 +99,11 @@ class AuthorizationDenialTests(unittest.TestCase):
         self.assertEqual(annotation["role"], "negative_control")
         self.assertIs(annotation["contradicts_hypothesis"], True)
 
+    def test_owner_control_failure_stays_inconclusive(self) -> None:
+        owner = _raw(401, '{"error":"unauthenticated","ok":false}')
+        actor = _raw(200, '{"ok":true,"statement":{"id":1,"marker":"m"}}')
+        self.assertEqual(assess_pair_authorization(owner, actor).outcome, "inconclusive")
+
     def test_pair_both_success_is_possible_access_not_confirmed(self) -> None:
         owner = _raw(200, '{"ok":true,"statement":{"id":1,"marker":"m","owner_label":"owner"}}')
         actor = _raw(200, '{"ok":true,"statement":{"id":1,"marker":"m","owner_label":"owner"}}')
@@ -125,7 +135,11 @@ class AuthorizationDenialTests(unittest.TestCase):
                 for case in cases:
                     with self.subTest(split=split, case=case["id"]):
                         result = assess_pair_authorization(case["owner_raw"], case["actor_raw"])
-                        self.assertEqual(result.outcome, case["expected_outcome"], f"reasons={result.reasons}")
+                        if case["id"] in _HISTORICAL_CONTRADICTION_CASES:
+                            self.assertEqual(case["expected_outcome"], "possible_access")
+                            self.assertEqual(result.outcome, "inconclusive", f"reasons={result.reasons}")
+                        else:
+                            self.assertEqual(result.outcome, case["expected_outcome"], f"reasons={result.reasons}")
                         annotation = result.annotation or {}
                         if case.get("expect_negative_control"):
                             self.assertEqual(annotation.get("role"), "negative_control")
