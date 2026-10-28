@@ -66,6 +66,13 @@ class AuthorizationDenialTests(unittest.TestCase):
         self.assertTrue(assessment.access_demonstrated)
         self.assertEqual(assessment.response_class, "successful_looking")
 
+    def test_contradictory_pair_is_not_promoted_to_possible_access(self) -> None:
+        owner = _raw(200, '{"ok":true,"statement":{"id":1,"marker":"m","owner_label":"owner"}}')
+        actor = _raw(403, '{"ok":true,"statement":{"id":1,"marker":"m","owner_label":"owner"}}')
+        result = assess_pair_authorization(owner, actor)
+        self.assertEqual(result.outcome, "inconclusive")
+        self.assertIn("contradictory_authorization_evidence", result.reasons)
+
     def test_auth_redirect_302_to_login_is_denied(self) -> None:
         assessment = assess_response(302, "", {"location": "http://127.0.0.1:8177/login"})
         self.assertTrue(assessment.denial_demonstrated)
