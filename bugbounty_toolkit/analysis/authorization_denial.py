@@ -621,7 +621,7 @@ def _assess_pair(owner: ResponseAssessment, actor: ResponseAssessment) -> Author
             annotation=_annotation_for(contradictory, owner, actor),
             reasons=tuple(reasons),
         )
-        if owner.access_proof in {"http_401", "login_redirect"}:
+    if owner.access_proof in {"http_401", "login_redirect"}:
         # Owner positive control failed: nothing the actor saw can be interpreted.
         reasons.append("owner_control_broken")
         broken: Outcome = "inconclusive"
