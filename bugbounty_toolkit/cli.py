@@ -2594,12 +2594,17 @@ def _write_offline_json(path: Path, data: dict[str, object], force: bool) -> Non
 
 
 def cmd_evidence_dossier(args: argparse.Namespace) -> None:
-    from .reporting.capture_dossier import build_capture_dossier
+    from .reporting.capture_dossier import build_capture_dossier, render_capture_dossier_markdown
     from .core.private_files import atomic_private_write
 
     dossier = build_capture_dossier(args.input, args.format)
     if not args.dry_run:
-        atomic_private_write(args.output, (json.dumps(dossier, indent=2, sort_keys=True) + "\n").encode())
+        content = (
+            render_capture_dossier_markdown(dossier)
+            if args.output_format == "markdown"
+            else json.dumps(dossier, indent=2, sort_keys=True) + "\n"
+        )
+        atomic_private_write(args.output, content.encode())
     print(json.dumps(dossier["summary"], sort_keys=True))
     print("[i] Intake dossier requires human review; no findings confirmed.")
 
@@ -4296,6 +4301,7 @@ def build_parser() -> argparse.ArgumentParser:
     evidence_dossier.add_argument("--input", type=Path, nargs="+", required=True)
     evidence_dossier.add_argument("--format", choices=("auto", "har", "burp-xml", "http"), default="auto")
     evidence_dossier.add_argument("--output", type=Path, required=True)
+    evidence_dossier.add_argument("--output-format", choices=("json", "markdown"), default="json")
     evidence_dossier.add_argument("--dry-run", action="store_true")
     evidence_dossier.set_defaults(func=cmd_evidence_dossier)
     evidence_import = evidence_sub.add_parser(

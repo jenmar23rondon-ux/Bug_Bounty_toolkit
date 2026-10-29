@@ -1,16 +1,42 @@
 from __future__ import annotations
 
 import json
+import argparse
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
 
-from bugbounty_toolkit.reporting.capture_dossier import build_capture_dossier
+from bugbounty_toolkit.reporting.capture_dossier import build_capture_dossier, render_capture_dossier_markdown
+from bugbounty_toolkit.cli import cmd_evidence_dossier
 from labs.batch_capture_eval.fixtures import CANARY, burp, entry, har
 
 
 class CaptureDossierTests(unittest.TestCase):
+    def test_markdown_keeps_provenance_controls_and_private_cli_output(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source, output = Path(tmp) / "private.har", Path(tmp) / "review.md"
+            source.write_bytes(har([entry("/items/1", session="alice")]))
+            dossier = build_capture_dossier([source])
+            markdown = render_capture_dossier_markdown(dossier)
+            for row in dossier["observations"]:
+                for provenance in row["provenance"]:
+                    self.assertIn(provenance["source_sha256"], markdown)
+            self.assertIn("Verify resource ownership", markdown)
+            for secret in (CANARY, tmp, "private.har", "alice"):
+                self.assertNotIn(secret, markdown)
+            args = argparse.Namespace(
+                input=[source], format="auto", output=output, output_format="markdown", dry_run=True
+            )
+            cmd_evidence_dossier(args)
+            self.assertFalse(output.exists())
+            args.dry_run = False
+            cmd_evidence_dossier(args)
+            self.assertEqual(output.stat().st_mode & 0o777, 0o600)
+            self.assertIn("Classification: inconclusive", output.read_text())
+            with self.assertRaises(ValueError):
+                cmd_evidence_dossier(args)
+
     def test_duplicates_keep_source_digests_and_locators_without_secrets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             first, second = Path(tmp) / "private-name.har", Path(tmp) / "copy.har"
