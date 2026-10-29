@@ -6,39 +6,39 @@
 | metric | overall | A | B | C | D | E |
 |---|---|---|---|---|---|---|
 | scenarios | 45 | 10 | 9 | 11 | 8 | 7 |
-| outcome_accuracy | 0.8 | 0.9 | 1.0 | 0.7273 | 1.0 | 0.2857 |
-| outcome_accuracy_ci95 | [0.6618, 0.891] | [0.5958, 0.9821] | [0.7009, 1.0] | [0.4344, 0.9025] | [0.6756, 1.0] | [0.0822, 0.6411] |
-| object_recall | 0.9024 | 1.0 | 1.0 | 0.7273 | 1.0 | 0.8333 |
-| precision_at_1 | 0.8293 | 1.0 | 0.875 | 0.7273 | 1.0 | 0.5 |
-| precision_at_3 | 0.8211 | 1.0 | 0.8333 | 0.6667 | 1.0 | 0.6111 |
-| precision_at_5 | 0.639 | 0.725 | 0.725 | 0.4909 | 0.8 | 0.4667 |
-| mrr | 0.8577 | 1.0 | 0.9167 | 0.7273 | 1.0 | 0.6389 |
-| ndcg_at_5 | 0.8576 | 1.0 | 0.8939 | 0.7273 | 1.0 | 0.6687 |
+| outcome_accuracy | 0.8444 | 0.9 | 1.0 | 0.7273 | 1.0 | 0.5714 |
+| outcome_accuracy_ci95 | [0.7122, 0.9225] | [0.5958, 0.9821] | [0.7009, 1.0] | [0.4344, 0.9025] | [0.6756, 1.0] | [0.2505, 0.8418] |
+| object_recall | 0.9268 | 1.0 | 1.0 | 0.7273 | 1.0 | 1.0 |
+| precision_at_1 | 0.8537 | 1.0 | 0.875 | 0.7273 | 1.0 | 0.6667 |
+| precision_at_3 | 0.8374 | 1.0 | 0.8333 | 0.6667 | 1.0 | 0.7222 |
+| precision_at_5 | 0.6488 | 0.725 | 0.725 | 0.4909 | 0.8 | 0.5333 |
+| mrr | 0.8821 | 1.0 | 0.9167 | 0.7273 | 1.0 | 0.8056 |
+| ndcg_at_5 | 0.882 | 1.0 | 0.8939 | 0.7273 | 1.0 | 0.8354 |
 | precision_at_1_strict_resource_type | 0.0976 | 0.0 | 0.125 | 0.1818 | 0.0 | 0.1667 |
-| pairing_precision | 0.65 | 0.3333 | 0.6667 | 0.625 | 1.0 | 0.6667 |
-| pairing_recall | 0.963 | 1.0 | 1.0 | 1.0 | 1.0 | 0.8 |
+| pairing_precision | 0.6585 | 0.3333 | 0.6667 | 0.625 | 1.0 | 0.7143 |
+| pairing_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 | forbidden_pairs_proposed | 2 | 1 | 0 | 0 | 0 | 1 |
-| eligibility_correct | 0.6667 | 0.5 | 1.0 | 0.9091 | 0.25 | 0.5714 |
+| eligibility_correct | 0.7111 | 0.5 | 1.0 | 0.9091 | 0.25 | 0.8571 |
 | false_reviewable_cases | 0 | 0 | 0 | 0 | 0 | 0 |
 | false_reviewable_after_planner | 0 | 0 | 0 | 0 | 0 | 0 |
-| missed_eligible_cases | 2 | 0 | 0 | 0 | 0 | 2 |
-| pipeline_exceptions | 1 | 0 | 0 | 0 | 0 | 1 |
-| technical_errors_predicted | 2 | 0 | 0 | 1 | 0 | 1 |
+| missed_eligible_cases | 0 | 0 | 0 | 0 | 0 | 0 |
+| pipeline_exceptions | 0 | 0 | 0 | 0 | 0 | 0 |
+| technical_errors_predicted | 1 | 0 | 0 | 1 | 0 | 0 |
 | correct_abstentions | 16 | 7 | 3 | 3 | 1 | 2 |
 | abstention_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
-| missing_control_recall | 0.8983 | 1.0 | 1.0 | 1.0 | 1.0 | 0.6 |
-| next_step_precision_at_1 | 0.8889 | 1.0 | 1.0 | 1.0 | 0.75 | 0.5714 |
-| next_step_precision_at_1_ci95 | [0.765, 0.9516] | [0.7225, 1.0] | [0.7009, 1.0] | [0.7412, 1.0] | [0.4093, 0.9285] | [0.2505, 0.8418] |
+| missing_control_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
+| next_step_precision_at_1 | 0.9333 | 1.0 | 1.0 | 1.0 | 0.75 | 0.8571 |
+| next_step_precision_at_1_ci95 | [0.8214, 0.9771] | [0.7225, 1.0] | [0.7009, 1.0] | [0.7412, 1.0] | [0.4093, 0.9285] | [0.4869, 0.9743] |
 | redundant_proposals | 3 | 0 | 0 | 2 | 0 | 1 |
-| synthetic_manual_steps | 240 | 38 | 60 | 52 | 56 | 34 |
-| reference_correct_rate | 0.9565 | 1.0 | — | 1.0 | 0.8889 | 1.0 |
+| synthetic_manual_steps | 264 | 38 | 60 | 52 | 60 | 54 |
+| reference_correct_rate | 0.9655 | 1.0 | — | 1.0 | 0.9333 | 1.0 |
 | secret_leaks | 0 | 0 | 0 | 0 | 0 | 0 |
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 140.92, "median": 48.94}, "handoff_ms": {"max": 79.24, "median": 9.44}, "import_discovery_ms": {"max": 29.65, "median": 4.27}, "planner_ms": {"max": 9.64, "median": 3.03}, "ranking_ms": {"max": 3.81, "median": 1.63}}`  
-Peak traced memory: 32997.8 KiB  
-Historical overlap: `{"historical_files_scanned": 161, "identical_files": 0, "needle_hits": {}, "our_bytes": 92054, "overlap_free": true}`
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 215.77, "median": 73.98}, "handoff_ms": {"max": 66.0, "median": 19.38}, "import_discovery_ms": {"max": 56.15, "median": 5.88}, "planner_ms": {"max": 14.74, "median": 4.16}, "ranking_ms": {"max": 8.11, "median": 2.23}}`  
+Peak traced memory: 32994.5 KiB  
+Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 92054, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -80,12 +80,12 @@ Historical overlap: `{"historical_files_scanned": 161, "identical_files": 0, "ne
 | D16 | D | repeated-candidate | duplicate | duplicate | ✓ | CASE_ELIGIBLE | review_duplicate | voucherbook | 3 |  |
 | D17 | D | controls-complete | reviewable | reviewable | ✓ | CASE_ELIGIBLE | reuse_existing_control | deposit | 3 |  |
 | D18 | D | missing-negative | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | transfer | 3 |  |
-| E01 | E | heavy-noise | reviewable | technical_error | ✗ |  | none | — | 0 | ValueError: Offline captures are invalid, incomplete or exce |
+| E01 | E | heavy-noise | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | estimates2 | 1 |  |
 | E02 | E | frequent-irrelevant | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | unknown | 3 |  |
 | E03 | E | misleading-labels | abstain | stop | ✗ | CASE_ELIGIBLE | review_legitimate_access | — | 3 |  |
 | E04 | E | similar-routes | reviewable | stop | ✗ | CASE_ELIGIBLE | review_legitimate_access | user | 2 |  |
 | E05 | E | unseen-shape-graphql | stop | abstain | ✗ | REJECT_NON_GET | none | kind-75c55565937017fc6e4899ab98f8b87b | 1 |  |
-| E06 | E | secret-canaries | reviewable | abstain | ✗ | REJECT_MULTI_RESOURCE_DIFF | none | export | 3 | paired_but_no_reviewable_case |
+| E06 | E | secret-canaries | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | export | 3 |  |
 | E07 | E | prompt-injection | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | message | 3 |  |
 
 ## STRESS (manifest sha256 `4dd82cac98084f0a…`)
@@ -93,44 +93,44 @@ Historical overlap: `{"historical_files_scanned": 161, "identical_files": 0, "ne
 | metric | overall | C | E |
 |---|---|---|---|
 | scenarios | 6 | 5 | 1 |
-| outcome_accuracy | 0.3333 | 0.4 | 0.0 |
-| outcome_accuracy_ci95 | [0.0968, 0.7] | [0.1176, 0.7693] | [0.0, 0.7935] |
-| object_recall | 0.2 | 0.25 | 0.0 |
-| precision_at_1 | 0.2 | 0.25 | 0.0 |
-| precision_at_3 | 0.2 | 0.25 | 0.0 |
-| precision_at_5 | 0.16 | 0.2 | 0.0 |
-| mrr | 0.2 | 0.25 | 0.0 |
-| ndcg_at_5 | 0.2 | 0.25 | 0.0 |
+| outcome_accuracy | 0.5 | 0.6 | 0.0 |
+| outcome_accuracy_ci95 | [0.1876, 0.8124] | [0.2307, 0.8824] | [0.0, 0.7935] |
+| object_recall | 0.4 | 0.5 | 0.0 |
+| precision_at_1 | 0.4 | 0.5 | 0.0 |
+| precision_at_3 | 0.4 | 0.5 | 0.0 |
+| precision_at_5 | 0.36 | 0.45 | 0.0 |
+| mrr | 0.4 | 0.5 | 0.0 |
+| ndcg_at_5 | 0.4 | 0.5 | 0.0 |
 | precision_at_1_strict_resource_type | 0.0 | 0.0 | 0.0 |
 | pairing_precision | 1.0 | 1.0 | — |
-| pairing_recall | 0.2 | 0.25 | 0.0 |
+| pairing_recall | 0.4 | 0.5 | 0.0 |
 | forbidden_pairs_proposed | 0 | 0 | 0 |
-| eligibility_correct | 0.3333 | 0.4 | 0.0 |
+| eligibility_correct | 0.5 | 0.6 | 0.0 |
 | false_reviewable_cases | 0 | 0 | 0 |
 | false_reviewable_after_planner | 0 | 0 | 0 |
-| missed_eligible_cases | 4 | 3 | 1 |
-| pipeline_exceptions | 3 | 2 | 1 |
-| technical_errors_predicted | 5 | 4 | 1 |
+| missed_eligible_cases | 3 | 2 | 1 |
+| pipeline_exceptions | 2 | 1 | 1 |
+| technical_errors_predicted | 4 | 3 | 1 |
 | correct_abstentions | 0 | 0 | 0 |
 | abstention_recall | — | — | — |
-| missing_control_recall | 0.2 | 0.25 | 0.0 |
-| next_step_precision_at_1 | 0.3333 | 0.4 | 0.0 |
-| next_step_precision_at_1_ci95 | [0.0968, 0.7] | [0.1176, 0.7693] | [0.0, 0.7935] |
-| redundant_proposals | 0 | 0 | 0 |
-| synthetic_manual_steps | 10 | 10 | 0 |
+| missing_control_recall | 0.4 | 0.5 | 0.0 |
+| next_step_precision_at_1 | 0.5 | 0.6 | 0.0 |
+| next_step_precision_at_1_ci95 | [0.1876, 0.8124] | [0.2307, 0.8824] | [0.0, 0.7935] |
+| redundant_proposals | 59 | 59 | 0 |
+| synthetic_manual_steps | 20 | 20 | 0 |
 | reference_correct_rate | — | — | — |
 | secret_leaks | 0 | 0 | 0 |
 | auto_confirmations | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 84.48, "median": 16.53}, "handoff_ms": {"max": 22.78, "median": 2.47}, "import_discovery_ms": {"max": 20.66, "median": 4.43}, "planner_ms": {"max": 3.45, "median": 0.98}, "ranking_ms": {"max": 1.54, "median": 1.0}}`  
-Peak traced memory: 34802.1 KiB  
-Historical overlap: `{"historical_files_scanned": 161, "identical_files": 0, "needle_hits": {}, "our_bytes": 309172, "overlap_free": true}`
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 1676.52, "median": 101.56}, "handoff_ms": {"max": 26.19, "median": 2.66}, "import_discovery_ms": {"max": 18.59, "median": 8.66}, "planner_ms": {"max": 91.58, "median": 4.34}, "ranking_ms": {"max": 2.01, "median": 1.34}}`  
+Peak traced memory: 34016.1 KiB  
+Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 309172, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
 |---|---|---|---|---|---|---|---|---|---|---|
 | S01 | E | noise-300 | reviewable | technical_error | ✗ |  | none | — | 0 | ValueError: Offline captures are invalid, incomplete or exce |
-| S02 | C | many-objects | reviewable | technical_error | ✗ |  | none | — | 0 | ValueError: Offline captures are invalid, incomplete or exce |
+| S02 | C | many-objects | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | row | 64 |  |
 | S03 | C | deep-nesting-60 | reviewable | technical_error | ✗ |  | none | unknown | 0 |  |
 | S04 | C | mostly-damaged | reviewable | technical_error | ✗ |  | none | — | 0 |  |
 | S05 | C | all-damaged | technical_error | technical_error | ✓ |  | none | — | 0 | ValueError: Offline captures are invalid, incomplete or exce |
@@ -165,15 +165,15 @@ Historical overlap: `{"historical_files_scanned": 161, "identical_files": 0, "ne
 | next_step_precision_at_1 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 | next_step_precision_at_1_ci95 | [0.6097, 1.0] | [0.3424, 1.0] | [0.3424, 1.0] | [0.2065, 1.0] | [0.2065, 1.0] |
 | redundant_proposals | 0 | 0 | 0 | 0 | 0 |
-| synthetic_manual_steps | 36 | 10 | 10 | 6 | 10 |
+| synthetic_manual_steps | 37 | 10 | 10 | 7 | 10 |
 | reference_correct_rate | 1.0 | — | — | 1.0 | — |
 | secret_leaks | 0 | 0 | 0 | 0 | 0 |
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 78.86, "median": 46.81}, "handoff_ms": {"max": 14.69, "median": 9.5}, "import_discovery_ms": {"max": 5.83, "median": 5.35}, "planner_ms": {"max": 5.51, "median": 3.16}, "ranking_ms": {"max": 2.42, "median": 1.49}}`  
-Peak traced memory: 32995.0 KiB  
-Historical overlap: `{"historical_files_scanned": 161, "identical_files": 0, "needle_hits": {}, "our_bytes": 6924, "overlap_free": true}`
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 83.79, "median": 74.85}, "handoff_ms": {"max": 18.86, "median": 18.3}, "import_discovery_ms": {"max": 7.11, "median": 5.21}, "planner_ms": {"max": 5.07, "median": 4.48}, "ranking_ms": {"max": 2.57, "median": 2.38}}`  
+Peak traced memory: 32984.3 KiB  
+Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 6924, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
 |---|---|---|---|---|---|---|---|---|---|---|
