@@ -26,10 +26,12 @@ handoff must use the recorded profile rather than silently reverting to defaults
 
 Collection names alone are not treated as credential values. Open-vocabulary
 names such as token-inventory endpoints remain HMAC-only in output. Only
-nonnegative integer `id` metadata under structured sensitive containers can be
+nonnegative integer `id` metadata under structured token-resource containers can be
 used as resource references. Textual IDs, booleans, scalar tokens, passwords,
 cookies and copied known credential values remain excluded. Metadata does not
 prove resource privacy, distinct accounts, ownership or unauthorized access.
+Integer values under password/secret/authorization/cookie/credential containers
+remain credentials; the metadata exception is not a generic sensitive-field bypass.
 
 ## Measurements and limits
 

@@ -117,28 +117,28 @@
     "our_bytes": 309172,
     "overlap_free": true
   },
-  "implementation_sha256": "11a72f692e6cd1e0f49bf6f1c0332122f348763ddad8d922d929f28f28371df3",
+  "implementation_sha256": "66b02289596f22c0c5b8bcf3334840c1cc6834dc71a32b5f777ad726b288bd79",
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
-      "max": 1742.43,
-      "median": 90.22
+      "max": 1754.94,
+      "median": 95.77
     },
     "handoff_ms": {
-      "max": 436.02,
-      "median": 26.89
+      "max": 383.04,
+      "median": 29.52
     },
     "import_discovery_ms": {
-      "max": 1193.0,
-      "median": 19.05
+      "max": 1131.22,
+      "median": 20.94
     },
     "planner_ms": {
-      "max": 81.64,
-      "median": 3.84
+      "max": 85.85,
+      "median": 4.12
     },
     "ranking_ms": {
-      "max": 129.96,
-      "median": 2.0
+      "max": 84.37,
+      "median": 2.16
     }
   },
   "manifest_sha256": "4dd82cac98084f0a73f7b67d23e8090fee8a48b2497b55bbdb6e25d18dfe1c72",
@@ -198,7 +198,7 @@
     "technical_errors_predicted": 1,
     "wrong_object_top1": 1
   },
-  "peak_mem_kib_max": 33846.9,
+  "peak_mem_kib_max": 33846.4,
   "scenarios": [
     {
       "confirmed": 0,
@@ -237,7 +237,7 @@
         "fp": 1,
         "tp": 1
       },
-      "peak_mem_kib": 33283.4,
+      "peak_mem_kib": 33282.0,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -265,11 +265,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 1742.43,
-        "handoff_ms": 329.11,
-        "import_discovery_ms": 1193.0,
-        "planner_ms": 18.66,
-        "ranking_ms": 12.15
+        "e2e_total_ms": 1754.94,
+        "handoff_ms": 310.58,
+        "import_discovery_ms": 1131.22,
+        "planner_ms": 17.43,
+        "ranking_ms": 11.88
       },
       "tag": "noise-300"
     },
@@ -309,7 +309,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33846.9,
+      "peak_mem_kib": 33846.4,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -336,11 +336,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 1278.34,
-        "handoff_ms": 436.02,
-        "import_discovery_ms": 167.32,
-        "planner_ms": 81.64,
-        "ranking_ms": 129.96
+        "e2e_total_ms": 1262.08,
+        "handoff_ms": 383.04,
+        "import_discovery_ms": 152.93,
+        "planner_ms": 85.85,
+        "ranking_ms": 84.37
       },
       "tag": "many-objects"
     },
@@ -380,7 +380,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32881.7,
+      "peak_mem_kib": 32880.6,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -407,11 +407,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 63.63,
-        "handoff_ms": 15.55,
-        "import_discovery_ms": 6.59,
-        "planner_ms": 3.81,
-        "ranking_ms": 2.0
+        "e2e_total_ms": 70.24,
+        "handoff_ms": 15.86,
+        "import_discovery_ms": 6.65,
+        "planner_ms": 3.84,
+        "ranking_ms": 2.16
       },
       "tag": "deep-nesting-60"
     },
@@ -451,7 +451,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32834.5,
+      "peak_mem_kib": 32834.2,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -478,11 +478,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 35.94,
-        "handoff_ms": 7.88,
-        "import_discovery_ms": 5.44,
-        "planner_ms": 1.96,
-        "ranking_ms": 1.93
+        "e2e_total_ms": 35.65,
+        "handoff_ms": 8.44,
+        "import_discovery_ms": 7.51,
+        "planner_ms": 2.12,
+        "ranking_ms": 1.94
       },
       "tag": "mostly-damaged"
     },
@@ -512,7 +512,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32778.3,
+      "peak_mem_kib": 32778.4,
       "predicted_outcome": "technical_error",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -564,7 +564,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33834.1,
+      "peak_mem_kib": 33833.6,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -591,10 +591,10 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 90.22,
-        "handoff_ms": 26.89,
-        "import_discovery_ms": 19.05,
-        "planner_ms": 3.84,
+        "e2e_total_ms": 95.77,
+        "handoff_ms": 29.52,
+        "import_discovery_ms": 20.94,
+        "planner_ms": 4.12,
         "ranking_ms": 1.82
       },
       "tag": "large-body"

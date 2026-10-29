@@ -471,11 +471,19 @@ def _kind_ref(key: bytes, program: str, origin: str, kind: str | None) -> str | 
 
 
 def _resource_metadata_id(parts: list[str], value: Any) -> bool:
-    """Only integer metadata IDs, never scalar token values or textual credentials.
+    """Only integer token-resource metadata IDs, never scalar credential values.
 
     Metadata remains pseudonymized and is not evidence of ownership or privacy.
     """
-    return len(parts) >= 2 and parts[-1] == "id" and type(value) is int and value >= 0
+    containers = [part for part in parts[:-1] if not part.isdecimal()]
+    return (
+        bool(containers)
+        and parts[-1] == "id"
+        and type(value) is int
+        and value >= 0
+        and re.fullmatch(r"(?:[a-z]+_)*tokens?(?:_?sets?)?(?:\d{1,4})?", containers[-1], re.I) is not None
+        and not any(SENSITIVE_FIELD.search(part) for part in containers[:-1])
+    )
 
 
 def _credentials(source: CaptureSource) -> set[str]:

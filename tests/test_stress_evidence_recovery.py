@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from typing import TypedDict
 
 from bugbounty_toolkit.analysis.har_import import import_har
 from bugbounty_toolkit.analysis.object_handoff import propose_object_handoff
@@ -19,6 +20,11 @@ from labs.independent_research_eval.evaluate import run_scenario, score
 
 ROOT = Path(__file__).resolve().parents[1]
 KEY = b"s" * 32
+
+
+class HarLimits(TypedDict):
+    max_bytes: int
+    max_message_bytes: int
 
 
 def entry(number: int, body: object) -> dict[str, object]:
@@ -95,7 +101,7 @@ class StressRecoveryTests(unittest.TestCase):
         for _ in range(60):
             nested = {"wrapper": nested}
         raw = self.write([entry(701, nested), entry(702, {"id": 702})])
-        limits = {"max_bytes": 1_000_000, "max_message_bytes": 100_000}
+        limits: HarLimits = {"max_bytes": 1_000_000, "max_message_bytes": 100_000}
         self.assertEqual(import_har(raw, **limits).summary()["reasons"], {"body_json_too_deep": 1})
         self.assertEqual(import_har(raw, max_body_depth=64, **limits).summary()["accepted"], 2)
         for _ in range(5):
@@ -120,6 +126,17 @@ class StressRecoveryTests(unittest.TestCase):
         self.assertNotIn("PRIVATE-SYNTHETIC", text)
         self.assertNotIn('"801"', text)
         self.assertNotIn("api_tokens", text)
+        self.write([entry(801, {"access_tokens": [{"id": 801, "token": "PRIVATE-SYNTHETIC"}]})])
+        graph = build_object_graph("lab", [self.path], KEY, authorized=True)
+        self.assertTrue(
+            any(ref["location"] == "response_json" for o in graph["observations"] for ref in o["references"])
+        )
+        self.assertNotIn("PRIVATE-SYNTHETIC", json.dumps(graph))
         self.write([entry(801, {"api_tokens": {"id": 801}, "token": 801})])
         graph = build_object_graph("lab", [self.path], KEY, authorized=True)
         self.assertFalse(any(n["type"] == "Object" for n in graph["nodes"]))
+        for name in ("password", "secret", "authorization", "cookie", "credentials"):
+            with self.subTest(sensitive_container=name):
+                self.write([entry(801, {name: {"id": 801}})])
+                graph = build_object_graph("lab", [self.path], KEY, authorized=True)
+                self.assertFalse(any(n["type"] == "Object" for n in graph["nodes"]))
