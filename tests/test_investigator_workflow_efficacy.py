@@ -56,6 +56,11 @@ class InvestigatorWorkflowEfficacyTests(unittest.TestCase):
 
     def test_lab_safety_and_recorded_dispositions(self) -> None:
         report = run_report(["dev", "final", "stress"])
+        metrics = json.loads((LAB / "results" / "metrics.json").read_text(encoding="utf-8"))
+        self.assertEqual(metrics["reproducibility"], report["reproducibility"])
+        for split, payload in report["splits"].items():
+            for key in ("correct", "cases", "fn", "fp_accepted", "over_reject", "conservative_abstain"):
+                self.assertEqual(metrics["splits"][split]["bbtk"][key], payload["bbtk"][key], (split, key))
         self.assertEqual(report["external_requests"], 0)
         self.assertEqual(report["secret_leaks"], 0)
         self.assertEqual(report["finding_confirmed_true"], 0)
