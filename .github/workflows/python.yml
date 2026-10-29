@@ -31,6 +31,8 @@ jobs:
       - run: ruff check bugbounty_toolkit tests scripts skills labs
       - run: ruff format --check bugbounty_toolkit tests scripts skills labs
       - run: mypy --strict
+      - name: Validate frozen XSS FINAL with real Chromium
+        run: python -m labs.xss_real_browser_eval.evaluate --split final --mode live --repeat 2
       - name: Verify independent benchmark snapshots
         run: |
           for split in dev final stress; do
