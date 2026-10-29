@@ -28,6 +28,36 @@ RESULT_SCHEMA = "bbtk.batch-object-discovery/1"
 LOCATOR = re.compile(r"/log/entries\[(\d+)\]")
 
 
+def endpoint_review_hints(partitions: list[dict[str, Any]]) -> dict[str, Any]:
+    """Link observed endpoint contexts without asserting shared accounts or objects.
+
+    References are scoped by batch. Only successfully validated partitions are
+    supplied by discover_campaign; no graph, ranking or ledger is modified.
+    """
+    endpoints: dict[str, list[dict[str, str]]] = {}
+    for partition in partitions:
+        batch = partition["binding"]["batch_id"]
+        graph = partition["graph"]
+        for observation in graph["observations"]:
+            endpoint = observation["endpoint_ref"]
+            endpoints.setdefault(endpoint, []).append({"batch_id": batch, "observation_ref": observation["id"]})
+    hints = []
+    for endpoint, members in sorted(endpoints.items()):
+        if len({member["batch_id"] for member in members}) < 2:
+            continue
+        hints.append(
+            {
+                "endpoint_ref": endpoint,
+                "observations": sorted(members, key=lambda row: (row["batch_id"], row["observation_ref"])),
+                "basis": "same_pseudonymized_origin_method_and_path_template",
+                "requires_human_review": True,
+                "object_identity": "not_established",
+                "account_identity": "not_established",
+            }
+        )
+    return {"scope": "validated_partitions_only", "groups": hints, "graph_merge_performed": False}
+
+
 def _canonical(value: Any) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
@@ -240,6 +270,7 @@ def discover_campaign(
         "duplicate_files_omitted": sum(f.state == "duplicate_file" for f in plan.files),
         "entries_reprocessing_avoided": reused,
         "partitions": partitions,
+        "cross_batch_endpoint_review": endpoint_review_hints(partitions),
         "cross_batch_graph_merge": "not_performed",
         "ambiguous_joins": "cross_batch_identity_not_established" if len(partitions) > 1 else None,
         "global_ranking_guaranteed": len(partitions) == 1 and complete,

@@ -69,6 +69,28 @@ class BatchObjectDiscoveryTests(unittest.TestCase):
         self.assertEqual(third["entries_reprocessing_avoided"], 0)
         self.assertEqual(third["entries_processed"], 65)
 
+    def test_cross_batch_endpoint_hints_preserve_partition_identity(self) -> None:
+        plan = self.prepare((2, 2), interrupt=True)
+        pending = self.discover(plan)
+        self.assertEqual(pending["cross_batch_endpoint_review"]["groups"], [])
+        run_campaign(plan, self.root / "state")
+        result = self.discover(plan)
+        review = result["cross_batch_endpoint_review"]
+        self.assertTrue(review["groups"])
+        self.assertFalse(review["graph_merge_performed"])
+        for group in review["groups"]:
+            self.assertEqual(len({row["batch_id"] for row in group["observations"]}), 2)
+            self.assertEqual(group["object_identity"], "not_established")
+            self.assertEqual(group["account_identity"], "not_established")
+            self.assertTrue(group["requires_human_review"])
+            for row in group["observations"]:
+                partition = next(p for p in result["partitions"] if p["binding"]["batch_id"] == row["batch_id"])
+                self.assertTrue(any(o["id"] == row["observation_ref"] for o in partition["graph"]["observations"]))
+        self.assertNotIn(CANARY, json.dumps(review))
+        resumed = self.discover(plan, previous=result)
+        self.assertEqual(resumed["cross_batch_endpoint_review"], review)
+        self.assertEqual(result["vulnerabilities_confirmed"], 0)
+
     def test_modified_bundle_and_source_refused(self) -> None:
         plan = self.prepare((33,))
         path = next((self.root / "state" / "batches").glob("*.json"))
