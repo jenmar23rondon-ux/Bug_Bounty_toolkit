@@ -679,18 +679,6 @@ def _assess_pair(owner: ResponseAssessment, actor: ResponseAssessment) -> Author
             reasons=tuple(reasons),
         )
 
-    # Actor denial without a usable owner positive control — keep inconclusive.
-    if actor.denial_demonstrated and not owner.access_demonstrated:
-        reasons.append("actor_denied_but_owner_control_weak")
-        outcome = "inconclusive"
-        return AuthorizationOutcome(
-            outcome=outcome,
-            owner=owner,
-            actor=actor,
-            annotation=_annotation_for(outcome, owner, actor),
-            reasons=tuple(reasons),
-        )
-
     if actor.access_proof == "private_resource_200" and owner.access_proof == "private_resource_200":
         reasons.append("both_sides_successful_looking")
         outcome = "possible_access"
