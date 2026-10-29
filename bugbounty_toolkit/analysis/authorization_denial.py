@@ -233,9 +233,12 @@ def _walk_strings(value: Any, *, limit: int = 64) -> list[str]:
     return out
 
 
-def _json_shows_denial(root: Any) -> bool:
-    if not isinstance(root, dict):
+def _json_shows_denial(root: Any, *, depth: int = 0) -> bool:
+    if not isinstance(root, dict) or depth > 4:
         return False
+    errors = root.get("errors")
+    if isinstance(errors, list) and any(_json_shows_denial(item, depth=depth + 1) for item in errors[:32]):
+        return True
     # Explicit failure flags.
     for key in ("ok", "success", "authorized", "allowed", "permitted"):
         if key in root and root[key] is False:
@@ -655,7 +658,17 @@ def _assess_pair(owner: ResponseAssessment, actor: ResponseAssessment) -> Author
             reasons=tuple(reasons),
         )
 
-    if actor.denial_demonstrated and (owner.access_demonstrated or owner.response_class == "successful_looking"):
+    if owner.access_proof != "private_resource_200":
+        outcome = "inconclusive"
+        return AuthorizationOutcome(
+            outcome=outcome,
+            owner=owner,
+            actor=actor,
+            annotation=_annotation_for(outcome, owner, actor),
+            reasons=("owner_positive_control_unproven",),
+        )
+
+    if actor.denial_demonstrated and owner.access_demonstrated:
         reasons.append("actor_denied_with_owner_positive_control")
         outcome = "cross_account_denied"
         return AuthorizationOutcome(
@@ -666,19 +679,7 @@ def _assess_pair(owner: ResponseAssessment, actor: ResponseAssessment) -> Author
             reasons=tuple(reasons),
         )
 
-    # Actor denial without a usable owner positive control — keep inconclusive.
-    if actor.denial_demonstrated and not owner.access_demonstrated:
-        reasons.append("actor_denied_but_owner_control_weak")
-        outcome = "inconclusive"
-        return AuthorizationOutcome(
-            outcome=outcome,
-            owner=owner,
-            actor=actor,
-            annotation=_annotation_for(outcome, owner, actor),
-            reasons=tuple(reasons),
-        )
-
-    if actor.access_demonstrated and owner.access_demonstrated:
+    if actor.access_proof == "private_resource_200" and owner.access_proof == "private_resource_200":
         reasons.append("both_sides_successful_looking")
         outcome = "possible_access"
         return AuthorizationOutcome(
