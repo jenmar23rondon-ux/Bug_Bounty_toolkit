@@ -93,6 +93,38 @@ def M_sha(data: bytes) -> str:  # noqa: N802 - small helper
     return hashlib.sha256(data).hexdigest()
 
 
+def implementation_digest() -> str:
+    """Bind measurements to production source, independent of git availability."""
+    import hashlib
+
+    digest = hashlib.sha256()
+    for path in sorted((ROOT / "bugbounty_toolkit").rglob("*.py")):
+        digest.update(path.relative_to(ROOT).as_posix().encode() + b"\0")
+        digest.update(path.read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
+def recorded_mismatches(recorded: dict[str, Any], fresh: dict[str, Any]) -> list[str]:
+    """Compare reproducible scores; machine timings and memory are not score gates."""
+    keys = (
+        "corpus_version",
+        "split",
+        "manifest_sha256",
+        "implementation_sha256",
+        "evaluator_sha256",
+        "overall",
+        "by_family",
+    )
+    mismatches = [key for key in keys if recorded.get(key) != fresh.get(key)]
+
+    def decisions(report: dict[str, Any]) -> list[tuple[str, str]]:
+        return sorted((row["id"], row["predicted_outcome"]) for row in report["scenarios"])
+
+    if decisions(recorded) != decisions(fresh):
+        mismatches.append("scenario_outcomes")
+    return mismatches
+
+
 # ---------------------------------------------------------------------------- mutations (D)
 def _program_dir(work: Path) -> Path:
     return work / PROGRAM
@@ -479,6 +511,8 @@ def evaluate(split: str, root: Path = HERE, *, verify: bool = True) -> dict[str,
         "corpus_version": gt["corpus_version"],
         "split": split,
         "manifest_sha256": M_sha(manifest),
+        "implementation_sha256": implementation_digest(),
+        "evaluator_sha256": M_sha(Path(__file__).read_bytes() + (HERE / "metrics.py").read_bytes()),
         "label_source": gt["label_source"],
         "metric_scope": "synthetic loopback lab only; not evidence of real-world performance",
         "historical_overlap": historical_overlap(split_dir),
@@ -494,8 +528,15 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--split", choices=("dev", "final", "stress"), default="dev")
     ap.add_argument("--json", type=Path)
+    ap.add_argument("--check-recorded", type=Path, help="Fail if recorded stable scores or source binding differ")
     args = ap.parse_args(argv)
     result = evaluate(args.split)
+    if args.check_recorded:
+        recorded = json.loads(args.check_recorded.read_text(encoding="utf-8"))
+        stale = recorded_mismatches(recorded, result)
+        if stale:
+            print(json.dumps({"status": "stale_recorded_results", "fields": stale}))
+            return 2
     text = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)

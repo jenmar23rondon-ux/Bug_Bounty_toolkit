@@ -11,6 +11,7 @@ import json
 import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from typing import Any
 
@@ -88,6 +89,35 @@ class CorpusTests(unittest.TestCase):
 
 
 class MetricTests(unittest.TestCase):
+    def test_cli_refuses_stale_snapshot_without_replacing_it(self) -> None:
+        report: dict[str, Any] = {"implementation_sha256": "fresh", "scenarios": [], "overall": {}, "by_family": {}}
+        with tempfile.TemporaryDirectory() as tmp:
+            snapshot = Path(tmp) / "recorded.json"
+            old = {**report, "implementation_sha256": "old"}
+            snapshot.write_text(json.dumps(old), encoding="utf-8")
+            before = snapshot.read_bytes()
+            with patch.object(E, "evaluate", return_value=report):
+                self.assertEqual(E.main(["--check-recorded", str(snapshot), "--json", str(snapshot)]), 2)
+            self.assertEqual(snapshot.read_bytes(), before)
+
+    def test_recorded_score_comparison_ignores_runtime_but_detects_staleness(self) -> None:
+        original = {
+            "overall": {"outcome_accuracy": 0.8},
+            "by_family": {},
+            "implementation_sha256": "original",
+            "scenarios": [{"id": "synthetic", "predicted_outcome": "abstain"}],
+            "latency_ms": 1,
+        }
+        changed = copy.deepcopy(original)
+        changed["latency_ms"] = 999
+        self.assertEqual(E.recorded_mismatches(original, changed), [])
+        changed["implementation_sha256"] = "changed"
+        self.assertIn("implementation_sha256", E.recorded_mismatches(original, changed))
+        changed["overall"] = {"outcome_accuracy": 1.0}
+        self.assertIn("overall", E.recorded_mismatches(original, changed))
+        changed["scenarios"] = [{"id": "synthetic", "predicted_outcome": "reviewable"}]
+        self.assertIn("scenario_outcomes", E.recorded_mismatches(original, changed))
+
     def test_ranking_metrics(self) -> None:
         rel = [0, 1, 0, 1]
         self.assertEqual(M.precision_at_k(rel, 1), 0.0)

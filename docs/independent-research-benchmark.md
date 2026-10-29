@@ -20,7 +20,46 @@ label was changed to improve results.** All numbers are synthetic-lab metrics.
 4. One evaluator-only change after the first FINAL run: added `false_reviewable_after_planner` next to the
    original `false_reviewable_cases` (ledger-state based). Labels untouched.
 
-## FINAL headline (45 scenarios)
+## Current refresh after PR #91
+
+The original frozen DEV/FINAL/STRESS corpora were rerun on main `2fb497e`.
+No detector, ranking rule, historical label or manifest changed in this refresh.
+These datasets have been reused by subsequent fixes, so this is a historical
+regression benchmark, not a fresh blinded test of previously unseen cases.
+
+| Metric | Previously stored | Fresh run |
+|---|---|---|
+| DEV exact outcomes | 6/6 | 6/6 |
+| FINAL exact outcomes | 36/45 | 38/45 |
+| STRESS exact outcomes | 2/6 | 3/6 |
+| FINAL missed eligible cases | 2 | 0 |
+| STRESS missed eligible cases | 4 | 3 |
+| FINAL / STRESS pipeline exceptions | 1 / 3 | 0 / 2 |
+| False reviewable cases, all splits | 0 | 0 |
+| Secret leaks / automatic confirmations / network attempts | 0 / 0 / 0 | 0 / 0 / 0 |
+
+The changed scores reflect earlier production fixes, not this reporting change.
+Current STRESS failures include `S01` (`entries_over_limit`) and `S05`
+(`no_valid_entries`). FINAL still proposes two forbidden pair types, and STRESS
+reports 59 redundant proposals. Full per-case outcomes remain in `results/`.
+
+Reports now record production-source and evaluator SHA-256 bindings. CI reruns
+each split with `--check-recorded` and fails on stale bindings, stable summary
+metrics or scenario outcomes. Latency, peak memory and historical file counts
+are excluded from exact comparison because they vary by machine or checkout.
+Production source changes require regenerating these snapshots, even when the
+stable outcomes stay unchanged. `--check-recorded` returns 2 on stale results
+without replacing them; safety failures still return 1.
+
+Real-model precision/latency/memory and human investigator productivity remain
+NOT_MEASURED. Existing local-model and human-study protocols should be used when
+models and participants are available; synthetic timings do not measure them.
+
+## Historical initial FINAL headline (45 scenarios)
+
+The following diagnosis documents the initial benchmark run. It is retained for
+comparison; use the refreshed tables above and `results/RESULTS.md` for current
+numbers. Several recommendations below have since been implemented.
 
 | Metric | Value |
 |---|---|

@@ -10,9 +10,14 @@ reviewable case → evidence ledger → report) → `evidence_gap_planner.build_
 ```bash
 python labs/independent_research_eval/build_corpus.py --check     # byte-identical corpus
 python labs/independent_research_eval/evaluate.py --split final --json labs/independent_research_eval/results/final_metrics.json
+python labs/independent_research_eval/evaluate.py --split final --check-recorded labs/independent_research_eval/results/final_metrics.json
 python -m pytest tests/test_independent_research_eval.py -q
 ```
 
 See `SPEC.md` (label spec), `AUDIT.md` (prior corpora), `results/` (HEAD metrics),
 `docs/independent-research-benchmark.md` (diagnosis + recommendations).
 Network is hard-blocked; nothing is ever confirmed or executed.
+
+The corpora are now historical regression sets; repeated use does not constitute
+a new blinded evaluation. Reports bind scores to production/evaluator hashes.
+CI checks all three snapshots, excluding variable timings and memory usage.
