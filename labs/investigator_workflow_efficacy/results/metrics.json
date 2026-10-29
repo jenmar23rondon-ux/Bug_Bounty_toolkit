@@ -13,8 +13,18 @@
   "external_requests": 0,
   "finding_confirmed": false,
   "finding_confirmed_true": 0,
+  "fixture_results_only": true,
   "lab": "investigator-workflow-efficacy",
   "prior_knowledge_bias": "The same change set declared the lab behavior, the labels, the manual checklist, and the bbtk adapter. The adapter follows public function contracts and was not refit after the FINAL split ran. This is not a blinded study.",
+  "reproducibility": {
+    "adapter_sha256": "2a35db7630b3d12d716fb9e9709930dae00521022f001538a5f391b60da78779",
+    "case_sha256": {
+      "dev": "5d70a764897c64bd8e017b69e3fc4bb3287608bedfd3f2a4681c1f0df1a50992",
+      "final": "5c9f87f8121b12dad2a1138015519c9249b22304e7ba2c593436a36760488ab6",
+      "stress": "42ddbe21c8f5ebe9d3185602f710232db4ce5b683782bb89a775f709099fcd1e"
+    },
+    "measurement_kind": "synthetic_loopback_scripted"
+  },
   "secret_leaks": 0,
   "splits": {
     "dev": {
@@ -38,10 +48,10 @@
         "missing_evidence": 0,
         "over_reject": 0,
         "scripted_actions": 81,
-        "scripted_seconds_to_first_reviewable": 5.3e-05,
-        "scripted_seconds_to_report_draft": 0.019675,
+        "scripted_seconds_to_first_reviewable": 4.6e-05,
+        "scripted_seconds_to_report_draft": 0.008311,
         "scripted_tool_switches": 72,
-        "scripted_wall_clock_seconds": 0.019675,
+        "scripted_wall_clock_seconds": 0.008311,
         "tn": 5,
         "valid_found": 4,
         "workflow_auto_confirmations": 0,
@@ -51,6 +61,174 @@
         "workflow_network_requests_sent": 0,
         "workflow_next_reviewable_tasks": [
           "wf-control_review"
+        ]
+      },
+      "dispositions": {
+        "bbtk": [
+          {
+            "case_id": "A-dev-vuln-order",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "idor_review_signal"
+          },
+          {
+            "case_id": "A-dev-safe-deny",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "actor_denied"
+          },
+          {
+            "case_id": "A-dev-shared",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "legitimate_shared"
+          },
+          {
+            "case_id": "B-dev-reflect",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "candidate"
+          },
+          {
+            "case_id": "B-dev-escaped",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "escaped_safe"
+          },
+          {
+            "case_id": "B-dev-dom-sink",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "sink_reached"
+          },
+          {
+            "case_id": "C-dev-public-secret",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "ready_for_manual_review"
+          },
+          {
+            "case_id": "C-dev-docs",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "public_or_intended_information"
+          },
+          {
+            "case_id": "C-dev-truncated",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "truncated_disclosure_response"
+          }
+        ],
+        "manual": [
+          {
+            "case_id": "A-dev-vuln-order",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "actor_body_contains_owner_marker"
+          },
+          {
+            "case_id": "A-dev-safe-deny",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "actor_denied"
+          },
+          {
+            "case_id": "A-dev-shared",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "visibility_is_shared_or_public"
+          },
+          {
+            "case_id": "B-dev-reflect",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "raw_payload_reflected"
+          },
+          {
+            "case_id": "B-dev-escaped",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "escaped_payload"
+          },
+          {
+            "case_id": "B-dev-dom-sink",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "static_dom_innerhtml_sink"
+          },
+          {
+            "case_id": "C-dev-public-secret",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "public_sensitive_shape"
+          },
+          {
+            "case_id": "C-dev-docs",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "documentation_path"
+          },
+          {
+            "case_id": "C-dev-truncated",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "disclosure_evidence_incomplete"
+          }
         ]
       },
       "external_requests": 0,
@@ -73,10 +251,10 @@
         "missing_evidence": 0,
         "over_reject": 0,
         "scripted_actions": 63,
-        "scripted_seconds_to_first_reviewable": 0.00014,
-        "scripted_seconds_to_report_draft": 0.000247,
+        "scripted_seconds_to_first_reviewable": 9.1e-05,
+        "scripted_seconds_to_report_draft": 0.000169,
         "scripted_tool_switches": 36,
-        "scripted_wall_clock_seconds": 0.000247,
+        "scripted_wall_clock_seconds": 0.000169,
         "tn": 5,
         "valid_found": 4
       },
@@ -86,12 +264,12 @@
     },
     "final": {
       "bbtk": {
-        "accuracy": 0.75,
+        "accuracy": 1.0,
         "arm": "bbtk",
         "candidates_reviewed": 12,
         "cases": 12,
-        "conservative_abstain": 2,
-        "correct": 9,
+        "conservative_abstain": 0,
+        "correct": 12,
         "distinct_tools": 7,
         "dossier_checklist_mean": 5.0,
         "dossier_validation_results": {
@@ -101,33 +279,14 @@
         "fn": 0,
         "fp_accepted": 0,
         "incomplete_repro": 0,
-        "mismatches": [
-          {
-            "got": "abstain",
-            "id": "B-final-dom-safe",
-            "reason": "source_observed",
-            "truth": "reject"
-          },
-          {
-            "got": "abstain",
-            "id": "C-final-self-profile",
-            "reason": "indicator_detected",
-            "truth": "reject"
-          },
-          {
-            "got": "reject",
-            "id": "C-final-empty",
-            "reason": "not_observed",
-            "truth": "abstain"
-          }
-        ],
+        "mismatches": [],
         "missing_evidence": 0,
-        "over_reject": 1,
+        "over_reject": 0,
         "scripted_actions": 108,
-        "scripted_seconds_to_first_reviewable": 4.9e-05,
-        "scripted_seconds_to_report_draft": 0.010899,
+        "scripted_seconds_to_first_reviewable": 3.5e-05,
+        "scripted_seconds_to_report_draft": 0.011231,
         "scripted_tool_switches": 96,
-        "scripted_wall_clock_seconds": 0.010899,
+        "scripted_wall_clock_seconds": 0.011231,
         "tn": 9,
         "valid_found": 3,
         "workflow_auto_confirmations": 0,
@@ -137,6 +296,228 @@
         "workflow_network_requests_sent": 0,
         "workflow_next_reviewable_tasks": [
           "wf-control_review"
+        ]
+      },
+      "dispositions": {
+        "bbtk": [
+          {
+            "case_id": "A-final-vuln-invoice",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "idor_review_signal"
+          },
+          {
+            "case_id": "A-final-safe-deny",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "actor_denied"
+          },
+          {
+            "case_id": "A-final-public-catalog",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "legitimate_shared"
+          },
+          {
+            "case_id": "A-final-error-500",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "actor_response_not_reliable"
+          },
+          {
+            "case_id": "B-final-reflect",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "candidate"
+          },
+          {
+            "case_id": "B-final-escaped",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "escaped_safe"
+          },
+          {
+            "case_id": "B-final-dom-safe",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "safe_text_sink_only"
+          },
+          {
+            "case_id": "B-final-truncated-reflect",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "abstain_truncated"
+          },
+          {
+            "case_id": "C-final-public-token",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "ready_for_manual_review"
+          },
+          {
+            "case_id": "C-final-self-profile",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "authenticated_self_profile"
+          },
+          {
+            "case_id": "C-final-truncated",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "truncated_disclosure_response"
+          },
+          {
+            "case_id": "C-final-empty",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "empty_disclosure_response"
+          }
+        ],
+        "manual": [
+          {
+            "case_id": "A-final-vuln-invoice",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "actor_body_contains_owner_marker"
+          },
+          {
+            "case_id": "A-final-safe-deny",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "actor_denied"
+          },
+          {
+            "case_id": "A-final-public-catalog",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "visibility_is_shared_or_public"
+          },
+          {
+            "case_id": "A-final-error-500",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "actor_response_not_reliable"
+          },
+          {
+            "case_id": "B-final-reflect",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "raw_payload_reflected"
+          },
+          {
+            "case_id": "B-final-escaped",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "escaped_payload"
+          },
+          {
+            "case_id": "B-final-dom-safe",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "static_dom_textcontent_only"
+          },
+          {
+            "case_id": "B-final-truncated-reflect",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "truncated_response"
+          },
+          {
+            "case_id": "C-final-public-token",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "public_sensitive_shape"
+          },
+          {
+            "case_id": "C-final-self-profile",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "own_audience"
+          },
+          {
+            "case_id": "C-final-truncated",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "disclosure_evidence_incomplete"
+          },
+          {
+            "case_id": "C-final-empty",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "disclosure_evidence_incomplete"
+          }
         ]
       },
       "external_requests": 0,
@@ -159,10 +540,10 @@
         "missing_evidence": 0,
         "over_reject": 0,
         "scripted_actions": 84,
-        "scripted_seconds_to_first_reviewable": 0.000127,
-        "scripted_seconds_to_report_draft": 0.000254,
+        "scripted_seconds_to_first_reviewable": 5.9e-05,
+        "scripted_seconds_to_report_draft": 0.000143,
         "scripted_tool_switches": 48,
-        "scripted_wall_clock_seconds": 0.000254,
+        "scripted_wall_clock_seconds": 0.000143,
         "tn": 9,
         "valid_found": 3
       },
@@ -172,12 +553,12 @@
     },
     "stress": {
       "bbtk": {
-        "accuracy": 0.9,
+        "accuracy": 1.0,
         "arm": "bbtk",
         "candidates_reviewed": 10,
         "cases": 10,
         "conservative_abstain": 0,
-        "correct": 9,
+        "correct": 10,
         "distinct_tools": 7,
         "dossier_checklist_mean": 5.0,
         "dossier_validation_results": {
@@ -185,24 +566,17 @@
         },
         "finding_confirmed_true": 0,
         "fn": 0,
-        "fp_accepted": 1,
+        "fp_accepted": 0,
         "incomplete_repro": 0,
-        "mismatches": [
-          {
-            "got": "review",
-            "id": "S-idor-contradiction",
-            "reason": "idor_review_signal",
-            "truth": "abstain"
-          }
-        ],
+        "mismatches": [],
         "missing_evidence": 0,
         "over_reject": 0,
         "scripted_actions": 90,
-        "scripted_seconds_to_first_reviewable": 0.000631,
-        "scripted_seconds_to_report_draft": 0.004869,
+        "scripted_seconds_to_first_reviewable": 0.000494,
+        "scripted_seconds_to_report_draft": 0.005058,
         "scripted_tool_switches": 80,
-        "scripted_wall_clock_seconds": 0.004869,
-        "tn": 6,
+        "scripted_wall_clock_seconds": 0.005058,
+        "tn": 7,
         "valid_found": 3,
         "workflow_auto_confirmations": 0,
         "workflow_documental_complete": false,
@@ -211,6 +585,192 @@
         "workflow_network_requests_sent": 0,
         "workflow_next_reviewable_tasks": [
           "wf-control_review"
+        ]
+      },
+      "dispositions": {
+        "bbtk": [
+          {
+            "case_id": "S-xss-primary",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "candidate"
+          },
+          {
+            "case_id": "S-xss-duplicate",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-xss-primary"
+          },
+          {
+            "case_id": "S-xss-injection",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "candidate"
+          },
+          {
+            "case_id": "S-idor-contradiction",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "evidence_contradiction"
+          },
+          {
+            "case_id": "S-canary-public",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "ready_for_manual_review"
+          },
+          {
+            "case_id": "S-noise-1",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "not_observed"
+          },
+          {
+            "case_id": "S-noise-2",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-noise-1"
+          },
+          {
+            "case_id": "S-noise-3",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-noise-1"
+          },
+          {
+            "case_id": "S-noise-4",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-noise-1"
+          },
+          {
+            "case_id": "S-noise-5",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-noise-1"
+          }
+        ],
+        "manual": [
+          {
+            "case_id": "S-xss-primary",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "raw_payload_reflected"
+          },
+          {
+            "case_id": "S-xss-duplicate",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-xss-primary"
+          },
+          {
+            "case_id": "S-xss-injection",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "raw_payload_reflected"
+          },
+          {
+            "case_id": "S-idor-contradiction",
+            "checklist": 5,
+            "disposition": "abstain",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "denial_text_contradicts_marker"
+          },
+          {
+            "case_id": "S-canary-public",
+            "checklist": 5,
+            "disposition": "review",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "public_sensitive_shape"
+          },
+          {
+            "case_id": "S-noise-1",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "no_public_sensitive_shape"
+          },
+          {
+            "case_id": "S-noise-2",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-noise-1"
+          },
+          {
+            "case_id": "S-noise-3",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-noise-1"
+          },
+          {
+            "case_id": "S-noise-4",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-noise-1"
+          },
+          {
+            "case_id": "S-noise-5",
+            "checklist": 5,
+            "disposition": "reject",
+            "finding_confirmed": false,
+            "incomplete_repro": 0,
+            "missing_evidence": 0,
+            "reason": "duplicate_of:S-noise-1"
+          }
         ]
       },
       "external_requests": 0,
@@ -233,10 +793,10 @@
         "missing_evidence": 0,
         "over_reject": 0,
         "scripted_actions": 70,
-        "scripted_seconds_to_first_reviewable": 5.9e-05,
-        "scripted_seconds_to_report_draft": 0.000159,
+        "scripted_seconds_to_first_reviewable": 2.9e-05,
+        "scripted_seconds_to_report_draft": 0.000126,
         "scripted_tool_switches": 40,
-        "scripted_wall_clock_seconds": 0.000159,
+        "scripted_wall_clock_seconds": 0.000126,
         "tn": 7,
         "valid_found": 3
       },
@@ -244,5 +804,6 @@
       "secret_leaks": 0,
       "split": "stress"
     }
-  }
+  },
+  "version_policy": "0.2.2"
 }
