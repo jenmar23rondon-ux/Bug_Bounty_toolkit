@@ -101,6 +101,25 @@ class BatchObjectDiscoveryTests(unittest.TestCase):
         (self.root / "0.har").write_bytes(b"{}")
         self.assertFalse(self.discover(plan)["complete"])
 
+    def test_cross_batch_hints_do_not_join_other_origins_methods_or_paths(self) -> None:
+        for host, method, path in (
+            ("other.test", "GET", "/orders/42"),
+            ("api.example.test", "POST", "/orders/42"),
+            ("api.example.test", "GET", "/users/42"),
+        ):
+            with self.subTest(host=host, method=method, path=path):
+                shutil.rmtree(self.root / "state", ignore_errors=True)
+                (self.root / "0.har").write_bytes(har([entry("/orders/42", session="alice", n=42)]))
+                (self.root / "1.har").write_bytes(har([entry(path, session="bob", host=host, method=method, n=42)]))
+                plan = plan_campaign(
+                    self.root,
+                    ["0.har", "1.har"],
+                    program="lab",
+                    limits=CampaignLimits(1, 32 * 1024 * 1024, 1000, 200, 64 * 1024 * 1024, 1000),
+                )
+                run_campaign(plan, self.root / "state")
+                self.assertEqual(self.discover(plan)["cross_batch_endpoint_review"]["groups"], [])
+
     def test_global_and_graph_limits_are_explicit(self) -> None:
         plan = self.prepare((33, 32))
         result = discover_campaign(plan, self.root / "state", self.key, authorized=True, max_entries=33)
