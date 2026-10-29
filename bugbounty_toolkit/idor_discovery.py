@@ -64,15 +64,17 @@ def _json_document(exchange: CapturedExchange) -> Any:
         raise ValueError("Captured JSON is malformed or ambiguous; inspect it locally.") from exc
 
 
-def json_scalar_fields(document: Any, include_sensitive: bool = False) -> dict[str, Any]:
+def json_scalar_fields(document: Any, include_sensitive: bool = False, *, max_depth: int = 16) -> dict[str, Any]:
     """Bounded JSON pointers shared by offline case and object discovery."""
     result: dict[str, Any] = {}
+    if type(max_depth) is not int or not 1 <= max_depth <= 64:
+        raise ValueError("JSON discovery depth must be between 1 and 64.")
     nodes = 0
 
     def visit(value: Any, path: str, depth: int) -> None:
         nonlocal nodes
         nodes += 1
-        if nodes > 4096 or depth > 16:
+        if nodes > 4096 or depth > max_depth:
             raise ValueError("Captured JSON exceeds the discovery structure limit.")
         if isinstance(value, dict):
             for key, child in value.items():
@@ -98,21 +100,27 @@ def _resource_matches(value: Any, identifier: str) -> bool:
     return type(value) in {str, int} and str(value) == identifier
 
 
-def _credential_values(owner: CapturedExchange, actor: CapturedExchange) -> tuple[str, ...]:
+def _credential_values(owner: CapturedExchange, actor: CapturedExchange, *, max_depth: int = 16) -> tuple[str, ...]:
     values: list[str] = []
     for exchange in (owner, actor):
         response = captured_response(exchange)
         if response is not None:
             values.extend(value for name, value in response.headers.items() if SESSION_HEADER.search(name))
             values.extend(response.set_cookies)
-        for pointer, value in _leaves(_json_document(exchange), include_sensitive=True).items():
+        for pointer, value in _leaves(_json_document(exchange), include_sensitive=True, max_depth=max_depth).items():
             if isinstance(value, str) and any(SENSITIVE_FIELD.search(part) for part in pointer_parts(pointer)):
                 values.append(value)
     return tuple(unquote(value) for value in values)
 
 
 def _proof_markers(
-    left: Any, right: Any, owner: CapturedExchange, actor: CapturedExchange, credentials: tuple[str, ...] | None = None
+    left: Any,
+    right: Any,
+    owner: CapturedExchange,
+    actor: CapturedExchange,
+    credentials: tuple[str, ...] | None = None,
+    *,
+    max_depth: int = 16,
 ) -> bool:
     if not isinstance(left, str) or not isinstance(right, str):
         return False
@@ -123,15 +131,18 @@ def _proof_markers(
         material = [unquote(request.prepared_url()), *[unquote(value) for value in request.headers.values()]]
         if any(marker in value for marker in (left, right) for value in material):
             return False
-    credentials = credentials if credentials is not None else _credential_values(owner, actor)
+    credentials = credentials if credentials is not None else _credential_values(owner, actor, max_depth=max_depth)
     if any(marker in value for value in credentials for marker in (left, right)):
         return False
     return right not in (owner.raw_response or "") and left not in (actor.raw_response or "")
 
 
-def _suggestions(owner: CapturedExchange, actor: CapturedExchange, pair: ReadPair) -> dict[str, list[str]]:
-    left, right = _leaves(_json_document(owner)), _leaves(_json_document(actor))
-    credentials = _credential_values(owner, actor)
+def _suggestions(
+    owner: CapturedExchange, actor: CapturedExchange, pair: ReadPair, *, max_depth: int = 16
+) -> dict[str, list[str]]:
+    left = _leaves(_json_document(owner), max_depth=max_depth)
+    right = _leaves(_json_document(actor), max_depth=max_depth)
+    credentials = _credential_values(owner, actor, max_depth=max_depth)
     suggestions: dict[str, list[str]] = {field: [] for field in POINTER_FIELDS}
     for pointer in sorted(left.keys() & right.keys()):
         own, act = left[pointer], right[pointer]
@@ -168,10 +179,13 @@ def discover_idor(
     owner_response: Path | None = None,
     actor_response: Path | None = None,
     accounts_authorized: bool = False,
+    max_body_depth: int = 16,
 ) -> IdorDiscovery:
     """Suggest structurally compatible known-resource pairs, never send or authorize a test."""
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", program) or type(accounts_authorized) is not bool:
         raise ValueError("A valid program and boolean authorization declaration are required.")
+    if type(max_body_depth) is not int or not 1 <= max_body_depth <= 64:
+        raise ValueError("JSON discovery depth must be between 1 and 64.")
 
     def exchanges(path: Path, response_path: Path | None) -> tuple[CapturedExchange, ...]:
         return parse_captured_exchanges(
@@ -183,7 +197,7 @@ def discover_idor(
     owners, actors = exchanges(owner, owner_response), exchanges(actor, actor_response)
     # Validate the bounded JSON structure even for an exchange that will not be paired.
     for exchange in (*owners, *actors):
-        _leaves(_json_document(exchange))
+        _leaves(_json_document(exchange), max_depth=max_body_depth)
     proposal: dict[str, Any] = {
         "type": "idor-case-proposal",
         "version": 1,
@@ -204,6 +218,8 @@ def discover_idor(
         },
         "candidates": [],
     }
+    if max_body_depth != 16:
+        proposal["body_json_depth_limit"] = max_body_depth
     for oi, own in enumerate(owners):
         for ai, act in enumerate(actors):
             if len(proposal["candidates"]) >= MAX_CANDIDATES:
@@ -239,7 +255,7 @@ def discover_idor(
                         "path_segments": int("path_segment" in pair.resource),
                         "query_parameters": int("query_parameter" in pair.resource),
                     },
-                    "suggested_checks": _suggestions(own, act, pair),
+                    "suggested_checks": _suggestions(own, act, pair, max_depth=max_body_depth),
                     "review": review,
                 }
             )
@@ -404,7 +420,10 @@ def approve_idor(
         or not _resource_matches(resource[1], pair.actor_resource)
     ):
         raise ValueError("The selected JSON resource fields must match both captured request identifiers.")
-    if not _proof_markers(*markers, owner, actor):
+    depth_limit = proposal.get("body_json_depth_limit", 16)
+    if type(depth_limit) is not int or not 1 <= depth_limit <= 64:
+        raise ValueError("Invalid proposal JSON depth limit.")
+    if not _proof_markers(*markers, owner, actor, max_depth=depth_limit):
         raise ValueError("Both controls need distinct non-reflected private proof markers.")
     output = root / f"case-{candidate_id}.json"
     if output.exists():

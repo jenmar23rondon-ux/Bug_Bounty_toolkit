@@ -158,24 +158,26 @@ class HarImportResult:
         }
 
 
-def _body_reason(body: str, headers: dict[str, str] | None) -> str | None:
+def _body_reason(body: str, headers: dict[str, str] | None, max_body_depth: int = MAX_BODY_JSON_DEPTH) -> str | None:
     content_type = next((v.lower() for k, v in (headers or {}).items() if k.lower() == "content-type"), "")
     if not body or ("json" not in content_type and not body.lstrip().startswith(("{", "["))):
         return None
-    if json_depth(body) > MAX_BODY_JSON_DEPTH:
+    if json_depth(body) > max_body_depth:
         return "body_json_too_deep"
     try:
         document = parse_json(body)
     except (ValueError, RecursionError):
         return "body_json_invalid"
     try:
-        json_scalar_fields(document, include_sensitive=True)
+        json_scalar_fields(document, include_sensitive=True, max_depth=max_body_depth)
     except (ValueError, RecursionError):
         return "body_json_structure_limit"
     return None
 
 
-def entry_reason(entry: Any, index: int, max_message_bytes: int) -> tuple[str | None, CaptureSource | None]:
+def entry_reason(
+    entry: Any, index: int, max_message_bytes: int, *, max_body_depth: int = MAX_BODY_JSON_DEPTH
+) -> tuple[str | None, CaptureSource | None]:
     """Validate one entry in isolation. Returns (reason, None) or (None, source)."""
     if not isinstance(entry, dict):
         return "entry_not_object", None
@@ -231,7 +233,7 @@ def entry_reason(entry: Any, index: int, max_message_bytes: int) -> tuple[str | 
         (source.request_body, source.request_headers),
         (source.response_body, source.response_headers),
     ):
-        reason = _body_reason(body, headers)
+        reason = _body_reason(body, headers, max_body_depth)
         if reason:
             return reason, None
     return None, source
@@ -293,6 +295,7 @@ def import_har(
     max_message_bytes: int,
     max_entries: int = MAX_HAR_ENTRIES,
     allow_truncate: bool = False,
+    max_body_depth: int = MAX_BODY_JSON_DEPTH,
 ) -> HarImportResult:
     """Parse HAR bytes offline. Raises HarImportError only for file-fatal problems.
 
@@ -300,6 +303,8 @@ def import_har(
     ``allow_truncate`` (never combined with ``strict``) are the first ``max_entries`` processed,
     the rest reported as ``over_entry_limit`` and ``truncated`` set.
     """
+    if type(max_body_depth) is not int or not 1 <= max_body_depth <= 64:
+        raise ValueError("HAR body depth must be between 1 and 64.")
     if strict and allow_truncate:
         raise ValueError("strict and allow_truncate are mutually exclusive.")
     entries = load_har_entries(data, max_bytes=max_bytes)
@@ -313,7 +318,7 @@ def import_har(
         if index >= max_entries:
             result.reject(index, "over_entry_limit")
             continue
-        reason, source = entry_reason(entry, index, max_message_bytes)
+        reason, source = entry_reason(entry, index, max_message_bytes, max_body_depth=max_body_depth)
         if reason is not None:
             if strict:
                 raise HarImportError("strict_entry_rejected")

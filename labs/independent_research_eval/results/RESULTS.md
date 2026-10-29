@@ -36,8 +36,8 @@
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 260.41, "median": 68.23}, "handoff_ms": {"max": 63.24, "median": 17.44}, "import_discovery_ms": {"max": 33.99, "median": 5.88}, "planner_ms": {"max": 14.93, "median": 3.97}, "ranking_ms": {"max": 9.23, "median": 2.09}}`  
-Peak traced memory: 32994.0 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 254.45, "median": 68.97}, "handoff_ms": {"max": 100.32, "median": 17.35}, "import_discovery_ms": {"max": 43.09, "median": 5.35}, "planner_ms": {"max": 13.92, "median": 3.94}, "ranking_ms": {"max": 9.89, "median": 2.13}}`  
+Peak traced memory: 32976.8 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 92054, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
@@ -93,46 +93,46 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | metric | overall | C | E |
 |---|---|---|---|
 | scenarios | 6 | 5 | 1 |
-| outcome_accuracy | 0.5 | 0.6 | 0.0 |
-| outcome_accuracy_ci95 | [0.1876, 0.8124] | [0.2307, 0.8824] | [0.0, 0.7935] |
-| object_recall | 0.4 | 0.5 | 0.0 |
-| precision_at_1 | 0.4 | 0.5 | 0.0 |
-| precision_at_3 | 0.4 | 0.5 | 0.0 |
-| precision_at_5 | 0.36 | 0.45 | 0.0 |
-| mrr | 0.4 | 0.5 | 0.0 |
-| ndcg_at_5 | 0.4 | 0.5 | 0.0 |
+| outcome_accuracy | 1.0 | 1.0 | 1.0 |
+| outcome_accuracy_ci95 | [0.6097, 1.0] | [0.5655, 1.0] | [0.2065, 1.0] |
+| object_recall | 1.0 | 1.0 | 1.0 |
+| precision_at_1 | 0.8 | 1.0 | 0.0 |
+| precision_at_3 | 0.7333 | 0.9167 | 0.0 |
+| precision_at_5 | 0.6 | 0.75 | 0.0 |
+| mrr | 0.825 | 1.0 | 0.125 |
+| ndcg_at_5 | 0.8 | 1.0 | 0.0 |
 | precision_at_1_strict_resource_type | 0.0 | 0.0 | 0.0 |
-| pairing_precision | 1.0 | 1.0 | — |
-| pairing_recall | 0.4 | 0.5 | 0.0 |
+| pairing_precision | 0.8333 | 1.0 | 0.5 |
+| pairing_recall | 1.0 | 1.0 | 1.0 |
 | forbidden_pairs_proposed | 0 | 0 | 0 |
-| eligibility_correct | 0.5 | 0.6 | 0.0 |
+| eligibility_correct | 1.0 | 1.0 | 1.0 |
 | false_reviewable_cases | 0 | 0 | 0 |
 | false_reviewable_after_planner | 0 | 0 | 0 |
-| missed_eligible_cases | 3 | 2 | 1 |
-| pipeline_exceptions | 2 | 1 | 1 |
-| technical_errors_predicted | 4 | 3 | 1 |
+| missed_eligible_cases | 0 | 0 | 0 |
+| pipeline_exceptions | 1 | 1 | 0 |
+| technical_errors_predicted | 1 | 1 | 0 |
 | correct_abstentions | 0 | 0 | 0 |
 | abstention_recall | — | — | — |
-| missing_control_recall | 0.4 | 0.5 | 0.0 |
-| next_step_precision_at_1 | 0.5 | 0.6 | 0.0 |
-| next_step_precision_at_1_ci95 | [0.1876, 0.8124] | [0.2307, 0.8824] | [0.0, 0.7935] |
-| redundant_proposals | 59 | 59 | 0 |
-| synthetic_manual_steps | 20 | 20 | 0 |
+| missing_control_recall | 1.0 | 1.0 | 1.0 |
+| next_step_precision_at_1 | 1.0 | 1.0 | 1.0 |
+| next_step_precision_at_1_ci95 | [0.6097, 1.0] | [0.5655, 1.0] | [0.2065, 1.0] |
+| redundant_proposals | 80 | 59 | 21 |
+| synthetic_manual_steps | 50 | 40 | 10 |
 | reference_correct_rate | — | — | — |
 | secret_leaks | 0 | 0 | 0 |
 | auto_confirmations | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 1649.02, "median": 123.85}, "handoff_ms": {"max": 28.28, "median": 3.39}, "import_discovery_ms": {"max": 17.71, "median": 5.75}, "planner_ms": {"max": 86.59, "median": 4.52}, "ranking_ms": {"max": 2.01, "median": 1.06}}`  
-Peak traced memory: 33993.9 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 1754.94, "median": 95.77}, "handoff_ms": {"max": 383.04, "median": 29.52}, "import_discovery_ms": {"max": 1131.22, "median": 20.94}, "planner_ms": {"max": 85.85, "median": 4.12}, "ranking_ms": {"max": 84.37, "median": 2.16}}`  
+Peak traced memory: 33846.4 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 309172, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
 |---|---|---|---|---|---|---|---|---|---|---|
-| S01 | E | noise-300 | reviewable | technical_error | ✗ |  | none | — | 0 | ValueError: Offline captures are invalid, incomplete or exce |
+| S01 | E | noise-300 | reviewable | reviewable | ✓ | CASE_ELIGIBLE, REJECT_MULTI_RESOURCE_DIFF | attest_distinct_accounts | kind-7ceb443df73cc7a34f44d1948c6e28f6 | 24 |  |
 | S02 | C | many-objects | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | row | 64 |  |
-| S03 | C | deep-nesting-60 | reviewable | technical_error | ✗ |  | none | unknown | 0 |  |
-| S04 | C | mostly-damaged | reviewable | technical_error | ✗ |  | none | — | 0 |  |
+| S03 | C | deep-nesting-60 | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | slot | 3 |  |
+| S04 | C | mostly-damaged | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | tokens2 | 1 |  |
 | S05 | C | all-damaged | technical_error | technical_error | ✓ |  | none | — | 0 | ValueError: Offline captures are invalid, incomplete or exce |
 | S06 | C | large-body | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | blob | 3 |  |
 
@@ -171,8 +171,8 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 114.37, "median": 97.21}, "handoff_ms": {"max": 27.59, "median": 25.27}, "import_discovery_ms": {"max": 10.37, "median": 6.65}, "planner_ms": {"max": 6.46, "median": 6.04}, "ranking_ms": {"max": 3.36, "median": 2.81}}`  
-Peak traced memory: 32988.5 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 79.1, "median": 67.34}, "handoff_ms": {"max": 20.23, "median": 17.74}, "import_discovery_ms": {"max": 7.1, "median": 4.74}, "planner_ms": {"max": 4.38, "median": 4.04}, "ranking_ms": {"max": 2.06, "median": 1.9}}`  
+Peak traced memory: 32989.7 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 6924, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |

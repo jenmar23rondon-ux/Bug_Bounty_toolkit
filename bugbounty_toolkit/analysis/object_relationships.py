@@ -30,6 +30,7 @@ RANKING_VERSION = "2.0"
 MAX_FILES = 16
 MAX_TOTAL_BYTES = 64 * 1024 * 1024
 MAX_CAPTURES = 256
+RESEARCH_MAX_CAPTURES = 512
 MAX_OCCURRENCES = 64
 COLLECTIONS = {
     word: singular
@@ -147,7 +148,7 @@ def _json_fields(body: str, headers: dict[str, str] | None) -> dict[str, Any]:
     content_type = next((v.lower() for k, v in (headers or {}).items() if k.lower() == "content-type"), "")
     if not body or ("json" not in content_type and not body.lstrip().startswith(("{", "["))):
         return {}
-    return json_scalar_fields(parse_json(body), include_sensitive=True)
+    return json_scalar_fields(parse_json(body), include_sensitive=True, max_depth=64)
 
 
 def _window_budget(data: bytes, independent_windows: bool) -> int:
@@ -176,6 +177,7 @@ def _read_sources(
     strict: bool = False,
     allow_truncate: bool = False,
     independent_windows: bool = False,
+    research_profile: bool = False,
 ) -> tuple[bytes, list[CaptureSource], dict[str, Any]]:
     data = read_private_input(path, MAX_ITEM_BYTES)
     if data.lstrip().startswith(b"{"):
@@ -187,6 +189,7 @@ def _read_sources(
             max_message_bytes=MAX_EXCHANGE_BYTES,
             max_entries=budget,
             allow_truncate=allow_truncate,
+            max_body_depth=64 if research_profile else 16,
         )
         summary = result.summary()
         if independent_windows and budget > MAX_EXCHANGES:
@@ -194,7 +197,7 @@ def _read_sources(
                 "enabled": True,
                 "window_size": MAX_EXCHANGES,
                 "windows": (budget + MAX_EXCHANGES - 1) // MAX_EXCHANGES,
-                "observation_budget": MAX_CAPTURES,
+                "observation_budget": RESEARCH_MAX_CAPTURES if research_profile else MAX_CAPTURES,
                 "whole_file_blocked": False,
             }
         # Every per-entry check (URL, method, sizes, bodies) already ran in import_har.
@@ -281,7 +284,9 @@ def resource_kind_noun(word: str) -> tuple[str, str] | None:
     """Open-vocabulary kind for one collection segment or typed-id stem, or None if insufficient.
 
     Returns (kind, basis_hint). Known nouns keep their existing canonical name. Generic wrappers,
-    version tags, numbers, sensitive names and over-long tokens are INSUFFICIENT (None).
+    version tags, numbers and over-long tokens are INSUFFICIENT (None). Names alone
+    are not credentials: open-vocabulary kinds are HMAC-only, and secret values
+    remain filtered independently of the resource collection's name.
     """
     lower = re.sub(r"([a-z])([A-Z])", r"\1_\2", word).lower().strip("_")
     if lower in COLLECTIONS:
@@ -297,8 +302,6 @@ def resource_kind_noun(word: str) -> tuple[str, str] | None:
         or len(lower) > MAX_KIND_CHARS
         or lower in GENERIC_KIND_NAMES
         or stem in GENERIC_KIND_NAMES
-        or SENSITIVE_FIELD.search(lower)
-        or SENSITIVE_FIELD.search(stem or lower)
         or numbered is None
         or re.fullmatch(r"v\d+", lower)
     ):
@@ -410,7 +413,7 @@ def _extract(source: CaptureSource, key: bytes, origin: str, credentials: set[st
     ):
         for pointer, value in _json_fields(body, headers).items():
             parts = pointer_parts(pointer)
-            if any(SENSITIVE_FIELD.search(part) for part in parts):
+            if any(SENSITIVE_FIELD.search(part) for part in parts) and not _resource_metadata_id(parts, value):
                 continue
             context = next(
                 (COLLECTIONS[part.lower()] for part in reversed(parts[:-1]) if part.lower() in COLLECTIONS), default
@@ -467,6 +470,22 @@ def _kind_ref(key: bytes, program: str, origin: str, kind: str | None) -> str | 
     return _ref(key, "kind", program, origin, kind)
 
 
+def _resource_metadata_id(parts: list[str], value: Any) -> bool:
+    """Only integer token-resource metadata IDs, never scalar credential values.
+
+    Metadata remains pseudonymized and is not evidence of ownership or privacy.
+    """
+    containers = [part for part in parts[:-1] if not part.isdecimal()]
+    return (
+        bool(containers)
+        and parts[-1] == "id"
+        and type(value) is int
+        and value >= 0
+        and re.fullmatch(r"(?:[a-z]+_)*tokens?(?:_?sets?)?(?:\d{1,4})?", containers[-1], re.I) is not None
+        and not any(SENSITIVE_FIELD.search(part) for part in containers[:-1])
+    )
+
+
 def _credentials(source: CaptureSource) -> set[str]:
     result: set[str] = set()
     for headers in (source.request_headers, source.response_headers):
@@ -482,7 +501,8 @@ def _credentials(source: CaptureSource) -> set[str]:
         (source.response_body, source.response_headers),
     ):
         for pointer, value in _json_fields(body, headers).items():
-            if any(SENSITIVE_FIELD.search(part) for part in pointer_parts(pointer)):
+            parts = pointer_parts(pointer)
+            if any(SENSITIVE_FIELD.search(part) for part in parts) and not _resource_metadata_id(parts, value):
                 result.add(str(value))
     return result
 
@@ -504,6 +524,7 @@ def build_object_graph(
     strict: bool = False,
     allow_truncate: bool = False,
     independent_windows: bool = False,
+    research_profile: bool = False,
 ) -> dict[str, Any]:
     """Read captures only. No DB, network, model calls, output files or executable cases.
 
@@ -511,6 +532,8 @@ def build_object_graph(
     ``capture_import``; ``strict=True`` keeps whole-file rejection for any invalid entry.
     """
     ProgramPaths(Path("."), program)
+    if type(research_profile) is not bool:
+        raise ValueError("Research profile must be a boolean.")
     if not authorized:
         raise ValueError("Declare authorization to analyze these local captures; this does not authorize active tests.")
     if len(key) != 32 or not 1 <= len(inputs) <= MAX_FILES:
@@ -518,7 +541,7 @@ def build_object_graph(
     if strict and allow_truncate:
         raise ValueError("Choose either strict import or explicit truncation, not both.")
     try:
-        return _build(program, inputs, key, base_url, strict, allow_truncate, independent_windows)
+        return _build(program, inputs, key, base_url, strict, allow_truncate, independent_windows, research_profile)
     except (ValueError, UnicodeError, TypeError, KeyError, OverflowError, RecursionError) as exc:
         # Parser exceptions can contain raw input. Never propagate their text to the CLI.
         raise ValueError(_safe_failure(exc)) from exc
@@ -557,13 +580,16 @@ def _build(
     strict: bool = False,
     allow_truncate: bool = False,
     independent_windows: bool = False,
+    research_profile: bool = False,
 ) -> dict[str, Any]:
     loaded: list[tuple[str, CaptureSource]] = []
     sources: dict[str, dict[str, Any]] = {}
     imports: dict[str, dict[str, Any]] = {}
     total_bytes = 0
     for path in inputs:
-        data, captures, import_summary = _read_sources(path, base_url, strict, allow_truncate, independent_windows)
+        data, captures, import_summary = _read_sources(
+            path, base_url, strict, allow_truncate, independent_windows, research_profile
+        )
         total_bytes += len(data)
         if total_bytes > MAX_TOTAL_BYTES:
             raise ValueError("Capture set exceeds total byte limit.")
@@ -576,7 +602,7 @@ def _build(
         }
         imports[source_id] = import_summary
         loaded.extend((source_id, capture) for capture in captures)
-        if len(loaded) > MAX_CAPTURES:
+        if len(loaded) > (RESEARCH_MAX_CAPTURES if research_profile else MAX_CAPTURES):
             raise ValueError("Capture set exceeds observation limit.")
     credentials: set[str] = set()
     for _, capture in loaded:
@@ -733,11 +759,14 @@ def _build(
         "truncate_allowed": allow_truncate,
         "sources": [{"source_ref": ref, **imports[ref]} for ref in sorted(imports)],
     }
+    if research_profile:
+        capture_import["research_profile"] = "bounded-research-v1"
+        capture_import["research_limits"] = {"accepted_captures": RESEARCH_MAX_CAPTURES, "body_json_depth": 64}
     if independent_windows:
         capture_import["independent_windows"] = {
             "enabled": True,
             "window_size": MAX_EXCHANGES,
-            "observation_budget": MAX_CAPTURES,
+            "observation_budget": RESEARCH_MAX_CAPTURES if research_profile else MAX_CAPTURES,
         }
     graph: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
@@ -794,10 +823,21 @@ def validate_object_graph(graph: Any, program: str, key: bytes) -> None:
         or graph.get("vulnerabilities_confirmed") != 0
     ):
         raise ValueError("Invalid offline graph metadata.")
+    recorded_import = graph.get("capture_import") or {}
+    profile = recorded_import.get("research_profile")
+    if profile not in (None, "bounded-research-v1") or (
+        profile is not None
+        and recorded_import.get("research_limits")
+        != {"accepted_captures": RESEARCH_MAX_CAPTURES, "body_json_depth": 64}
+    ):
+        raise ValueError("Unsupported research resource limits.")
     for field, limit in (
         ("nodes", MAX_GRAPH_NODES),
         ("relations", MAX_GRAPH_EDGES),
-        ("observations", MAX_CAPTURES),
+        (
+            "observations",
+            RESEARCH_MAX_CAPTURES if profile == "bounded-research-v1" else MAX_CAPTURES,
+        ),
         ("sources", MAX_FILES),
     ):
         if not isinstance(graph.get(field), list) or len(graph[field]) > limit:
@@ -1088,9 +1128,12 @@ def indexed_capture_sources(
     strict: bool = False,
     allow_truncate: bool = False,
     independent_windows: bool = False,
+    research_profile: bool = False,
 ) -> dict[tuple[str, str], Any]:
     """Map (source_ref, locator) to CaptureSource for offline handoff. Read-only; no network."""
     ProgramPaths(Path("."), program)
+    if type(research_profile) is not bool:
+        raise ValueError("Research profile must be a boolean.")
     if len(key) != 32 or not 1 <= len(inputs) <= MAX_FILES:
         raise ValueError("Use a 32-byte key and between one and sixteen capture files.")
     try:
@@ -1098,14 +1141,16 @@ def indexed_capture_sources(
         total_bytes = 0
         capture_count = 0
         for path in inputs:
-            data, captures, _ = _read_sources(path, base_url, strict, allow_truncate, independent_windows)
+            data, captures, _ = _read_sources(
+                path, base_url, strict, allow_truncate, independent_windows, research_profile
+            )
             total_bytes += len(data)
             if total_bytes > MAX_TOTAL_BYTES:
                 raise ValueError("Capture set exceeds total byte limit.")
             source_id = _ref(key, "source", program, data.hex())
             for capture in captures:
                 capture_count += 1
-                if capture_count > MAX_CAPTURES:
+                if capture_count > (RESEARCH_MAX_CAPTURES if research_profile else MAX_CAPTURES):
                     raise ValueError("Capture set exceeds observation limit.")
                 index[(source_id, capture.locator)] = capture
         return index

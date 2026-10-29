@@ -1,8 +1,9 @@
 # Independent adversarial research benchmark (irb-1.0)
 
-Eval-only. Measures the real offline IDOR/BOLA research pipeline on new scenario families
-(lab: `labs/independent_research_eval/`). **No detection engine, ranking rule, planner rule or
-label was changed to improve results.** All numbers are synthetic-lab metrics.
+Originally an independent evaluation; now a reused historical regression benchmark
+for the real offline IDOR/BOLA research pipeline (`labs/independent_research_eval/`).
+Production recovery changes are described below. Frozen labels and source captures
+are unchanged. All numbers are synthetic-lab metrics, not real-world accuracy.
 
 ## Method
 
@@ -20,7 +21,33 @@ label was changed to improve results.** All numbers are synthetic-lab metrics.
 4. One evaluator-only change after the first FINAL run: added `false_reviewable_after_planner` next to the
    original `false_reviewable_cases` (ledger-state based). Labels untouched.
 
-## Current refresh after PR #91
+## Current bounded recovery results
+
+The three remaining STRESS outcome failures are recovered by the production
+bounded research profile and metadata-ID filtering described in
+[stress-evidence-recovery.md](stress-evidence-recovery.md). The stage-timing
+helper now selects the same research profile as the end-to-end pipeline.
+
+| Metric | Main before recovery | After recovery |
+|---|---|---|
+| DEV / FINAL exact outcomes | 6/6 / 38/45 | 6/6 / 38/45 |
+| STRESS exact outcomes | 3/6 | 6/6 |
+| STRESS missed eligible cases | 3 | 0 |
+| STRESS pipeline exceptions | 2 | 1 (expected all-damaged S05 rejection) |
+| False reviewable cases | 0 | 0 |
+| Secret leaks / auto confirmations / network attempts | 0 / 0 / 0 | 0 / 0 / 0 |
+| STRESS redundant proposals | 59 | 80 |
+| STRESS pairing precision | 1.0 | 0.8333 |
+
+Recovery increases the candidate search space. In particular, S01 still ranks
+telemetry noise before the useful archive; extra pairs are rejected later by
+request-compatibility checks. Passing all six final outcome labels does not mean
+perfect pairing, optimal ranking or fewer manual steps. These remain useful
+next targets, separate from the now-recovered missing cases. Reusing these known
+cases is not a new blinded evaluation. Real-model and human-study metrics remain
+NOT_MEASURED.
+
+## Historical refresh after PR #91
 
 The original frozen DEV/FINAL/STRESS corpora were rerun on main `2fb497e`.
 No detector, ranking rule, historical label or manifest changed in this refresh.

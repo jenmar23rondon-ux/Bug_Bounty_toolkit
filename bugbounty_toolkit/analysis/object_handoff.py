@@ -762,6 +762,7 @@ def propose_object_handoff(
             strict=recorded.get("mode") == "strict",
             allow_truncate=recorded.get("truncate_allowed") is True,
             independent_windows=bool(windows.get("enabled")),
+            research_profile=recorded.get("research_profile") == "bounded-research-v1",
         )
 
     # Explicit insufficient-evidence path when a candidate cannot form a pair.
