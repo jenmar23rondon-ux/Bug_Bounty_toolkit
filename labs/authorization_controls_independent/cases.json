@@ -1,0 +1,21 @@
+{
+  "cases": [
+    {"id": "resource_pair", "expected": "possible_access"},
+    {"id": "denied_403", "actor_status": 403, "actor_body": {"error": "denied"}, "expected": "cross_account_denied"},
+    {"id": "denied_200", "actor_body": {"error": "denied"}, "expected": "cross_account_denied"},
+    {"id": "contradictory_403", "actor_status": 403, "expected": "inconclusive"},
+    {"id": "errors_array", "actor_body": {"data": {"id": "SYNTH-17", "marker": "synthetic-private"}, "errors": [{"message": "Forbidden"}]}, "expected": "inconclusive"},
+    {"id": "owner_401", "owner_status": 401, "owner_body": {"error": "unauthenticated"}, "expected": "inconclusive"},
+    {"id": "owner_500", "owner_status": 500, "expected": "inconclusive"},
+    {"id": "actor_500", "actor_status": 500, "expected": "inconclusive"},
+    {"id": "weak_owner", "owner_body": {"message": "synthetic greeting"}, "actor_status": 403, "actor_body": {"error": "denied"}, "expected": "inconclusive"},
+    {"id": "public", "actor_body": {"visibility": "public", "data": {"id": "SYNTH-17"}}, "expected": "inconclusive"},
+    {"id": "shared", "actor_body": {"visibility": "shared", "data": {"id": "SYNTH-17"}}, "expected": "inconclusive"},
+    {"id": "id_echo", "actor_body": {"id": "SYNTH-17"}, "expected": "inconclusive"},
+    {"id": "empty", "actor_status": 204, "actor_body": "", "expected": "inconclusive"},
+    {"id": "truncated", "actor_body": "{\"data\":", "expected": "inconclusive"},
+    {"id": "login_redirect", "actor_status": 302, "actor_body": "", "actor_headers": {"Location": "/login"}, "expected": "cross_account_denied"},
+    {"id": "resource_redirect", "actor_status": 302, "expected": "inconclusive"},
+    {"id": "resource_text_mentions_denied", "actor_body": {"data": {"id": "SYNTH-17", "note": "historical denied event"}}, "expected": "possible_access"}
+  ]
+}
