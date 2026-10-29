@@ -208,7 +208,9 @@ def _stage_timings(captures: list[Path]) -> dict[str, float]:
     tmp = Path(tempfile.mkdtemp(prefix="bbtk-irb-t-"))
     try:
         s = time.perf_counter()
-        graph = build_object_graph(PROGRAM, captures, KEY, authorized=True)
+        graph = build_object_graph(
+            PROGRAM, captures, KEY, authorized=True, independent_windows=True, research_profile=True
+        )
         t["import_discovery_ms"] = (time.perf_counter() - s) * 1000
         s = time.perf_counter()
         object_candidates(graph, PROGRAM, KEY, limit=64)

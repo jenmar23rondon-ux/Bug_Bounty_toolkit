@@ -308,7 +308,9 @@ def run_e2e_research(
     classifications: list[dict[str, Any]] = []
     idor_rows: list[dict[str, Any]] = []
 
-    graph = build_object_graph(program, list(captures), key, authorized=authorized, independent_windows=True)
+    graph = build_object_graph(
+        program, list(captures), key, authorized=authorized, independent_windows=True, research_profile=True
+    )
     stages["capture_import"] = "ok"
     stages["object_discovery"] = "ok"
     session.stages_completed.extend(["capture_import", "object_discovery"])
@@ -403,6 +405,7 @@ def run_e2e_research(
                     owner_response=ores if ores.is_file() else None,
                     actor_response=ares if ares.is_file() else None,
                     accounts_authorized=False,
+                    max_body_depth=64,
                 )
                 idor_result["attempted"] = True
                 idor_result["candidates"] = len(discovery.proposal.get("candidates") or [])

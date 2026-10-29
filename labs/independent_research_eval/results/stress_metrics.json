@@ -4,7 +4,7 @@
       "abstention_recall": null,
       "auto_confirmations": 0,
       "correct_abstentions": 0,
-      "eligibility_correct": 0.6,
+      "eligibility_correct": 1.0,
       "false_reviewable_after_planner": 0,
       "false_reviewable_cases": 0,
       "false_reviewable_rate": 0.0,
@@ -14,81 +14,81 @@
       ],
       "forbidden_pairs_proposed": 0,
       "info_loss_events": 0,
-      "missed_eligible_cases": 2,
-      "missed_eligible_rate": 0.5,
-      "missing_control_recall": 0.5,
-      "mrr": 0.5,
-      "ndcg_at_5": 0.5,
+      "missed_eligible_cases": 0,
+      "missed_eligible_rate": 0.0,
+      "missing_control_recall": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
       "network_attempts": 0,
-      "next_step_precision_at_1": 0.6,
+      "next_step_precision_at_1": 1.0,
       "next_step_precision_at_1_ci95": [
-        0.2307,
-        0.8824
+        0.5655,
+        1.0
       ],
-      "object_recall": 0.5,
-      "object_recall_exported_kind": 0.75,
+      "object_recall": 1.0,
+      "object_recall_exported_kind": 1.0,
       "object_recall_strict_resource_type": 0.0,
-      "outcome_accuracy": 0.6,
+      "outcome_accuracy": 1.0,
       "outcome_accuracy_ci95": [
-        0.2307,
-        0.8824
+        0.5655,
+        1.0
       ],
-      "outcome_accuracy_lenient": 0.6,
+      "outcome_accuracy_lenient": 1.0,
       "pairing_precision": 1.0,
-      "pairing_recall": 0.5,
+      "pairing_recall": 1.0,
       "pipeline_exceptions": 1,
-      "precision_at_1": 0.5,
+      "precision_at_1": 1.0,
       "precision_at_1_ci95": [
-        0.15,
-        0.85
+        0.5101,
+        1.0
       ],
-      "precision_at_1_exported_kind": 0.75,
+      "precision_at_1_exported_kind": 1.0,
       "precision_at_1_strict_resource_type": 0.0,
-      "precision_at_3": 0.5,
-      "precision_at_5": 0.45,
+      "precision_at_3": 0.9167,
+      "precision_at_5": 0.75,
       "ranking_scenarios": 4,
       "redundant_proposals": 59,
       "reference_correct_rate": null,
       "scenarios": 5,
       "secret_leaks": 0,
-      "synthetic_manual_steps": 20,
-      "technical_errors_predicted": 3,
+      "synthetic_manual_steps": 40,
+      "technical_errors_predicted": 1,
       "wrong_object_top1": 0
     },
     "E": {
       "abstention_recall": null,
       "auto_confirmations": 0,
       "correct_abstentions": 0,
-      "eligibility_correct": 0.0,
+      "eligibility_correct": 1.0,
       "false_reviewable_after_planner": 0,
       "false_reviewable_cases": 0,
       "false_reviewable_rate": null,
       "false_reviewable_rate_ci95": null,
       "forbidden_pairs_proposed": 0,
       "info_loss_events": 0,
-      "missed_eligible_cases": 1,
-      "missed_eligible_rate": 1.0,
-      "missing_control_recall": 0.0,
-      "mrr": 0.0,
+      "missed_eligible_cases": 0,
+      "missed_eligible_rate": 0.0,
+      "missing_control_recall": 1.0,
+      "mrr": 0.125,
       "ndcg_at_5": 0.0,
       "network_attempts": 0,
-      "next_step_precision_at_1": 0.0,
+      "next_step_precision_at_1": 1.0,
       "next_step_precision_at_1_ci95": [
-        0.0,
-        0.7935
+        0.2065,
+        1.0
       ],
-      "object_recall": 0.0,
-      "object_recall_exported_kind": 0.0,
+      "object_recall": 1.0,
+      "object_recall_exported_kind": 1.0,
       "object_recall_strict_resource_type": 0.0,
-      "outcome_accuracy": 0.0,
+      "outcome_accuracy": 1.0,
       "outcome_accuracy_ci95": [
-        0.0,
-        0.7935
+        0.2065,
+        1.0
       ],
-      "outcome_accuracy_lenient": 0.0,
-      "pairing_precision": null,
-      "pairing_recall": 0.0,
-      "pipeline_exceptions": 1,
+      "outcome_accuracy_lenient": 1.0,
+      "pairing_precision": 0.5,
+      "pairing_recall": 1.0,
+      "pipeline_exceptions": 0,
       "precision_at_1": 0.0,
       "precision_at_1_ci95": [
         0.0,
@@ -99,17 +99,17 @@
       "precision_at_3": 0.0,
       "precision_at_5": 0.0,
       "ranking_scenarios": 1,
-      "redundant_proposals": 0,
+      "redundant_proposals": 21,
       "reference_correct_rate": null,
       "scenarios": 1,
       "secret_leaks": 0,
-      "synthetic_manual_steps": 0,
-      "technical_errors_predicted": 1,
-      "wrong_object_top1": 0
+      "synthetic_manual_steps": 10,
+      "technical_errors_predicted": 0,
+      "wrong_object_top1": 1
     }
   },
   "corpus_version": "irb-1.0",
-  "evaluator_sha256": "416cd30569ef0e88fe9732b01f9e7f05fa0836517ba457f344a4d050890a0160",
+  "evaluator_sha256": "5db7ba9ac9bc4a259aff0e60b85c983b6cf157068c9bb4df9e1c6b79e5d70761",
   "historical_overlap": {
     "historical_files_scanned": 216,
     "identical_files": 0,
@@ -117,28 +117,28 @@
     "our_bytes": 309172,
     "overlap_free": true
   },
-  "implementation_sha256": "d60bf36271d5e1145fbb57697e5036a7a8a2896cad32ad8b951f0a1d3dea3b5f",
+  "implementation_sha256": "11a72f692e6cd1e0f49bf6f1c0332122f348763ddad8d922d929f28f28371df3",
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
-      "max": 1192.08,
-      "median": 89.74
+      "max": 1742.43,
+      "median": 90.22
     },
     "handoff_ms": {
-      "max": 22.38,
-      "median": 2.66
+      "max": 436.02,
+      "median": 26.89
     },
     "import_discovery_ms": {
-      "max": 15.96,
-      "median": 3.6
+      "max": 1193.0,
+      "median": 19.05
     },
     "planner_ms": {
-      "max": 81.05,
-      "median": 3.65
+      "max": 81.64,
+      "median": 3.84
     },
     "ranking_ms": {
-      "max": 1.91,
-      "median": 1.04
+      "max": 129.96,
+      "median": 2.0
     }
   },
   "manifest_sha256": "4dd82cac98084f0a73f7b67d23e8090fee8a48b2497b55bbdb6e25d18dfe1c72",
@@ -147,7 +147,7 @@
     "abstention_recall": null,
     "auto_confirmations": 0,
     "correct_abstentions": 0,
-    "eligibility_correct": 0.5,
+    "eligibility_correct": 1.0,
     "false_reviewable_after_planner": 0,
     "false_reviewable_cases": 0,
     "false_reviewable_rate": 0.0,
@@ -157,105 +157,119 @@
     ],
     "forbidden_pairs_proposed": 0,
     "info_loss_events": 0,
-    "missed_eligible_cases": 3,
-    "missed_eligible_rate": 0.6,
-    "missing_control_recall": 0.4,
-    "mrr": 0.4,
-    "ndcg_at_5": 0.4,
+    "missed_eligible_cases": 0,
+    "missed_eligible_rate": 0.0,
+    "missing_control_recall": 1.0,
+    "mrr": 0.825,
+    "ndcg_at_5": 0.8,
     "network_attempts": 0,
-    "next_step_precision_at_1": 0.5,
+    "next_step_precision_at_1": 1.0,
     "next_step_precision_at_1_ci95": [
-      0.1876,
-      0.8124
+      0.6097,
+      1.0
     ],
-    "object_recall": 0.4,
-    "object_recall_exported_kind": 0.6,
+    "object_recall": 1.0,
+    "object_recall_exported_kind": 1.0,
     "object_recall_strict_resource_type": 0.0,
-    "outcome_accuracy": 0.5,
+    "outcome_accuracy": 1.0,
     "outcome_accuracy_ci95": [
-      0.1876,
-      0.8124
+      0.6097,
+      1.0
     ],
-    "outcome_accuracy_lenient": 0.5,
-    "pairing_precision": 1.0,
-    "pairing_recall": 0.4,
-    "pipeline_exceptions": 2,
-    "precision_at_1": 0.4,
+    "outcome_accuracy_lenient": 1.0,
+    "pairing_precision": 0.8333,
+    "pairing_recall": 1.0,
+    "pipeline_exceptions": 1,
+    "precision_at_1": 0.8,
     "precision_at_1_ci95": [
-      0.1176,
-      0.7693
+      0.3755,
+      0.9638
     ],
-    "precision_at_1_exported_kind": 0.6,
+    "precision_at_1_exported_kind": 0.8,
     "precision_at_1_strict_resource_type": 0.0,
-    "precision_at_3": 0.4,
-    "precision_at_5": 0.36,
+    "precision_at_3": 0.7333,
+    "precision_at_5": 0.6,
     "ranking_scenarios": 5,
-    "redundant_proposals": 59,
+    "redundant_proposals": 80,
     "reference_correct_rate": null,
     "scenarios": 6,
     "secret_leaks": 0,
-    "synthetic_manual_steps": 20,
-    "technical_errors_predicted": 4,
-    "wrong_object_top1": 0
+    "synthetic_manual_steps": 50,
+    "technical_errors_predicted": 1,
+    "wrong_object_top1": 1
   },
-  "peak_mem_kib_max": 33848.7,
+  "peak_mem_kib_max": 33846.9,
   "scenarios": [
     {
       "confirmed": 0,
-      "eligibility_codes": [],
-      "eligibility_correct": false,
-      "exception": "ValueError: Offline captures are invalid, incomplete or exceed discovery limits; inspect locally.",
+      "eligibility_codes": [
+        "CASE_ELIGIBLE",
+        "REJECT_MULTI_RESOURCE_DIFF"
+      ],
+      "eligibility_correct": true,
+      "exception": null,
       "family": "E",
-      "first_step": "none",
+      "first_step": "attest_distinct_accounts",
       "id": "S01",
       "ideal_outcome": "reviewable",
       "ideal_reviewable": true,
       "info_loss": [],
       "leaks": 0,
-      "ledger_raw_reviewable": false,
-      "manual_steps": 0,
+      "ledger_raw_reviewable": true,
+      "manual_steps": 10,
       "missing_control": {
         "expected": 3,
-        "hit": 0,
-        "predicted": []
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
       },
       "mutation_error": null,
       "network_attempts": 0,
-      "next_step_correct": false,
-      "outcome_correct": false,
-      "outcome_correct_lenient": false,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
       "pairing": {
-        "fn": 1,
+        "fn": 0,
         "forbidden_hits": 0,
-        "fp": 0,
-        "tp": 0
+        "fp": 1,
+        "tp": 1
       },
-      "peak_mem_kib": 32795.9,
-      "predicted_outcome": "technical_error",
-      "predicted_reviewable": false,
-      "proposal_types": [],
-      "proposals": 0,
+      "peak_mem_kib": 33283.4,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "archive",
+        "kind-7ceb443df73cc7a34f44d1948c6e28f6"
+      ],
+      "proposals": 24,
       "ranking": {
         "kind_p@1": 0.0,
-        "kind_recall": false,
+        "kind_recall": true,
         "ndcg@5": 0.0,
         "p@1": 0.0,
         "p@3": 0.0,
         "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "recall": true,
+        "rr": 0.125,
         "strict_p@1": 0.0,
         "strict_recall": false,
-        "top1_strict_type": null,
-        "top1_type": null
+        "top1_strict_type": "unknown",
+        "top1_type": "kind-7ceb443df73cc7a34f44d1948c6e28f6"
       },
-      "redundant_proposals": 0,
+      "redundant_proposals": 21,
       "refs": {
         "total": 0,
         "valid": 0
       },
       "stage_ms": {
-        "error": "ValueError"
+        "e2e_total_ms": 1742.43,
+        "handoff_ms": 329.11,
+        "import_discovery_ms": 1193.0,
+        "planner_ms": 18.66,
+        "ranking_ms": 12.15
       },
       "tag": "noise-300"
     },
@@ -295,7 +309,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33788.1,
+      "peak_mem_kib": 33846.9,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -322,60 +336,70 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 1192.08,
-        "error": "ValueError",
-        "planner_ms": 81.05
+        "e2e_total_ms": 1278.34,
+        "handoff_ms": 436.02,
+        "import_discovery_ms": 167.32,
+        "planner_ms": 81.64,
+        "ranking_ms": 129.96
       },
       "tag": "many-objects"
     },
     {
       "confirmed": 0,
-      "eligibility_codes": [],
-      "eligibility_correct": false,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
       "exception": null,
       "family": "C",
-      "first_step": "none",
+      "first_step": "attest_distinct_accounts",
       "id": "S03",
       "ideal_outcome": "reviewable",
       "ideal_reviewable": true,
       "info_loss": [],
       "leaks": 0,
-      "ledger_raw_reviewable": false,
-      "manual_steps": 0,
+      "ledger_raw_reviewable": true,
+      "manual_steps": 10,
       "missing_control": {
         "expected": 3,
-        "hit": 0,
-        "predicted": []
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
       },
       "mutation_error": null,
       "network_attempts": 0,
-      "next_step_correct": false,
-      "outcome_correct": false,
-      "outcome_correct_lenient": false,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
       "pairing": {
-        "fn": 1,
+        "fn": 0,
         "forbidden_hits": 0,
         "fp": 0,
-        "tp": 0
+        "tp": 1
       },
-      "peak_mem_kib": 32795.9,
-      "predicted_outcome": "technical_error",
-      "predicted_reviewable": false,
-      "proposal_types": [],
-      "proposals": 0,
+      "peak_mem_kib": 32881.7,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "slot"
+      ],
+      "proposals": 3,
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "slot"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -383,62 +407,70 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 17.22,
-        "handoff_ms": 2.03,
-        "import_discovery_ms": 3.41,
-        "planner_ms": 0.95,
-        "ranking_ms": 1.04
+        "e2e_total_ms": 63.63,
+        "handoff_ms": 15.55,
+        "import_discovery_ms": 6.59,
+        "planner_ms": 3.81,
+        "ranking_ms": 2.0
       },
       "tag": "deep-nesting-60"
     },
     {
       "confirmed": 0,
-      "eligibility_codes": [],
-      "eligibility_correct": false,
+      "eligibility_codes": [
+        "CASE_ELIGIBLE"
+      ],
+      "eligibility_correct": true,
       "exception": null,
       "family": "C",
-      "first_step": "none",
+      "first_step": "attest_distinct_accounts",
       "id": "S04",
       "ideal_outcome": "reviewable",
       "ideal_reviewable": true,
       "info_loss": [],
       "leaks": 0,
-      "ledger_raw_reviewable": false,
-      "manual_steps": 0,
+      "ledger_raw_reviewable": true,
+      "manual_steps": 10,
       "missing_control": {
         "expected": 3,
-        "hit": 0,
-        "predicted": []
+        "hit": 3,
+        "predicted": [
+          "distinct_accounts",
+          "negative_control",
+          "ownership"
+        ]
       },
       "mutation_error": null,
       "network_attempts": 0,
-      "next_step_correct": false,
-      "outcome_correct": false,
-      "outcome_correct_lenient": false,
+      "next_step_correct": true,
+      "outcome_correct": true,
+      "outcome_correct_lenient": true,
       "pairing": {
-        "fn": 1,
+        "fn": 0,
         "forbidden_hits": 0,
         "fp": 0,
-        "tp": 0
+        "tp": 1
       },
-      "peak_mem_kib": 32799.8,
-      "predicted_outcome": "technical_error",
-      "predicted_reviewable": false,
-      "proposal_types": [],
-      "proposals": 0,
+      "peak_mem_kib": 32834.5,
+      "predicted_outcome": "reviewable",
+      "predicted_reviewable": true,
+      "proposal_types": [
+        "tokens2"
+      ],
+      "proposals": 1,
       "ranking": {
-        "kind_p@1": 0.0,
-        "kind_recall": false,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "kind_p@1": 1.0,
+        "kind_recall": true,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 0.6667,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
-        "top1_strict_type": null,
-        "top1_type": null
+        "top1_strict_type": "unknown",
+        "top1_type": "tokens2"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -446,11 +478,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 16.55,
-        "handoff_ms": 2.66,
-        "import_discovery_ms": 3.6,
-        "planner_ms": 1.07,
-        "ranking_ms": 0.25
+        "e2e_total_ms": 35.94,
+        "handoff_ms": 7.88,
+        "import_discovery_ms": 5.44,
+        "planner_ms": 1.96,
+        "ranking_ms": 1.93
       },
       "tag": "mostly-damaged"
     },
@@ -480,7 +512,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32777.7,
+      "peak_mem_kib": 32778.3,
       "predicted_outcome": "technical_error",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -532,7 +564,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33848.7,
+      "peak_mem_kib": 33834.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -559,11 +591,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 89.74,
-        "handoff_ms": 22.38,
-        "import_discovery_ms": 15.96,
-        "planner_ms": 3.65,
-        "ranking_ms": 1.91
+        "e2e_total_ms": 90.22,
+        "handoff_ms": 26.89,
+        "import_discovery_ms": 19.05,
+        "planner_ms": 3.84,
+        "ranking_ms": 1.82
       },
       "tag": "large-body"
     }

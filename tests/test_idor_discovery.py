@@ -108,6 +108,25 @@ class IdorDiscoveryTests(unittest.TestCase):
         with patch("socket.socket", side_effect=AssertionError("Approval must stay offline")):
             return approve_idor(path, "candidate-001", "lab", self.scope, approve=True, **options)
 
+    def test_extended_body_scan_does_not_reuse_deep_credentials_as_private_proof(self):
+        bodies = []
+        for account, identifier in (("owner", "1001"), ("actor", "1002")):
+            marker = f"{account}-order-marker-{identifier}"
+            deep = {"token": marker}
+            for _ in range(20):
+                deep = {"nested": deep}
+            bodies.append({"success": True, "data": {"id": identifier, "marker": marker}, "details": deep})
+        self._captures(owner_body=bodies[0], actor_body=bodies[1])
+        with self.assertRaises(ValueError):
+            self._discover()
+        result = self._discover(max_body_depth=64)
+        self.assertEqual(result.proposal["body_json_depth_limit"], 64)
+        self.assertEqual(result.proposal["candidates"][0]["suggested_checks"]["private_pointer"], [])
+        path = save_proposal(result, self.bundle)
+        self._review(path)
+        with self.assertRaisesRegex(ValueError, "private proof markers"):
+            self._approve(path)
+
     def test_two_xml_accounts_produce_reviewable_proposal_and_lossless_private_snapshots(self):
         result = self._discover()
         candidate = result.proposal["candidates"][0]

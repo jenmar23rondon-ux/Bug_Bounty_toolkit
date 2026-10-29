@@ -97,12 +97,20 @@ class EndToEndResearchTests(unittest.TestCase):
         with no_network():
             tmp = Path(tempfile.mkdtemp())
             try:
-                first = run_e2e_research(PROGRAM, [FROZEN / "captures.har"], tmp, key=KEY, limit=32)
+                # This test concerns intact, unexpired artifacts. Token-resource
+                # recovery now also materializes R15's intentionally expired pair.
+                clean = json.loads((FROZEN / "captures.har").read_text(encoding="utf-8"))
+                clean["log"]["entries"] = [
+                    entry for entry in clean["log"]["entries"] if EXPIRED_TOKEN_MARKER not in json.dumps(entry)
+                ]
+                capture = tmp / "unexpired.har"
+                capture.write_text(json.dumps(clean), encoding="utf-8")
+                first = run_e2e_research(PROGRAM, [capture], tmp, key=KEY, limit=32)
                 session = Path(first["session_path"])
                 with mock.patch("bugbounty_toolkit.analysis.idor_e2e_research.build_object_graph") as mocked:
                     resumed = run_e2e_research(
                         PROGRAM,
-                        [FROZEN / "captures.har"],
+                        [capture],
                         tmp,
                         key=KEY,
                         resume_session=session,

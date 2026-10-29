@@ -1,5 +1,10 @@
 # Recovering valid observations after damaged HAR entries
 
+This describes the default importer fix in PR #93. The later, separately bounded
+end-to-end research profile is documented in
+[stress-evidence-recovery.md](stress-evidence-recovery.md); its new STRESS results
+supersede the historical limitations below. Default discovery limits remain unchanged.
+
 ## Reproduction and acceptance criteria
 
 On main `bd99e94`, prepend 300 HAR entries with a missing request URL to a
