@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import unittest
 from dataclasses import replace
+from unittest.mock import patch
 
 from bugbounty_toolkit import ai_mock_server as mocks
 from bugbounty_toolkit.analysis.ai_backend import AISelection
@@ -12,6 +13,7 @@ from bugbounty_toolkit.analysis.ai_providers import PROVIDER_REGISTRY
 from bugbounty_toolkit.analysis.local_ai_evidence_assistant import (
     assist_evidence,
     deterministic_assist,
+    _parse_assistant,
 )
 from labs.local_ai_evidence_assistant_eval.evaluate import (
     _enricher,
@@ -46,6 +48,39 @@ def _evidence() -> dict[str, object]:
 
 
 class LocalAIEvidenceAssistantTests(unittest.TestCase):
+    def test_response_contract_rejects_adversarial_structures(self) -> None:
+        valid = dict(
+            summary="Candidate",
+            explanation="Needs human review",
+            pending_questions=[],
+            contradictions=[],
+            draft_notes="Review controls",
+            missing_data_suggestions=[],
+            limitations=["Advisory only"],
+        )
+        mutations: list[dict[str, object]] = [
+            {"finding_confirmed": True},
+            {"pending_questions": "execute request"},
+            {"summary": {"execute": "request"}},
+            {"summary": "x" * 401 + " execute request"},
+            {"limitations": [False]},
+            {"contradictions": ["item"] * 9},
+        ]
+        for change in mutations:
+            with self.subTest(change=change):
+                package, issues = _parse_assistant(json.dumps({**valid, **change}), set())
+                self.assertIsNone(package)
+                self.assertTrue(issues)
+        self.assertIsNotNone(_parse_assistant(json.dumps(valid), set())[0])
+
+    def test_bad_model_response_preserves_deterministic_fallback(self) -> None:
+        with patch("bugbounty_toolkit.analysis.local_ai_evidence_assistant.dispatch_chat", return_value="{}"):
+            result = assist_evidence(_evidence(), selection=AISelection("ollama", "synthetic"))
+        self.assertEqual(result["ai"]["status"], "rejected")
+        self.assertEqual(result["primary"], "deterministic")
+        self.assertFalse(result["finding_confirmed"])
+        self.assertTrue(result["deterministic"]["summary"])
+
     def test_deterministic_never_confirms(self) -> None:
         out = deterministic_assist(_evidence())
         self.assertIs(out["package"]["finding_confirmed"], False)

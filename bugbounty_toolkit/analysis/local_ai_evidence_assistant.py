@@ -221,9 +221,11 @@ def _assistant_messages(bundle: dict[str, Any]) -> list[dict[str, str]]:
 
 def _parse_assistant(content: str, allowed_refs: set[str]) -> tuple[dict[str, Any] | None, list[str]]:
     issues: list[str] = []
+    if len(content) > 32_000:
+        return None, ["response_too_large"]
     try:
         parsed = json.loads(content)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, RecursionError):
         return None, ["invalid_json"]
     if not isinstance(parsed, dict):
         return None, ["not_object"]
@@ -232,6 +234,23 @@ def _parse_assistant(content: str, allowed_refs: set[str]) -> tuple[dict[str, An
             issues.append(f"missing:{key}")
     if issues:
         return None, issues
+    if set(parsed) != set(ASSISTANT_SCHEMA["required"]):
+        return None, ["unexpected_fields"]
+    for key, spec in ASSISTANT_SCHEMA["properties"].items():
+        value = parsed[key]
+        if spec["type"] == "string":
+            if not isinstance(value, str) or len(value) > MAX_TEXT:
+                issues.append(f"invalid_field:{key}")
+        elif (
+            not isinstance(value, list)
+            or len(value) > MAX_ITEMS
+            or any(not isinstance(item, str) or len(item) > MAX_TEXT for item in value)
+        ):
+            issues.append(f"invalid_field:{key}")
+    if issues:
+        return None, issues
+    if sensitive_content_findings([{"role": "assistant", "content": content}]):
+        return None, ["sensitive_content_refused"]
     package = {
         "summary": _clip(parsed.get("summary")),
         "explanation": _clip(parsed.get("explanation")),
