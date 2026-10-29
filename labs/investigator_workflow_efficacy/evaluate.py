@@ -182,6 +182,13 @@ def run_report(splits: list[str]) -> dict[str, Any]:
     )
     return {
         "lab": "investigator-workflow-efficacy",
+        "reproducibility": {
+            "case_sha256": {
+                split: hashlib.sha256((LAB / split / "cases.json").read_bytes()).hexdigest() for split in splits
+            },
+            "adapter_sha256": hashlib.sha256((LAB / "bbtk_arm.py").read_bytes()).hexdigest(),
+            "measurement_kind": "synthetic_loopback_scripted",
+        },
         "version_policy": "0.2.2",
         "fixture_results_only": True,
         "finding_confirmed": False,
