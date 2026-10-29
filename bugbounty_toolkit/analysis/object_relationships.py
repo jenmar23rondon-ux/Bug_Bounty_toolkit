@@ -154,10 +154,10 @@ def _window_budget(data: bytes, independent_windows: bool) -> int:
     """Entry cap for one HAR file.
 
     The historical per-file cap stays in force unless the caller opts into independent
-    windows. A file that exceeds one window but fits the observation budget is then
-    accepted in full: entries are not a single shared artifact, so one window's limit
-    must not discard an unrelated pair that sits later in the file. Files above
-    ``MAX_CAPTURES`` still fail closed.
+    windows. Scan all declared entries within the HAR hard ceiling so rejected entries
+    do not consume the accepted-observation budget. The build and handoff index still
+    enforce ``MAX_CAPTURES`` across accepted captures and all input files. The byte,
+    nesting and declared-entry ceilings remain enforced by ``load_har_entries``.
     """
     if not independent_windows:
         return MAX_EXCHANGES
@@ -165,7 +165,7 @@ def _window_budget(data: bytes, independent_windows: bool) -> int:
         count = len(load_har_entries(data, max_bytes=MAX_ITEM_BYTES))
     except HarImportError:
         return MAX_EXCHANGES
-    if count <= MAX_EXCHANGES or count > MAX_CAPTURES:
+    if count <= MAX_EXCHANGES:
         return MAX_EXCHANGES
     return count
 

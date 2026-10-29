@@ -53,6 +53,22 @@ class CorpusIntegrityTests(unittest.TestCase):
 
 
 class EndToEndResearchTests(unittest.TestCase):
+    def test_valid_cases_survive_large_damaged_capture_without_network(self) -> None:
+        with tempfile.TemporaryDirectory() as directory, no_network() as attempts:
+            root = Path(directory)
+            document = json.loads((FROZEN / "captures.har").read_text(encoding="utf-8"))
+            document["log"]["entries"] = [
+                {"request": {"method": "GET"}, "response": {}} for _ in range(300)
+            ] + document["log"]["entries"]
+            capture = root / "damaged.har"
+            capture.write_text(json.dumps(document), encoding="utf-8")
+            report = run_e2e_research(PROGRAM, [capture], root / "run", key=KEY, limit=64)
+        self.assertEqual(attempts["count"], 0)
+        self.assertGreaterEqual(report["eligibility_summary"]["case_eligible"], 1)
+        self.assertEqual(report["vulnerabilities_confirmed"], 0)
+        self.assertEqual(report["access_checks_executed"], 0)
+        self.assertEqual(report["pending_contracts"], [])
+
     def test_full_pipeline_offline_and_unconfirmed(self) -> None:
         with no_network() as attempts:
             tmp = Path(tempfile.mkdtemp())

@@ -19,6 +19,7 @@ from bugbounty_toolkit.analysis.object_relationships import (
     RANKING_VERSION,
     build_object_graph,
     discover_to_file,
+    indexed_capture_sources,
     load_object_key,
     object_candidates,
     read_object_graph,
@@ -90,6 +91,38 @@ class ObjectRelationshipTests(unittest.TestCase):
 
     def candidates(self, graph, **options):
         return object_candidates(graph, "lab", self.key, **options)["candidates"]
+
+    def test_windowed_import_recovers_valid_entries_after_many_rejected_entries(self):
+        damaged = [{"request": {"method": "GET"}, "response": {}} for _ in range(300)]
+        pair = [
+            self.entry("/orders/987", {"order_id": 987}, "owner"),
+            self.entry("/orders/988", {"order_id": 988}, "actor"),
+        ]
+        graph = self.graph(damaged + pair, independent_windows=True)
+        summary = graph["capture_import"]
+        self.assertEqual(summary["accepted"], 2)
+        self.assertEqual(summary["rejected"], 300)
+        locators = {p["locator"] for o in graph["observations"] for p in o["provenance"]}
+        self.assertEqual(locators, {"/log/entries[300]", "/log/entries[301]"})
+        self.assertTrue(self.candidates(graph))
+        index = indexed_capture_sources("lab", [self.input], self.key, independent_windows=True)
+        self.assertEqual({locator for _, locator in index}, locators)
+        verify_object_sources(graph, [self.input], self.key)
+
+    def test_windowed_import_still_enforces_accepted_observation_budget(self):
+        entries = [self.entry(f"/orders/{1000 + i}", {"order_id": 1000 + i}) for i in range(MAX_CAPTURES + 1)]
+        with self.assertRaisesRegex(ValueError, "exceed discovery limits"):
+            self.graph(entries, independent_windows=True)
+        with self.assertRaisesRegex(ValueError, "exceed discovery limits"):
+            indexed_capture_sources("lab", [self.input], self.key, independent_windows=True)
+
+    def test_windowed_recovery_does_not_relax_default_or_strict_import(self):
+        entries = [{"request": {"method": "GET"}, "response": {}} for _ in range(300)]
+        entries.append(self.entry("/orders/987", {"order_id": 987}))
+        with self.assertRaisesRegex(ValueError, "entries_over_limit"):
+            self.graph(entries)
+        with self.assertRaisesRegex(ValueError, "strict_entry_rejected"):
+            self.graph(entries, independent_windows=True, strict=True)
 
     def call_cli(self, *arguments):
         output, errors = StringIO(), StringIO()
