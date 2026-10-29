@@ -58,7 +58,7 @@ class LocalAIEvidenceAssistantTests(unittest.TestCase):
             missing_data_suggestions=[],
             limitations=["Advisory only"],
         )
-        mutations = [
+        mutations: list[dict[str, object]] = [
             {"finding_confirmed": True},
             {"pending_questions": "execute request"},
             {"summary": {"execute": "request"}},
