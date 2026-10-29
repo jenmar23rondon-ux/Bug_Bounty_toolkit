@@ -274,12 +274,20 @@ def main(argv: list[str] | None = None) -> int:
         ):
             bad = True
         chromium = report.get("chromium", {})
+        if args.mode == "live" and chromium.get("status") != "measured":
+            bad = True
         if chromium.get("status") == "measured":
             if chromium.get("external_requests") or chromium.get("external_socket_observations"):
                 bad = True
             for run in chromium.get("runs", []):
                 if run.get("automatic_confirmations") or run.get("secret_leaks"):
                     bad = True
+                if run.get("mismatches") or run.get("evidence_completeness") != 1.0:
+                    bad = True
+            if not chromium.get("runs"):
+                bad = True
+            if args.repeat >= 2 and chromium.get("reproducibility", {}).get("state_agreement") != 1.0:
+                bad = True
         mock = report.get("mock_ci_pipeline")
         if isinstance(mock, dict) and (mock.get("automatic_confirmations") or mock.get("secret_leaks")):
             bad = True

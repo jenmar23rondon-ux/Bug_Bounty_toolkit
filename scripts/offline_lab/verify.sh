@@ -99,6 +99,7 @@ if ((playwright)); then
   step pw-local-html      "$img" "$mem" "$py" scripts/offline_lab/isolation_checks.py --only playwright-local-html \
     --only external-connections-blocked --only network-interfaces --only non-root-user
   step pw-browser-tests   "$img" "$mem" "$py" -m unittest -v tests.test_xss_browser
+  step pw-final-xss       "$img" "$mem" "$py" -m labs.xss_real_browser_eval.evaluate --split final --mode live --repeat 2
 fi
 
 for image in "$BBTK_LAB_IMAGE" $( ((playwright)) && echo "$BBTK_LAB_PW_IMAGE"); do

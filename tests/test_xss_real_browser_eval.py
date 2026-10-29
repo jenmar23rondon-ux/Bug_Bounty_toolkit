@@ -6,6 +6,7 @@ import hashlib
 import json
 import time
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -13,6 +14,7 @@ from typing import Any
 from bugbounty_toolkit import __version__
 from bugbounty_toolkit.xss.evidence_record import DomObservation
 from labs.xss_real_browser_eval.evaluate import (
+    main,
     cases_as_scenarios,
     final_is_frozen,
     parser_rows,
@@ -34,6 +36,31 @@ from labs.xss_real_browser_eval.states import lab_state
 
 LAB = Path(__file__).resolve().parents[1] / "labs" / "xss_real_browser_eval"
 ROOT = Path(__file__).resolve().parents[1]
+
+
+class LiveExitStatusTests(unittest.TestCase):
+    def check(self, chromium: dict[str, Any], repeat: int = 1) -> int:
+        with (
+            patch("labs.xss_real_browser_eval.evaluate.probe_chromium", return_value={"available": False}),
+            patch("labs.xss_real_browser_eval.evaluate.run_split", return_value={"chromium": chromium}),
+            patch("builtins.print"),
+        ):
+            return main(["--mode", "live", "--split", "final", "--repeat", str(repeat)])
+
+    def test_live_unavailable_is_a_failure_instead_of_a_successful_skip(self) -> None:
+        self.assertEqual(self.check({"status": "NOT_MEASURED"}), 1)
+
+    def test_live_gate_rejects_wrong_or_incomplete_observations(self) -> None:
+        for run in ({"mismatches": [{"id": "A"}], "evidence_completeness": 1.0}, {"evidence_completeness": 0.5}):
+            self.assertEqual(self.check({"status": "measured", "runs": [run]}), 1)
+        self.assertEqual(self.check({"status": "measured", "runs": []}), 1)
+
+    def test_live_gate_requires_reproducibility_for_repeated_runs(self) -> None:
+        report: dict[str, Any] = {"status": "measured", "runs": [{"mismatches": [], "evidence_completeness": 1.0}]}
+        self.assertEqual(self.check(report), 0)
+        self.assertEqual(self.check(report, repeat=2), 1)
+        report["reproducibility"] = {"state_agreement": 1.0}
+        self.assertEqual(self.check(report, repeat=2), 0)
 
 
 class SpecTests(unittest.TestCase):
