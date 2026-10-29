@@ -2593,6 +2593,17 @@ def _write_offline_json(path: Path, data: dict[str, object], force: bool) -> Non
             handle.write(rendered)
 
 
+def cmd_evidence_dossier(args: argparse.Namespace) -> None:
+    from .reporting.capture_dossier import build_capture_dossier
+    from .core.private_files import atomic_private_write
+
+    dossier = build_capture_dossier(args.input, args.format)
+    if not args.dry_run:
+        atomic_private_write(args.output, (json.dumps(dossier, indent=2, sort_keys=True) + "\n").encode())
+    print(json.dumps(dossier["summary"], sort_keys=True))
+    print("[i] Intake dossier requires human review; no findings confirmed.")
+
+
 def cmd_evidence_import(args: argparse.Namespace) -> None:
     paths = ProgramPaths(RECORDS_ROOT, args.program)
     bundle = import_evidence(args.input, args.format, getattr(args, "har_mode", "compat"))
@@ -4281,6 +4292,12 @@ def build_parser() -> argparse.ArgumentParser:
         "evidence", help="Normalize and correlate local evidence from Burp and supported scanner formats"
     )
     evidence_sub = evidence_cli.add_subparsers(dest="evidence_command", required=True)
+    evidence_dossier = evidence_sub.add_parser("dossier", help="Build an offline capture intake dossier")
+    evidence_dossier.add_argument("--input", type=Path, nargs="+", required=True)
+    evidence_dossier.add_argument("--format", choices=("auto", "har", "burp-xml", "http"), default="auto")
+    evidence_dossier.add_argument("--output", type=Path, required=True)
+    evidence_dossier.add_argument("--dry-run", action="store_true")
+    evidence_dossier.set_defaults(func=cmd_evidence_dossier)
     evidence_import = evidence_sub.add_parser(
         "import", help="Build a redacted, provenance-preserving evidence bundle; never sends requests"
     )
