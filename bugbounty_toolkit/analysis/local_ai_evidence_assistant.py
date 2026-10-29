@@ -72,7 +72,7 @@ ASSISTANT_SCHEMA: dict[str, Any] = {
     "additionalProperties": False,
 }
 
-_REF_TOKEN = re.compile(r"\b(?:ev|obs|ref|e)-[A-Za-z0-9_-]{1,64}\b|\b[a-z]+_[a-z0-9_]{2,40}\b")
+_REF_TOKEN = re.compile(r"\bE[0-9]+\b|\b(?:ev|obs|ref|e)-[A-Za-z0-9_-]{1,64}\b|\b[a-z]+_[a-z0-9_]{2,40}\b")
 
 
 def _clip(value: object) -> str:
@@ -123,11 +123,16 @@ def _invented_refs(texts: list[str], allowed: set[str]) -> list[str]:
         for token in _REF_TOKEN.findall(text):
             if token not in allowed and token not in KNOWN_CONTROLS and token not in invented:
                 # Allow free-text control names; flag only evidence-like ids that are unknown.
-                if token.startswith(("ev-", "obs-", "ref-", "e-")) or token in {
-                    "private_evidence_observed",
-                    "controls_valid",
-                    "cross_read_observed",
-                }:
+                if (
+                    re.fullmatch(r"E[0-9]+", token)
+                    or token.startswith(("ev-", "obs-", "ref-", "e-"))
+                    or token
+                    in {
+                        "private_evidence_observed",
+                        "controls_valid",
+                        "cross_read_observed",
+                    }
+                ):
                     if token not in allowed:
                         invented.append(token)
     return invented
