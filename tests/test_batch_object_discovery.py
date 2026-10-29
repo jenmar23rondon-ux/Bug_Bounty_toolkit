@@ -69,6 +69,28 @@ class BatchObjectDiscoveryTests(unittest.TestCase):
         self.assertEqual(third["entries_reprocessing_avoided"], 0)
         self.assertEqual(third["entries_processed"], 65)
 
+    def test_cross_batch_endpoint_hints_preserve_partition_identity(self) -> None:
+        plan = self.prepare((2, 2), interrupt=True)
+        pending = self.discover(plan)
+        self.assertEqual(pending["cross_batch_endpoint_review"]["groups"], [])
+        run_campaign(plan, self.root / "state")
+        result = self.discover(plan)
+        review = result["cross_batch_endpoint_review"]
+        self.assertTrue(review["groups"])
+        self.assertFalse(review["graph_merge_performed"])
+        for group in review["groups"]:
+            self.assertEqual(len({row["batch_id"] for row in group["observations"]}), 2)
+            self.assertEqual(group["object_identity"], "not_established")
+            self.assertEqual(group["account_identity"], "not_established")
+            self.assertTrue(group["requires_human_review"])
+            for row in group["observations"]:
+                partition = next(p for p in result["partitions"] if p["binding"]["batch_id"] == row["batch_id"])
+                self.assertTrue(any(o["id"] == row["observation_ref"] for o in partition["graph"]["observations"]))
+        self.assertNotIn(CANARY, json.dumps(review))
+        resumed = self.discover(plan, previous=result)
+        self.assertEqual(resumed["cross_batch_endpoint_review"], review)
+        self.assertEqual(result["vulnerabilities_confirmed"], 0)
+
     def test_modified_bundle_and_source_refused(self) -> None:
         plan = self.prepare((33,))
         path = next((self.root / "state" / "batches").glob("*.json"))
@@ -78,6 +100,25 @@ class BatchObjectDiscoveryTests(unittest.TestCase):
         path.write_bytes(original)
         (self.root / "0.har").write_bytes(b"{}")
         self.assertFalse(self.discover(plan)["complete"])
+
+    def test_cross_batch_hints_do_not_join_other_origins_methods_or_paths(self) -> None:
+        for host, method, path in (
+            ("other.test", "GET", "/orders/42"),
+            ("api.example.test", "POST", "/orders/42"),
+            ("api.example.test", "GET", "/users/42"),
+        ):
+            with self.subTest(host=host, method=method, path=path):
+                shutil.rmtree(self.root / "state", ignore_errors=True)
+                (self.root / "0.har").write_bytes(har([entry("/orders/42", session="alice", n=42)]))
+                (self.root / "1.har").write_bytes(har([entry(path, session="bob", host=host, method=method, n=42)]))
+                plan = plan_campaign(
+                    self.root,
+                    ["0.har", "1.har"],
+                    program="lab",
+                    limits=CampaignLimits(1, 32 * 1024 * 1024, 1000, 200, 64 * 1024 * 1024, 1000),
+                )
+                run_campaign(plan, self.root / "state")
+                self.assertEqual(self.discover(plan)["cross_batch_endpoint_review"]["groups"], [])
 
     def test_global_and_graph_limits_are_explicit(self) -> None:
         plan = self.prepare((33, 32))

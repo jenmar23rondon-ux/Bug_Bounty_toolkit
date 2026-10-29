@@ -227,28 +227,28 @@
     "our_bytes": 6924,
     "overlap_free": true
   },
-  "implementation_sha256": "dd7179ffa2257feac9ace167e138586b9f8d22561bc53cf54715fa032b32962b",
+  "implementation_sha256": "d60bf36271d5e1145fbb57697e5036a7a8a2896cad32ad8b951f0a1d3dea3b5f",
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
-      "max": 114.37,
-      "median": 97.21
+      "max": 87.07,
+      "median": 61.21
     },
     "handoff_ms": {
-      "max": 27.59,
-      "median": 25.27
+      "max": 17.47,
+      "median": 16.61
     },
     "import_discovery_ms": {
-      "max": 10.37,
-      "median": 6.65
+      "max": 6.51,
+      "median": 4.76
     },
     "planner_ms": {
-      "max": 6.46,
-      "median": 6.04
+      "max": 10.52,
+      "median": 3.68
     },
     "ranking_ms": {
-      "max": 3.36,
-      "median": 2.81
+      "max": 2.17,
+      "median": 1.89
     }
   },
   "manifest_sha256": "5294f1efc5a7105fb7bd5d454e7f43db2b8b9ed0c6917294d48e8096aaf0c7d1",
@@ -308,7 +308,7 @@
     "technical_errors_predicted": 1,
     "wrong_object_top1": 0
   },
-  "peak_mem_kib_max": 32988.5,
+  "peak_mem_kib_max": 32993.5,
   "scenarios": [
     {
       "confirmed": 0,
@@ -346,7 +346,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32988.5,
+      "peak_mem_kib": 32993.5,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -373,11 +373,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 114.37,
-        "handoff_ms": 27.59,
-        "import_discovery_ms": 6.65,
-        "planner_ms": 6.04,
-        "ranking_ms": 2.81
+        "e2e_total_ms": 87.07,
+        "handoff_ms": 17.47,
+        "import_discovery_ms": 6.51,
+        "planner_ms": 10.52,
+        "ranking_ms": 2.14
       },
       "tag": "read-idor-basic"
     },
@@ -407,7 +407,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32802.3,
+      "peak_mem_kib": 32801.4,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -419,11 +419,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 27.67,
-        "handoff_ms": 3.16,
-        "import_discovery_ms": 5.62,
-        "planner_ms": 1.51,
-        "ranking_ms": 1.28
+        "e2e_total_ms": 19.73,
+        "handoff_ms": 2.39,
+        "import_discovery_ms": 3.91,
+        "planner_ms": 1.15,
+        "ranking_ms": 0.8
       },
       "tag": "public-same-url"
     },
@@ -453,7 +453,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32796.9,
+      "peak_mem_kib": 32797.4,
       "predicted_outcome": "technical_error",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -478,11 +478,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 26.49,
-        "handoff_ms": 2.82,
-        "import_discovery_ms": 5.08,
-        "planner_ms": 1.18,
-        "ranking_ms": 1.35
+        "e2e_total_ms": 17.5,
+        "handoff_ms": 1.75,
+        "import_discovery_ms": 2.83,
+        "planner_ms": 1.26,
+        "ranking_ms": 1.08
       },
       "tag": "missing-response"
     },
@@ -514,7 +514,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32853.6,
+      "peak_mem_kib": 32854.3,
       "predicted_outcome": "integrity_block",
       "predicted_reviewable": false,
       "proposal_types": [
@@ -541,11 +541,11 @@
         "valid": 3
       },
       "stage_ms": {
-        "e2e_total_ms": 94.81,
-        "handoff_ms": 27.17,
-        "import_discovery_ms": 5.98,
-        "planner_ms": 6.37,
-        "ranking_ms": 2.62
+        "e2e_total_ms": 60.96,
+        "handoff_ms": 17.13,
+        "import_discovery_ms": 4.17,
+        "planner_ms": 3.56,
+        "ranking_ms": 2.17
       },
       "tag": "tampered-evidence"
     },
@@ -585,7 +585,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32846.7,
+      "peak_mem_kib": 32845.3,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -612,11 +612,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 97.21,
-        "handoff_ms": 25.27,
-        "import_discovery_ms": 7.78,
-        "planner_ms": 6.46,
-        "ranking_ms": 3.36
+        "e2e_total_ms": 61.21,
+        "handoff_ms": 16.61,
+        "import_discovery_ms": 4.76,
+        "planner_ms": 3.68,
+        "ranking_ms": 1.89
       },
       "tag": "canary-header"
     },
@@ -656,7 +656,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32862.3,
+      "peak_mem_kib": 32861.7,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -683,11 +683,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 101.06,
-        "handoff_ms": 24.64,
-        "import_discovery_ms": 10.37,
-        "planner_ms": 3.83,
-        "ranking_ms": 3.35
+        "e2e_total_ms": 62.27,
+        "handoff_ms": 15.82,
+        "import_discovery_ms": 5.51,
+        "planner_ms": 3.81,
+        "ranking_ms": 1.88
       },
       "tag": "burp-xml-pair"
     }
