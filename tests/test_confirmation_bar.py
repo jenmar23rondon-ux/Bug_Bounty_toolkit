@@ -12,7 +12,7 @@ from bugbounty_toolkit.core.checks import candidates_per_confirmed
 from bugbounty_toolkit.core.http_client import ResponseRecord
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.open_redirect import OpenRedirectOptions, OpenRedirectTester, assess_open_redirect
-from bugbounty_toolkit.reporting.finding_report import build_confirmed_report
+from bugbounty_toolkit.reporting.finding_report import build_confirmed_report, render_confirmed_report_markdown
 from bugbounty_toolkit.ssrf_check import SsrfChecker, SsrfOptions, assess_ssrf_finding
 from bugbounty_toolkit.sqli.parameter_tester import SqliOptions, SqliParameterTester
 from bugbounty_toolkit.takeover_check import analyze_cnames
@@ -62,6 +62,46 @@ class ConfirmationBarTests(unittest.TestCase):
         self.assertFalse(evidence["confirmed"])
         with self.assertRaisesRegex(ValueError, "Confirmed report requires"):
             build_confirmed_report(evidence, program="lab")
+
+    def test_confirmed_lab_report_preserves_proof_and_redacts_secrets(self) -> None:
+        # Synthetic callback evidence tests reporting, not a live SSRF assertion.
+        verdict = assess_ssrf_finding(
+            payload="http://127.0.0.1:8080",
+            response_differs=True,
+            payload_reflected=False,
+            canary_received=True,
+        )
+        self.assertEqual(verdict["finding_state"], "confirmed")
+        evidence = {
+            **verdict,
+            "type": "ssrf",
+            "url": "http://127.0.0.1:8099/fetch?token=synthetic-private-value",
+            "impact": "The local server reached the controlled callback endpoint.",
+            "results": [
+                {"stage": "baseline", "finding_state": "not_observed", "status_code": 200},
+                {
+                    **verdict,
+                    "stage": "controlled_callback",
+                    "status_code": 200,
+                    "body_size": 8192,
+                    "body": "synthetic-response-body-not-for-reporting",
+                },
+            ],
+        }
+        report = build_confirmed_report(evidence, program="local-lab", title="Controlled callback in lab")
+        markdown = render_confirmed_report_markdown(report)
+
+        self.assertEqual(report["state"], "confirmed")
+        self.assertEqual(report["vulnerability_type"], "ssrf")
+        self.assertFalse(report["submitted"])
+        self.assertEqual(len(report["steps"]), 2)
+        self.assertEqual(report["impact"], evidence["impact"])
+        self.assertIn('"body_size": 8192', report["response_truncated"])
+        self.assertIn(r"controlled\_callback", markdown)
+        self.assertIn(r"No report was submitted to a platform\.", markdown)
+        self.assertNotIn("synthetic-private-value", json.dumps(report) + markdown)
+        self.assertNotIn("synthetic-response-body-not-for-reporting", json.dumps(report) + markdown)
+        self.assertIn("synthetic-private-value", evidence["url"])
 
     def test_ssrf_tp_canary_and_tn_url_only(self) -> None:
         tp = assess_ssrf_finding(
