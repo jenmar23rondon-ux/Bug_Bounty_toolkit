@@ -264,7 +264,7 @@ def _json_shows_access(root: Any) -> bool:
         return False
     if root.get("ok") is False or root.get("success") is False:
         # Still allow contradictory payloads that nest a resource next to ok:false —
-        # those are handled by the caller (access wins over denial for safety).
+        # those are handled by the caller as ambiguous, never as proven access.
         pass
     # Resource-shaped object with an id / marker / owner label.
     for key, value in root.items():
@@ -404,9 +404,9 @@ def _assess_response_core(
         reasons.append("contradictory_denial_status_with_resource_body")
         return ResponseAssessment(
             status_code=status_code,
-            response_class="successful_looking",
+            response_class="error_ambiguous",
             denial_demonstrated=False,
-            access_demonstrated=True,
+            access_demonstrated=False,
             content_denial=False,
             resource_visibility=visibility,
             redirect_location=location,
