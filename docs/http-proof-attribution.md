@@ -27,3 +27,16 @@ Regression fixtures use synthetic HTTP responses, including an analytics cookie
 on public content, request counters, a 2 ms timing change and a constant external
 redirect. These are targeted regressions, not real-world precision estimates.
 No frozen benchmark labels or real-model quality claims are changed.
+
+The existing information-disclosure v1/v2 and AI evidence-contract v2 components
+already distinguish own/public/cross-actor data, suppress examples and request
+echoes, minimize secrets, and reject invented model references or confirmations.
+They were reused without reconstruction: 49 tests covering these paths passed.
+This is mock/offline validation, not measurement of a real Ollama model.
+
+[Linux measurement run 41004039087](https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/actions/runs/41004039087)
+evaluated base `d7973ef` and proposed `5462a74`. Frozen IDOR pipeline outcome
+accuracy stayed 100% DEV (6), 84.44% FINAL (45), and 100% STRESS (6). These suites
+do not measure CORS/SQLi/redirect precision; their unchanged results show no
+observed IDOR regression. The targeted HTTP fixtures exercise those separate
+proof-attribution failures. Recorded source-bound snapshots come from that run.
