@@ -8,6 +8,7 @@ import hashlib
 import re
 from urllib.parse import parse_qsl, urlsplit
 
+from ..core.checks import aggregate_finding_state
 from ..core.http_client import HttpClient, RequestSpec, ResponseRecord
 from ..core.redaction import redact_url
 from ..core.scope_validator import ScopeValidator
@@ -254,11 +255,9 @@ class SqliParameterTester:
                 "requests_attempted": sent,
                 "stop_reason": stop_reason,
                 "results": results,
-                "classification": "confirmed"
-                if any_confirmed
-                else "candidate"
-                if any(row.get("finding_state") == "candidate" for row in results)
-                else "not_observed",
+                "classification": aggregate_finding_state(
+                    [str(row.get("finding_state") or "") for row in results], stop_reason=stop_reason
+                ),
                 "confirmed": any_confirmed,
                 "note": note,
             },
@@ -286,6 +285,7 @@ class SqliParameterTester:
                     "parameter": parameter,
                     "stage": stage,
                     "classification": "error",
+                    "finding_state": "inconclusive",
                     "confirmed": False,
                     "reason": "transport_error",
                 }
@@ -335,6 +335,7 @@ class SqliParameterTester:
                     "duration_ms": response.duration_ms,
                     "new_error_families": new_errors,
                     "classification": classification,
+                    "finding_state": "inconclusive" if stop_reason else "candidate" if invalid else "not_observed",
                     "confirmed": False,
                     "column_count_candidate": inferred_columns,
                     "body_size": response.body_size,

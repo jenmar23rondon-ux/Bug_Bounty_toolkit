@@ -67,6 +67,7 @@ class HttpProofAttributionTests(unittest.TestCase):
         self.assertEqual(client.send.call_count, 1)
         self.assertEqual(rows[0]["finding_state"], "inconclusive")
         self.assertEqual(evidence["stop_reason"], "invalid_baseline")
+        self.assertEqual(evidence["classification"], "inconclusive")
 
     def test_public_cors_body_and_analytics_cookie_are_not_private_access(self):
         for body in ('{"public":true}', "", "documentation sample"):
