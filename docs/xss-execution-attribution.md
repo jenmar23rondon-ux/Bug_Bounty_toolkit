@@ -17,3 +17,10 @@ Chromium and two disposable loopback servers. It covers an unrelated welcome
 alert with escaped reflection, an exact-marker alert, and an out-of-scope
 WebSocket in both modes. These tests supplement the frozen browser evaluator;
 they do not change its labels or substitute a separate detector.
+# Source-integrity compatibility
+
+The stored-lifecycle suite pins the production confirmation helper by SHA-256.
+That implementation pin is updated for this reviewed security change; frozen
+DEV/FINAL case bytes, expected labels, DOM hook sources and stored-write chain
+are unchanged. Real Chromium regressions cover the new alert and socket behavior.
+
