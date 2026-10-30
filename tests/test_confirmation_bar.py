@@ -12,7 +12,7 @@ from bugbounty_toolkit.core.checks import candidates_per_confirmed
 from bugbounty_toolkit.core.http_client import ResponseRecord
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.open_redirect import OpenRedirectOptions, OpenRedirectTester, assess_open_redirect
-from bugbounty_toolkit.reporting.finding_report import build_confirmed_report, render_confirmed_report_markdown
+from bugbounty_toolkit.reporting.finding_report import build_confirmed_report
 from bugbounty_toolkit.ssrf_check import SsrfChecker, SsrfOptions, assess_ssrf_finding
 from bugbounty_toolkit.sqli.parameter_tester import SqliOptions, SqliParameterTester
 from bugbounty_toolkit.takeover_check import analyze_cnames
@@ -37,8 +37,8 @@ class ConfirmationBarTests(unittest.TestCase):
             location="https://evil.com/",
             status_code=302,
         )
-        self.assertTrue(tp["confirmed"])
-        self.assertEqual(tp["finding_state"], "confirmed")
+        self.assertFalse(tp["confirmed"])
+        self.assertEqual(tp["finding_state"], "candidate")
 
         tn = assess_open_redirect(
             base_url="https://example.com/login?next=%2F",
@@ -57,13 +57,11 @@ class ConfirmationBarTests(unittest.TestCase):
             OpenRedirectOptions("https://example.com/login?next=%2F", "next"),
             self.root / "redir",
         )
-        self.assertTrue(results[0]["confirmed"])
+        self.assertFalse(results[0]["confirmed"])
         evidence = json.loads(path.read_text(encoding="utf-8"))
-        self.assertTrue(evidence["confirmed"])
-        report = build_confirmed_report(evidence, program="lab")
-        md = render_confirmed_report_markdown(report)
-        self.assertIn("State", md)
-        self.assertIn("confirmed", md.lower())
+        self.assertFalse(evidence["confirmed"])
+        with self.assertRaisesRegex(ValueError, "Confirmed report requires"):
+            build_confirmed_report(evidence, program="lab")
 
     def test_ssrf_tp_canary_and_tn_url_only(self) -> None:
         tp = assess_ssrf_finding(
@@ -152,7 +150,7 @@ class ConfirmationBarTests(unittest.TestCase):
         )
         self.assertEqual(missing["finding_state"], "not_observed")
 
-    def test_sqli_syntax_candidate_boolean_confirmed(self) -> None:
+    def test_sqli_syntax_and_single_boolean_pair_remain_candidates(self) -> None:
         routes = self.root / "routes.txt"
         params = self.root / "params.txt"
         routes.write_text("https://example.com/search?q=original\n", encoding="utf-8")
@@ -203,7 +201,8 @@ class ConfirmationBarTests(unittest.TestCase):
         )
         bool_rows = [row for row in deep if row.get("stage", "").startswith("boolean_")]
         self.assertTrue(bool_rows)
-        self.assertTrue(any(row.get("confirmed") for row in bool_rows))
+        self.assertFalse(any(row.get("confirmed") for row in bool_rows))
+        self.assertTrue(all(row["finding_state"] == "candidate" for row in bool_rows))
 
     def test_idor_confirmed_requires_controls_and_cross(self) -> None:
         # TN: classification candidate without elevating when controls_valid is False
