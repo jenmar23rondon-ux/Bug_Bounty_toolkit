@@ -34,8 +34,8 @@ echoes, minimize secrets, and reject invented model references or confirmations.
 They were reused without reconstruction: 49 tests covering these paths passed.
 This is mock/offline validation, not measurement of a real Ollama model.
 
-[Linux measurement run 41004039087](https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/actions/runs/41004039087)
-evaluated base `d7973ef` and proposed `5462a74`. Frozen IDOR pipeline outcome
+[Linux measurement run 41118537804](https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/actions/runs/41118537804)
+evaluated base `d7973ef` and proposed `9441722`, including the aggregate-state fix. Frozen IDOR pipeline outcome
 accuracy stayed 100% DEV (6), 84.44% FINAL (45), and 100% STRESS (6). These suites
 do not measure CORS/SQLi/redirect precision; their unchanged results show no
 observed IDOR regression. The targeted HTTP fixtures exercise those separate
