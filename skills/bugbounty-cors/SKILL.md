@@ -14,3 +14,12 @@ Exact Origin reflection plus case-sensitive `ACAC: true` is a candidate policy s
 Use `finding_state`, `confirmed` and `confirmation_gap` as the evidence verdict; legacy `classification: VULNERABLE` describes only the headers. Rejected checks record a reason (`false_positive`, `out_of_scope`, `no_second_proof`). Truncation/server failures are inconclusive. Evidence omits cookies, tokens and bodies. Stop on 401/403/429, transport errors or program restrictions; do not bypass a stop with different origins or paths.
 
 Report the four sent Origins, returned ACAO/ACAC, statuses, verdict counts and local evidence path. Do not reproduce cookies, tokens, response bodies or private data in the summary.
+
+## Impact (offline HAR)
+
+After a candidate CORS signal, use `bbtk analyze cors-redirect-impact --input <capture.har>`
+to classify impact: `exploitable-credentialed-read` (reflected/null origin + ACAC true),
+`info-only` (reflection without ACAC, or `*` with sensitive-looking body), or
+`not-exploitable`. Body sensitivity reuses disclosure classifiers. Results remain
+candidates; `finding_confirmed` stays false. See `docs/cors-redirect-impact.md`.
+

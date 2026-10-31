@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### CORS / open-redirect impact
+
+- New offline `analysis/cors_redirect_impact.py` and `bbtk analyze cors-redirect-impact`.
+  From a local HAR/capture, classifies CORS impact
+  (`exploitable-credentialed-read` / `info-only` / `not-exploitable`) using ACAO+ACAC
+  browser rules and disclosure body sensitivity, and flags open-redirect parameters
+  that can chain into OAuth/SSO token/code theft. All candidates;
+  `finding_confirmed` stays false. Version stays 0.2.2.
+
 ### Business-logic test planner
 
 - New offline `analysis/business_logic_planner.py` and `bbtk analyze business-logic`.

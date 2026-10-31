@@ -211,6 +211,8 @@ files = [
     "bugbounty_toolkit/analysis/disclosure_context.py",
     "bugbounty_toolkit/analysis/business_logic_planner.py",
     "tests/test_business_logic_planner.py",
+    "bugbounty_toolkit/analysis/cors_redirect_impact.py",
+    "tests/test_cors_redirect_impact.py",
     "labs/disclosure_context_v2_eval/corpus.py",
     "labs/disclosure_context_v2_eval/evaluate.py",
     "tests/test_disclosure_context_v2.py",
