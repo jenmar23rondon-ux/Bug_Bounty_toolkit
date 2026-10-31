@@ -12,3 +12,11 @@ Use `bbtk open-redirect <program> --url <supplied-url> --param <name> --dry-run`
 An absolute or protocol-relative Location resolving to `evil.com` or its subdomains is a candidate vulnerable redirect; a relative internal path or missing Location is not vulnerable in this test. A matching Location alone does not prove parameter causality: a fixed redirect can ignore the parameter entirely. Native results remain candidates with missing baseline and independent destination controls. The toolkit does not visit the destination. An absent finding is not proof that other parameters or browser-specific parsing are safe. Do not add paths, parameters or payloads beyond the supplied case without a separately reviewed scope and budget.
 
 Report each test value, status, redacted Location and verdict, then the local evidence path. Never open the external Location, expose credentials, or copy private tokens from a redirect URL into a shared report.
+
+## Chainability (offline HAR)
+
+After a candidate open-redirect signal, use `bbtk analyze cors-redirect-impact --input <capture.har>`
+to detect OAuth/SSO chainability (`redirect_uri` / `return_to` / `next` / `callback` near
+oauth/authorize/login). Emits a candidate chain description toward code/token theft.
+Confirmation requires manual in-scope OAuth testing. See `docs/cors-redirect-impact.md`.
+

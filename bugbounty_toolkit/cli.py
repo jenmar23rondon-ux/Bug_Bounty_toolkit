@@ -69,6 +69,7 @@ from .analysis.disclosure_access_correlation import (
 )
 from .analysis.disclosure_context import assess_context_batch
 from .analysis.business_logic_planner import analyze_business_logic
+from .analysis.cors_redirect_impact import analyze_cors_redirect_impact
 from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
@@ -2355,6 +2356,13 @@ def cmd_analyze(args: argparse.Namespace) -> None:
             args.markdown.parent.mkdir(parents=True, exist_ok=True)
             args.markdown.write_text(str(data.get("markdown", "")), encoding="utf-8")
             print(f"[+] Markdown plan saved: {args.markdown}")
+    elif args.analysis == "cors-redirect-impact":
+        # Offline CORS/open-redirect impact from HAR; candidates only; never confirms.
+        data = analyze_cors_redirect_impact(text, source_label=str(args.input))
+        if getattr(args, "markdown", None):
+            args.markdown.parent.mkdir(parents=True, exist_ok=True)
+            args.markdown.write_text(str(data.get("markdown", "")), encoding="utf-8")
+            print(f"[+] Markdown impact summary saved: {args.markdown}")
     elif args.analysis == "evidence":
         data = review_evidence(json.loads(text))
         if args.ai == "ollama":
@@ -4152,6 +4160,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Also write a Markdown summary of candidate tests to a local file",
     )
     business_logic.set_defaults(func=cmd_analyze)
+    cors_impact = analyze_sub.add_parser(
+        "cors-redirect-impact",
+        help="Offline CORS credentialed-read impact and open-redirect OAuth chainability from HAR; never confirms",
+    )
+    cors_impact.add_argument(
+        "--input",
+        required=True,
+        type=Path,
+        help="Local HAR or JSON capture records (see docs/cors-redirect-impact.md)",
+    )
+    cors_impact.add_argument(
+        "--output", type=Path, help="Write the minimized JSON impact report (no secrets) to a local file"
+    )
+    cors_impact.add_argument(
+        "--markdown",
+        type=Path,
+        help="Also write a Markdown impact summary to a local file",
+    )
+    cors_impact.set_defaults(func=cmd_analyze)
     evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations with optional local Ollama review")
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)
