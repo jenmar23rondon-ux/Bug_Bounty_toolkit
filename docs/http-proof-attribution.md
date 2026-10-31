@@ -39,4 +39,5 @@ evaluated base `d7973ef` and proposed `9441722`, including the aggregate-state f
 accuracy stayed 100% DEV (6), 84.44% FINAL (45), and 100% STRESS (6). These suites
 do not measure CORS/SQLi/redirect precision; their unchanged results show no
 observed IDOR regression. The targeted HTTP fixtures exercise those separate
-proof-attribution failures. Recorded source-bound snapshots come from that run.
+proof-attribution failures. Snapshots for that revision came from that run; later
+integration recalculates the shared results directory against the combined code.

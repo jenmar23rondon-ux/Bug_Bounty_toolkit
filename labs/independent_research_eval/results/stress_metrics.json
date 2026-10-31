@@ -117,28 +117,28 @@
     "our_bytes": 309172,
     "overlap_free": true
   },
-  "implementation_sha256": "92cf404ff902ae560d811061b6a0236b20eded111dae738e1537bcfbff15f2da",
+  "implementation_sha256": "86b7be1cfa9072823f8035150c7b1415b2dbec2e628c1e716fe521381a004eab",
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
-      "max": 2484.2,
-      "median": 133.69
+      "max": 1870.06,
+      "median": 94.4
     },
     "handoff_ms": {
-      "max": 436.74,
-      "median": 35.09
+      "max": 321.74,
+      "median": 25.38
     },
     "import_discovery_ms": {
-      "max": 1780.89,
-      "median": 33.68
+      "max": 1343.05,
+      "median": 24.25
     },
     "planner_ms": {
-      "max": 121.45,
-      "median": 5.87
+      "max": 87.93,
+      "median": 4.35
     },
     "ranking_ms": {
-      "max": 125.62,
-      "median": 2.94
+      "max": 88.2,
+      "median": 2.4
     }
   },
   "manifest_sha256": "4dd82cac98084f0a73f7b67d23e8090fee8a48b2497b55bbdb6e25d18dfe1c72",
@@ -198,7 +198,7 @@
     "technical_errors_predicted": 1,
     "wrong_object_top1": 1
   },
-  "peak_mem_kib_max": 33889.7,
+  "peak_mem_kib_max": 33891.5,
   "scenarios": [
     {
       "confirmed": 0,
@@ -237,7 +237,7 @@
         "fp": 1,
         "tp": 1
       },
-      "peak_mem_kib": 33554.2,
+      "peak_mem_kib": 33553.0,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -265,11 +265,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 2484.2,
-        "handoff_ms": 436.74,
-        "import_discovery_ms": 1780.89,
-        "planner_ms": 27.17,
-        "ranking_ms": 18.68
+        "e2e_total_ms": 1870.06,
+        "handoff_ms": 321.74,
+        "import_discovery_ms": 1343.05,
+        "planner_ms": 19.22,
+        "ranking_ms": 14.57
       },
       "tag": "noise-300"
     },
@@ -309,7 +309,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33889.7,
+      "peak_mem_kib": 33891.5,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -336,11 +336,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 1639.9,
-        "handoff_ms": 355.54,
-        "import_discovery_ms": 229.03,
-        "planner_ms": 121.45,
-        "ranking_ms": 125.62
+        "e2e_total_ms": 1356.63,
+        "handoff_ms": 315.05,
+        "import_discovery_ms": 174.23,
+        "planner_ms": 87.93,
+        "ranking_ms": 88.2
       },
       "tag": "many-objects"
     },
@@ -380,7 +380,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32891.3,
+      "peak_mem_kib": 32890.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -407,11 +407,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 84.17,
-        "handoff_ms": 15.12,
-        "import_discovery_ms": 10.8,
-        "planner_ms": 5.87,
-        "ranking_ms": 2.94
+        "e2e_total_ms": 63.04,
+        "handoff_ms": 11.35,
+        "import_discovery_ms": 7.94,
+        "planner_ms": 4.35,
+        "ranking_ms": 2.4
       },
       "tag": "deep-nesting-60"
     },
@@ -451,7 +451,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32835.8,
+      "peak_mem_kib": 32834.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -478,11 +478,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 48.39,
-        "handoff_ms": 9.23,
-        "import_discovery_ms": 11.11,
-        "planner_ms": 3.22,
-        "ranking_ms": 2.87
+        "e2e_total_ms": 41.9,
+        "handoff_ms": 6.94,
+        "import_discovery_ms": 8.25,
+        "planner_ms": 2.38,
+        "ranking_ms": 2.15
       },
       "tag": "mostly-damaged"
     },
@@ -591,11 +591,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 133.69,
-        "handoff_ms": 35.09,
-        "import_discovery_ms": 33.68,
-        "planner_ms": 5.75,
-        "ranking_ms": 2.79
+        "e2e_total_ms": 94.4,
+        "handoff_ms": 25.38,
+        "import_discovery_ms": 24.25,
+        "planner_ms": 4.28,
+        "ranking_ms": 2.17
       },
       "tag": "large-body"
     }

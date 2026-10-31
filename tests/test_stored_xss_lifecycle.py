@@ -29,7 +29,9 @@ from labs.stored_xss_lifecycle_eval.server import base_url, configure, fetch_sta
 ROOT = Path(__file__).resolve().parents[1]
 DOM_HOOKS = {
     "bugbounty_toolkit/xss/dom_local.py": "fe7f35df1752cd443f0964bbdfbb4bdb0f71dbacda3dd1d6e22eeda942f7c660",
-    "bugbounty_toolkit/xss/playwright_confirm.py": "09114d13bfe375f6f10ce31fd7ade78525f66e2144a01885cec31a6c9b2dddeb",
+    # Reviewed security update: nonce-bound alerts and WebSocket isolation.
+    # Frozen corpus inputs/labels and the stored-write chain remain unchanged.
+    "bugbounty_toolkit/xss/playwright_confirm.py": "4eeeddd6ef5f454874fcb467464a593ac01b31887288eb52b64f987d3c9b730f",
 }
 CHAIN = {
     "bugbounty_toolkit/xss/stored_local.py": "3bade658e43a65ba072167cf7bc71ea1527d1f7255b74618067284c89069d053",
@@ -105,7 +107,7 @@ class CorpusTests(unittest.TestCase):
         )
         self.assertEqual(dev["browser_timeout"]["expected"], final["browser_timeout"]["expected"])
 
-    def test_p05_dom_hooks_and_stored_chain_are_untouched(self) -> None:
+    def test_reviewed_dom_hooks_and_stored_chain_match_pinned_sources(self) -> None:
         for relative, digest in {**DOM_HOOKS, **CHAIN}.items():
             self.assertEqual(_sha256(ROOT / relative), digest, relative)
 

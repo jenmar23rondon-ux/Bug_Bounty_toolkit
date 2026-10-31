@@ -192,7 +192,7 @@ class PlaywrightExecutionChecker:
         }
         context = self._browser.new_context(
             extra_http_headers=browser_headers,
-            service_workers="block" if local_only else "allow",
+            service_workers="block",
         )
         expected_origin = _origin(url)
         observed_sinks: set[str] = set()
@@ -250,17 +250,26 @@ class PlaywrightExecutionChecker:
             })();""".replace("__BBTK_MARKER__", json.dumps(marker))
         context.add_init_script(init_script)
         context.route("**/*", request_budget.handle)
-        if local_only:
-            # Prevent websocket traffic from bypassing HTTP routing.
-            context.route_web_socket("**/*", lambda websocket: websocket.close())
+        blocked_websockets = 0
+
+        def block_websocket(_websocket: Any) -> None:
+            nonlocal blocked_websockets
+            blocked_websockets += 1
+            # An intercepted socket never connects unless connect_to_server() is called.
+            # Calling close() inside the synchronous callback can deadlock Playwright.
+
+        context.route_web_socket("**/*", block_websocket)
         page = context.new_page()
         page.on("requestfinished", lambda request: request_budget.finish(request, True))
         page.on("requestfailed", lambda request: request_budget.finish(request, False))
         dialogs: list[dict[str, str]] = []
         console_errors: list[str] = []
         page_errors: list[str] = []
+        matching_alert_observed = False
 
         def on_dialog(dialog) -> None:
+            nonlocal matching_alert_observed
+            matching_alert_observed |= dialog.type == "alert" and dialog.message == marker
             dialogs.append({"type": dialog.type, "text": redact_text(dialog.message)[:300]})
             dialog.accept()
 
@@ -320,12 +329,13 @@ class PlaywrightExecutionChecker:
                 raise request_budget.error
             if self.execution_budget is not None:
                 self.execution_budget.remaining_seconds()
-            alert_observed = any(item["type"] == "alert" for item in dialogs)
+            alert_observed = matching_alert_observed
             return {
                 "classification": classify_execution(True, bool(marker_observed), alert_observed),
                 "marker_observed": bool(marker_observed),
                 "source_marker_present": source_marker_present,
                 "alert_observed": alert_observed,
+                "blocked_websockets": blocked_websockets,
                 "dom_sinks": sorted(observed_sinks),
                 "dialogs": dialogs,
                 "console_errors": console_errors,
