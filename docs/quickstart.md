@@ -26,6 +26,13 @@ Open `http://127.0.0.1:8765/`. Stop it with Ctrl+C. The dashboard is bound to lo
 
 ## Windows PowerShell
 
+Native Windows support is partial. Commands that use `core/private_files.py`
+require POSIX no-follow directory descriptors and fail closed on Windows;
+this includes private artifact/discovery workflows. Use Linux or WSL with a
+Linux filesystem for those paths. Passing `doctor` is not proof of full Windows
+compatibility. Do not remove these filesystem protections to work around an
+unsupported platform.
+
 ```powershell
 py -3 -m venv .venv
 .\.venv\Scripts\Activate.ps1

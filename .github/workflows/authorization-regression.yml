@@ -1,0 +1,43 @@
+name: Authorization regression measurements
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "bugbounty_toolkit/**"
+      - "labs/independent_research_eval/**"
+      - ".github/workflows/authorization-regression.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        revision: [base, proposed]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.revision == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e .
+      - name: Measure frozen DEV, FINAL and STRESS without external requests
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/authorization-metrics"
+          git rev-parse HEAD > "$RUNNER_TEMP/authorization-metrics/commit.txt"
+          for split in dev final stress; do
+            python labs/independent_research_eval/evaluate.py --split "$split" --json "$RUNNER_TEMP/authorization-metrics/${split}_metrics.json"
+          done
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authorization-${{ matrix.revision }}
+          path: ${{ runner.temp }}/authorization-metrics/
+          if-no-files-found: error

@@ -1,8 +1,8 @@
 """Open-redirect checks with confirmation bar.
 
-confirmed only if the supplied parameter controls Location AND the destination
-leaves the request host. Redirects are never followed. Without a controlled
-external Location the result stays candidate.
+A matching external Location is a candidate, not proof that the parameter
+caused it. Redirects are never followed. Baseline and independent destination
+controls are needed before a researcher can confirm parameter influence.
 """
 
 from __future__ import annotations
@@ -126,24 +126,15 @@ def assess_open_redirect(
             "confirmation_gap": None,
             "rejection_reason": None,
         }
-    controlled = payload_controls_location(payload, location, base_url)
+    matched = payload_controls_location(payload, location, base_url)
     leaves = location_leaves_host(base_url, location)
-    if controlled and leaves:
-        return {
-            "classification": classification,
-            "finding_state": "confirmed",
-            "confirmed": True,
-            "param_controls_location": True,
-            "destination_leaves_host": True,
-            "confirmation_gap": None,
-            "rejection_reason": None,
-        }
-    if leaves or controlled or classification == "VULNERABLE":
+    if leaves or matched or classification == "VULNERABLE":
         return {
             "classification": classification,
             "finding_state": "candidate",
             "confirmed": False,
-            "param_controls_location": controlled,
+            "param_controls_location": False,
+            "payload_host_matches_location": matched,
             "destination_leaves_host": leaves,
             "confirmation_gap": "no_second_proof",
             "rejection_reason": None,
@@ -226,6 +217,7 @@ class OpenRedirectTester:
                     "finding_state": assessment["finding_state"],
                     "confirmed": assessment["confirmed"],
                     "param_controls_location": assessment["param_controls_location"],
+                    "payload_host_matches_location": assessment.get("payload_host_matches_location", False),
                     "destination_leaves_host": assessment["destination_leaves_host"],
                     "confirmation_gap": assessment["confirmation_gap"],
                     "rejection_reason": assessment["rejection_reason"],
@@ -251,8 +243,8 @@ class OpenRedirectTester:
                 "finding_state": overall,
                 "confirmed": overall == "confirmed",
                 "note": (
-                    "Redirects are not followed. confirmed requires parameter-controlled Location "
-                    "leaving the host; otherwise candidate. Evidence omits credentials and bodies."
+                    "Redirects are not followed. A matching external Location is only a candidate; "
+                    "baseline and independent destination controls are missing. Evidence omits credentials and bodies."
                 ),
             },
             prefix="open-redirect",
