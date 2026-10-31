@@ -32,14 +32,20 @@ those results must be reviewed alongside the unit tests before merging.
 
 [Linux run 41003178546](https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/actions/runs/41003178546)
 evaluated base `d7973ef` and proposed `1d18351` with the unchanged frozen labels.
-The checked-in snapshots were copied from its proposed artifact, not edited to
-fit expectations. Metrics below are identical before and after this guard:
+Metrics below were identical before and after this guard:
 
 | Split | Cases | Outcome accuracy | Pair TP / FP / FN | Pair precision / recall |
 | --- | ---: | ---: | --- | --- |
 | DEV | 6 | 100% | 4 / 0 / 0 | 100% / 100% |
 | FINAL | 45 | 84.44% | 27 / 14 / 0 | 65.85% / 100% |
 | STRESS | 6 | 100% | 5 / 1 / 0 | 83.33% / 100% |
+
+[Integration run 41157699692](https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/actions/runs/41157699692)
+remeasured `main` at `93aef03` and the combined implementation at `8cde42d`,
+including the unknown-resource contradiction guard. The outcome scores above
+remain unchanged. Current snapshots are copied from that proposed artifact with
+their source digest verified, rather than resolving the metrics conflict by
+selecting either branch's previous measurements.
 
 Both runs have zero false-reviewable cases after planning, missed eligible cases,
 automatic confirmations and secret leaks. These are synthetic pipeline metrics,
