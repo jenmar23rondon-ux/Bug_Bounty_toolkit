@@ -117,28 +117,28 @@
     "our_bytes": 309172,
     "overlap_free": true
   },
-  "implementation_sha256": "3152fa9f893e7f41c83c394119403dcd34c3c3e76de5bf818dd1d7f29b9bd018",
+  "implementation_sha256": "86b7be1cfa9072823f8035150c7b1415b2dbec2e628c1e716fe521381a004eab",
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
-      "max": 1847.48,
-      "median": 96.35
+      "max": 1870.06,
+      "median": 94.4
     },
     "handoff_ms": {
-      "max": 319.05,
-      "median": 25.75
+      "max": 321.74,
+      "median": 25.38
     },
     "import_discovery_ms": {
-      "max": 1341.73,
-      "median": 23.83
+      "max": 1343.05,
+      "median": 24.25
     },
     "planner_ms": {
-      "max": 88.17,
-      "median": 4.43
+      "max": 87.93,
+      "median": 4.35
     },
     "ranking_ms": {
-      "max": 92.34,
-      "median": 2.29
+      "max": 88.2,
+      "median": 2.4
     }
   },
   "manifest_sha256": "4dd82cac98084f0a73f7b67d23e8090fee8a48b2497b55bbdb6e25d18dfe1c72",
@@ -198,7 +198,7 @@
     "technical_errors_predicted": 1,
     "wrong_object_top1": 1
   },
-  "peak_mem_kib_max": 33892.4,
+  "peak_mem_kib_max": 33891.5,
   "scenarios": [
     {
       "confirmed": 0,
@@ -237,7 +237,7 @@
         "fp": 1,
         "tp": 1
       },
-      "peak_mem_kib": 33553.5,
+      "peak_mem_kib": 33553.0,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -265,11 +265,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 1847.48,
-        "handoff_ms": 319.05,
-        "import_discovery_ms": 1341.73,
-        "planner_ms": 19.01,
-        "ranking_ms": 14.48
+        "e2e_total_ms": 1870.06,
+        "handoff_ms": 321.74,
+        "import_discovery_ms": 1343.05,
+        "planner_ms": 19.22,
+        "ranking_ms": 14.57
       },
       "tag": "noise-300"
     },
@@ -309,7 +309,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33892.4,
+      "peak_mem_kib": 33891.5,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -336,11 +336,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 1233.9,
-        "handoff_ms": 269.6,
-        "import_discovery_ms": 169.12,
-        "planner_ms": 88.17,
-        "ranking_ms": 92.34
+        "e2e_total_ms": 1356.63,
+        "handoff_ms": 315.05,
+        "import_discovery_ms": 174.23,
+        "planner_ms": 87.93,
+        "ranking_ms": 88.2
       },
       "tag": "many-objects"
     },
@@ -380,7 +380,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32890.8,
+      "peak_mem_kib": 32890.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -407,11 +407,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 63.34,
-        "handoff_ms": 11.82,
-        "import_discovery_ms": 7.99,
-        "planner_ms": 4.43,
-        "ranking_ms": 2.29
+        "e2e_total_ms": 63.04,
+        "handoff_ms": 11.35,
+        "import_discovery_ms": 7.94,
+        "planner_ms": 4.35,
+        "ranking_ms": 2.4
       },
       "tag": "deep-nesting-60"
     },
@@ -451,7 +451,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32834.9,
+      "peak_mem_kib": 32834.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -478,11 +478,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 36.41,
-        "handoff_ms": 25.75,
-        "import_discovery_ms": 8.48,
+        "e2e_total_ms": 41.9,
+        "handoff_ms": 6.94,
+        "import_discovery_ms": 8.25,
         "planner_ms": 2.38,
-        "ranking_ms": 2.24
+        "ranking_ms": 2.15
       },
       "tag": "mostly-damaged"
     },
@@ -512,7 +512,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32778.4,
+      "peak_mem_kib": 32778.5,
       "predicted_outcome": "technical_error",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -591,11 +591,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 96.35,
-        "handoff_ms": 25.3,
-        "import_discovery_ms": 23.83,
-        "planner_ms": 4.25,
-        "ranking_ms": 2.14
+        "e2e_total_ms": 94.4,
+        "handoff_ms": 25.38,
+        "import_discovery_ms": 24.25,
+        "planner_ms": 4.28,
+        "ranking_ms": 2.17
       },
       "tag": "large-body"
     }

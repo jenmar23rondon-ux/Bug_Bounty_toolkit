@@ -43,7 +43,7 @@ Metrics below were identical before and after this guard:
 [Integration run 41157699692](https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/actions/runs/41157699692)
 remeasured `main` at `93aef03` and the combined implementation at `8cde42d`,
 including the unknown-resource contradiction guard. The outcome scores above
-remain unchanged. Current snapshots are copied from that proposed artifact with
+remain unchanged. Snapshots for that integration were copied from its proposed artifact with
 their source digest verified, rather than resolving the metrics conflict by
 selecting either branch's previous measurements.
 
