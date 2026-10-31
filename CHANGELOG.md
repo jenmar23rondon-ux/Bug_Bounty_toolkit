@@ -1,5 +1,16 @@
 ## [Unreleased]
 
+### Business-logic test planner
+
+- New offline `analysis/business_logic_planner.py` and `bbtk analyze business-logic`.
+  Reads a local HAR or capture JSON and emits a candidate-only manipulation test
+  plan (JSON + optional Markdown). Detects price/quantity/coupon/currency/
+  shipping/tax/cart-order/plan parameters, proposes tamper ideas (never executed),
+  flags race and cross-account steps as manual-only, and detects cart→checkout→pay
+  step-skip candidates from HAR order. `finding_confirmed` stays false; secrets
+  are redacted. Version stays 0.2.2.
+
+
 ### AI evidence contract v2
 
 - New `analysis/ai_evidence_contract_v2.py`: schema v2 packets (booleans, enums,

@@ -65,3 +65,8 @@ Confirmed lab evidence → HackerOne-shaped Markdown via the reporting helpers (
 6. Impact is one factual sentence; no adjectives.
 7. “What was not done” lists limits (no redirect follow, no out-of-scope hosts).
 8. You will submit manually; nothing was auto-sent.
+
+
+## Business-logic planner
+
+`bbtk analyze business-logic` builds an offline candidate test plan from HAR/captures. See docs/business-logic-planner.md.
