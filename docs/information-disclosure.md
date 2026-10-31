@@ -67,3 +67,39 @@ Lab: `labs/information_disclosure_eval/` (DEV + frozen FINAL, see its README).
 Context quality v2 (`analysis/disclosure_context.py`) adds audience, provenance and
 intended-visibility dimensions on top of these indicators. It does not change v1
 states or the frozen FINAL labels. See `docs/disclosure-context-quality-v2.md`.
+
+## Severity tiers and confidence (additive)
+
+Each unsuppressed indicator carries:
+
+| Field | Values |
+| --- | --- |
+| `severity` | `secret` (credentials/token/private_key/env_vars) > `pii` > `internal` (paths/stack/debug) > `low_signal` |
+| `confidence` | Heuristic float in `[0.05, 0.95]` — **not** confirmation |
+
+The assessment summary adds `severity_summary`, top-level `confidence`, and
+`dimensions.highest_severity`. Batch output adds `severity_totals`,
+`suppressed_indicator_count`, and `mean_confidence`.
+
+### FP reductions (context checks)
+
+Additional suppressions (still minimized; never emit values):
+
+- Example / placeholder PII (`000-00-0000`, `John Doe`, `1970-01-01`, …)
+- Documented public values (`example.com`, `user@example.com`, …)
+- Public static asset paths (`.js`/`.css`/`.png`, `/static/`, `/assets/`, …)
+- Version-only JSON keys (`version`, `app_version`, …)
+
+### Before / after FP on lab fixtures
+
+On the existing synthetic corpora (`labs/information_disclosure_eval`):
+
+| Split | FP before | FP after |
+| --- | --- | --- |
+| DEV (12) | 0 | 0 |
+| FINAL (18) | 0 | 0 |
+
+Lab fixtures were already FP-clean; the new suppressions are covered by unit
+probe cases in `tests/test_information_disclosure.py`. States and
+`finding_confirmed: false` are unchanged. Frozen FINAL labels are not edited.
+
