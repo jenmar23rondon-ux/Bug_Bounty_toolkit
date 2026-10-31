@@ -95,10 +95,12 @@ class ProductionIsolationTests(unittest.TestCase):
                 self.assertEqual(result["dialogs"], [{"type": "alert", "text": "Welcome"}])
 
     def test_matching_alert_is_execution_evidence(self):
-        result = self.checker.confirm(self.origin + "/execute?q=audit-marker", "audit-marker", local_only=True)
-        self.assertEqual(result["classification"], "confirmed")
-        self.assertTrue(result["alert_observed"])
-        self.assertFalse(result["marker_observed"])
+        for local in (False, True):
+            with self.subTest(local_only=local):
+                result = self.checker.confirm(self.origin + "/execute?q=audit-marker", "audit-marker", local_only=local)
+                self.assertEqual(result["classification"], "confirmed")
+                self.assertTrue(result["alert_observed"])
+                self.assertFalse(result["marker_observed"])
 
     def test_websockets_cannot_bypass_scope_in_either_mode(self):
         with self.assertRaises(ValueError):

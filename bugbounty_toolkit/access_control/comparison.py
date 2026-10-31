@@ -8,6 +8,7 @@ import re
 from typing import Any
 from urllib.parse import SplitResult, parse_qsl, unquote, urlsplit
 
+from ..analysis.authorization_denial import assess_response
 from ..core.http_client import HttpClient, RequestSpec, ResponseRecord
 from ..core.request_builder import parse_raw_http_request
 from ..core.scope_validator import ScopeValidator
@@ -648,6 +649,20 @@ def load_case(
     )
 
 
+def _authorization_facts(response: ResponseRecord) -> dict[str, bool]:
+    assessment = assess_response(response.status_code, response.body_text, response.headers)
+    contradictory = "contradictory_denial_status_with_resource_body" in assessment.reasons
+    return {
+        "authorization_denial_observed": assessment.denial_demonstrated or contradictory,
+        "contradictory_authorization_evidence": contradictory,
+    }
+
+
+def authorization_denial_observed(response: ResponseRecord) -> bool:
+    """Preserve a denial signal even when its envelope also contains resource data."""
+    return _authorization_facts(response)["authorization_denial_observed"]
+
+
 def observations(response: ResponseRecord, checks: dict[str, Any]) -> dict[str, Any]:
     try:
         body = parse_json(response.body_text)
@@ -665,6 +680,7 @@ def observations(response: ResponseRecord, checks: dict[str, Any]) -> dict[str, 
         "body_size": response.body_size,
         "body_truncated": response.body_truncated,
         "application_success": application_success,
+        **_authorization_facts(response),
         **{
             f"{account}_resource_match": exact(resource, checks[f"{account}_resource"])
             for account in ("owner", "actor")
@@ -694,6 +710,7 @@ def account_observations(
         "body_size": response.body_size,
         "body_truncated": response.body_truncated,
         "application_success": success_ok,
+        **_authorization_facts(response),
         "resource_match": exact(observed_resource, resource_value),
         "private_match": exact(observed_private, marker),
         "private_marker_seen": marker in response.body_text,
@@ -814,6 +831,7 @@ class AccessControlTester:
             valid = (
                 response.status_code == 200
                 and facts["application_success"] is True
+                and not facts["authorization_denial_observed"]
                 and facts["resource_match"]
                 and facts["private_match"]
                 and not other_markers_seen
@@ -856,9 +874,19 @@ class AccessControlTester:
                     facts = account_observations(response, case.checks, target.resource, target.marker)
                     stop_reason = blocked(response)
                     candidate = (
-                        case.resource_private and not stop_reason and facts["resource_match"] and facts["private_match"]
+                        case.resource_private
+                        and not stop_reason
+                        and 200 <= response.status_code < 300
+                        and facts["application_success"] is True
+                        and not facts["authorization_denial_observed"]
+                        and facts["resource_match"]
+                        and facts["private_match"]
                     )
-                    denied = response.status_code in {401, 403} or facts["application_success"] is False
+                    denied = (
+                        not facts["contradictory_authorization_evidence"]
+                        and (facts["authorization_denial_observed"] or facts["application_success"] is False)
+                        and not (facts["resource_match"] and facts["private_match"])
+                    )
                     classification = "candidate" if candidate else "rejected_in_this_test" if denied else "inconclusive"
                     pair_results.append(
                         {
@@ -900,7 +928,7 @@ class AccessControlTester:
                     result["confirmed"] = False
                     result["confirmation_gap"] = "no_second_proof"
                     result["stop_reason"] = result["stop_reason"] or "private_evidence_observed"
-            elif len(pair_results) == len(accounts) * (len(accounts) - 1) and all_rejected:
+            elif len(pair_results) == len(accounts) ** 2 and all_rejected:
                 result["classification"] = "rejected_in_this_test"
                 result["finding_state"] = "not_observed"
                 result["stop_reason"] = "cross_matrix_rejected"
@@ -921,11 +949,22 @@ class AccessControlTester:
                     result["finding_state"] = "not_observed"
                     result["stop_reason"] = "public_endpoint"
                 else:
+                    contradictory = facts["contradictory_authorization_evidence"] or (
+                        (facts["authorization_denial_observed"] or facts["application_success"] is False)
+                        and facts["owner_resource_match"]
+                        and facts["owner_private_match"]
+                    )
                     result["cross_result"] = (
-                        "candidate"
-                        if facts["owner_resource_match"] and facts["owner_private_match"]
+                        "inconclusive"
+                        if contradictory
+                        else "candidate"
+                        if 200 <= response.status_code < 300
+                        and facts["application_success"] is True
+                        and not facts["authorization_denial_observed"]
+                        and facts["owner_resource_match"]
+                        and facts["owner_private_match"]
                         else "rejected_in_this_test"
-                        if response.status_code in {401, 403} or facts["application_success"] is False
+                        if facts["authorization_denial_observed"] or facts["application_success"] is False
                         else "inconclusive"
                     )
                     if result["cross_result"] == "candidate":
@@ -950,6 +989,8 @@ class AccessControlTester:
                         result["classification"] = "rejected_in_this_test"
                         result["finding_state"] = "not_observed"
                         result["stop_reason"] = "cross_read_rejected"
+                    elif contradictory:
+                        result["stop_reason"] = "contradictory_authorization_evidence"
                     elif facts["owner_marker_seen"] or facts["owner_resource_match"]:
                         result["stop_reason"] = "partial_private_evidence"
                     else:
@@ -971,10 +1012,17 @@ class AccessControlTester:
                 candidate = (
                     case.resource_private
                     and not blocked(inverse_response)
+                    and 200 <= inverse_response.status_code < 300
+                    and facts["application_success"] is True
+                    and not facts["authorization_denial_observed"]
                     and facts["resource_match"]
                     and facts["private_match"]
                 )
-                denied = inverse_response.status_code in {401, 403} or facts["application_success"] is False
+                denied = (
+                    not facts["contradictory_authorization_evidence"]
+                    and (facts["authorization_denial_observed"] or facts["application_success"] is False)
+                    and not (facts["resource_match"] and facts["private_match"])
+                )
                 result["inverse_result"] = (
                     "candidate" if candidate else "rejected_in_this_test" if denied else "inconclusive"
                 )
@@ -1002,13 +1050,19 @@ class AccessControlTester:
             if anonymous_response is not None:
                 facts = account_observations(anonymous_response, case.checks, owner.resource, owner.marker)
                 private_data_observed = bool(facts["resource_match"] and facts["private_match"])
+                contradictory = facts["contradictory_authorization_evidence"] or (
+                    private_data_observed
+                    and (facts["authorization_denial_observed"] or facts["application_success"] is False)
+                )
                 anonymous_allowed = bool(
                     not blocked(anonymous_response)
                     and 200 <= anonymous_response.status_code < 300
                     and facts["application_success"] is True
+                    and not facts["authorization_denial_observed"]
                 )
                 anonymous_denied = bool(
-                    anonymous_response.status_code in {401, 403} or facts["application_success"] is False
+                    not contradictory
+                    and (facts["authorization_denial_observed"] or facts["application_success"] is False)
                 )
                 expected = case.expected_anonymous
                 if expected is None and case.resource_private:
@@ -1019,12 +1073,23 @@ class AccessControlTester:
                 result["anonymous_request_allowed"] = anonymous_allowed
                 result["anonymous_expectation_mismatch"] = bool(mismatch)
                 result["anonymous_finding"] = bool(
-                    mismatch or (case.resource_private and private_data_observed and expected != "allow")
+                    not contradictory
+                    and (
+                        mismatch
+                        or (
+                            case.resource_private
+                            and private_data_observed
+                            and anonymous_allowed
+                            and expected != "allow"
+                        )
+                    )
                 )
-                if not case.resource_private:
+                if contradictory:
+                    result["anonymous_classification"] = "inconclusive"
+                elif not case.resource_private:
                     result["anonymous_classification"] = "public_endpoint"
                     result["classification"] = "public_endpoint"
-                elif private_data_observed and expected != "allow":
+                elif private_data_observed and anonymous_allowed and expected != "allow":
                     result["anonymous_classification"] = "anonymous_access"
                     if result["classification"] != "candidate":
                         result["classification"] = "anonymous_access"

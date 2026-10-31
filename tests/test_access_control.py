@@ -349,8 +349,8 @@ class AccessControlTests(unittest.TestCase):
     def test_private_leak_is_not_hidden_by_error_status(self):
         AccessLab.mode = "leak_on_error"
         _, result = self.run_case()
-        self.assertEqual(result["classification"], "confirmed")
-        self.assertTrue(result["confirmed"])
+        self.assertEqual(result["classification"], "inconclusive")
+        self.assertFalse(result["confirmed"])
         self.assertFalse(result["steps"][-1]["application_success"])
 
     def test_invalid_controls_stop_before_cross(self):

@@ -206,6 +206,7 @@ class AccessRangeTester:
                 response.status_code == 200
                 and not response.body_truncated
                 and facts["application_success"] is True
+                and not facts["authorization_denial_observed"]
                 and facts[f"{account}_resource_match"]
                 and facts[f"{account}_private_match"]
                 and not facts[f"{other}_marker_seen"]
@@ -250,10 +251,20 @@ class AccessRangeTester:
                         and not exact(returned_resource, case.checks["actor_resource"])
                         and facts["application_success"] is True
                     )
-                    candidate = not response.body_truncated and (
-                        owner_proof or identity_differs or (response.status_code == 200 and resource_is_not_actor)
+                    contradiction = facts["contradictory_authorization_evidence"] or (
+                        owner_proof
+                        and (facts["authorization_denial_observed"] or facts["application_success"] is False)
                     )
-                    denied = response.status_code in {401, 403} or facts["application_success"] is False
+                    candidate = (
+                        case.resource_private
+                        and 200 <= response.status_code < 300
+                        and facts["application_success"] is True
+                        and not facts["authorization_denial_observed"]
+                        and not response.body_truncated
+                    ) and (owner_proof or identity_differs or (response.status_code == 200 and resource_is_not_actor))
+                    denied = not contradiction and (
+                        facts["authorization_denial_observed"] or facts["application_success"] is False
+                    )
                     row = {
                         "probe_offset": offset,
                         "status_code": response.status_code,
@@ -261,6 +272,8 @@ class AccessRangeTester:
                         "body_size": response.body_size,
                         "body_truncated": response.body_truncated,
                         "application_success": facts["application_success"],
+                        "authorization_denial_observed": facts["authorization_denial_observed"],
+                        "contradictory_authorization_evidence": bool(contradiction),
                         "owner_resource_match": facts["owner_resource_match"],
                         "owner_private_match": facts["owner_private_match"],
                         "identity_differs_from_actor": identity_differs,

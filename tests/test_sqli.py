@@ -123,10 +123,10 @@ class SqliTests(unittest.TestCase):
         self.assertEqual(results[3]["stage"], "time_mysql")
         self.assertTrue(results[3]["time_candidate"])
         self.assertTrue(results[6]["boolean_pair_differs"])
-        self.assertEqual(results[6]["classification"], "confirmed")
-        self.assertTrue(results[6]["confirmed"])
-        self.assertEqual(results[7]["classification"], "confirmed")
-        self.assertTrue(results[7]["confirmed"])
+        self.assertEqual(results[6]["classification"], "possible")
+        self.assertFalse(results[6]["confirmed"])
+        self.assertEqual(results[7]["classification"], "possible")
+        self.assertFalse(results[7]["confirmed"])
         evidence = json.loads(path.read_text())
         self.assertEqual(evidence["requests_attempted"], 8)
 
@@ -164,8 +164,8 @@ class SqliTests(unittest.TestCase):
         union = results[-1]
         self.assertEqual(union["column_count_candidate"], 1)
         self.assertTrue(union["response_differs_from_baseline"])
-        self.assertEqual(union["classification"], "confirmed")
-        self.assertTrue(union["confirmed"])
+        self.assertEqual(union["classification"], "possible")
+        self.assertFalse(union["confirmed"])
         self.assertIn(
             "UNION SELECT NULL", parse_qs(urlsplit(self.client.send.call_args_list[-1].args[0].url).query)["q"][0]
         )

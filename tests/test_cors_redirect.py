@@ -65,7 +65,7 @@ class CorsAndRedirectTests(unittest.TestCase):
         self.assertNotIn("access_token=private", evidence)
         self.assertEqual(json.loads(evidence)["type"], "cors")
 
-    def test_cors_confirmation_bar_true_positive_requires_all_three(self):
+    def test_cors_headers_and_nonempty_body_still_need_independent_proof(self):
         """TP: reflected Origin + ACAC true + credentialed non-empty body → confirmed."""
         assessment = assess_cors_finding(
             origin="https://evil.com",
@@ -77,9 +77,9 @@ class CorsAndRedirectTests(unittest.TestCase):
             body_size=48,
         )
         self.assertEqual(assessment["classification"], "VULNERABLE")
-        self.assertEqual(assessment["finding_state"], "confirmed")
-        self.assertTrue(assessment["confirmed"])
-        self.assertIsNone(assessment["confirmation_gap"])
+        self.assertEqual(assessment["finding_state"], "candidate")
+        self.assertFalse(assessment["confirmed"])
+        self.assertEqual(assessment["confirmation_gap"], "no_second_proof")
         self.assertIsNone(assessment["rejection_reason"])
 
         client = Mock()
@@ -110,15 +110,15 @@ class CorsAndRedirectTests(unittest.TestCase):
 
         client.send.side_effect = send_tp
         path, results = CorsChecker(self.scope, client).run(options, self.root / "cors-tp")
-        self.assertTrue(results[0]["confirmed"])
-        self.assertEqual(results[0]["finding_state"], "confirmed")
+        self.assertFalse(results[0]["confirmed"])
+        self.assertEqual(results[0]["finding_state"], "candidate")
         evidence = path.read_text(encoding="utf-8")
         self.assertNotIn("lab-secret", evidence)
         self.assertNotIn("bbtk_cors_private", evidence)
         self.assertNotIn("lab-user", evidence)
         payload = __import__("json").loads(evidence)
-        self.assertEqual(payload["classification"], "confirmed")
-        self.assertTrue(payload["confirmed"])
+        self.assertEqual(payload["classification"], "candidate")
+        self.assertFalse(payload["confirmed"])
 
     def test_cors_confirmation_bar_true_negative_header_only_is_candidate(self):
         """TN: ACAO+ACAC without credentialed readable body → candidate, not confirmed."""
@@ -222,8 +222,8 @@ class CorsAndRedirectTests(unittest.TestCase):
         path, results = OpenRedirectTester(self.scope, client).run(options, self.root / "redirect-evidence")
         self.assertEqual(client.send.call_count, 5)
         self.assertEqual(results[0]["classification"], "VULNERABLE")
-        self.assertTrue(results[0]["confirmed"])
-        self.assertEqual(results[0]["finding_state"], "confirmed")
+        self.assertFalse(results[0]["confirmed"])
+        self.assertEqual(results[0]["finding_state"], "candidate")
         self.assertEqual(results[1]["classification"], "NO VULNERABLE")
         self.assertEqual(results[2]["classification"], "NO VULNERABLE")
         self.assertIsNone(results[2]["location"])
@@ -232,8 +232,8 @@ class CorsAndRedirectTests(unittest.TestCase):
         self.assertNotIn("secret=session", evidence)
         self.assertNotIn("body-not-evidence", evidence)
         self.assertEqual(payload["type"], "open-redirect")
-        self.assertTrue(payload["confirmed"])
-        self.assertEqual(payload["finding_state"], "confirmed")
+        self.assertFalse(payload["confirmed"])
+        self.assertEqual(payload["finding_state"], "candidate")
 
     def test_open_redirect_scope_preflight_sends_nothing(self):
         client = Mock()
