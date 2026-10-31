@@ -68,8 +68,8 @@ class AuthorizationDenialTests(unittest.TestCase):
             '{"claim":{"id":74302,"marker":"irb-claim-owner-74302","owner_label":"owner"},"ok":true}',
         )
         self.assertFalse(assessment.denial_demonstrated)
-        self.assertTrue(assessment.access_demonstrated)
-        self.assertEqual(assessment.response_class, "successful_looking")
+        self.assertFalse(assessment.access_demonstrated)
+        self.assertEqual(assessment.response_class, "error_ambiguous")
 
     def test_contradictory_pair_is_not_promoted_to_possible_access(self) -> None:
         owner = _raw(200, '{"ok":true,"statement":{"id":1,"marker":"m","owner_label":"owner"}}')

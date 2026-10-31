@@ -252,6 +252,7 @@ class _Side:
     body: str | None
     access: bool
     denial: bool
+    contradictory: bool
     proof: str
     visibility: str | None
     integrity_conflict: bool
@@ -322,6 +323,7 @@ def _side(raw: Mapping[str, Any], alias_rules: Mapping[str, Any] | None) -> _Sid
         body=body_text,
         access=access,
         denial=denial,
+        contradictory="contradictory_denial_status_with_resource_body" in proof.reasons,
         proof=proof.access_proof,
         visibility=visibility,
         integrity_conflict=_integrity_conflict(raw, body_text),
@@ -342,6 +344,8 @@ def _integrity(owner: _Side, actor: _Side, conflicting: list[str]) -> None:
 
 
 def _contradiction(owner: _Side, actor: _Side, conflicting: list[str]) -> None:
+    if owner.contradictory or actor.contradictory:
+        conflicting.append("contradictory_authorization_evidence")
     same = (
         owner.route.kind and owner.route.kind == actor.route.kind and owner.route.resource_id == actor.route.resource_id
     )
