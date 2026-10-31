@@ -70,6 +70,7 @@ from .analysis.disclosure_access_correlation import (
 from .analysis.disclosure_context import assess_context_batch
 from .analysis.business_logic_planner import analyze_business_logic
 from .analysis.cors_redirect_impact import analyze_cors_redirect_impact
+from .analysis.ssrf_analysis import analyze_ssrf
 from .jwt_forge import MAX_PUBLIC_KEY_BYTES, forge_jwt
 from .analysis.sql_query import analyze_sql
 from .analysis.evidence_review import review_evidence
@@ -2363,6 +2364,13 @@ def cmd_analyze(args: argparse.Namespace) -> None:
             args.markdown.parent.mkdir(parents=True, exist_ok=True)
             args.markdown.write_text(str(data.get("markdown", "")), encoding="utf-8")
             print(f"[+] Markdown impact summary saved: {args.markdown}")
+    elif args.analysis == "ssrf":
+        # Offline SSRF-prone params + candidate payload ideas; never confirms, never sends requests.
+        data = analyze_ssrf(text, source_label=str(args.input))
+        if getattr(args, "markdown", None):
+            args.markdown.parent.mkdir(parents=True, exist_ok=True)
+            args.markdown.write_text(str(data.get("markdown", "")), encoding="utf-8")
+            print(f"[+] Markdown SSRF plan saved: {args.markdown}")
     elif args.analysis == "evidence":
         data = review_evidence(json.loads(text))
         if args.ai == "ollama":
@@ -4179,6 +4187,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Also write a Markdown impact summary to a local file",
     )
     cors_impact.set_defaults(func=cmd_analyze)
+    ssrf_analyze = analyze_sub.add_parser(
+        "ssrf",
+        help="Offline SSRF-prone parameter discovery and candidate payload ideas from HAR; never confirms",
+    )
+    ssrf_analyze.add_argument(
+        "--input",
+        required=True,
+        type=Path,
+        help="Local HAR or JSON capture records (see docs/ssrf-analysis.md)",
+    )
+    ssrf_analyze.add_argument("--output", type=Path, help="Write the minimized JSON plan (no secrets) to a local file")
+    ssrf_analyze.add_argument(
+        "--markdown",
+        type=Path,
+        help="Also write a Markdown summary of candidate SSRF ideas to a local file",
+    )
+    ssrf_analyze.set_defaults(func=cmd_analyze)
     evidence = analyze_sub.add_parser("evidence", help="Allowlisted observations with optional local Ollama review")
     evidence.add_argument("--input", required=True, type=Path)
     evidence.add_argument("--output", type=Path)

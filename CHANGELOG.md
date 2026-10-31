@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+### Stronger offline SSRF analysis
+
+- New `analysis/ssrf_analysis.py` and `bbtk analyze ssrf`. Discovers SSRF-prone
+  parameters across query/body/JSON/headers and emits candidate payload ideas
+  (internal IPs, cloud metadata, localhost encodings, alt schemes; DNS-rebinding
+  and blind/OOB flagged manual-only). Complements live `ssrf-check` canary bar.
+  `finding_confirmed` stays false; offline only. Version stays 0.2.2.
+
 ### Disclosure FP reduction + severity tiers
 
 - `analyze disclosure` gains additive severity tiers (`secret` > `pii` >

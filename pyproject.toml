@@ -213,6 +213,8 @@ files = [
     "tests/test_business_logic_planner.py",
     "bugbounty_toolkit/analysis/cors_redirect_impact.py",
     "tests/test_cors_redirect_impact.py",
+    "bugbounty_toolkit/analysis/ssrf_analysis.py",
+    "tests/test_ssrf_analysis.py",
     "labs/disclosure_context_v2_eval/corpus.py",
     "labs/disclosure_context_v2_eval/evaluate.py",
     "tests/test_disclosure_context_v2.py",

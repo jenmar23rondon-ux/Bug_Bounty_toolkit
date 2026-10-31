@@ -12,3 +12,14 @@ Use only the exact URL and parameter supplied by the user. Dry-run first with `b
 Interpret `possible` as a status/body difference from baseline and `reflected` as the injected URL appearing in the response. Timing deltas are supporting context, not standalone proof. Every result is heuristic and unconfirmed; no OOB callback or impact validation is implemented. A metadata-path response can contain sensitive information, so the tool discards response bodies and the skill must not request, reproduce or extract metadata values or credentials.
 
 Stop on 401/403/429, rate limits, transport errors, truncation or program restrictions. Do not add ports, paths, hosts, redirects, OOB destinations or follow-up probes. Summarize the baseline status, per-probe status and timing delta, classifications, stop reason and local evidence path without including secrets or response content.
+
+## Stronger offline analysis (HAR)
+
+Use `bbtk analyze ssrf --input <capture.har>` to discover SSRF-prone parameters
+(`url`, `uri`, `dest`, `redirect`, `fetch`, `image`, `webhook`, `callback`,
+`proxy`, `host`, `domain`, `feed`, `xml`, `file`, …) across query/body/JSON/headers
+and to list **candidate** payload ideas (internal IPs, `169.254.169.254`, localhost
+encodings, gopher/file/dict). DNS-rebinding and blind/OOB ideas are **manual-only**
+and never executed. Live confirmation still uses `ssrf-check` with a loopback
+canary (`lab_canary_hits`). See `docs/ssrf-analysis.md`.
+
