@@ -27,15 +27,15 @@ What reaches **confirmed** vs stays **candidate**:
 
 | Check | Confirmed only if | Candidate / never confirmed |
 | --- | --- | --- |
-| CORS | ACAO reflect + ACAC true + credentialed non-empty body | Missing any of those |
-| Open redirect | Param controls `Location` **and** destination leaves host (redirect **not** followed) | Controlled Location missing or same-host |
+| CORS | Native probes do not prove private browser-readable data | Reflected policy remains candidate, even with cookies and a body |
+| Open redirect | Native probes do not establish parameter causality | Matching external `Location` remains candidate; redirects are not followed |
 | SSRF | Lab loopback canary received the request | URL-looking param alone |
 | CNAME takeover | — | **Never** confirmed; max candidate with dangling + known fingerprint + unclaimed |
 | IDOR/BOLA | Session B reads/writes A’s resource, session control proven, both responses in evidence | Weaker evidence |
 | XSS | `--confirm-exec`/Playwright **or** DOM loopback execution | Reflection without execution |
-| SQLi | Reproducible boolean / time / UNION vs baseline | Syntax error alone |
+| SQLi | Native differential probes do not independently prove SQL execution | Errors, timing deltas and boolean / UNION differences remain candidates |
 
-`bbtk hunt` runs only confirmable modules: `cors-check`, `ssrf-check`, `open-redirect`, `xss`, `sqli`, `access-check`. Use standalone `csrf-audit` and `takeover-check` outside hunt.
+`bbtk hunt` runs `cors-check`, `ssrf-check`, `open-redirect`, `xss`, `sqli`, `access-check`. Each preserves its own evidence threshold. Use standalone `csrf-audit` and `takeover-check` outside hunt. See [HTTP proof limits](docs/http-proof-attribution.md).
 
 ## Hunt (authorized)
 

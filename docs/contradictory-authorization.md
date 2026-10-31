@@ -19,6 +19,11 @@ controls, anonymous responses and both cross-account directions. Existing frozen
 benchmark labels are intentionally unchanged. Real deployments still require
 researcher review of ownership, privacy and the expected authorization policy.
 
+Resource-shaped data for a third or unknown account also preserves the observed
+contradiction. A missing owner-marker match does not turn that response into a
+valid denial or an anonymous-policy mismatch. Fully denied account matrices
+remain negative controls when all diagonal controls and off-diagonal reads finish.
+
 Windows cannot run POSIX-private-artifact pipelines natively. The Linux PR job
 records DEV/FINAL/STRESS results for the base and proposed commit separately;
 those results must be reviewed alongside the unit tests before merging.

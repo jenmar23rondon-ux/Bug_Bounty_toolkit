@@ -251,8 +251,9 @@ class AccessRangeTester:
                         and not exact(returned_resource, case.checks["actor_resource"])
                         and facts["application_success"] is True
                     )
-                    contradiction = owner_proof and (
-                        facts["authorization_denial_observed"] or facts["application_success"] is False
+                    contradiction = facts["contradictory_authorization_evidence"] or (
+                        owner_proof
+                        and (facts["authorization_denial_observed"] or facts["application_success"] is False)
                     )
                     candidate = (
                         case.resource_private

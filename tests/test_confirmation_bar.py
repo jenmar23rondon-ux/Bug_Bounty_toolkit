@@ -37,8 +37,8 @@ class ConfirmationBarTests(unittest.TestCase):
             location="https://evil.com/",
             status_code=302,
         )
-        self.assertTrue(tp["confirmed"])
-        self.assertEqual(tp["finding_state"], "confirmed")
+        self.assertFalse(tp["confirmed"])
+        self.assertEqual(tp["finding_state"], "candidate")
 
         tn = assess_open_redirect(
             base_url="https://example.com/login?next=%2F",
@@ -57,13 +57,51 @@ class ConfirmationBarTests(unittest.TestCase):
             OpenRedirectOptions("https://example.com/login?next=%2F", "next"),
             self.root / "redir",
         )
-        self.assertTrue(results[0]["confirmed"])
+        self.assertFalse(results[0]["confirmed"])
         evidence = json.loads(path.read_text(encoding="utf-8"))
-        self.assertTrue(evidence["confirmed"])
-        report = build_confirmed_report(evidence, program="lab")
-        md = render_confirmed_report_markdown(report)
-        self.assertIn("State", md)
-        self.assertIn("confirmed", md.lower())
+        self.assertFalse(evidence["confirmed"])
+        with self.assertRaisesRegex(ValueError, "Confirmed report requires"):
+            build_confirmed_report(evidence, program="lab")
+
+    def test_confirmed_lab_report_preserves_proof_and_redacts_secrets(self) -> None:
+        # Synthetic callback evidence tests reporting, not a live SSRF assertion.
+        verdict = assess_ssrf_finding(
+            payload="http://127.0.0.1:8080",
+            response_differs=True,
+            payload_reflected=False,
+            canary_received=True,
+        )
+        self.assertEqual(verdict["finding_state"], "confirmed")
+        evidence = {
+            **verdict,
+            "type": "ssrf",
+            "url": "http://127.0.0.1:8099/fetch?token=synthetic-private-value",
+            "impact": "The local server reached the controlled callback endpoint.",
+            "results": [
+                {"stage": "baseline", "finding_state": "not_observed", "status_code": 200},
+                {
+                    **verdict,
+                    "stage": "controlled_callback",
+                    "status_code": 200,
+                    "body_size": 8192,
+                    "body": "synthetic-response-body-not-for-reporting",
+                },
+            ],
+        }
+        report = build_confirmed_report(evidence, program="local-lab", title="Controlled callback in lab")
+        markdown = render_confirmed_report_markdown(report)
+
+        self.assertEqual(report["state"], "confirmed")
+        self.assertEqual(report["vulnerability_type"], "ssrf")
+        self.assertFalse(report["submitted"])
+        self.assertEqual(len(report["steps"]), 2)
+        self.assertEqual(report["impact"], evidence["impact"])
+        self.assertIn('"body_size": 8192', report["response_truncated"])
+        self.assertIn(r"controlled\_callback", markdown)
+        self.assertIn(r"No report was submitted to a platform\.", markdown)
+        self.assertNotIn("synthetic-private-value", json.dumps(report) + markdown)
+        self.assertNotIn("synthetic-response-body-not-for-reporting", json.dumps(report) + markdown)
+        self.assertIn("synthetic-private-value", evidence["url"])
 
     def test_ssrf_tp_canary_and_tn_url_only(self) -> None:
         tp = assess_ssrf_finding(
@@ -152,7 +190,7 @@ class ConfirmationBarTests(unittest.TestCase):
         )
         self.assertEqual(missing["finding_state"], "not_observed")
 
-    def test_sqli_syntax_candidate_boolean_confirmed(self) -> None:
+    def test_sqli_syntax_and_single_boolean_pair_remain_candidates(self) -> None:
         routes = self.root / "routes.txt"
         params = self.root / "params.txt"
         routes.write_text("https://example.com/search?q=original\n", encoding="utf-8")
@@ -203,7 +241,8 @@ class ConfirmationBarTests(unittest.TestCase):
         )
         bool_rows = [row for row in deep if row.get("stage", "").startswith("boolean_")]
         self.assertTrue(bool_rows)
-        self.assertTrue(any(row.get("confirmed") for row in bool_rows))
+        self.assertFalse(any(row.get("confirmed") for row in bool_rows))
+        self.assertTrue(all(row["finding_state"] == "candidate" for row in bool_rows))
 
     def test_idor_confirmed_requires_controls_and_cross(self) -> None:
         # TN: classification candidate without elevating when controls_valid is False

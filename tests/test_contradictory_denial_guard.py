@@ -59,7 +59,7 @@ class ContradictoryDenialTests(unittest.TestCase):
     def save(self):
         self.case.write_text(json.dumps(self.data))
 
-    def client(self, status=200, failure=None, *, invalid_owner=False):
+    def client(self, status=200, failure=None, *, invalid_owner=False, cross_resource=None, omit_resource=False):
         client = Mock()
         client.rate_limiter = RateLimiter(10000)
 
@@ -70,7 +70,11 @@ class ContradictoryDenialTests(unittest.TestCase):
             code = 200
             if not own or invalid_owner:
                 code = status
+                if cross_resource is not None:
+                    body = resource(cross_resource)
                 body.update(failure or {"success": False})
+                if omit_resource:
+                    body.pop("data")
             encoded = json.dumps(body)
             return ResponseRecord(request, request.prepared_url(), code, "test", 1, {}, encoded, len(encoded))
 
@@ -128,6 +132,56 @@ class ContradictoryDenialTests(unittest.TestCase):
         _, result = AccessControlTester(self.scope, client).run(self.case, self.root / "evidence")
         self.assertFalse(result["controls_valid"])
         self.assertEqual(client.send.call_count, 1)
+
+    def test_unknown_resource_conflict_is_not_denied_in_read_inverse_or_anonymous(self):
+        self.data["expected_anonymous"] = "allow"
+        self.save()
+        client = self.client(403, cross_resource="40")
+        _, result = AccessControlTester(self.scope, client).run(
+            self.case, self.root / "evidence", max_tests=5, inverse_cross=True, anonymous_check=True
+        )
+        self.assertEqual(client.send.call_count, 5)
+        for field in ("cross_result", "inverse_result", "anonymous_classification"):
+            self.assertEqual(result[field], "inconclusive")
+        self.assertFalse(result["anonymous_expectation_mismatch"])
+        self.assertFalse(result["anonymous_finding"])
+        self.assertFalse(result["steps"][-1]["private_match"])
+        self.assertTrue(result["steps"][-1]["contradictory_authorization_evidence"])
+
+    def test_range_unknown_resource_conflicts_remain_inconclusive(self):
+        for status in (200, 403):
+            with self.subTest(status=status):
+                client = self.client(status)
+                _, result = AccessRangeTester(self.scope, client).run(
+                    self.case, AccessRangeOptions("30-30", 3, min_interval=0.01), self.root / "evidence"
+                )
+                row = result["results"][0]
+                self.assertEqual(row["classification"], "inconclusive")
+                self.assertTrue(row["contradictory_authorization_evidence"])
+                self.assertFalse(row["owner_resource_match"])
+                self.assertFalse(result["confirmed"])
+                self.assertEqual(client.send.call_count, 3)
+
+    def test_complete_denied_matrix_remains_a_negative_control(self):
+        self.data["additional_accounts"] = {
+            "actor2": {"request": "actor2.http", "resource": "30", "marker": "synthetic-private-proof-30"}
+        }
+        self.save()
+        client = self.client(403, omit_resource=True)
+        _, result = AccessControlTester(self.scope, client).run(
+            self.case, self.root / "evidence", max_tests=9, multi_account=True
+        )
+        self.assertEqual(client.send.call_count, 9)
+        self.assertEqual(result["matrix_crosses"], 6)
+        self.assertEqual(result["finding_state"], "not_observed")
+        self.assertEqual(result["stop_reason"], "cross_matrix_rejected")
+        self.assertTrue(
+            all(
+                row["classification"] == "rejected_in_this_test"
+                for row in result["matrix"]
+                if row["access_type"] == "cross"
+            )
+        )
 
     def test_offline_response_and_pairing_do_not_treat_conflict_as_access(self):
         clean = resource()

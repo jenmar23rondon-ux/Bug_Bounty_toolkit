@@ -649,10 +649,18 @@ def load_case(
     )
 
 
+def _authorization_facts(response: ResponseRecord) -> dict[str, bool]:
+    assessment = assess_response(response.status_code, response.body_text, response.headers)
+    contradictory = "contradictory_denial_status_with_resource_body" in assessment.reasons
+    return {
+        "authorization_denial_observed": assessment.denial_demonstrated or contradictory,
+        "contradictory_authorization_evidence": contradictory,
+    }
+
+
 def authorization_denial_observed(response: ResponseRecord) -> bool:
     """Preserve a denial signal even when its envelope also contains resource data."""
-    assessment = assess_response(response.status_code, response.body_text, response.headers)
-    return assessment.denial_demonstrated or "contradictory_denial_status_with_resource_body" in assessment.reasons
+    return _authorization_facts(response)["authorization_denial_observed"]
 
 
 def observations(response: ResponseRecord, checks: dict[str, Any]) -> dict[str, Any]:
@@ -672,7 +680,7 @@ def observations(response: ResponseRecord, checks: dict[str, Any]) -> dict[str, 
         "body_size": response.body_size,
         "body_truncated": response.body_truncated,
         "application_success": application_success,
-        "authorization_denial_observed": authorization_denial_observed(response),
+        **_authorization_facts(response),
         **{
             f"{account}_resource_match": exact(resource, checks[f"{account}_resource"])
             for account in ("owner", "actor")
@@ -702,7 +710,7 @@ def account_observations(
         "body_size": response.body_size,
         "body_truncated": response.body_truncated,
         "application_success": success_ok,
-        "authorization_denial_observed": authorization_denial_observed(response),
+        **_authorization_facts(response),
         "resource_match": exact(observed_resource, resource_value),
         "private_match": exact(observed_private, marker),
         "private_marker_seen": marker in response.body_text,
@@ -874,8 +882,10 @@ class AccessControlTester:
                         and facts["resource_match"]
                         and facts["private_match"]
                     )
-                    denied = (facts["authorization_denial_observed"] or facts["application_success"] is False) and not (
-                        facts["resource_match"] and facts["private_match"]
+                    denied = (
+                        not facts["contradictory_authorization_evidence"]
+                        and (facts["authorization_denial_observed"] or facts["application_success"] is False)
+                        and not (facts["resource_match"] and facts["private_match"])
                     )
                     classification = "candidate" if candidate else "rejected_in_this_test" if denied else "inconclusive"
                     pair_results.append(
@@ -939,9 +949,11 @@ class AccessControlTester:
                     result["finding_state"] = "not_observed"
                     result["stop_reason"] = "public_endpoint"
                 else:
-                    contradictory = (
-                        facts["authorization_denial_observed"] or facts["application_success"] is False
-                    ) and (facts["owner_resource_match"] and facts["owner_private_match"])
+                    contradictory = facts["contradictory_authorization_evidence"] or (
+                        (facts["authorization_denial_observed"] or facts["application_success"] is False)
+                        and facts["owner_resource_match"]
+                        and facts["owner_private_match"]
+                    )
                     result["cross_result"] = (
                         "inconclusive"
                         if contradictory
@@ -1006,8 +1018,10 @@ class AccessControlTester:
                     and facts["resource_match"]
                     and facts["private_match"]
                 )
-                denied = (facts["authorization_denial_observed"] or facts["application_success"] is False) and not (
-                    facts["resource_match"] and facts["private_match"]
+                denied = (
+                    not facts["contradictory_authorization_evidence"]
+                    and (facts["authorization_denial_observed"] or facts["application_success"] is False)
+                    and not (facts["resource_match"] and facts["private_match"])
                 )
                 result["inverse_result"] = (
                     "candidate" if candidate else "rejected_in_this_test" if denied else "inconclusive"
@@ -1036,8 +1050,9 @@ class AccessControlTester:
             if anonymous_response is not None:
                 facts = account_observations(anonymous_response, case.checks, owner.resource, owner.marker)
                 private_data_observed = bool(facts["resource_match"] and facts["private_match"])
-                contradictory = private_data_observed and (
-                    facts["authorization_denial_observed"] or facts["application_success"] is False
+                contradictory = facts["contradictory_authorization_evidence"] or (
+                    private_data_observed
+                    and (facts["authorization_denial_observed"] or facts["application_success"] is False)
                 )
                 anonymous_allowed = bool(
                     not blocked(anonymous_response)

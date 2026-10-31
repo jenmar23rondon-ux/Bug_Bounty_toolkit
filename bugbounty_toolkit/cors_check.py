@@ -39,7 +39,7 @@ def classify_cors(origin: str, allow_origin: str | None, allow_credentials: str 
         return "SEGURO"
     if allow_origin.strip() != origin:
         return "SEGURO"
-    return "VULNERABLE" if (allow_credentials or "").strip().lower() == "true" else "DÉBIL"
+    return "VULNERABLE" if acac_allows_credentials(allow_credentials) else "DÉBIL"
 
 
 def request_sends_credentials(headers: dict[str, str]) -> bool:
@@ -55,14 +55,13 @@ def attacker_origin_reflected(origin: str, allow_origin: str | None) -> bool:
 
 
 def acac_allows_credentials(allow_credentials: str | None) -> bool:
-    return (allow_credentials or "").strip().lower() == "true"
+    return (allow_credentials or "").strip() == "true"
 
 
 def body_readable_cross_origin(status_code: int | None, body_text: str, body_size: int) -> bool:
     """
-    Second independent proof: a successful credentialed response exposes a non-empty body
-    that a reflected attacker Origin would be allowed to read under ACAO+ACAC.
-    Bodies themselves are never written to evidence.
+    Legacy body-presence helper, not proof of browser readability or privacy.
+    A successful non-empty response can be public and the cookie can be analytics.
     """
     if status_code is None or status_code < 200 or status_code >= 300:
         return False
@@ -82,21 +81,19 @@ def assess_cors_finding(
     body_size: int = 0,
     rejection_reason: str | None = None,
     transport_error: bool = False,
+    body_truncated: bool = False,
 ) -> dict[str, object]:
     """
-    Apply the CORS confirmation bar.
+    Assess header-policy indicators without inferring private data or browser access.
 
-    confirmed only when ALL of:
-      (1) attacker Origin reflected in ACAO
-      (2) ACAC is true
-      (3) credentialed response returns a non-empty body the Origin should not read
-    Otherwise a header signal alone stays candidate. Explicit rejection requires a reason.
+    Native HTTP cannot prove credential delivery, private-resource policy or a
+    successful attacker-origin browser read. Explicit rejection requires a reason.
     """
     classification = "error" if transport_error else classify_cors(origin, allow_origin, allow_credentials)
     reflected = attacker_origin_reflected(origin, allow_origin)
     acac = acac_allows_credentials(allow_credentials)
     credentialed = request_sends_credentials(request_headers)
-    private_readable = body_readable_cross_origin(status_code, body_text, body_size)
+    private_readable = False
 
     if rejection_reason is not None:
         if rejection_reason not in CORS_REJECTION_REASONS:
@@ -113,7 +110,12 @@ def assess_cors_finding(
             "rejection_reason": rejection_reason,
         }
 
-    if transport_error or status_code in {401, 403, 429}:
+    if (
+        transport_error
+        or body_truncated
+        or status_code in {401, 403, 429}
+        or (status_code is not None and status_code >= 500)
+    ):
         return {
             "classification": classification,
             "finding_state": "inconclusive",
@@ -122,19 +124,6 @@ def assess_cors_finding(
             "acac_true": acac,
             "credentialed_request": credentialed,
             "private_body_readable": private_readable,
-            "confirmation_gap": None,
-            "rejection_reason": None,
-        }
-
-    if reflected and acac and credentialed and private_readable:
-        return {
-            "classification": classification,
-            "finding_state": "confirmed",
-            "confirmed": True,
-            "origin_reflected": reflected,
-            "acac_true": acac,
-            "credentialed_request": credentialed,
-            "private_body_readable": True,
             "confirmation_gap": None,
             "rejection_reason": None,
         }
@@ -256,6 +245,7 @@ class CorsChecker:
                 status_code=response.status_code,
                 body_text=response.body_text,
                 body_size=response.body_size,
+                body_truncated=response.body_truncated,
             )
             results.append(
                 {
@@ -289,7 +279,7 @@ class CorsChecker:
             "classification": overall,
             "confirmed": overall == "confirmed",
             "note": (
-                "Header reflection + ACAC alone is a candidate. confirmed requires a credentialed "
+                "Header reflection + ACAC alone is a candidate. Independent browser and privacy proof requires a credentialed "
                 "response body readable by the attacker Origin (second proof). Request credentials "
                 "and response bodies are omitted from evidence; only body_size and boolean signals "
                 "are recorded. Rejection reasons: false_positive / out_of_scope / no_second_proof."

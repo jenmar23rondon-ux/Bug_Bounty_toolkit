@@ -10,7 +10,7 @@ One-page workflow for authorized programs. Pick a program yourself; this doc nev
 
 ## 2. Command
 
-`bbtk hunt` runs only checks that can reach **confirmed** under the confirmation bar:
+`bbtk hunt` coordinates the following checks, preserving each check's evidence threshold:
 
 `cors-check`, `ssrf-check`, `open-redirect`, `xss`, `sqli`, `access-check`
 
@@ -33,11 +33,11 @@ Use `--only` / `--exclude` to bound modules. SSRF needs `--ssrf-url` and `--ssrf
 
 | Check | Confirmed only when | Otherwise |
 | --- | --- | --- |
-| CORS | ACAO reflects Origin, ACAC true, credentialed non-empty body | candidate |
-| Open redirect | Param controls `Location` and destination leaves host (redirect not followed) | candidate |
+| CORS | Independent private-data and attacker-browser read proof, not supplied by native probes | reflected policy = candidate |
+| Open redirect | Independent parameter-causality controls, not supplied by native probes | matching external Location = candidate; never followed |
 | SSRF | Lab loopback canary received the request | candidate |
 | XSS | `--confirm-exec`/Playwright or DOM loopback execution | reflection = candidate |
-| SQLi | Reproducible boolean/time/UNION vs baseline | syntax error = candidate |
+| SQLi | Independent execution proof with repeated stable controls, not supplied by native probes | error/timing/boolean/UNION indicators = candidate |
 | IDOR/BOLA | Session B reads/writes A’s resource, controls proven, both responses in evidence | candidate |
 | CNAME takeover | Never confirmed | candidate (dangling+known+unclaimed) or inconclusive |
 
@@ -46,7 +46,7 @@ Rejected rows record `false_positive`, `out_of_scope`, or `no_second_proof`.
 ## 4. When NOT to report
 
 - State is `candidate`, `not_observed`, `inconclusive`, or `rejected`.
-- Second proof missing (canary, execution, cross-session evidence, off-host Location).
+- Second proof missing (canary, execution, cross-session evidence, controlled redirect causality).
 - Asset or behavior is out of written scope.
 - You only saw a fingerprint, reflection, or error signature.
 - You have not reproduced on the authorized asset with your own accounts.
