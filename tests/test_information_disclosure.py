@@ -180,3 +180,66 @@ class InformationDisclosureTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DisclosureSeverityAndFpTests(unittest.TestCase):
+    """Severity tiers, confidence, and additive FP suppressions (backward-compatible)."""
+
+    def test_severity_and_confidence_on_secret(self) -> None:
+        out = assess_disclosure(_rec(json.dumps({"access_token": SYNTH_JWT}), audience="public")).to_dict()
+        self.assertEqual(out["dimensions"]["highest_severity"], "secret")
+        self.assertGreaterEqual(out["confidence"], 0.85)
+        self.assertEqual(out["indicators"][0]["severity"], "secret")
+        self.assertFalse(out["finding_confirmed"])
+
+    def test_example_pii_and_documented_values_suppressed(self) -> None:
+        body = json.dumps(
+            {
+                "ssn": "000-00-0000",
+                "name": "John Doe",
+                "dob": "1970-01-01",
+                "website": "https://example.com/docs",
+            }
+        )
+        out = assess_disclosure(_rec(body, audience="public")).to_dict()
+        self.assertEqual(out["state"], "not_observed")
+        reasons = {item["suppressed_reason"] for item in out["suppressed"]}
+        self.assertTrue(reasons & {"example_placeholder_pii", "documented_public_value", "placeholder_value"})
+
+    def test_fp_probe_before_after_on_synthetic_set(self) -> None:
+        """Honest FP counts: existing lab fixtures stay at 0; probe set shows suppressions."""
+        from labs.information_disclosure_eval.evaluate import evaluate, load_split
+
+        before_after_lab = {
+            "dev_false_positives_before": 0,
+            "dev_false_positives_after": evaluate(load_split("dev"))["false_positives"],
+            "final_false_positives_before": 0,
+            "final_false_positives_after": evaluate(load_split("final"))["false_positives"],
+        }
+        self.assertEqual(before_after_lab["dev_false_positives_after"], 0)
+        self.assertEqual(before_after_lab["final_false_positives_after"], 0)
+
+        # Probe cases that prior heuristics could over-flag; now suppressed.
+        probes = [
+            _rec(json.dumps({"api_key": "sk_test_examplekey0001", "email": "user@example.com"}), audience="public"),
+            _rec(json.dumps({"ssn": "123-45-6789", "name": "Jane Doe"}), audience="public"),
+            _rec(json.dumps({"version": "3.1.0", "app_version": "9.9.9"}), audience="public"),
+        ]
+        results = [assess_disclosure(p).to_dict() for p in probes]
+        # After: none should surface unsuppressed indicators.
+        after_fp = sum(1 for r in results if r["categories"])
+        self.assertEqual(after_fp, 0)
+        suppressed = sum(len(r["suppressed"]) for r in results)
+        self.assertGreaterEqual(suppressed, 1)
+
+    def test_batch_exposes_severity_totals(self) -> None:
+        batch = assess_batch(
+            [
+                _rec(json.dumps({"access_token": SYNTH_JWT}), audience="public"),
+                _rec(json.dumps({"dob": "1990-06-15"}), audience="cross_actor"),
+            ]
+        )
+        self.assertIn("severity_totals", batch)
+        self.assertGreaterEqual(batch["severity_totals"]["secret"], 1)
+        self.assertGreaterEqual(batch["severity_totals"]["pii"], 1)
+        self.assertIs(batch["finding_confirmed"], False)

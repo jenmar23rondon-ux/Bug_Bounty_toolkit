@@ -59,8 +59,28 @@ CATEGORIES = (
     "private_file_ref",
     "debug_info",
 )
+# Severity tiers (highest → lowest). Additive metadata; does not change states.
+SEVERITY_TIERS = (
+    "secret",  # credentials / token / private_key / env_vars
+    "pii",
+    "internal",  # internal_config / private_file_ref / stack_trace / debug_info
+    "low_signal",
+)
 AUDIENCES = ("public", "authenticated_self", "cross_actor", "unknown")
 _SECRET_CATEGORIES = frozenset({"credentials", "token", "private_key", "env_vars"})
+_PII_CATEGORIES = frozenset({"pii"})
+_INTERNAL_CATEGORIES = frozenset({"internal_config", "private_file_ref", "stack_trace", "debug_info"})
+_CATEGORY_SEVERITY = {
+    "credentials": "secret",
+    "token": "secret",
+    "private_key": "secret",
+    "env_vars": "secret",
+    "pii": "pii",
+    "internal_config": "internal",
+    "private_file_ref": "internal",
+    "stack_trace": "internal",
+    "debug_info": "internal",
+}
 
 _PRIVATE_PEM = re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED )?PRIVATE KEY-----([\s\S]{0,8192}?)-----END")
 _PUBLIC_PEM = re.compile(r"-----BEGIN (?:CERTIFICATE|PUBLIC KEY|RSA PUBLIC KEY)-----")
@@ -107,6 +127,41 @@ _DOC_PATH = re.compile(r"(?i)/(?:docs?|documentation|api-docs|swagger|openapi|re
 _SUPPORTED_ENCODINGS = frozenset({"", "identity", "gzip", "deflate"})
 
 
+def severity_for_category(category: str) -> str:
+    """Map a category to a severity tier; unknown categories are low_signal."""
+    return _CATEGORY_SEVERITY.get(category, "low_signal")
+
+
+def confidence_for_indicator(
+    *,
+    category: str,
+    rule: str,
+    suppressed_reason: str | None,
+    is_doc: bool,
+    audience: str,
+) -> float:
+    """Heuristic confidence in [0.05, 0.95]. Never implies confirmation."""
+    if suppressed_reason:
+        return 0.05
+    base = {
+        "secret": 0.85,
+        "pii": 0.7,
+        "internal": 0.55,
+        "low_signal": 0.35,
+    }[severity_for_category(category)]
+    if rule in {"pem_private_key", "vendor_key_shape", "jwt_shape", "synthetic_canary"}:
+        base += 0.05
+    if rule in {"debug_flag", "stack_trace_frame"}:
+        base -= 0.05
+    if is_doc:
+        base -= 0.25
+    if audience == "authenticated_self" and category not in _SECRET_CATEGORIES:
+        base -= 0.15
+    if audience == "public" and category in _SECRET_CATEGORIES:
+        base += 0.05
+    return round(min(0.95, max(0.05, base)), 2)
+
+
 @dataclass(frozen=True)
 class Indicator:
     """One minimized indicator. Holds no matched value or excerpt."""
@@ -117,6 +172,8 @@ class Indicator:
     value_length: int
     fingerprint: str
     suppressed_reason: str | None = None
+    severity: str = "low_signal"
+    confidence: float = 0.5
 
     def to_dict(self) -> dict[str, Any]:
         data: dict[str, Any] = {
@@ -125,10 +182,35 @@ class Indicator:
             "location": self.location,
             "value_length": self.value_length,
             "fingerprint": self.fingerprint,
+            "severity": self.severity,
+            "confidence": self.confidence,
         }
         if self.suppressed_reason:
             data["suppressed_reason"] = self.suppressed_reason
         return data
+
+
+def _assessment_confidence(indicators: list[Indicator], state: str) -> float:
+    if not indicators:
+        if state in {"not_observed", "public_or_intended_information"}:
+            return 0.9
+        if state in {"insufficient_context", "invalid_evidence"}:
+            return 0.4
+        return 0.5
+    top = max(item.confidence for item in indicators)
+    if state == "ready_for_manual_review":
+        return round(min(0.95, top + 0.05), 2)
+    if state == "access_control_validation_required":
+        return round(min(0.95, top), 2)
+    return round(top, 2)
+
+
+def _severity_summary(indicators: list[Indicator]) -> dict[str, int]:
+    counts = {tier: 0 for tier in SEVERITY_TIERS}
+    for item in indicators:
+        tier = item.severity if item.severity in counts else "low_signal"
+        counts[tier] += 1
+    return counts
 
 
 @dataclass
@@ -145,6 +227,7 @@ class DisclosureAssessment:
     elapsed_ms: float
     finding_confirmed: bool = False
     notes: list[str] = field(default_factory=list)
+    confidence: float = 0.5
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -159,10 +242,18 @@ class DisclosureAssessment:
             "suppressed": [item.to_dict() for item in self.suppressed],
             "reasons": list(self.reasons),
             "incomplete": self.incomplete,
+            "severity_summary": _severity_summary(self.indicators),
+            "confidence": self.confidence
+            if self.indicators or self.state != "indicator_detected"
+            else _assessment_confidence(self.indicators, self.state),
             "dimensions": {
                 "secret_shape_detected": any(item.category in _SECRET_CATEGORIES for item in self.indicators),
                 "audience_exposure": self.audience,
                 "unauthorized_access": "not_determined_requires_manual_validation",
+                "highest_severity": next(
+                    (tier for tier in SEVERITY_TIERS if _severity_summary(self.indicators).get(tier)),
+                    None,
+                ),
             },
             "secret_values_included": False,
             "network_requests_sent": 0,
@@ -175,6 +266,35 @@ def _fingerprint(value: str, salt: str) -> str:
     return hashlib.sha256(f"{ANALYSIS_VERSION}\0{salt}\0{value}".encode("utf-8", "replace")).hexdigest()[:12]
 
 
+_PUBLIC_ASSET = re.compile(
+    r"(?i)\.(?:js|css|map|png|jpe?g|gif|svg|ico|woff2?|ttf|eot|webp|mp4|webm)(?:\?|$)|"
+    r"/(?:static|assets|public|dist|build|vendor|node_modules|_next/static)/"
+)
+_DOCUMENTED_PUBLIC = re.compile(
+    r"(?i)^(https?://(?:example\.(?:com|org|net)|localhost|127\.0\.0\.1)(?:/\S*)?|"
+    r"user@example\.com|foo@bar\.com|test@test\.com|noreply@example\.com|"
+    r"AKIA[0-9A-Z]{16}|sk_test_[A-Za-z0-9]{8,}|ghp_[A-Za-z0-9]{8,}_example)$"
+)
+_EXAMPLE_PII = re.compile(
+    r"(?i)^(?:000-00-0000|123-45-6789|111-11-1111|"
+    r"1900-01-01|1970-01-01|2000-01-01|"
+    r"Jane Doe|John Doe|Alice(?: Example)?|Bob(?: Example)?)$"
+)
+_VERSION_ONLY_KEY = re.compile(r"(?i)^(version|ver|build|release|app_version|api_version|server_version)$")
+
+
+def _is_public_asset_path(value: str) -> bool:
+    return bool(_PUBLIC_ASSET.search(value.strip()))
+
+
+def _is_documented_public_value(value: str) -> bool:
+    return bool(_DOCUMENTED_PUBLIC.match(value.strip().strip("\"'")))
+
+
+def _is_example_pii(value: str) -> bool:
+    return bool(_EXAMPLE_PII.match(value.strip().strip("\"'")))
+
+
 def _is_placeholder(value: str) -> bool:
     stripped = value.strip().strip("\"'")
     if len(stripped) < 6 or _PLACEHOLDER.match(stripped):
@@ -183,10 +303,11 @@ def _is_placeholder(value: str) -> bool:
 
 
 class _Scanner:
-    def __init__(self, salt: str, reflected: set[str], is_doc: bool) -> None:
+    def __init__(self, salt: str, reflected: set[str], is_doc: bool, audience: str = "unknown") -> None:
         self.salt = salt
         self.reflected = reflected
         self.is_doc = is_doc
+        self.audience = audience if audience in AUDIENCES else "unknown"
         self.found: list[Indicator] = []
         self.suppressed: list[Indicator] = []
         self._seen: set[tuple[str, str, str]] = set()
@@ -199,13 +320,27 @@ class _Scanner:
         reason = None
         if value in self.reflected or any(len(item) >= 6 and item in value for item in self.reflected):
             reason = "reflected_from_request"
+        elif _is_example_pii(value):
+            reason = "example_placeholder_pii"
+        elif _is_documented_public_value(value):
+            reason = "documented_public_value"
+        elif _is_public_asset_path(value):
+            reason = "public_static_asset"
         elif check_placeholder and _is_placeholder(value):
             reason = "placeholder_value"
         elif check_placeholder and rule == "sensitive_key_value" and re.search(r"\s", value.strip()):
             reason = "descriptive_text_not_secret"
         elif self.is_doc:
             reason = "documentation_example"
-        indicator = Indicator(category, rule, location, len(value), key[2], reason)
+        severity = severity_for_category(category)
+        confidence = confidence_for_indicator(
+            category=category,
+            rule=rule,
+            suppressed_reason=reason,
+            is_doc=self.is_doc,
+            audience=self.audience,
+        )
+        indicator = Indicator(category, rule, location, len(value), key[2], reason, severity, confidence)
         (self.suppressed if reason else self.found).append(indicator)
 
     def scan_text(self, text: str, location: str) -> None:
@@ -250,6 +385,8 @@ class _Scanner:
                     ):
                         if _INTERNAL_HOST.search(child) or _URL_CREDS.search(child):
                             self.add("internal_config", "internal_endpoint_field", child_path, child)
+                    elif _VERSION_ONLY_KEY.match(lowered):
+                        pass  # public version fields are not disclosure findings
                     elif SENSITIVE_KEY.search(key) and not lowered.endswith(("_type", "_expires", "_expiry", "_at")):
                         category = "token" if "token" in lowered or "session" in lowered else "credentials"
                         self.add(category, "sensitive_key_value", child_path, child)
@@ -331,17 +468,19 @@ def assess_disclosure(record: Mapping[str, Any], *, salt: str = "") -> Disclosur
     assert isinstance(request, Mapping)
 
     def done(state: str, reasons: list[str], **kw: Any) -> DisclosureAssessment:
+        indicators = kw.get("indicators", [])
         return DisclosureAssessment(
             response_id=response_id,
             state=state,
             audience=audience,
             body_sha256=kw.get("sha"),
             categories=kw.get("categories", []),
-            indicators=kw.get("indicators", []),
+            indicators=indicators,
             suppressed=kw.get("suppressed", []),
             reasons=reasons,
             incomplete=kw.get("incomplete", False),
             elapsed_ms=round((time.perf_counter() - started) * 1000, 3),
+            confidence=_assessment_confidence(indicators, state),
         )
 
     if not isinstance(response, Mapping) or not isinstance(response.get("status"), int):
@@ -355,7 +494,7 @@ def assess_disclosure(record: Mapping[str, Any], *, salt: str = "") -> Disclosur
         return done("invalid_evidence", [error or "invalid_body"], sha=sha)
     truncated = bool(response.get("truncated"))
     url = str(record.get("url", ""))
-    scanner = _Scanner(salt or sha or "", _reflected_values(request), bool(_DOC_PATH.search(url)))
+    scanner = _Scanner(salt or sha or "", _reflected_values(request), bool(_DOC_PATH.search(url)), audience)
     content_type = headers.get("Content-Type", headers.get("content-type", "")).lower()
     parsed: Any = None
     if "json" in content_type or text.lstrip().startswith(("{", "[")):
@@ -413,15 +552,29 @@ def assess_batch(records: list[Mapping[str, Any]], *, salt: str = "") -> dict[st
     counts: dict[str, int] = {state: 0 for state in STATES}
     for item in results:
         counts[item["state"]] += 1
+    confidences = [float(item.get("confidence") or 0.0) for item in results]
+    severity_totals = {tier: 0 for tier in SEVERITY_TIERS}
+    suppressed_total = 0
+    for item in results:
+        for tier, n in (item.get("severity_summary") or {}).items():
+            if tier in severity_totals:
+                severity_totals[tier] += int(n)
+        suppressed_total += len(item.get("suppressed") or [])
     return {
         "analysis_version": ANALYSIS_VERSION,
         "finding_confirmed": False,
         "results": results,
         "state_counts": counts,
+        "severity_totals": severity_totals,
+        "suppressed_indicator_count": suppressed_total,
+        "mean_confidence": round(sum(confidences) / len(confidences), 3) if confidences else 0.0,
         "secret_values_included": False,
         "network_requests_sent": 0,
         "ai_requests_sent": 0,
-        "note": "Indicators are leads for manual review; validity, activity or exploitability of any value is not asserted.",
+        "note": (
+            "Indicators are leads for manual review; validity, activity or exploitability of any value "
+            "is not asserted. Severity tiers and confidence are heuristics only."
+        ),
     }
 
 

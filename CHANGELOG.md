@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### Disclosure FP reduction + severity tiers
+
+- `analyze disclosure` gains additive severity tiers (`secret` > `pii` >
+  `internal` > `low_signal`), per-indicator and assessment confidence scores,
+  and extra FP suppressions (example PII, documented public values, public
+  static assets, version-only keys). Existing states and lab FP counts stay
+  compatible (DEV/FINAL FP 0→0). `finding_confirmed` stays false. Version
+  stays 0.2.2.
+
 ### CORS / open-redirect impact
 
 - New offline `analysis/cors_redirect_impact.py` and `bbtk analyze cors-redirect-impact`.
