@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/banner.png" alt="Bug Bounty Toolkit" width="100%">
+</p>
+
 # Bug Bounty Toolkit
 
 Authorized testing CLI (`bbtk` / `bugbounty`). You supply targets, routes, and parameters. Version **0.2.2**.
