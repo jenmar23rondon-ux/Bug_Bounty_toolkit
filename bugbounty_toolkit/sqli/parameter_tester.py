@@ -1,4 +1,4 @@
-"""Bounded SQLi indicators; a single differential is never execution proof."""
+"""Bounded SQLi indicators. Confirmed only when a boolean delta reproduces twice."""
 
 from __future__ import annotations
 
@@ -47,6 +47,9 @@ ORDER_ERRORS = re.compile(
     re.I,
 )
 MAX_UNION_COLUMNS = 8
+MAX_BYPASS_PAYLOADS = 15
+_BOOLEAN_TRUE = "' AND 1=1-- "
+_BOOLEAN_FALSE = "' AND 1=2-- "
 
 
 def error_families(body: str) -> set[str]:
@@ -57,8 +60,37 @@ def _body_hash(response: ResponseRecord) -> str:
     return hashlib.sha256(response.body_text.encode("utf-8", errors="replace")).hexdigest()
 
 
+def bundled_bypass_wordlist() -> Path:
+    return Path(__file__).resolve().parents[2] / "wordlists" / "sqli-bypass.txt"
+
+
+def load_bypass_payloads(path: Path | None = None) -> tuple[str, ...]:
+    """Read the packaged bypass list. More than 15 payloads is rejected."""
+    source = path or bundled_bypass_wordlist()
+    payloads: list[str] = []
+    for line in source.read_text(encoding="utf-8").splitlines():
+        clean = line.strip()
+        if not clean or clean.startswith("#"):
+            continue
+        payloads.append(clean)
+    if not payloads:
+        raise ValueError("Bypass wordlist is empty.")
+    if len(payloads) > MAX_BYPASS_PAYLOADS:
+        raise ValueError(f"Bypass wordlist is limited to {MAX_BYPASS_PAYLOADS} payloads.")
+    return tuple(payloads)
+
+
+def fingerprint_name(families: list[str]) -> str | None:
+    """One new error family is a DBMS label. It never confirms a finding."""
+    if len(families) == 1:
+        return families[0]
+    return None
+
+
 def request_group_size(options: SqliOptions) -> int:
-    base = 8 if options.deep else 3
+    base = 11 if options.deep else 3
+    if options.bypass:
+        base += len(load_bypass_payloads())
     return base + (options.union_max_columns + 1 if options.union else 0)
 
 
@@ -76,6 +108,7 @@ class SqliOptions:
     content_type: str | None = None
     header_inject: tuple[str, ...] = ()
     body_template: str | None = None
+    bypass: bool = False
 
 
 class SqliParameterTester:
@@ -90,8 +123,12 @@ class SqliParameterTester:
         minimum = request_group_size(options)
         if options.max_tests < minimum:
             detail = (
-                "complete baseline, quote, timing and boolean group" if options.deep else "baseline and quote group"
+                "baseline, quotes, timing, and a boolean pair repeated around a second baseline"
+                if options.deep
+                else "baseline and quote group"
             )
+            if options.bypass:
+                detail += f" plus up to {MAX_BYPASS_PAYLOADS} bypass payloads"
             if options.union:
                 detail += f" plus up to {options.union_max_columns} ORDER BY and one UNION NULL probe"
             raise ValueError(f"SQLi probing requires a budget of at least {minimum} requests ({detail}).")
@@ -123,7 +160,7 @@ class SqliParameterTester:
                 baseline_errors: set[str] = set()
                 baseline_response: ResponseRecord | None = None
                 baseline_duration: int | None = None
-                boolean_records: list[dict[str, object]] = []
+                group_start = len(results)
                 probes: list[tuple[str, str, str]] = [
                     ("baseline", original, "error"),
                     ("single_quote", original + "'", "error"),
@@ -135,8 +172,11 @@ class SqliParameterTester:
                             ("time_mysql", original + "' AND SLEEP(3)-- ", "time"),
                             ("time_postgresql", original + "'; SELECT pg_sleep(3);--", "time"),
                             ("time_mssql", original + "'; WAITFOR DELAY '0:0:3'--", "time"),
-                            ("boolean_true", original + "' AND 1=1-- ", "boolean"),
-                            ("boolean_false", original + "' AND 1=2-- ", "boolean"),
+                            ("boolean_true", original + _BOOLEAN_TRUE, "boolean"),
+                            ("boolean_false", original + _BOOLEAN_FALSE, "boolean"),
+                            ("baseline_repeat", original, "control"),
+                            ("boolean_true_repeat", original + _BOOLEAN_TRUE, "boolean"),
+                            ("boolean_false_repeat", original + _BOOLEAN_FALSE, "boolean"),
                         ]
                     )
                 for stage, value, probe_kind in probes:
@@ -174,12 +214,12 @@ class SqliParameterTester:
                             confirmation_gap = "no_second_proof"
                         else:
                             classification = "not_reproducible"
+                    elif probe_kind == "control":
+                        classification = "baseline"
+                        finding_state = "not_observed"
                     elif probe_kind == "boolean":
-                        boolean_records.append({"body_size": response.body_size, "body_sha256": body_hash})
-                        # Finalized after the pair completes.
-                        classification = "possible" if new_errors else "not_reproducible"
-                        finding_state = "candidate" if new_errors else "not_observed"
-                        confirmation_gap = "no_second_proof" if new_errors else None
+                        classification = "not_reproducible"
+                        finding_state = "not_observed"
                     else:
                         # Quote / syntax-error probes: candidate at most.
                         classification = "possible" if new_errors else "not_reproducible"
@@ -209,6 +249,7 @@ class SqliParameterTester:
                             "status_code": response.status_code,
                             "duration_ms": response.duration_ms,
                             "new_error_families": new_errors,
+                            "dbms_fingerprint": fingerprint_name(new_errors),
                             "classification": classification,
                             "finding_state": finding_state,
                             "confirmed": confirmed,
@@ -226,25 +267,65 @@ class SqliParameterTester:
                     )
                     if stop_reason:
                         break
-                    if probe_kind == "boolean" and len(boolean_records) == 2:
-                        differs = boolean_records[0] != boolean_records[1]
-                        for row in results[-2:]:
-                            row["boolean_pair_differs"] = differs
-                            if differs:
-                                row["classification"] = "possible"
-                                row["finding_state"] = "candidate"
-                                row["confirmed"] = False
-                                row["confirmation_gap"] = "no_second_proof"
-                            elif row["new_error_families"]:
-                                row["classification"] = "possible"
-                                row["finding_state"] = "candidate"
-                                row["confirmed"] = False
-                                row["confirmation_gap"] = "no_second_proof"
-                            else:
-                                row["classification"] = "not_reproducible"
-                                row["finding_state"] = "not_observed"
-                                row["confirmed"] = False
-                                row["confirmation_gap"] = None
+                if options.bypass and stop_reason is None:
+                    for index, payload in enumerate(load_bypass_payloads(), start=1):
+                        stage = f"bypass_{index}"
+                        response = self._send(
+                            route, parameter, original + payload, options.headers, stage, results, surface
+                        )
+                        sent += 1
+                        if response is None:
+                            stop_reason = "transport_error"
+                            break
+                        errors = error_families(response.body_text)
+                        new_errors = sorted(errors - baseline_errors)
+                        body_hash = _body_hash(response)
+                        differs = baseline_response is not None and (
+                            response.status_code != baseline_response.status_code
+                            or response.body_size != baseline_response.body_size
+                            or body_hash != _body_hash(baseline_response)
+                        )
+                        blocked = response.status_code in {401, 403, 429}
+                        if blocked or response.body_truncated:
+                            classification = "error"
+                            finding_state = "inconclusive"
+                            confirmation_gap = None
+                            stop_reason = "access_or_rate_limit" if blocked else "truncated_response"
+                        elif differs or new_errors:
+                            classification = "possible"
+                            finding_state = "candidate"
+                            confirmation_gap = "no_second_proof"
+                        else:
+                            classification = "not_reproducible"
+                            finding_state = "not_observed"
+                            confirmation_gap = None
+                        results.append(
+                            {
+                                "route": redact_url(route),
+                                "method": surface.method,
+                                "parameter": parameter,
+                                "parameter_location": surface.location,
+                                "stage": stage,
+                                "status_code": response.status_code,
+                                "duration_ms": response.duration_ms,
+                                "new_error_families": new_errors,
+                                "dbms_fingerprint": fingerprint_name(new_errors),
+                                "classification": classification,
+                                "finding_state": finding_state,
+                                "confirmed": False,
+                                "confirmation_gap": confirmation_gap,
+                                "rejection_reason": None,
+                                "time_candidate": False,
+                                "body_size": response.body_size,
+                                "body_sha256": body_hash,
+                                "baseline_duration_ms": None,
+                                "timing_delta_ms": None,
+                                "exchange": response.to_dict(),
+                            }
+                        )
+                        if stop_reason:
+                            break
+                _apply_boolean_confirmation(results[group_start:], baseline_response)
                 if stop_reason:
                     break
                 if options.union and baseline_response is not None:
@@ -266,11 +347,15 @@ class SqliParameterTester:
         for row in results:
             seal_parameter_location(row, surface.location)
         note = (
-            "SQL errors, timing deltas, boolean and UNION differences are candidate indicators only. "
-            "Repeated stable controls and independent SQL-execution proof are missing. "
-            "No extraction is performed."
+            "Confirmed only when a boolean true/false delta reproduces twice and the baseline "
+            "between those pairs matches the initial baseline. A changed baseline is inconclusive "
+            "and is not confirmed. SQL errors, timing deltas, UNION differences, and DBMS fingerprints "
+            "remain candidates and never confirm by themselves. No extraction is performed."
         )
         any_confirmed = any(row.get("confirmed") for row in results)
+        fingerprints = sorted(
+            {str(row["dbms_fingerprint"]) for row in results if isinstance(row.get("dbms_fingerprint"), str)}
+        )
         path = write_evidence_json(
             evidence_dir,
             {
@@ -282,6 +367,7 @@ class SqliParameterTester:
                     [str(row.get("finding_state") or "") for row in results], stop_reason=stop_reason
                 ),
                 "confirmed": any_confirmed,
+                "dbms_fingerprints": fingerprints,
                 "note": note,
             },
             prefix="sqli",
@@ -310,6 +396,7 @@ class SqliParameterTester:
                 "classification": "error",
                 "finding_state": "inconclusive",
                 "confirmed": False,
+                "dbms_fingerprint": None,
                 "reason": "transport_error",
             }
             seal_parameter_location(error_row, surface.location)
@@ -360,6 +447,7 @@ class SqliParameterTester:
                     "status_code": response.status_code,
                     "duration_ms": response.duration_ms,
                     "new_error_families": new_errors,
+                    "dbms_fingerprint": fingerprint_name(new_errors),
                     "classification": classification,
                     "finding_state": "inconclusive" if stop_reason else "candidate" if invalid else "not_observed",
                     "confirmed": False,
@@ -425,6 +513,7 @@ class SqliParameterTester:
                 "duration_ms": response.duration_ms,
                 "column_count_candidate": inferred_columns,
                 "new_error_families": new_errors,
+                "dbms_fingerprint": fingerprint_name(new_errors),
                 "response_differs_from_baseline": differs,
                 "classification": classification,
                 "finding_state": finding_state,
@@ -441,3 +530,91 @@ class SqliParameterTester:
 
 def _surface(options: SqliOptions) -> InjectionSurface:
     return validate_surface(options.method, options.content_type, options.header_inject, options.body_template)
+
+
+def _signature(row: dict[str, object]) -> tuple[object, object, object]:
+    return (row.get("status_code"), row.get("body_sha256"), row.get("body_size"))
+
+
+def _mark_boolean_inconclusive(row: dict[str, object]) -> None:
+    if row.get("classification") == "error":
+        row["confirmed"] = False
+        return
+    row["classification"] = "inconclusive"
+    row["finding_state"] = "inconclusive"
+    row["confirmed"] = False
+    row["confirmation_gap"] = "no_second_proof"
+    row["rejection_reason"] = "no_second_proof"
+
+
+def _apply_boolean_confirmation(rows: list[dict[str, object]], baseline: ResponseRecord | None) -> None:
+    """Confirm only a repeated boolean delta around one unchanged baseline."""
+    by_stage = {str(row.get("stage")): row for row in rows}
+    true_first = by_stage.get("boolean_true")
+    false_first = by_stage.get("boolean_false")
+    true_second = by_stage.get("boolean_true_repeat")
+    false_second = by_stage.get("boolean_false_repeat")
+    repeat = by_stage.get("baseline_repeat")
+    if true_first is None or false_first is None:
+        return
+    present = [row for row in (true_first, false_first, true_second, false_second) if row is not None]
+    first_differs = _signature(true_first) != _signature(false_first)
+    for row in present:
+        row["boolean_pair_differs"] = first_differs
+    if not first_differs:
+        for row in present:
+            row["boolean_reproduced"] = False
+            row["baseline_stable"] = False
+            if row.get("classification") == "error":
+                row["confirmed"] = False
+                continue
+            families = row.get("new_error_families")
+            if isinstance(families, list) and families:
+                row["classification"] = "possible"
+                row["finding_state"] = "candidate"
+                row["confirmed"] = False
+                row["confirmation_gap"] = "no_second_proof"
+            else:
+                row["classification"] = "not_reproducible"
+                row["finding_state"] = "not_observed"
+                row["confirmed"] = False
+                row["confirmation_gap"] = None
+        return
+    baseline_stable = False
+    if baseline is not None and repeat is not None and repeat.get("classification") != "error":
+        status = repeat.get("status_code")
+        baseline_stable = (
+            isinstance(status, int)
+            and 200 <= status < 300
+            and status == baseline.status_code
+            and repeat.get("body_sha256") == _body_hash(baseline)
+            and repeat.get("body_size") == baseline.body_size
+        )
+    second_same = (
+        true_second is not None
+        and false_second is not None
+        and _signature(true_second) == _signature(true_first)
+        and _signature(false_second) == _signature(false_first)
+    )
+    if any(row.get("classification") == "error" for row in present):
+        for row in present:
+            row["boolean_reproduced"] = second_same
+            row["baseline_stable"] = baseline_stable
+            row["confirmed"] = False
+            if row.get("classification") != "error":
+                _mark_boolean_inconclusive(row)
+        return
+    for row in present:
+        row["boolean_reproduced"] = second_same
+        row["baseline_stable"] = baseline_stable
+        if row.get("classification") == "error":
+            row["confirmed"] = False
+            continue
+        if first_differs and second_same and baseline_stable:
+            row["classification"] = "confirmed"
+            row["finding_state"] = "confirmed"
+            row["confirmed"] = True
+            row["confirmation_gap"] = None
+            row["rejection_reason"] = None
+        else:
+            _mark_boolean_inconclusive(row)

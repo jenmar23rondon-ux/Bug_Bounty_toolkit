@@ -38,11 +38,13 @@ What reaches **confirmed** vs stays **candidate**:
 | IDOR/BOLA | Session B reads/writes A’s resource, session control proven, both responses in evidence | Weaker evidence |
 | XSS reflected | `--confirm-exec` Playwright observes the marker or an alert after that marker was reflected | Reflection without execution |
 | XSS DOM | `--dom`, or `--dom-local` (loopback-only alias): attributed execution of this probe's marker (`window.__bbtk_xss_marker` or an alert whose text is exactly that marker) **and** that same marker reached an instrumented DOM sink | A sink without execution, DOM reflection without execution (`reflected_not_executed`), an unrelated alert or marker, or execution without a sink |
-| SQLi | Native differential probes do not independently prove SQL execution | Errors, timing deltas and boolean / UNION differences remain candidates |
+| SQLi | A boolean true/false body delta reproduces twice, and the baseline request between those pairs matches the first baseline | Errors, timing deltas, UNION differences, a DBMS fingerprint, and a boolean delta that is not reproduced. A changed intervening baseline is inconclusive and is not confirmed |
 
 `bbtk hunt` runs `cors-check`, `ssrf-check`, `open-redirect`, `xss`, `sqli`, `access-check`. Each preserves its own evidence threshold. Use standalone `csrf-audit` and `takeover-check` outside hunt. See [HTTP proof limits](docs/http-proof-attribution.md).
 
 XSS and SQLi evidence records where the probe was placed (`query`, `body_form`, `body_json`, or `header`). A result with no parameter location is **inconclusive** and is not confirmed. Browser confirmation of a POST body is unsupported, because the browser does not replay that body: the result is **inconclusive** and is not confirmed. Query and header confirmation still require the second independent proof in the table above.
+
+SQLi is confirmed only by that repeated boolean delta. One boolean difference, a SQL error, a timing delay, a UNION-shaped difference, or a MySQL/PostgreSQL/MSSQL/Oracle/SQLite error fingerprint is evidence and stays a candidate. The fingerprint is recorded and never promotes a result. `--bypass` sends at most 15 packaged payloads and is off unless requested; those payloads do not confirm.
 
 ## Hunt (authorized)
 

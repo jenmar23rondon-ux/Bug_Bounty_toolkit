@@ -27,6 +27,8 @@ The test starts an ephemeral loopback server, sends bounded requests through the
 | `POST /xss/json` | Reflects JSON string `q` into HTML; other keys are not the reflection | Body reflection candidate only |
 | `POST /xss/form` | Reflects form field `q` into HTML | Body reflection candidate only |
 | `POST /sqli/json` | SQL-error text only when JSON string `q` contains a quote | Candidate only; no SQL engine |
+| `GET /sqli/boolean?mode=stable\|second-miss\|unstable` | Stable, non-repeating, or shifting boolean bodies | Confirmed only for `stable`; the other modes stay inconclusive |
+| `GET /sqli/fingerprint?family=mysql\|postgresql\|mssql\|oracle\|sqlite` | Returns that engine's error text after a quote | Fingerprint evidence only; never confirmed |
 | `GET /xss/header` | Reflects the `Referer` request header into HTML | Header reflection candidate only |
 
 The fixture intentionally models signals for testing classification. It does not demonstrate a real exploit or prove that the toolkit would find a vulnerability in a production application. XSS reflection is never execution, and SQL error text is never database access or SQLi confirmation. Do not expose this lab on a public interface.

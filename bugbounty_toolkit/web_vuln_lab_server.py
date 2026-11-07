@@ -57,6 +57,18 @@ class _Handler(BaseHTTPRequestHandler):
         elif parsed.path == "/sqli/ambiguous":
             # A generic server error is a negative/ambiguous control, not a SQL signature.
             self._send(500, "text/plain; charset=utf-8", "Temporary fixture service error")
+        elif parsed.path == "/sqli/boolean":
+            mode = (query.get("mode") or ["stable"])[0]
+            self._send(200, "application/json; charset=utf-8", boolean_fixture_body(self.server, mode, value))
+        elif parsed.path == "/sqli/fingerprint":
+            family = (query.get("family") or [""])[0]
+            text = FINGERPRINT_BODIES.get(family)
+            if text is None:
+                self._send(404, "application/json; charset=utf-8", '{"error":"not_found"}')
+            elif "'" in value or '"' in value:
+                self._send(200, "text/plain; charset=utf-8", text)
+            else:
+                self._send(200, "application/json; charset=utf-8", '{"items":[]}')
         elif parsed.path == "/xss/header":
             reflected = (self.headers.get("Referer") or "")[:2048]
             self._send(200, "text/html; charset=utf-8", f"<!doctype html><p>{reflected}</p>")
@@ -101,6 +113,54 @@ class _Handler(BaseHTTPRequestHandler):
                 self._send(200, "application/json; charset=utf-8", '{"items":[{"id":"fixture"}]}')
             return
         self._send(404, "application/json; charset=utf-8", '{"error":"not_found"}')
+
+
+FINGERPRINT_BODIES = {
+    "mysql": "You have an error in your SQL syntax",
+    "postgresql": "PostgreSQL syntax error at or near SELECT",
+    "mssql": "Unclosed quotation mark after the character string",
+    "oracle": "ORA-20001: invalid SQL",
+    "sqlite": "sqlite3.OperationalError: near token",
+}
+_BOOLEAN_TRUE = '{"rows":1}'
+_BOOLEAN_FALSE = '{"rows":0}'
+_BOOLEAN_BASE = '{"rows":"baseline"}'
+_BOOLEAN_CHANGED = '{"rows":"baseline-changed"}'
+_BOOLEAN_SAME = '{"rows":"same"}'
+
+
+def boolean_fixture_body(server: object, mode: str, value: str) -> str:
+    """Deterministic boolean bodies. No database is queried."""
+    counts = getattr(server, "boolean_counts", None)
+    if not isinstance(counts, dict):
+        counts = {"baseline": 0, "boolean": 0}
+        setattr(server, "boolean_counts", counts)
+    is_true = "1=1" in value
+    is_false = "1=2" in value
+    if mode == "second-miss":
+        if is_true or is_false:
+            counts["boolean"] = int(counts.get("boolean", 0)) + 1
+            if int(counts["boolean"]) <= 2:
+                return _BOOLEAN_TRUE if is_true else _BOOLEAN_FALSE
+            return _BOOLEAN_SAME
+        return _BOOLEAN_BASE
+    if mode == "unstable":
+        if is_true:
+            return _BOOLEAN_TRUE
+        if is_false:
+            return _BOOLEAN_FALSE
+        quoted = "'" in value or '"' in value
+        delayed = "SLEEP" in value or "pg_sleep" in value or "WAITFOR" in value
+        if not quoted and not delayed:
+            counts["baseline"] = int(counts.get("baseline", 0)) + 1
+            if int(counts["baseline"]) >= 2:
+                return _BOOLEAN_CHANGED
+        return _BOOLEAN_BASE
+    if is_true:
+        return _BOOLEAN_TRUE
+    if is_false:
+        return _BOOLEAN_FALSE
+    return _BOOLEAN_BASE
 
 
 class _LoopbackHTTPServer(ThreadingHTTPServer):
