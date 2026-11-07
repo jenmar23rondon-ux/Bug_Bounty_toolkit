@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### In-scope DOM XSS
+
+- `bbtk xss --dom` probes query and hash DOM sinks on any in-scope origin with
+  automation allowed. `--dom-local` remains a loopback-only alias. **Confirmed**
+  only when an instrumented sink executes and the marker or an alert is
+  observed; DOM reflection without execution stays `reflected_not_executed`.
+  Navigations share `--run-max-*` and stay on the target origin. Session
+  headers and cookies are supported. Offline lab: `labs/dom_xss_lab/`.
+
 ### Stronger offline SSRF analysis
 
 - New `analysis/ssrf_analysis.py` and `bbtk analyze ssrf`. Discovers SSRF-prone

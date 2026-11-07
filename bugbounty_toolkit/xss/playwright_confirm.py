@@ -35,6 +35,43 @@ def _origin(url: str) -> tuple[str, str, int | None]:
     return scheme, (parsed.hostname or "").lower(), port
 
 
+def _session_cookies(url: str, cookie_header: str) -> list[dict[str, str]]:
+    """Playwright cookies for this navigation origin. Values are not logged."""
+    parsed = urlsplit(url.split("#", 1)[0])
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("Session cookies require an absolute http(s) URL.")
+    origin = f"{parsed.scheme}://{parsed.netloc}/"
+    cookies: list[dict[str, str]] = []
+    for part in cookie_header.split(";"):
+        piece = part.strip()
+        if not piece:
+            continue
+        if "=" not in piece:
+            raise ValueError("Session cookie must be name=value.")
+        name, value = piece.split("=", 1)
+        name = name.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+        if not name or any(char in name for char in "\r\n;,"):
+            raise ValueError("Session cookie name is invalid.")
+        if any(char in value for char in "\r\n"):
+            raise ValueError("Session cookie value is invalid.")
+        cookies.append({"name": name, "value": value, "url": origin})
+    if not cookies:
+        raise ValueError("Session cookie header was empty.")
+    return cookies
+
+
+_DOM_MARKER_PRESENT = """marker => {
+  const root = document.documentElement;
+  if (!root) return false;
+  if (String(root.innerHTML).includes(marker)) return true;
+  const body = document.body;
+  return !!(body && typeof body.innerText === 'string' && body.innerText.includes(marker));
+}"""
+
+
 class _BrowserRequestBudget:
     """Apply scope, cadence, and shared execution leases to browser requests."""
 
@@ -176,7 +213,14 @@ class PlaywrightExecutionChecker:
         headers: dict[str, str] | None = None,
         *,
         local_only: bool = False,
+        dom: bool = False,
     ) -> dict[str, object]:
+        """Load one in-scope URL and report marker, alert, and DOM-sink observations.
+
+        ``local_only`` still requires a literal loopback URL. ``dom`` is the
+        in-scope DOM mode: same origin guard and shared budget, no loopback
+        requirement. It does not treat a sink or a DOM reflection as execution.
+        """
         if local_only:
             from .dom_local import require_literal_loopback
 
@@ -185,15 +229,35 @@ class PlaywrightExecutionChecker:
         if self._browser is None:
             self._start()
 
-        browser_headers = {
-            key: value
-            for key, value in (headers or {}).items()
-            if key.lower() not in {"host", "content-length", "transfer-encoding"}
-        }
+        cookie_header: str | None = None
+        if dom:
+            browser_headers = {}
+            for key, value in (headers or {}).items():
+                lowered = key.lower()
+                if lowered in {"host", "content-length", "transfer-encoding"}:
+                    continue
+                if lowered == "cookie":
+                    cookie_header = value
+                    continue
+                browser_headers[key] = value
+        else:
+            browser_headers = {
+                key: value
+                for key, value in (headers or {}).items()
+                if key.lower() not in {"host", "content-length", "transfer-encoding"}
+            }
         context = self._browser.new_context(
             extra_http_headers=browser_headers,
             service_workers="block",
         )
+        if cookie_header:
+            try:
+                context.add_cookies(_session_cookies(url, cookie_header))
+            except Exception as exc:
+                context.close()
+                if isinstance(exc, ValueError):
+                    raise ToolkitError(str(exc)) from None
+                raise ToolkitError("Could not apply the session cookie to the browser context.") from None
         expected_origin = _origin(url)
         observed_sinks: set[str] = set()
         request_budget = _BrowserRequestBudget(
@@ -303,8 +367,9 @@ class PlaywrightExecutionChecker:
             }""",
                 marker,
             )
-            if local_only:
+            if local_only or dom:
                 # Give bounded event-driven DOM updates a chance to run.
+                # local_only keeps the historical 300ms cap; dom uses the same cap.
                 try:
                     page.wait_for_function(
                         "marker => window.__bbtk_xss_marker === marker",
@@ -315,22 +380,24 @@ class PlaywrightExecutionChecker:
                     if type(exc).__name__ != "TimeoutError":
                         raise
             marker_observed = page.evaluate("marker => window.__bbtk_xss_marker === marker", marker)
+            observe_source = local_only or dom
             source_marker_present = (
                 bool(
                     page.evaluate(
                         "marker => location.search.includes(marker) || location.hash.includes(marker)", marker
                     )
                 )
-                if local_only
+                if observe_source
                 else False
             )
+            dom_marker_present = bool(page.evaluate(_DOM_MARKER_PRESENT, marker)) if dom else False
             observed_sinks.update(page.evaluate("() => window.__bbtk_dom_sinks || []"))
             if request_budget.error is not None:
                 raise request_budget.error
             if self.execution_budget is not None:
                 self.execution_budget.remaining_seconds()
             alert_observed = matching_alert_observed
-            return {
+            result: dict[str, object] = {
                 "classification": classify_execution(True, bool(marker_observed), alert_observed),
                 "marker_observed": bool(marker_observed),
                 "source_marker_present": source_marker_present,
@@ -341,6 +408,10 @@ class PlaywrightExecutionChecker:
                 "console_errors": console_errors,
                 "page_errors": page_errors,
             }
+            if dom:
+                # Additive. Callers that do not pass dom=True keep the previous keys.
+                result["dom_marker_present"] = dom_marker_present
+            return result
         finally:
             context.close()
             request_budget.close()

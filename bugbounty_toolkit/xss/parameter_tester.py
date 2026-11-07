@@ -15,6 +15,7 @@ from .reflection_detector import detect_reflection
 from .result_validator import classify_reflection
 from .test_cases import new_marker, payload_cases_for_marker
 from .playwright_confirm import PlaywrightExecutionChecker, require_playwright_installed
+from .dom_inscope import run_dom
 from .dom_local import require_literal_loopback, run_dom_local
 from .context_classifier import classify_reflected_context
 from .stored_local import StoredLocalOptions, run_stored_local
@@ -31,6 +32,8 @@ class XssOptions:
     html_parser: str = "html.parser"
     confirm_exec: bool = False
     dom_local: bool = False
+    # In-scope DOM probes. ``--dom-local`` sets this and keeps loopback_only.
+    dom: bool = False
     # Opt-in Phase-3 evidence-quality features (additive; default off).
     enrich_context: bool = True
     stored_local: bool = False
@@ -91,6 +94,26 @@ class XssParameterTester:
             finally:
                 local_checker.close()
         routes, parameters = self.validate(options)
+        if options.dom:
+            require_playwright_installed()
+            scoped_checker = PlaywrightExecutionChecker(
+                self.scope,
+                timeout_ms=int(self.client.timeout * 1000),
+                rate_limiter=self.client.rate_limiter,
+                execution_budget=self.client.execution_budget,
+            )
+            try:
+                return run_dom(
+                    routes,
+                    parameters,
+                    scoped_checker,
+                    evidence_dir,
+                    max_tests=options.max_tests,
+                    headers=options.headers,
+                    loopback_only=options.dom_local,
+                )
+            finally:
+                scoped_checker.close()
         if options.dom_local:
             require_playwright_installed()
             local_checker = PlaywrightExecutionChecker(
@@ -291,6 +314,8 @@ class XssParameterTester:
             raise ValueError("Max tests must be positive.")
         if options.html_parser not in {"html.parser", "lxml", "html5lib"}:
             raise ValueError("Unsupported HTML parser.")
+        if options.stored_local and options.dom:
+            raise ValueError("dom and stored_local are mutually exclusive.")
         if options.stored_local and options.dom_local:
             raise ValueError("dom_local and stored_local are mutually exclusive.")
         if options.stored_local:
