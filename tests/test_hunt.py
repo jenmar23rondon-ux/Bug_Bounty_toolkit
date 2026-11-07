@@ -206,7 +206,7 @@ class HuntTests(unittest.TestCase):
         self.assertIn("--deep", by_module["sqli"].argv)
         self.assertIn("--union", by_module["sqli"].argv)
         self.assertIn("3", by_module["sqli"].argv)
-        self.assertEqual(by_module["sqli"].minimum_requests, 12)
+        self.assertEqual(by_module["sqli"].minimum_requests, 15)
 
     def test_hunt_confirmable_modules_exclude_csrf_and_ssrf_needs_explicit_inputs(self):
         from bugbounty_toolkit.hunt import MODULE_ORDER

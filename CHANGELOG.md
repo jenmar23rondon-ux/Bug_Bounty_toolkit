@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### SQLi second boolean proof
+
+- `--deep` confirms SQLi only when a boolean true/false delta reproduces with
+  the same bodies and the baseline between the pairs still matches. A changed
+  baseline or a failed repeat is inconclusive and is not confirmed. SQL errors,
+  timing, UNION differences, and MySQL/PostgreSQL/MSSQL/Oracle/SQLite
+  fingerprints stay candidates. `--bypass` sends the packaged list of at most
+  15 payloads and is off by default. Version stays 0.2.2.
+
 ### POST, JSON, and header probe placement
 
 - `xss` and `sqli` accept `--method POST` with `--content-type json|form`, plus

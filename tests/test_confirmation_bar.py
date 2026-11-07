@@ -190,7 +190,7 @@ class ConfirmationBarTests(unittest.TestCase):
         )
         self.assertEqual(missing["finding_state"], "not_observed")
 
-    def test_sqli_syntax_and_single_boolean_pair_remain_candidates(self) -> None:
+    def test_sqli_syntax_stays_candidate_until_boolean_delta_repeats(self) -> None:
         routes = self.root / "routes.txt"
         params = self.root / "params.txt"
         routes.write_text("https://example.com/search?q=original\n", encoding="utf-8")
@@ -239,10 +239,12 @@ class ConfirmationBarTests(unittest.TestCase):
             SqliOptions(routes, params, max_tests=20, deep=True),
             self.root / "sqli-bool",
         )
-        bool_rows = [row for row in deep if row.get("stage", "").startswith("boolean_")]
-        self.assertTrue(bool_rows)
-        self.assertFalse(any(row.get("confirmed") for row in bool_rows))
-        self.assertTrue(all(row["finding_state"] == "candidate" for row in bool_rows))
+        bool_rows = [row for row in deep if str(row.get("stage", "")).startswith("boolean_")]
+        self.assertEqual(len(bool_rows), 4)
+        self.assertTrue(all(row.get("confirmed") for row in bool_rows))
+        self.assertTrue(
+            all(not row.get("confirmed") for row in deep if not str(row.get("stage", "")).startswith("boolean_"))
+        )
 
     def test_idor_confirmed_requires_controls_and_cross(self) -> None:
         # TN: classification candidate without elevating when controls_valid is False

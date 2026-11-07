@@ -1066,6 +1066,7 @@ def cmd_sqli(args: argparse.Namespace) -> None:
         args.union,
         args.union_max_columns,
         **injection_kwargs(args),
+        bypass=bool(getattr(args, "bypass", False)),
     )
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
@@ -1076,7 +1077,9 @@ def cmd_sqli(args: argparse.Namespace) -> None:
         budget = min(len(routes) * len(parameters) * group_size, options.max_tests // group_size * group_size)
         modes = ["error probes"]
         if options.deep:
-            modes.extend(("timing", "boolean"))
+            modes.extend(("timing", "repeated boolean"))
+        if options.bypass:
+            modes.append("bypass payloads")
         if options.union:
             modes.append("ORDER BY/UNION NULL probes")
         mode = ", ".join(modes)
@@ -1494,7 +1497,15 @@ def _hunt_tasks(
                 if args.confirm_exec:
                     command_parts.append("--confirm-exec")
             else:
-                group_size = (8 if args.deep else 3) + (args.union_max_columns + 1 if args.union else 0)
+                group_size = request_group_size(
+                    SqliOptions(
+                        args.routes,
+                        args.params,
+                        deep=bool(args.deep),
+                        union=bool(args.union),
+                        union_max_columns=args.union_max_columns,
+                    )
+                )
                 estimate = len(routes) * len(params) * group_size
                 minimum = group_size
                 quantum = group_size
@@ -3862,7 +3873,14 @@ def build_parser() -> argparse.ArgumentParser:
     sqli.add_argument("--rate", type=positive_float)
     sqli.add_argument("--max-tests", type=positive_int)
     sqli.add_argument(
-        "--deep", action="store_true", help="Add three delay and two boolean probes per complete parameter group"
+        "--deep",
+        action="store_true",
+        help="Add three delay probes and a boolean pair repeated around a second baseline",
+    )
+    sqli.add_argument(
+        "--bypass",
+        action="store_true",
+        help="Send the packaged bypass wordlist (at most 15 payloads). Off by default. Never confirms.",
     )
     sqli.add_argument(
         "--union",

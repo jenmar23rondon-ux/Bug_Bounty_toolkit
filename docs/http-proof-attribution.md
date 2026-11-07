@@ -1,8 +1,10 @@
 # HTTP indicators and proof of impact
 
-The native CORS, redirect and SQLi probes retain their bounded requests and
-candidate evidence. They no longer promote an unreplicated observation to a
-confirmed finding. Existing command signatures and request-group sizes remain.
+The native CORS, redirect and SQLi probes retain their bounded requests.
+They do not promote an unreplicated observation to a confirmed finding.
+Command flags stay compatible. The SQLi `--deep` group is 11 requests so the
+boolean control can be repeated; `--bypass` adds at most 15 further payloads
+and is off by default.
 
 * CORS: an arbitrary Cookie plus a non-empty 2xx body does not establish private
   data or an attacker-origin browser read. `private_body_readable` remains false;
@@ -12,11 +14,20 @@ confirmed finding. Existing command signatures and request-group sizes remain.
   A server that always redirects to that host may ignore the parameter. Native
   probes require baseline and independent destination controls before promotion;
   they never follow the destination.
-* SQLi: timing candidates require at least 2500 ms **above** the measured baseline,
-  not merely crossing an absolute 2500 ms threshold. Even a large delay, boolean
-  body difference or UNION-shaped difference remains a candidate until stable
-  repeated controls and independent execution proof exist. Invalid baselines stop
-  the group. No extraction is added.
+* SQLi: confirmed only when the boolean true and false responses differ, that
+  same pair of bodies is observed again, and the baseline request between the
+  pairs matches the first baseline (status, size, and body hash). A baseline
+  that changes is **inconclusive** and is not confirmed. A first delta that
+  does not reproduce is **inconclusive** and is not confirmed. Timing candidates
+  still require at least 2500 ms **above** the measured baseline, not an
+  absolute 2500 ms threshold. A delay, a SQL error, a UNION-shaped difference,
+  or a DBMS fingerprint (MySQL, PostgreSQL, MSSQL, Oracle, SQLite) stays a
+  candidate. The fingerprint is stored on the check and never confirms by
+  itself. An error that is not part of the repeated boolean proof stays a
+  candidate. Invalid baselines stop the group. `--bypass` is explicit and
+  capped at 15 packaged payloads (alternating case, comments, URL encoding,
+  alternate whitespace). It does not extract data and cannot confirm. No
+  extraction is added.
 
 Legacy `classification` strings such as `VULNERABLE` describe header/Location
 signals only. Consumers should use `finding_state`, `confirmed` and

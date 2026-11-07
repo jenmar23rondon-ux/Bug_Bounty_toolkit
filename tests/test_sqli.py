@@ -76,6 +76,7 @@ class SqliTests(unittest.TestCase):
         base = ["sqli", "lab", "--routes", "routes.txt", "--parameters", "params.txt"]
         defaults = parser.parse_args(base)
         self.assertFalse(defaults.union)
+        self.assertFalse(defaults.bypass)
         self.assertEqual(defaults.union_max_columns, 5)
         enabled = parser.parse_args([*base, "--union", "--union-max-columns", "3"])
         self.assertTrue(enabled.union)
@@ -102,8 +103,8 @@ class SqliTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tester.validate(SqliOptions(self.routes, self.params, max_tests=2))
 
-    def test_deep_mode_uses_baseline_time_and_boolean_pair_with_eight_request_budget(self):
-        durations = [10, 15, 15, 2700, 20, 20, 10, 10]
+    def test_deep_mode_confirms_only_a_repeated_stable_boolean_delta(self):
+        durations = [10, 15, 15, 2700, 20, 20, 10, 10, 10, 10, 10]
 
         def send(spec):
             value = parse_qs(urlsplit(spec.url).query)["q"][0]
@@ -116,29 +117,31 @@ class SqliTests(unittest.TestCase):
 
         self.client.send.side_effect = send
         path, results = self.tester.run(
-            SqliOptions(self.routes, self.params, max_tests=8, deep=True), self.root / "deep"
+            SqliOptions(self.routes, self.params, max_tests=11, deep=True), self.root / "deep"
         )
-        self.assertEqual(self.client.send.call_count, 8)
+        self.assertEqual(self.client.send.call_count, 11)
         self.assertEqual(results[0]["stage"], "baseline")
         self.assertEqual(results[3]["stage"], "time_mysql")
         self.assertTrue(results[3]["time_candidate"])
-        self.assertTrue(results[6]["boolean_pair_differs"])
-        self.assertEqual(results[6]["classification"], "possible")
-        self.assertFalse(results[6]["confirmed"])
-        self.assertEqual(results[7]["classification"], "possible")
-        self.assertFalse(results[7]["confirmed"])
+        self.assertFalse(results[3]["confirmed"])
+        boolean_rows = [row for row in results if str(row["stage"]).startswith("boolean_")]
+        self.assertEqual(len(boolean_rows), 4)
+        self.assertTrue(all(row["confirmed"] for row in boolean_rows))
+        self.assertTrue(all(row["baseline_stable"] for row in boolean_rows))
+        self.assertFalse(any(row["confirmed"] for row in results if not str(row["stage"]).startswith("boolean_")))
         evidence = json.loads(path.read_text())
-        self.assertEqual(evidence["requests_attempted"], 8)
+        self.assertEqual(evidence["requests_attempted"], 11)
+        self.assertTrue(evidence["confirmed"])
 
     def test_deep_requires_full_group_and_stops_at_budget_boundary(self):
-        with self.assertRaisesRegex(ValueError, "at least 8"):
-            self.tester.validate(SqliOptions(self.routes, self.params, max_tests=7, deep=True))
+        with self.assertRaisesRegex(ValueError, "at least 11"):
+            self.tester.validate(SqliOptions(self.routes, self.params, max_tests=10, deep=True))
         self.routes.write_text("https://example.com/search?q=one\nhttps://example.com/search?q=two\n")
         self.client.send.side_effect = lambda spec: self.respond(spec)
         path, _ = self.tester.run(
-            SqliOptions(self.routes, self.params, max_tests=8, deep=True), self.root / "deep-budget"
+            SqliOptions(self.routes, self.params, max_tests=11, deep=True), self.root / "deep-budget"
         )
-        self.assertEqual(self.client.send.call_count, 8)
+        self.assertEqual(self.client.send.call_count, 11)
         self.assertEqual(json.loads(path.read_text())["stop_reason"], "request_budget")
 
     def test_union_mode_infers_columns_and_sends_null_union_candidate(self):

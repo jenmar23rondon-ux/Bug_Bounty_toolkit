@@ -279,6 +279,7 @@ class EnginePlacementTests(unittest.TestCase):
         self.assertIsNone(sqli.body_template)
         self.assertEqual(sqli.union_max_columns, 5)
         self.assertFalse(sqli.union)
+        self.assertFalse(sqli.bypass)
 
     def test_post_browser_confirmation_stays_inconclusive(self) -> None:
         with TemporaryDirectory() as tmp:

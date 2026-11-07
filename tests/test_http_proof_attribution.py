@@ -38,32 +38,34 @@ class HttpProofAttributionTests(unittest.TestCase):
 
         client.send.side_effect = send
         path, rows = SqliParameterTester(self.scope, client).run(
-            SqliOptions(self.routes, self.params, deep=True, max_tests=8), self.root / "evidence"
+            SqliOptions(self.routes, self.params, deep=True, max_tests=11), self.root / "evidence"
         )
         return client, rows, json.loads(path.read_text(encoding="utf-8"))
 
     def test_threshold_crossing_by_two_ms_is_not_a_timing_candidate(self):
-        client, rows, evidence = self.run_deep([2499, 2501, 2501, 2501, 2501, 2501, 2501, 2501])
-        self.assertEqual(client.send.call_count, 8)
+        client, rows, evidence = self.run_deep([2499, 2501, 2501, 2501, 2501, 2501, 2501, 2501, 2501, 2501, 2501])
+        self.assertEqual(client.send.call_count, 11)
         self.assertFalse(any(row["time_candidate"] for row in rows))
         self.assertEqual(rows[3]["timing_delta_ms"], 2)
         self.assertFalse(evidence["confirmed"])
 
     def test_real_delay_is_retained_as_candidate_without_claiming_execution(self):
-        _, rows, evidence = self.run_deep([10, 10, 10, 3010, 10, 10, 10, 10])
+        _, rows, evidence = self.run_deep([10, 10, 10, 3010, 10, 10, 10, 10, 10, 10, 10])
         self.assertTrue(rows[3]["time_candidate"])
         self.assertEqual(rows[3]["finding_state"], "candidate")
         self.assertEqual(rows[3]["confirmation_gap"], "no_second_proof")
         self.assertFalse(evidence["confirmed"])
 
     def test_dynamic_request_counter_does_not_confirm_boolean_sqli(self):
-        _, rows, evidence = self.run_deep([10] * 8, dynamic=True)
-        self.assertTrue(rows[-1]["boolean_pair_differs"])
+        _, rows, evidence = self.run_deep([10] * 11, dynamic=True)
+        boolean_rows = [row for row in rows if str(row["stage"]).startswith("boolean_")]
+        self.assertTrue(boolean_rows[-1]["boolean_pair_differs"])
+        self.assertTrue(all(row["classification"] == "inconclusive" for row in boolean_rows))
         self.assertFalse(any(row["confirmed"] for row in rows))
-        self.assertEqual(evidence["classification"], "candidate")
+        self.assertEqual(evidence["classification"], "inconclusive")
 
     def test_invalid_baseline_stops_before_probes(self):
-        client, rows, evidence = self.run_deep([10] * 8, baseline_status=500)
+        client, rows, evidence = self.run_deep([10] * 11, baseline_status=500)
         self.assertEqual(client.send.call_count, 1)
         self.assertEqual(rows[0]["finding_state"], "inconclusive")
         self.assertEqual(evidence["stop_reason"], "invalid_baseline")
