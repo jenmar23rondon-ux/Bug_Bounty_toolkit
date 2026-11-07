@@ -4,10 +4,12 @@
 
 - `bbtk xss --dom` probes query and hash DOM sinks on any in-scope origin with
   automation allowed. `--dom-local` remains a loopback-only alias. **Confirmed**
-  only when an instrumented sink executes and the marker or an alert is
-  observed; DOM reflection without execution stays `reflected_not_executed`.
-  Navigations share `--run-max-*` and stay on the target origin. Session
-  headers and cookies are supported. Offline lab: `labs/dom_xss_lab/`.
+  only when attributed JavaScript execution (this probe's marker variable or
+  an alert whose text is exactly that marker) is corroborated by that marker
+  reaching an instrumented DOM sink. A sink alone, an unrelated alert, or DOM
+  reflection without execution is not confirmed. Navigations and same-origin
+  redirects share `--run-max-*`. Other origins are aborted. Session headers
+  and cookies stay on the target origin. Offline lab: `labs/dom_xss_lab/`.
 
 ### Stronger offline SSRF analysis
 

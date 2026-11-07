@@ -82,16 +82,23 @@ def _payload(marker: str, active: bool) -> str:
 
 def classify_dom_confirmation(
     *,
-    sink_executed: bool,
+    sink_reached: bool,
     marker_observed: bool,
     alert_observed: bool,
     reflected_in_dom: bool,
 ) -> str:
-    """Apply the DOM confirmation bar. A single signal is never ``confirmed``."""
+    """Confirm only with two independent proofs.
+
+    Attributed execution is ``window.__bbtk_xss_marker`` equaling this probe's
+    marker, or an alert whose message is exactly that marker. An unrelated
+    alert or a different marker string is not execution. An instrumented sink
+    receiving the marker is corroboration that the value flowed into the DOM
+    API; it is not execution by itself. Either proof alone stays unconfirmed.
+    """
     execution = marker_observed or alert_observed
-    if sink_executed and execution:
+    if sink_reached and execution:
         return "confirmed"
-    if (reflected_in_dom or sink_executed) and not execution:
+    if (reflected_in_dom or sink_reached) and not execution:
         return "reflected_not_executed"
     if execution:
         return "inconclusive"
@@ -120,10 +127,12 @@ def _observation(
     marker_observed = bool(evidence.get("marker_observed"))
     alert_observed = bool(evidence.get("alert_observed"))
     reflected_in_dom = bool(evidence.get("dom_marker_present"))
-    sink_executed = bool(sinks)
+    # The hook records that the marker string was passed to a DOM API.
+    # That observation does not mean JavaScript from the probe ran.
+    sink_reached = bool(sinks)
     execution = marker_observed or alert_observed
     classification = classify_dom_confirmation(
-        sink_executed=sink_executed,
+        sink_reached=sink_reached,
         marker_observed=marker_observed,
         alert_observed=alert_observed,
         reflected_in_dom=reflected_in_dom,
@@ -138,7 +147,8 @@ def _observation(
         "source_marker_present": bool(evidence.get("source_marker_present")),
         "dom_marker_present": reflected_in_dom,
         "dom_sinks": sorted(sinks),
-        "sink_executed": sink_executed,
+        "sink_reached": sink_reached,
+        "execution_attributed": execution,
         "marker_observed": marker_observed,
         "alert_observed": alert_observed,
         "browser_execution_observed": execution,

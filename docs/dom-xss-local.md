@@ -6,11 +6,16 @@
 is in program scope when automation is allowed. `--dom-local` is an alias of
 that check with the literal loopback restriction (`127.0.0.1` or `::1`).
 
-A result is **confirmed** only when an instrumented DOM sink executes and the
-marker or an alert is observed. Reflection into the DOM without execution is
-`reflected_not_executed` and is not confirmed. Navigations use the shared
-Playwright validator and count toward `--run-max-*`. Browser requests to any
-other origin are aborted. `--header` and `--cookie` are sent with the probe.
+A result is **confirmed** only when both independent proofs are present.
+Attributed execution means `window.__bbtk_xss_marker` equals this probe's
+marker, or an alert's message is exactly that marker. An unrelated alert or a
+different marker does not count. The corroborating proof is that the same
+marker was passed to an instrumented DOM sink. Reaching the sink is not
+execution. Reflection into the DOM without execution is
+`reflected_not_executed` and is not confirmed. Navigations and same-origin
+redirects use the shared Playwright validator and count toward `--run-max-*`.
+Requests to any other origin, including redirects and subresources, are
+aborted. `--header` and `--cookie` are sent only with same-origin requests.
 
 The `run_dom_local` library entry point below is unchanged.
 

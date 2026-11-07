@@ -980,7 +980,10 @@ def cmd_xss(args: argparse.Namespace) -> None:
         observed = sum(bool(item.get("browser_execution_observed")) for item in results)
         summary += f", {observed} stored-lab executions observed (not vulnerability verdicts)"
     elif options.dom:
-        summary += f", {confirmed} DOM confirmed (sink and marker or alert), {not_executed} reflected but not executed"
+        summary += (
+            f", {confirmed} DOM confirmed (attributed execution and sink reached), "
+            f"{not_executed} reflected but not executed"
+        )
     elif options.dom_local:
         observed = sum(item["classification"] == "execution_observed" for item in results)
         summary += f", {observed} DOM executions observed in a local fixture (not vulnerability verdicts)"

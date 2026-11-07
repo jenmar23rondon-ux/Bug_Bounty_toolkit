@@ -62,37 +62,37 @@ class DomConfirmationTests(unittest.TestCase):
     def test_confirmed_requires_sink_and_marker_or_alert(self) -> None:
         self.assertEqual(
             classify_dom_confirmation(
-                sink_executed=True, marker_observed=True, alert_observed=False, reflected_in_dom=True
+                sink_reached=True, marker_observed=True, alert_observed=False, reflected_in_dom=True
             ),
             "confirmed",
         )
         self.assertEqual(
             classify_dom_confirmation(
-                sink_executed=True, marker_observed=False, alert_observed=True, reflected_in_dom=False
+                sink_reached=True, marker_observed=False, alert_observed=True, reflected_in_dom=False
             ),
             "confirmed",
         )
         self.assertEqual(
             classify_dom_confirmation(
-                sink_executed=True, marker_observed=False, alert_observed=False, reflected_in_dom=True
+                sink_reached=True, marker_observed=False, alert_observed=False, reflected_in_dom=True
             ),
             "reflected_not_executed",
         )
         self.assertEqual(
             classify_dom_confirmation(
-                sink_executed=False, marker_observed=False, alert_observed=False, reflected_in_dom=True
+                sink_reached=False, marker_observed=False, alert_observed=False, reflected_in_dom=True
             ),
             "reflected_not_executed",
         )
         self.assertEqual(
             classify_dom_confirmation(
-                sink_executed=False, marker_observed=True, alert_observed=True, reflected_in_dom=True
+                sink_reached=False, marker_observed=True, alert_observed=True, reflected_in_dom=True
             ),
             "inconclusive",
         )
         self.assertEqual(
             classify_dom_confirmation(
-                sink_executed=False, marker_observed=False, alert_observed=False, reflected_in_dom=False
+                sink_reached=False, marker_observed=False, alert_observed=False, reflected_in_dom=False
             ),
             "not_reflected",
         )
@@ -213,7 +213,8 @@ class DomRunnerTests(unittest.TestCase):
             all(
                 item["confirmed"] is False
                 or (
-                    item["sink_executed"] is True
+                    item["sink_reached"] is True
+                    and item["execution_attributed"] is True
                     and (item["marker_observed"] is True or item["alert_observed"] is True)
                 )
                 for item in results
@@ -420,7 +421,8 @@ class DomOptionTests(unittest.TestCase):
                 )
         self.assertEqual(results[0]["classification"], "confirmed")
         self.assertTrue(results[0]["confirmed"])
-        self.assertTrue(results[0]["sink_executed"])
+        self.assertTrue(results[0]["sink_reached"])
+        self.assertTrue(results[0]["execution_attributed"])
         self.assertFalse(results[0]["finding_confirmed"])
 
     def test_dom_local_without_dom_keeps_the_loopback_runner(self) -> None:
