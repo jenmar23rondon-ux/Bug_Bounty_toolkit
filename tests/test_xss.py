@@ -8,6 +8,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from bugbounty_toolkit.core.http_client import ResponseRecord
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
+from bugbounty_toolkit.requests_engine.parameters import with_parameter as canonical_with_parameter
 from bugbounty_toolkit.xss.parameter_tester import XssOptions, XssParameterTester, with_parameter
 from bugbounty_toolkit.xss.reflection_detector import detect_reflection
 from bugbounty_toolkit.xss.result_validator import classify_reflection
@@ -241,6 +242,12 @@ class XssTests(unittest.TestCase):
     def test_replaces_only_the_supplied_parameter(self):
         result = with_parameter("https://example.com/search?q=old&q=duplicate&page=2", "q", '<marker>"')
         self.assertEqual(parse_qs(urlsplit(result).query), {"q": ['<marker>"'], "page": ["2"]})
+
+    def test_historical_with_parameter_import_is_the_same_callable(self):
+        self.assertIs(with_parameter, canonical_with_parameter)
+        rendered = with_parameter("https://example.com/search?page=2", "q", "kept")
+        self.assertEqual(rendered, canonical_with_parameter("https://example.com/search?page=2", "q", "kept"))
+        self.assertEqual(parse_qs(urlsplit(rendered).query), {"page": ["2"], "q": ["kept"]})
 
     def test_supplied_inputs_budget_and_scope_preflight(self):
         with tempfile.TemporaryDirectory() as directory:

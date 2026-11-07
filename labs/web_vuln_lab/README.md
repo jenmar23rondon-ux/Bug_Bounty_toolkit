@@ -24,5 +24,9 @@ The test starts an ephemeral loopback server, sends bounded requests through the
 | `/sqli/vulnerable?q=...` | Simulates a SQL syntax error string after a quote | Error-signature candidate only; no SQL engine is used |
 | `/sqli/protected?q=...` | Returns fixed output regardless of input | Negative control modeling parameterized handling |
 | `/sqli/ambiguous?q=...` | Returns a generic 500 response | Ambiguous server error, not a SQLi signature |
+| `POST /xss/json` | Reflects JSON string `q` into HTML; other keys are not the reflection | Body reflection candidate only |
+| `POST /xss/form` | Reflects form field `q` into HTML | Body reflection candidate only |
+| `POST /sqli/json` | SQL-error text only when JSON string `q` contains a quote | Candidate only; no SQL engine |
+| `GET /xss/header` | Reflects the `Referer` request header into HTML | Header reflection candidate only |
 
 The fixture intentionally models signals for testing classification. It does not demonstrate a real exploit or prove that the toolkit would find a vulnerability in a production application. XSS reflection is never execution, and SQL error text is never database access or SQLi confirmation. Do not expose this lab on a public interface.

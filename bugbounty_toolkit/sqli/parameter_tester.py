@@ -9,12 +9,20 @@ import re
 from urllib.parse import parse_qsl, urlsplit
 
 from ..core.checks import aggregate_finding_state
-from ..core.http_client import HttpClient, RequestSpec, ResponseRecord
+from ..core.http_client import HttpClient, ResponseRecord
 from ..core.redaction import redact_url
 from ..core.scope_validator import ScopeValidator
 from ..core.target import load_routes
 from ..reporting.evidence import write_evidence_json
-from ..requests_engine.parameters import load_parameter_names, with_parameter
+from ..requests_engine.injection_surface import (
+    InjectionSurface,
+    baseline_value,
+    bind_parameters,
+    build_injection_request,
+    seal_parameter_location,
+    validate_surface,
+)
+from ..requests_engine.parameters import load_parameter_names
 from ..utils.exceptions import ToolkitError
 
 
@@ -64,6 +72,10 @@ class SqliOptions:
     deep: bool = False
     union: bool = False
     union_max_columns: int = 5
+    method: str = "GET"
+    content_type: str | None = None
+    header_inject: tuple[str, ...] = ()
+    body_template: str | None = None
 
 
 class SqliParameterTester:
@@ -72,6 +84,7 @@ class SqliParameterTester:
         self.client = client
 
     def validate(self, options: SqliOptions) -> tuple[list[str], list[str]]:
+        _surface(options)
         if options.union and not 1 <= options.union_max_columns <= MAX_UNION_COLUMNS:
             raise ValueError(f"UNION column limit must be between 1 and {MAX_UNION_COLUMNS}.")
         minimum = request_group_size(options)
@@ -87,10 +100,13 @@ class SqliParameterTester:
         if not routes or not parameters:
             raise ValueError("Routes and parameters must contain usable entries.")
         self.scope.require_all(routes)
+        surface = _surface(options)
+        bind_parameters(surface, parameters)
         return routes, parameters
 
     def run(self, options: SqliOptions, evidence_dir: Path) -> tuple[Path, list[dict[str, object]]]:
         routes, parameters = self.validate(options)
+        surface = _surface(options)
         results: list[dict[str, object]] = []
         stop_reason: str | None = None
         sent = 0
@@ -100,7 +116,10 @@ class SqliParameterTester:
                 if sent + group_size > options.max_tests:
                     stop_reason = "request_budget"
                     break
-                original = dict(parse_qsl(urlsplit(route).query, keep_blank_values=True)).get(parameter, "")
+                if surface.location == "query":
+                    original = dict(parse_qsl(urlsplit(route).query, keep_blank_values=True)).get(parameter, "")
+                else:
+                    original = baseline_value(route, parameter, surface)
                 baseline_errors: set[str] = set()
                 baseline_response: ResponseRecord | None = None
                 baseline_duration: int | None = None
@@ -121,7 +140,7 @@ class SqliParameterTester:
                         ]
                     )
                 for stage, value, probe_kind in probes:
-                    response = self._send(route, parameter, value, options.headers, stage, results)
+                    response = self._send(route, parameter, value, options.headers, stage, results, surface)
                     sent += 1
                     if response is None:
                         stop_reason = "transport_error"
@@ -183,8 +202,9 @@ class SqliParameterTester:
                     results.append(
                         {
                             "route": redact_url(route),
-                            "method": "GET",
+                            "method": surface.method,
                             "parameter": parameter,
+                            "parameter_location": surface.location,
                             "stage": stage,
                             "status_code": response.status_code,
                             "duration_ms": response.duration_ms,
@@ -233,6 +253,7 @@ class SqliParameterTester:
                         parameter,
                         original,
                         options,
+                        surface,
                         baseline_response,
                         baseline_errors,
                         sent,
@@ -242,6 +263,8 @@ class SqliParameterTester:
                         break
             if stop_reason:
                 break
+        for row in results:
+            seal_parameter_location(row, surface.location)
         note = (
             "SQL errors, timing deltas, boolean and UNION differences are candidate indicators only. "
             "Repeated stable controls and independent SQL-execution proof are missing. "
@@ -273,23 +296,24 @@ class SqliParameterTester:
         headers: dict[str, str],
         stage: str,
         results: list[dict[str, object]],
+        surface: InjectionSurface,
     ) -> ResponseRecord | None:
-        spec = RequestSpec("GET", with_parameter(route, parameter, value), headers)
+        spec = build_injection_request(route, parameter, value, headers, surface)
         try:
             return self.client.send(spec)
         except (ToolkitError, ValueError):
-            results.append(
-                {
-                    "route": redact_url(route),
-                    "method": "GET",
-                    "parameter": parameter,
-                    "stage": stage,
-                    "classification": "error",
-                    "finding_state": "inconclusive",
-                    "confirmed": False,
-                    "reason": "transport_error",
-                }
-            )
+            error_row: dict[str, object] = {
+                "route": redact_url(route),
+                "method": spec.method,
+                "parameter": parameter,
+                "stage": stage,
+                "classification": "error",
+                "finding_state": "inconclusive",
+                "confirmed": False,
+                "reason": "transport_error",
+            }
+            seal_parameter_location(error_row, surface.location)
+            results.append(error_row)
             return None
 
     def _run_union_probes(
@@ -298,6 +322,7 @@ class SqliParameterTester:
         parameter: str,
         original: str,
         options: SqliOptions,
+        surface: InjectionSurface,
         baseline: ResponseRecord,
         baseline_errors: set[str],
         sent: int,
@@ -307,7 +332,7 @@ class SqliParameterTester:
         for column in range(1, options.union_max_columns + 1):
             stage = f"order_by_{column}"
             value = f"{original}' ORDER BY {column}-- "
-            response = self._send(route, parameter, value, options.headers, stage, results)
+            response = self._send(route, parameter, value, options.headers, stage, results, surface)
             sent += 1
             if response is None:
                 return sent, "transport_error"
@@ -328,7 +353,8 @@ class SqliParameterTester:
             results.append(
                 {
                     "route": redact_url(route),
-                    "method": "GET",
+                    "method": surface.method,
+                    "parameter_location": surface.location,
                     "parameter": parameter,
                     "stage": stage,
                     "status_code": response.status_code,
@@ -353,7 +379,7 @@ class SqliParameterTester:
         nulls = ",".join("NULL" for _ in range(inferred_columns))
         stage = "union_select_nulls"
         value = f"{original}' UNION SELECT {nulls}-- "
-        response = self._send(route, parameter, value, options.headers, stage, results)
+        response = self._send(route, parameter, value, options.headers, stage, results, surface)
         sent += 1
         if response is None:
             return sent, "transport_error"
@@ -391,8 +417,9 @@ class SqliParameterTester:
         results.append(
             {
                 "route": redact_url(route),
-                "method": "GET",
+                "method": surface.method,
                 "parameter": parameter,
+                "parameter_location": surface.location,
                 "stage": stage,
                 "status_code": response.status_code,
                 "duration_ms": response.duration_ms,
@@ -410,3 +437,7 @@ class SqliParameterTester:
             }
         )
         return sent, stop_reason
+
+
+def _surface(options: SqliOptions) -> InjectionSurface:
+    return validate_surface(options.method, options.content_type, options.header_inject, options.body_template)
