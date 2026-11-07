@@ -36,7 +36,7 @@ DOM_HOOKS = {
 }
 CHAIN = {
     "bugbounty_toolkit/xss/stored_local.py": "3bade658e43a65ba072167cf7bc71ea1527d1f7255b74618067284c89069d053",
-    "bugbounty_toolkit/xss/parameter_tester.py": "409f59354097dd7e46ea68b7cac98dd6ff594a7cce07295e000cc656cdbd20f1",
+    "bugbounty_toolkit/xss/parameter_tester.py": "d212063c263d61c355ef5b744482e43c02a631ee2ad732cc56ad43e7d853e632",
     "bugbounty_toolkit/xss/evidence_record.py": "9dad0cf912d5b4460235fd50ee6321789a9d166e4351b98e7a1c6985cf6a8a8e",
 }
 SCENARIOS = (

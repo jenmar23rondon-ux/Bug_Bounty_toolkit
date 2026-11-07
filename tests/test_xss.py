@@ -8,7 +8,8 @@ from urllib.parse import parse_qs, urlsplit
 
 from bugbounty_toolkit.core.http_client import ResponseRecord
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
-from bugbounty_toolkit.xss.parameter_tester import XssOptions, XssParameterTester, with_parameter
+from bugbounty_toolkit.requests_engine.parameters import with_parameter
+from bugbounty_toolkit.xss.parameter_tester import XssOptions, XssParameterTester
 from bugbounty_toolkit.xss.reflection_detector import detect_reflection
 from bugbounty_toolkit.xss.result_validator import classify_reflection
 from bugbounty_toolkit.xss.test_cases import payload_cases_for_marker, payloads_for_marker

@@ -42,6 +42,8 @@ What reaches **confirmed** vs stays **candidate**:
 
 `bbtk hunt` runs `cors-check`, `ssrf-check`, `open-redirect`, `xss`, `sqli`, `access-check`. Each preserves its own evidence threshold. Use standalone `csrf-audit` and `takeover-check` outside hunt. See [HTTP proof limits](docs/http-proof-attribution.md).
 
+XSS and SQLi evidence records where the probe was placed (`query`, `body_form`, `body_json`, or `header`). A result with no parameter location is **inconclusive** and is not confirmed.
+
 ## Hunt (authorized)
 
 1. Load **your** program’s written scope into `scope.yaml` / `scope.txt`.

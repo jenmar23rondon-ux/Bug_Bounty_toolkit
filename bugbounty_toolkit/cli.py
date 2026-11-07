@@ -895,6 +895,28 @@ def cmd_wordlists(args: argparse.Namespace) -> None:
         print(f"[i] Output: {result.output}" + (" (not written)" if args.dry_run else ""))
 
 
+def injection_kwargs(args: argparse.Namespace) -> dict[str, object]:
+    body_path = getattr(args, "body", None)
+    body_template = None
+    if body_path is not None:
+        if not body_path.is_file():
+            raise ValueError("Body template must be an existing file.")
+        body_template = body_path.read_text(encoding="utf-8")
+    return {
+        "method": getattr(args, "method", "GET") or "GET",
+        "content_type": getattr(args, "content_type", None),
+        "header_inject": tuple(getattr(args, "header_inject", None) or ()),
+        "body_template": body_template,
+    }
+
+
+def add_injection_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--method", choices=("GET", "POST"), default="GET")
+    parser.add_argument("--content-type", dest="content_type", choices=("json", "form"))
+    parser.add_argument("--header-inject", action="append", help="Allowlisted header to place the probe value in")
+    parser.add_argument("--body", type=Path, help="JSON or form template; JSON mode replaces one pointer only")
+
+
 def cmd_xss(args: argparse.Namespace) -> None:
     ai_review_config = resolve_ai_review_config(
         args.ai_review,
@@ -925,6 +947,7 @@ def cmd_xss(args: argparse.Namespace) -> None:
         stored_render_url=getattr(args, "stored_render_url", None),
         stored_parameter=getattr(args, "stored_parameter", "content") or "content",
         capture_review_file=getattr(args, "capture_review", None),
+        **injection_kwargs(args),
     )
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
@@ -1042,6 +1065,7 @@ def cmd_sqli(args: argparse.Namespace) -> None:
         args.deep,
         args.union,
         args.union_max_columns,
+        **injection_kwargs(args),
     )
     if options.max_tests > settings.max_tests:
         raise ValueError("Max tests exceeds the configured program limit.")
@@ -3822,6 +3846,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Disable additive reflected context enrichment on XSS results",
     )
     xss.add_argument("--dry-run", action="store_true")
+    add_injection_arguments(xss)
     add_run_budget_arguments(xss)
     add_ai_review_arguments(xss)
     xss.set_defaults(func=cmd_xss)
@@ -3851,6 +3876,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum ORDER BY positions to test with --union (1-8; default: 5)",
     )
     sqli.add_argument("--dry-run", action="store_true")
+    add_injection_arguments(sqli)
     add_run_budget_arguments(sqli)
     add_ai_review_arguments(sqli)
     sqli.set_defaults(func=cmd_sqli)

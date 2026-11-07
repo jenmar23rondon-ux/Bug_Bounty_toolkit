@@ -3,13 +3,20 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ..core.http_client import HttpClient, RequestSpec
+from ..core.http_client import HttpClient
 from ..core.scope_validator import ScopeValidator
 from ..core.target import load_routes
 from ..core.redaction import redact_text, redact_url
 from ..utils.exceptions import ToolkitError
 from ..reporting.evidence import write_evidence_json
-from ..requests_engine.parameters import load_parameter_names, with_parameter
+from ..requests_engine.injection_surface import (
+    InjectionSurface,
+    bind_parameters,
+    build_injection_request,
+    seal_parameter_location,
+    validate_surface,
+)
+from ..requests_engine.parameters import load_parameter_names
 from ..analysis.html_context import analyze_html
 from .reflection_detector import detect_reflection
 from .result_validator import classify_reflection
@@ -41,6 +48,10 @@ class XssOptions:
     stored_render_url: str | None = None
     stored_parameter: str = "content"
     capture_review_file: Path | None = None
+    method: str = "GET"
+    content_type: str | None = None
+    header_inject: tuple[str, ...] = ()
+    body_template: str | None = None
 
 
 class XssParameterTester:
@@ -148,6 +159,7 @@ class XssParameterTester:
 
         results: list[dict[str, object]] = []
         test_count = 0
+        surface = _surface(options)
         try:
             for route in routes:
                 for parameter in parameters:
@@ -158,25 +170,23 @@ class XssParameterTester:
                             path = write_evidence_json(evidence_dir, {"type": "xss", "results": results}, prefix="xss")
                             return path, results
                         test_count += 1
-                        spec = RequestSpec(
-                            method="GET", url=with_parameter(route, parameter, payload), headers=options.headers
-                        )
+                        spec = build_injection_request(route, parameter, payload, options.headers, surface)
                         try:
                             response = self.client.send(spec)
                         except ToolkitError as exc:
-                            results.append(
-                                {
-                                    "route": redact_url(route),
-                                    "method": "GET",
-                                    "parameter": parameter,
-                                    "payload": payload,
-                                    "payload_context": payload_case.context,
-                                    "classification": "error",
-                                    "confirmed": False,
-                                    "transport_error": True,
-                                    "reason": str(exc),
-                                }
-                            )
+                            error_result: dict[str, object] = {
+                                "route": redact_url(route),
+                                "method": spec.method,
+                                "parameter": parameter,
+                                "payload": payload,
+                                "payload_context": payload_case.context,
+                                "classification": "error",
+                                "confirmed": False,
+                                "transport_error": True,
+                                "reason": str(exc),
+                            }
+                            seal_parameter_location(error_result, surface.location)
+                            results.append(error_result)
                             path = write_evidence_json(
                                 evidence_dir,
                                 {"type": "xss", "results": results, "stop_reason": "transport_error"},
@@ -202,8 +212,9 @@ class XssParameterTester:
                                 }
                         result = {
                             "route": redact_url(route),
-                            "method": "GET",
+                            "method": spec.method,
                             "parameter": parameter,
+                            "parameter_location": surface.location,
                             "payload": payload,
                             "payload_context": payload_case.context,
                             "status_code": response.status_code,
@@ -262,7 +273,7 @@ class XssParameterTester:
                                 )
                             elif validation["classification"] == "possible":
                                 try:
-                                    execution = checker.confirm(spec.prepared_url(), marker, options.headers)
+                                    execution = checker.confirm(spec.prepared_url(), marker, dict(spec.headers))
                                 except ToolkitError as exc:
                                     result.update(
                                         classification="error",
@@ -280,6 +291,7 @@ class XssParameterTester:
                                         },
                                         prefix="xss",
                                     )
+                                    seal_parameter_location(result, surface.location)
                                     return path, results
                                 result["browser_execution_observed"] = execution["classification"] == "confirmed"
                                 result["execution"] = execution
@@ -295,6 +307,7 @@ class XssParameterTester:
                                     if result["confirmed"]
                                     else "The marker was reflected but did not execute in the headless browser."
                                 )
+                        seal_parameter_location(result, surface.location)
                         results.append(result)
                         if stop_reason:
                             path = write_evidence_json(
@@ -314,6 +327,7 @@ class XssParameterTester:
             raise ValueError("Max tests must be positive.")
         if options.html_parser not in {"html.parser", "lxml", "html5lib"}:
             raise ValueError("Unsupported HTML parser.")
+        _surface(options)
         if options.stored_local and options.dom:
             raise ValueError("dom and stored_local are mutually exclusive.")
         if options.stored_local and options.dom_local:
@@ -336,4 +350,14 @@ class XssParameterTester:
         if options.dom_local:
             for route in routes:
                 require_literal_loopback(route)
+        surface = _surface(options)
+        if (options.dom or options.dom_local) and surface.location != "query":
+            raise ValueError("DOM probes stay on query and hash sources.")
+        if options.confirm_exec and surface.location not in {"query", "header"}:
+            raise ValueError("Browser confirmation does not replay a POST body.")
+        bind_parameters(surface, parameters)
         return routes, parameters
+
+
+def _surface(options: XssOptions) -> InjectionSurface:
+    return validate_surface(options.method, options.content_type, options.header_inject, options.body_template)

@@ -57,8 +57,50 @@ class _Handler(BaseHTTPRequestHandler):
         elif parsed.path == "/sqli/ambiguous":
             # A generic server error is a negative/ambiguous control, not a SQL signature.
             self._send(500, "text/plain; charset=utf-8", "Temporary fixture service error")
+        elif parsed.path == "/xss/header":
+            reflected = (self.headers.get("Referer") or "")[:2048]
+            self._send(200, "text/html; charset=utf-8", f"<!doctype html><p>{reflected}</p>")
         else:
             self._send(404, "application/json; charset=utf-8", '{"error":"not_found"}')
+
+    def do_POST(self) -> None:
+        parsed = urlsplit(self.path)
+        length_header = self.headers.get("Content-Length") or "0"
+        try:
+            length = int(length_header)
+        except ValueError:
+            length = 0
+        raw = self.rfile.read(max(0, min(length, 8192)))
+        text = raw.decode("utf-8", errors="replace")
+        if parsed.path == "/xss/json":
+            try:
+                document = json.loads(text)
+            except json.JSONDecodeError:
+                self._send(400, "text/plain; charset=utf-8", "invalid json")
+                return
+            value = document.get("q", "") if isinstance(document, dict) else ""
+            reflected = value if isinstance(value, str) else ""
+            self._send(200, "text/html; charset=utf-8", f"<!doctype html><p>{reflected}</p>")
+            return
+        if parsed.path == "/xss/form":
+            form = parse_qs(text, keep_blank_values=True)
+            value = form.get("q", [""])[0][:2048]
+            self._send(200, "text/html; charset=utf-8", f"<!doctype html><p>{value}</p>")
+            return
+        if parsed.path == "/sqli/json":
+            try:
+                document = json.loads(text)
+            except json.JSONDecodeError:
+                self._send(400, "text/plain; charset=utf-8", "invalid json")
+                return
+            value = document.get("q", "") if isinstance(document, dict) else ""
+            text_value = value if isinstance(value, str) else ""
+            if "'" in text_value or '"' in text_value:
+                self._send(500, "text/plain; charset=utf-8", "You have an error in your SQL syntax")
+            else:
+                self._send(200, "application/json; charset=utf-8", '{"items":[{"id":"fixture"}]}')
+            return
+        self._send(404, "application/json; charset=utf-8", '{"error":"not_found"}')
 
 
 class _LoopbackHTTPServer(ThreadingHTTPServer):

@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+### POST, JSON, and header probe placement
+
+- `xss` and `sqli` accept `--method POST` with `--content-type json|form`, plus
+  `--header-inject` limited to Referer, User-Agent, X-Forwarded-Host, and Origin.
+  Query GET stays the default. JSON replacement changes only the declared pointer.
+  Evidence records `parameter_location`; a missing location is inconclusive and
+  is not confirmed. Version stays 0.2.2.
+
 ### In-scope DOM XSS
 
 - `bbtk xss --dom` probes query and hash DOM sinks on any in-scope origin with

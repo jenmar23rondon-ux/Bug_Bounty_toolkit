@@ -139,6 +139,8 @@ files = [
     "bugbounty_toolkit/xss/capture_review.py",
     "bugbounty_toolkit/xss/dom_local.py",
     "bugbounty_toolkit/xss/dom_inscope.py",
+    "bugbounty_toolkit/requests_engine/injection_surface.py",
+    "tests/test_injection_surface.py",
     "labs/dom_xss_lab/server.py",
     "tests/test_dom_xss_inscope.py",
     "tests/test_dom_xss_lab.py",
