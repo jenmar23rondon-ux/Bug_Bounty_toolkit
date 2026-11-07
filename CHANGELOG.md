@@ -1,5 +1,19 @@
 ## [Unreleased]
 
+### In-scope DOM XSS
+
+- `bbtk xss --dom` probes query and hash DOM sinks on any in-scope origin with
+  automation allowed. `--dom-local` remains a loopback-only alias. **Confirmed**
+  only when attributed JavaScript execution (this probe's marker variable or
+  an alert whose text is exactly that marker) is corroborated by that marker
+  reaching an instrumented DOM sink. A sink alone, an unrelated alert, or DOM
+  reflection without execution is not confirmed. Navigations and same-origin
+  redirects share `--run-max-*`. Other origins are aborted. Session headers
+  and cookies stay on the target origin. A dialog is dismissed before any
+  other handler work, and Chromium children are killed if the sync driver
+  outlives the existing navigation budget, so a stuck alert cannot wedge the
+  process. Offline lab: `labs/dom_xss_lab/`.
+
 ### Stronger offline SSRF analysis
 
 - New `analysis/ssrf_analysis.py` and `bbtk analyze ssrf`. Discovers SSRF-prone

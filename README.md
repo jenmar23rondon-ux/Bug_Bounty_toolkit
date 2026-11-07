@@ -36,7 +36,8 @@ What reaches **confirmed** vs stays **candidate**:
 | SSRF | Lab loopback canary received the request | URL-looking param alone |
 | CNAME takeover | — | **Never** confirmed; max candidate with dangling + known fingerprint + unclaimed |
 | IDOR/BOLA | Session B reads/writes A’s resource, session control proven, both responses in evidence | Weaker evidence |
-| XSS | `--confirm-exec`/Playwright **or** DOM loopback execution | Reflection without execution |
+| XSS reflected | `--confirm-exec` Playwright observes the marker or an alert after that marker was reflected | Reflection without execution |
+| XSS DOM | `--dom`, or `--dom-local` (loopback-only alias): attributed execution of this probe's marker (`window.__bbtk_xss_marker` or an alert whose text is exactly that marker) **and** that same marker reached an instrumented DOM sink | A sink without execution, DOM reflection without execution (`reflected_not_executed`), an unrelated alert or marker, or execution without a sink |
 | SQLi | Native differential probes do not independently prove SQL execution | Errors, timing deltas and boolean / UNION differences remain candidates |
 
 `bbtk hunt` runs `cors-check`, `ssrf-check`, `open-redirect`, `xss`, `sqli`, `access-check`. Each preserves its own evidence threshold. Use standalone `csrf-audit` and `takeover-check` outside hunt. See [HTTP proof limits](docs/http-proof-attribution.md).

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import signal
 import threading
 from urllib.parse import urlsplit
 from typing import Any
@@ -11,6 +13,55 @@ from ..core.rate_limiter import RateLimiter
 from ..core.scope_validator import ScopeValidator
 from ..core.execution_budget import ExecutionBudget
 from ..utils.exceptions import ToolkitError
+
+
+def _browser_child_pids(root_pid: int) -> set[int]:
+    """Chromium processes descended from ``root_pid``. Empty when /proc is unavailable."""
+    if not os.path.isdir("/proc"):
+        return set()
+    children: dict[int, list[int]] = {}
+    for name in os.listdir("/proc"):
+        if not name.isdigit():
+            continue
+        pid = int(name)
+        try:
+            with open(os.path.join("/proc", name, "status"), encoding="utf-8", errors="replace") as handle:
+                status = handle.read()
+        except OSError:
+            continue
+        ppid: int | None = None
+        for line in status.splitlines():
+            if line.startswith("PPid:"):
+                ppid = int(line.split()[1])
+                break
+        if ppid is not None:
+            children.setdefault(ppid, []).append(pid)
+    found: set[int] = set()
+    stack = [root_pid]
+    while stack:
+        current = stack.pop()
+        for child in children.get(current, ()):
+            if child not in found:
+                found.add(child)
+                stack.append(child)
+    browsers: set[int] = set()
+    for pid in found:
+        try:
+            with open(os.path.join("/proc", str(pid), "cmdline"), "rb") as handle:
+                command = handle.read()
+        except OSError:
+            continue
+        if b"chrome" in command or b"chromium" in command or b"headless_shell" in command:
+            browsers.add(pid)
+    return browsers
+
+
+def _kill_browser_children(root_pid: int) -> None:
+    for pid in _browser_child_pids(root_pid):
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except OSError:
+            pass
 
 
 def require_playwright_installed() -> None:
@@ -33,6 +84,43 @@ def _origin(url: str) -> tuple[str, str, int | None]:
     scheme = parsed.scheme.lower()
     port = parsed.port or (443 if scheme == "https" else 80 if scheme == "http" else None)
     return scheme, (parsed.hostname or "").lower(), port
+
+
+def _session_cookies(url: str, cookie_header: str) -> list[dict[str, str]]:
+    """Playwright cookies for this navigation origin. Values are not logged."""
+    parsed = urlsplit(url.split("#", 1)[0])
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("Session cookies require an absolute http(s) URL.")
+    origin = f"{parsed.scheme}://{parsed.netloc}/"
+    cookies: list[dict[str, str]] = []
+    for part in cookie_header.split(";"):
+        piece = part.strip()
+        if not piece:
+            continue
+        if "=" not in piece:
+            raise ValueError("Session cookie must be name=value.")
+        name, value = piece.split("=", 1)
+        name = name.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+        if not name or any(char in name for char in "\r\n;,"):
+            raise ValueError("Session cookie name is invalid.")
+        if any(char in value for char in "\r\n"):
+            raise ValueError("Session cookie value is invalid.")
+        cookies.append({"name": name, "value": value, "url": origin})
+    if not cookies:
+        raise ValueError("Session cookie header was empty.")
+    return cookies
+
+
+_DOM_MARKER_PRESENT = """marker => {
+  const root = document.documentElement;
+  if (!root) return false;
+  if (String(root.innerHTML).includes(marker)) return true;
+  const body = document.body;
+  return !!(body && typeof body.innerText === 'string' && body.innerText.includes(marker));
+}"""
 
 
 class _BrowserRequestBudget:
@@ -77,7 +165,14 @@ class _BrowserRequestBudget:
             except ValueError:
                 route.abort()
                 return
-            lease = self.budget.acquire(request.url) if self.budget is not None else None
+            if self.budget is not None:
+                lease = self.budget.try_acquire(request.url)
+                if lease is None:
+                    navigation = callable(is_navigation) and is_navigation()
+                    if navigation:
+                        self.error = ToolkitError("Run concurrency limit blocked the browser navigation.")
+                    route.abort()
+                    return
             remaining = self.budget.remaining_seconds() if self.budget is not None else None
             if self.rate_limiter is not None:
                 self.rate_limiter.wait(max_wait=remaining)
@@ -176,7 +271,14 @@ class PlaywrightExecutionChecker:
         headers: dict[str, str] | None = None,
         *,
         local_only: bool = False,
+        dom: bool = False,
     ) -> dict[str, object]:
+        """Load one in-scope URL and report marker, alert, and DOM-sink observations.
+
+        ``local_only`` still requires a literal loopback URL. ``dom`` is the
+        in-scope DOM mode: same origin guard and shared budget, no loopback
+        requirement. It does not treat a sink or a DOM reflection as execution.
+        """
         if local_only:
             from .dom_local import require_literal_loopback
 
@@ -185,15 +287,35 @@ class PlaywrightExecutionChecker:
         if self._browser is None:
             self._start()
 
-        browser_headers = {
-            key: value
-            for key, value in (headers or {}).items()
-            if key.lower() not in {"host", "content-length", "transfer-encoding"}
-        }
+        cookie_header: str | None = None
+        if dom:
+            browser_headers = {}
+            for key, value in (headers or {}).items():
+                lowered = key.lower()
+                if lowered in {"host", "content-length", "transfer-encoding"}:
+                    continue
+                if lowered == "cookie":
+                    cookie_header = value
+                    continue
+                browser_headers[key] = value
+        else:
+            browser_headers = {
+                key: value
+                for key, value in (headers or {}).items()
+                if key.lower() not in {"host", "content-length", "transfer-encoding"}
+            }
         context = self._browser.new_context(
             extra_http_headers=browser_headers,
             service_workers="block",
         )
+        if cookie_header:
+            try:
+                context.add_cookies(_session_cookies(url, cookie_header))
+            except Exception as exc:
+                context.close()
+                if isinstance(exc, ValueError):
+                    raise ToolkitError(str(exc)) from None
+                raise ToolkitError("Could not apply the session cookie to the browser context.") from None
         expected_origin = _origin(url)
         observed_sinks: set[str] = set()
         request_budget = _BrowserRequestBudget(
@@ -267,11 +389,21 @@ class PlaywrightExecutionChecker:
         page_errors: list[str] = []
         matching_alert_observed = False
 
-        def on_dialog(dialog) -> None:
+        def on_dialog(dialog: Any) -> None:
             nonlocal matching_alert_observed
-            matching_alert_observed |= dialog.type == "alert" and dialog.message == marker
-            dialogs.append({"type": dialog.type, "text": redact_text(dialog.message)[:300]})
-            dialog.accept()
+            # Dismiss first. Redaction or a stuck accept must not leave the modal
+            # up: Playwright pauses navigation until the dialog is gone, and that
+            # pause ignores the goto timeout.
+            try:
+                message = str(dialog.message)
+            except Exception:
+                message = ""
+            try:
+                dialog.accept()
+            except Exception:
+                pass
+            matching_alert_observed |= dialog.type == "alert" and message == marker
+            dialogs.append({"type": dialog.type, "text": (redact_text(message) or "")[:300]})
 
         page.on("dialog", on_dialog)
         page.on(
@@ -303,8 +435,9 @@ class PlaywrightExecutionChecker:
             }""",
                 marker,
             )
-            if local_only:
+            if local_only or dom:
                 # Give bounded event-driven DOM updates a chance to run.
+                # local_only keeps the historical 300ms cap; dom uses the same cap.
                 try:
                     page.wait_for_function(
                         "marker => window.__bbtk_xss_marker === marker",
@@ -315,22 +448,24 @@ class PlaywrightExecutionChecker:
                     if type(exc).__name__ != "TimeoutError":
                         raise
             marker_observed = page.evaluate("marker => window.__bbtk_xss_marker === marker", marker)
+            observe_source = local_only or dom
             source_marker_present = (
                 bool(
                     page.evaluate(
                         "marker => location.search.includes(marker) || location.hash.includes(marker)", marker
                     )
                 )
-                if local_only
+                if observe_source
                 else False
             )
+            dom_marker_present = bool(page.evaluate(_DOM_MARKER_PRESENT, marker)) if dom else False
             observed_sinks.update(page.evaluate("() => window.__bbtk_dom_sinks || []"))
             if request_budget.error is not None:
                 raise request_budget.error
             if self.execution_budget is not None:
                 self.execution_budget.remaining_seconds()
             alert_observed = matching_alert_observed
-            return {
+            result: dict[str, object] = {
                 "classification": classify_execution(True, bool(marker_observed), alert_observed),
                 "marker_observed": bool(marker_observed),
                 "source_marker_present": source_marker_present,
@@ -341,16 +476,34 @@ class PlaywrightExecutionChecker:
                 "console_errors": console_errors,
                 "page_errors": page_errors,
             }
+            if dom:
+                # Additive. Callers that do not pass dom=True keep the previous keys.
+                result["dom_marker_present"] = dom_marker_present
+            return result
         finally:
-            context.close()
-            request_budget.close()
+            try:
+                context.close()
+            finally:
+                request_budget.close()
 
     def close(self) -> None:
-        if self._browser is not None:
-            self._browser.close()
-            self._browser = None
-        if self._manager is not None:
+        browser = self._browser
+        self._browser = None
+        if browser is not None:
+            try:
+                browser.close()
+            except Exception:
+                _kill_browser_children(os.getpid())
+        manager = self._manager
+        self._manager = None
+        self._playwright = None
+        if manager is None:
+            return
+        # A failed start() has no connection; calling __exit__ then raises AttributeError.
+        if getattr(manager, "_connection", None) is None:
+            return
+        try:
             # Playwright Sync API: ContextManager exposes start()/__exit__, not stop().
-            self._manager.__exit__(None, None, None)
-            self._manager = None
-            self._playwright = None
+            manager.__exit__(None, None, None)
+        except Exception:
+            _kill_browser_children(os.getpid())

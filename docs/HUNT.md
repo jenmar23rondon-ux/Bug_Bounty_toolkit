@@ -36,7 +36,8 @@ Use `--only` / `--exclude` to bound modules. SSRF needs `--ssrf-url` and `--ssrf
 | CORS | Independent private-data and attacker-browser read proof, not supplied by native probes | reflected policy = candidate |
 | Open redirect | Independent parameter-causality controls, not supplied by native probes | matching external Location = candidate; never followed |
 | SSRF | Lab loopback canary received the request | candidate |
-| XSS | `--confirm-exec`/Playwright or DOM loopback execution | reflection = candidate |
+| XSS reflected | `--confirm-exec` Playwright marker or alert after reflection | reflection = candidate |
+| XSS DOM | `--dom` / `--dom-local`: attributed marker/alert execution and the same marker reached a DOM sink | sink alone, unrelated alert/marker, or reflection without execution is not confirmed |
 | SQLi | Independent execution proof with repeated stable controls, not supplied by native probes | error/timing/boolean/UNION indicators = candidate |
 | IDOR/BOLA | Session B reads/writes A’s resource, controls proven, both responses in evidence | candidate |
 | CNAME takeover | Never confirmed | candidate (dangling+known+unclaimed) or inconclusive |

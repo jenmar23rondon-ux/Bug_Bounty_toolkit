@@ -130,22 +130,39 @@ class ExecutionBudget:
         while not self._semaphore.acquire(timeout=0.05):
             self._check_deadline()
         try:
-            self._check_deadline()
-            host = urlsplit(url).hostname
-            if not host:
-                raise ValueError("A valid destination host is required for the run budget.")
-            with self._lock:
-                if self.max_requests is not None and self._reserved >= self.max_requests:
-                    if self._stop_reason is None:
-                        self._stop_reason = "request_budget_exhausted"
-                    self.cancel_event.set()
-                    raise ToolkitError(f"Run request budget exhausted ({self._reserved}/{self.max_requests}).")
-                self._reserved += 1
-                self._destinations.add(host.lower())
-            return _ExecutionLease(self)
+            return self._reserve(url)
         except BaseException:
             self._semaphore.release()
             raise
+
+    def try_acquire(self, url: str) -> _ExecutionLease | None:
+        """Reserve one slot without waiting.
+
+        Browser route callbacks run on the same thread that delivers request
+        completion. Waiting here deadlocks once every concurrency slot is held.
+        """
+        if not self._semaphore.acquire(blocking=False):
+            return None
+        try:
+            return self._reserve(url)
+        except BaseException:
+            self._semaphore.release()
+            raise
+
+    def _reserve(self, url: str) -> _ExecutionLease:
+        self._check_deadline()
+        host = urlsplit(url).hostname
+        if not host:
+            raise ValueError("A valid destination host is required for the run budget.")
+        with self._lock:
+            if self.max_requests is not None and self._reserved >= self.max_requests:
+                if self._stop_reason is None:
+                    self._stop_reason = "request_budget_exhausted"
+                self.cancel_event.set()
+                raise ToolkitError(f"Run request budget exhausted ({self._reserved}/{self.max_requests}).")
+            self._reserved += 1
+            self._destinations.add(host.lower())
+        return _ExecutionLease(self)
 
     def _start(self) -> None:
         self._check_deadline()

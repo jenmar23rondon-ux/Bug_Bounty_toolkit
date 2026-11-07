@@ -1,8 +1,26 @@
 # DOM-only XSS loopback evaluation
 
-This feature is an opt-in synthetic laboratory check, **not a scanner for public
-bug bounty targets**. The routes must contain literal loopback IP addresses;
-`localhost` and public hostnames are rejected. Supply a fresh disposable local
+## In-scope DOM (`--dom`)
+
+`--dom` is the primary flag. It probes query and hash sources on any origin that
+is in program scope when automation is allowed. `--dom-local` is an alias of
+that check with the literal loopback restriction (`127.0.0.1` or `::1`).
+
+A result is **confirmed** only when both independent proofs are present.
+Attributed execution means `window.__bbtk_xss_marker` equals this probe's
+marker, or an alert's message is exactly that marker. An unrelated alert or a
+different marker does not count. The corroborating proof is that the same
+marker was passed to an instrumented DOM sink. Reaching the sink is not
+execution. Reflection into the DOM without execution is
+`reflected_not_executed` and is not confirmed. Navigations and same-origin
+redirects use the shared Playwright validator and count toward `--run-max-*`.
+Requests to any other origin, including redirects and subresources, are
+aborted. `--header` and `--cookie` are sent only with same-origin requests.
+
+The `run_dom_local` library entry point below is unchanged.
+
+`--dom-local` still requires literal loopback IP addresses. `localhost` and
+public hostnames are rejected for that alias. Supply a fresh disposable local
 web application and only test resources you control.
 
 After installing the optional browser dependency:

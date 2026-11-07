@@ -918,6 +918,7 @@ def cmd_xss(args: argparse.Namespace) -> None:
         args.html_parser,
         args.confirm_exec,
         args.dom_local,
+        dom=bool(getattr(args, "dom", False) or args.dom_local),
         enrich_context=not getattr(args, "no_enrich_context", False),
         stored_local=bool(getattr(args, "stored_local", False)),
         stored_write_url=getattr(args, "stored_write_url", None),
@@ -940,7 +941,7 @@ def cmd_xss(args: argparse.Namespace) -> None:
     elif options.stored_local:
         total = options.max_tests
     else:
-        variants = 4 if options.dom_local else 11 if options.confirm_exec else 4
+        variants = 4 if (options.dom or options.dom_local) else 11 if options.confirm_exec else 4
         total = len(routes) * len(parameters) * variants
     if args.dry_run:
         if options.capture_review_file is not None:
@@ -952,14 +953,18 @@ def cmd_xss(args: argparse.Namespace) -> None:
                 "No third-party writes. No Blind XSS callbacks. No requests sent (dry-run)."
             )
             return
+        if options.dom or options.dom_local:
+            scope_note = (
+                "loopback DOM browser probes (literal 127.0.0.1 or ::1 only)"
+                if options.dom_local
+                else "in-scope DOM browser probes (target origin only)"
+            )
+            detail = f"{scope_note}. Navigations count toward --run-max-*."
+        else:
+            detail = f"HTTP requests. Browser confirmation {'enabled' if options.confirm_exec else 'disabled'}."
         print(
             f"[+] {len(routes)} routes, {len(parameters)} parameters, up to {min(total, options.max_tests)} "
-            + (
-                "local browser probes (HTTP subrequests governed by --run-max-*)."
-                if options.dom_local
-                else f"HTTP requests. Browser confirmation {'enabled' if options.confirm_exec else 'disabled'}."
-            )
-            + " No requests sent."
+            f"{detail} No requests sent."
         )
         return
     path, results = tester.run(options, store.paths.evidence_dir / "xss")
@@ -974,6 +979,11 @@ def cmd_xss(args: argparse.Namespace) -> None:
     elif options.stored_local:
         observed = sum(bool(item.get("browser_execution_observed")) for item in results)
         summary += f", {observed} stored-lab executions observed (not vulnerability verdicts)"
+    elif options.dom:
+        summary += (
+            f", {confirmed} DOM confirmed (attributed execution and sink reached), "
+            f"{not_executed} reflected but not executed"
+        )
     elif options.dom_local:
         observed = sum(item["classification"] == "execution_observed" for item in results)
         summary += f", {observed} DOM executions observed in a local fixture (not vulnerability verdicts)"
@@ -3781,9 +3791,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Opt in to headless Playwright confirmation for possible reflected payloads",
     )
     xss.add_argument(
+        "--dom",
+        action="store_true",
+        help=(
+            "In-scope DOM XSS probes for query and hash sources. "
+            "Confirmed only when a DOM sink executes and the marker or an alert is observed."
+        ),
+    )
+    xss.add_argument(
         "--dom-local",
         action="store_true",
-        help="Opt-in query/hash DOM checks on literal loopback IP fixtures only",
+        help="Alias of --dom that still allows only literal loopback IPs (127.0.0.1 or ::1)",
     )
     xss.add_argument(
         "--stored-local",
