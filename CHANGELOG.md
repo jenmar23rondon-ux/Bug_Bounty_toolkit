@@ -9,7 +9,10 @@
   reaching an instrumented DOM sink. A sink alone, an unrelated alert, or DOM
   reflection without execution is not confirmed. Navigations and same-origin
   redirects share `--run-max-*`. Other origins are aborted. Session headers
-  and cookies stay on the target origin. Offline lab: `labs/dom_xss_lab/`.
+  and cookies stay on the target origin. A dialog is dismissed before any
+  other handler work, and Chromium children are killed if the sync driver
+  outlives the existing navigation budget, so a stuck alert cannot wedge the
+  process. Offline lab: `labs/dom_xss_lab/`.
 
 ### Stronger offline SSRF analysis
 

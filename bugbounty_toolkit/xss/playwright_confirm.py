@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import signal
 import threading
 from urllib.parse import urlsplit
 from typing import Any
@@ -11,6 +13,55 @@ from ..core.rate_limiter import RateLimiter
 from ..core.scope_validator import ScopeValidator
 from ..core.execution_budget import ExecutionBudget
 from ..utils.exceptions import ToolkitError
+
+
+def _browser_child_pids(root_pid: int) -> set[int]:
+    """Chromium processes descended from ``root_pid``. Empty when /proc is unavailable."""
+    if not os.path.isdir("/proc"):
+        return set()
+    children: dict[int, list[int]] = {}
+    for name in os.listdir("/proc"):
+        if not name.isdigit():
+            continue
+        pid = int(name)
+        try:
+            with open(os.path.join("/proc", name, "status"), encoding="utf-8", errors="replace") as handle:
+                status = handle.read()
+        except OSError:
+            continue
+        ppid: int | None = None
+        for line in status.splitlines():
+            if line.startswith("PPid:"):
+                ppid = int(line.split()[1])
+                break
+        if ppid is not None:
+            children.setdefault(ppid, []).append(pid)
+    found: set[int] = set()
+    stack = [root_pid]
+    while stack:
+        current = stack.pop()
+        for child in children.get(current, ()):
+            if child not in found:
+                found.add(child)
+                stack.append(child)
+    browsers: set[int] = set()
+    for pid in found:
+        try:
+            with open(os.path.join("/proc", str(pid), "cmdline"), "rb") as handle:
+                command = handle.read()
+        except OSError:
+            continue
+        if b"chrome" in command or b"chromium" in command or b"headless_shell" in command:
+            browsers.add(pid)
+    return browsers
+
+
+def _kill_browser_children(root_pid: int) -> None:
+    for pid in _browser_child_pids(root_pid):
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except OSError:
+            pass
 
 
 def require_playwright_installed() -> None:
@@ -114,7 +165,14 @@ class _BrowserRequestBudget:
             except ValueError:
                 route.abort()
                 return
-            lease = self.budget.acquire(request.url) if self.budget is not None else None
+            if self.budget is not None:
+                lease = self.budget.try_acquire(request.url)
+                if lease is None:
+                    navigation = callable(is_navigation) and is_navigation()
+                    if navigation:
+                        self.error = ToolkitError("Run concurrency limit blocked the browser navigation.")
+                    route.abort()
+                    return
             remaining = self.budget.remaining_seconds() if self.budget is not None else None
             if self.rate_limiter is not None:
                 self.rate_limiter.wait(max_wait=remaining)
@@ -331,11 +389,21 @@ class PlaywrightExecutionChecker:
         page_errors: list[str] = []
         matching_alert_observed = False
 
-        def on_dialog(dialog) -> None:
+        def on_dialog(dialog: Any) -> None:
             nonlocal matching_alert_observed
-            matching_alert_observed |= dialog.type == "alert" and dialog.message == marker
-            dialogs.append({"type": dialog.type, "text": redact_text(dialog.message)[:300]})
-            dialog.accept()
+            # Dismiss first. Redaction or a stuck accept must not leave the modal
+            # up: Playwright pauses navigation until the dialog is gone, and that
+            # pause ignores the goto timeout.
+            try:
+                message = str(dialog.message)
+            except Exception:
+                message = ""
+            try:
+                dialog.accept()
+            except Exception:
+                pass
+            matching_alert_observed |= dialog.type == "alert" and message == marker
+            dialogs.append({"type": dialog.type, "text": (redact_text(message) or "")[:300]})
 
         page.on("dialog", on_dialog)
         page.on(
@@ -413,15 +481,29 @@ class PlaywrightExecutionChecker:
                 result["dom_marker_present"] = dom_marker_present
             return result
         finally:
-            context.close()
-            request_budget.close()
+            try:
+                context.close()
+            finally:
+                request_budget.close()
 
     def close(self) -> None:
-        if self._browser is not None:
-            self._browser.close()
-            self._browser = None
-        if self._manager is not None:
+        browser = self._browser
+        self._browser = None
+        if browser is not None:
+            try:
+                browser.close()
+            except Exception:
+                _kill_browser_children(os.getpid())
+        manager = self._manager
+        self._manager = None
+        self._playwright = None
+        if manager is None:
+            return
+        # A failed start() has no connection; calling __exit__ then raises AttributeError.
+        if getattr(manager, "_connection", None) is None:
+            return
+        try:
             # Playwright Sync API: ContextManager exposes start()/__exit__, not stop().
-            self._manager.__exit__(None, None, None)
-            self._manager = None
-            self._playwright = None
+            manager.__exit__(None, None, None)
+        except Exception:
+            _kill_browser_children(os.getpid())

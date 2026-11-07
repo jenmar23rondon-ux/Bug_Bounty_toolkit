@@ -21,7 +21,7 @@ from bugbounty_toolkit.core.http_client import HttpClient, RequestSpec
 from bugbounty_toolkit.core.rate_limiter import RateLimiter
 from bugbounty_toolkit.core.scope_validator import ScopeValidator
 from bugbounty_toolkit.xss.dom_inscope import run_dom
-from bugbounty_toolkit.xss.playwright_confirm import PlaywrightExecutionChecker
+from bugbounty_toolkit.xss.playwright_confirm import PlaywrightExecutionChecker, _browser_child_pids
 from labs.dom_xss_lab.server import DomXssHandler, serve
 
 
@@ -149,6 +149,7 @@ class DomXssLabTests(unittest.TestCase):
                 safe_text = safe_path.read_text(encoding="utf-8")
             finally:
                 checker.close()
+            self.assertEqual(_browser_child_pids(os.getpid()), set())
         self.assertIn('"loopback_only": true', alias_text)
         self.assertIn('"loopback_only": false', safe_text)
         self.assertNotIn("session=domlab", safe_text)
@@ -422,6 +423,34 @@ class DomXssLabTests(unittest.TestCase):
             ]
             self.assertTrue(safe_results)
             self.assertTrue(all(item["confirmed"] is False for item in safe_results))
+
+    def test_low_concurrency_does_not_deadlock_on_parallel_subresources(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scope_file = root / "scope.txt"
+            scope_file.write_text("127.0.0.1\n", encoding="utf-8")
+            budget = ExecutionBudget(max_requests=20, max_concurrency=1)
+            checker = PlaywrightExecutionChecker(
+                ScopeValidator(scope_file),
+                timeout_ms=5000,
+                rate_limiter=RateLimiter(requests_per_second=100),
+                execution_budget=budget,
+            )
+            try:
+                _path, results = run_dom(
+                    [self.base + "/vulnerable"],
+                    ["q"],
+                    checker,
+                    root / "concurrency",
+                    max_tests=1,
+                    headers={"Cookie": "session=domlab", "X-Lab-Token": "offline-lab"},
+                )
+            finally:
+                checker.close()
+        self.assertEqual(len(results), 1)
+        self.assertFalse(results[0]["confirmed"])
+        self.assertGreaterEqual(budget.summary().requests_started, 1)
+        self.assertEqual(_browser_child_pids(os.getpid()), set())
 
     def test_native_http_exhausting_the_budget_blocks_dom_navigation(self) -> None:
         with _Sentinel.lock:

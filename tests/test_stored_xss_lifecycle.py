@@ -32,7 +32,7 @@ DOM_HOOKS = {
     # Reviewed security update: nonce-bound alerts and WebSocket isolation.
     # Frozen corpus inputs/labels and the stored-write chain remain unchanged.
     # Additive keyword-only dom=True observes in-scope DOM sinks. local_only is unchanged.
-    "bugbounty_toolkit/xss/playwright_confirm.py": "504f51931d152aa0395967372e35cacde0370b66feeca94fa1dfcc352d4e53bc",
+    "bugbounty_toolkit/xss/playwright_confirm.py": "70690ac1ad2da8fbde30dc23c09fc308497015b9d946dcb61ef0142c21f67dcc",
 }
 CHAIN = {
     "bugbounty_toolkit/xss/stored_local.py": "3bade658e43a65ba072167cf7bc71ea1527d1f7255b74618067284c89069d053",

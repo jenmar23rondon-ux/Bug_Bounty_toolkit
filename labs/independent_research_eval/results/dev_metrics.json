@@ -227,7 +227,7 @@
     "our_bytes": 6924,
     "overlap_free": true
   },
-  "implementation_sha256": "dc506ac1635edf518bb78a0959b66ee776245cf168a96df5c072fc346d68c3cb",
+  "implementation_sha256": "266d9a19c09be6a4a306eaa8aa7b4fe0cabbbe8e123d81ec4c7047364a9bbf65",
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
