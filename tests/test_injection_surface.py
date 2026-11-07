@@ -7,7 +7,7 @@ import threading
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from urllib.parse import parse_qs, urlsplit
 
 from bugbounty_toolkit.core.http_client import HttpClient, RequestSpec, ResponseRecord
@@ -241,6 +241,125 @@ class EnginePlacementTests(unittest.TestCase):
             _path, rows = XssParameterTester(scope, client).run(XssOptions(routes, params, max_tests=1), root / "out")
         self.assertEqual(rows[0]["parameter_location"], "query")
         self.assertFalse(rows[0]["confirmed"])
+
+    def test_original_positional_constructors_keep_query_defaults(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            routes = root / "routes.txt"
+            params = root / "params.txt"
+            routes.write_text("http://127.0.0.1/search\n", encoding="utf-8")
+            params.write_text("q\n", encoding="utf-8")
+            xss = XssOptions(
+                routes,
+                params,
+                None,
+                3,
+                {"Accept": "text/html"},
+                "html.parser",
+                False,
+                False,
+                False,
+                True,
+                False,
+                None,
+                None,
+                "content",
+                None,
+            )
+            sqli = SqliOptions(routes, params, None, 8, {}, False, False, 5)
+        self.assertEqual(xss.method, "GET")
+        self.assertIsNone(xss.content_type)
+        self.assertEqual(xss.header_inject, ())
+        self.assertIsNone(xss.body_template)
+        self.assertFalse(xss.confirm_exec)
+        self.assertEqual(xss.stored_parameter, "content")
+        self.assertEqual(sqli.method, "GET")
+        self.assertIsNone(sqli.content_type)
+        self.assertEqual(sqli.header_inject, ())
+        self.assertIsNone(sqli.body_template)
+        self.assertEqual(sqli.union_max_columns, 5)
+        self.assertFalse(sqli.union)
+
+    def test_post_browser_confirmation_stays_inconclusive(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scope = self._scope(root)
+            routes = root / "routes.txt"
+            params = root / "params.txt"
+            routes.write_text("http://127.0.0.1/xss/json\n", encoding="utf-8")
+            params.write_text("/q\n", encoding="utf-8")
+            client = Mock()
+
+            def send(spec: RequestSpec) -> ResponseRecord:
+                self.assertEqual(spec.method, "POST")
+                marker = spec.body if isinstance(spec.body, str) else ""
+                body = f"<p>{marker}</p>"
+                return ResponseRecord(
+                    spec, spec.prepared_url(), 200, "OK", 1, {"content-type": "text/html"}, body, len(body)
+                )
+
+            client.send.side_effect = send
+            client.timeout = 5.0
+            client.rate_limiter = RateLimiter(100)
+            client.execution_budget = None
+            with (
+                patch(
+                    "bugbounty_toolkit.xss.parameter_tester.require_playwright_installed",
+                    side_effect=AssertionError("browser must not start"),
+                ),
+                patch("bugbounty_toolkit.xss.parameter_tester.PlaywrightExecutionChecker") as checker_type,
+            ):
+                checker_type.return_value.confirm.return_value = {"classification": "confirmed"}
+                _path, rows = XssParameterTester(scope, client).run(
+                    XssOptions(
+                        routes,
+                        params,
+                        max_tests=1,
+                        confirm_exec=True,
+                        method="POST",
+                        content_type="json",
+                        body_template=TEMPLATE,
+                    ),
+                    root / "post-confirm",
+                )
+            checker_type.assert_not_called()
+            self.assertEqual(rows[0]["parameter_location"], "body_json")
+            self.assertEqual(rows[0]["classification"], "inconclusive")
+            self.assertEqual(rows[0]["finding_state"], "inconclusive")
+            self.assertFalse(rows[0]["confirmed"])
+            self.assertFalse(rows[0]["browser_execution_observed"])
+            self.assertEqual(rows[0]["confirmation_gap"], "no_second_proof")
+
+            form_params = root / "form-params.txt"
+            form_params.write_text("q\n", encoding="utf-8")
+
+            def send_form(spec: RequestSpec) -> ResponseRecord:
+                self.assertEqual(spec.method, "POST")
+                body = "<p>reflected</p>"
+                return ResponseRecord(
+                    spec, spec.prepared_url(), 200, "OK", 1, {"content-type": "text/html"}, body, len(body)
+                )
+
+            client.send.side_effect = send_form
+            with patch(
+                "bugbounty_toolkit.xss.parameter_tester.require_playwright_installed",
+                side_effect=AssertionError("browser must not start"),
+            ):
+                _path, quiet = XssParameterTester(scope, client).run(
+                    XssOptions(
+                        routes,
+                        form_params,
+                        max_tests=1,
+                        confirm_exec=True,
+                        method="POST",
+                        content_type="form",
+                        body_template="a=1&q=old",
+                    ),
+                    root / "post-form-confirm",
+                )
+            self.assertEqual(quiet[0]["parameter_location"], "body_form")
+            self.assertEqual(quiet[0]["classification"], "not_reflected")
+            self.assertFalse(quiet[0]["confirmed"])
 
 
 if __name__ == "__main__":

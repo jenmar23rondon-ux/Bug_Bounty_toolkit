@@ -17,6 +17,9 @@ from ..requests_engine.injection_surface import (
     validate_surface,
 )
 from ..requests_engine.parameters import load_parameter_names
+
+# Public re-export. Existing callers import this function from this module.
+from ..requests_engine.parameters import with_parameter as with_parameter
 from ..analysis.html_context import analyze_html
 from .reflection_detector import detect_reflection
 from .result_validator import classify_reflection
@@ -144,7 +147,9 @@ class XssParameterTester:
                 )
             finally:
                 local_checker.close()
-        if options.confirm_exec:
+        surface = _surface(options)
+        browser_confirm = options.confirm_exec and surface.location in {"query", "header"}
+        if browser_confirm:
             require_playwright_installed()
         checker = (
             PlaywrightExecutionChecker(
@@ -153,13 +158,12 @@ class XssParameterTester:
                 rate_limiter=self.client.rate_limiter,
                 execution_budget=self.client.execution_budget,
             )
-            if options.confirm_exec
+            if browser_confirm
             else None
         )
 
         results: list[dict[str, object]] = []
         test_count = 0
-        surface = _surface(options)
         try:
             for route in routes:
                 for parameter in parameters:
@@ -264,6 +268,26 @@ class XssParameterTester:
                                 reason="Response truncated; context validation incomplete.",
                             )
                             stop_reason = "truncated_response"
+                        elif options.confirm_exec and surface.location not in {"query", "header"}:
+                            if not reflection.reflected:
+                                result.update(
+                                    classification="not_reflected",
+                                    confirmed=False,
+                                    reason="The unique marker was not reflected in the response.",
+                                )
+                            else:
+                                result.update(
+                                    classification="inconclusive",
+                                    finding_state="inconclusive",
+                                    confirmed=False,
+                                    confirmation_gap="no_second_proof",
+                                    rejection_reason="no_second_proof",
+                                    browser_execution_observed=False,
+                                    reason=(
+                                        "Browser confirmation does not replay a POST body, "
+                                        "so this reflection stays inconclusive."
+                                    ),
+                                )
                         elif options.confirm_exec:
                             if not reflection.reflected:
                                 result.update(
@@ -353,8 +377,6 @@ class XssParameterTester:
         surface = _surface(options)
         if (options.dom or options.dom_local) and surface.location != "query":
             raise ValueError("DOM probes stay on query and hash sources.")
-        if options.confirm_exec and surface.location not in {"query", "header"}:
-            raise ValueError("Browser confirmation does not replay a POST body.")
         bind_parameters(surface, parameters)
         return routes, parameters
 

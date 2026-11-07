@@ -6,7 +6,9 @@
   `--header-inject` limited to Referer, User-Agent, X-Forwarded-Host, and Origin.
   Query GET stays the default. JSON replacement changes only the declared pointer.
   Evidence records `parameter_location`; a missing location is inconclusive and
-  is not confirmed. Version stays 0.2.2.
+  is not confirmed. Browser confirmation does not replay a POST body, so that
+  result stays inconclusive. `with_parameter` remains importable from the XSS
+  parameter tester. Version stays 0.2.2.
 
 ### In-scope DOM XSS
 

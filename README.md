@@ -42,7 +42,7 @@ What reaches **confirmed** vs stays **candidate**:
 
 `bbtk hunt` runs `cors-check`, `ssrf-check`, `open-redirect`, `xss`, `sqli`, `access-check`. Each preserves its own evidence threshold. Use standalone `csrf-audit` and `takeover-check` outside hunt. See [HTTP proof limits](docs/http-proof-attribution.md).
 
-XSS and SQLi evidence records where the probe was placed (`query`, `body_form`, `body_json`, or `header`). A result with no parameter location is **inconclusive** and is not confirmed.
+XSS and SQLi evidence records where the probe was placed (`query`, `body_form`, `body_json`, or `header`). A result with no parameter location is **inconclusive** and is not confirmed. Browser confirmation of a POST body is unsupported, because the browser does not replay that body: the result is **inconclusive** and is not confirmed. Query and header confirmation still require the second independent proof in the table above.
 
 ## Hunt (authorized)
 
