@@ -47,6 +47,27 @@ next targets, separate from the now-recovered missing cases. Reusing these known
 cases is not a new blinded evaluation. Real-model and human-study metrics remain
 NOT_MEASURED.
 
+## Pairing precision after the research compatibility gate
+
+The research pipeline now withholds incompatible IDOR/BOLA proposals before they
+are scored. Direct `propose_object_handoff` callers are unchanged unless they
+pass `compatibility_gate=True`. Frozen labels and captures were not edited.
+Details and the false-pair classes are in
+[idor-pairing-precision-v5.md](idor-pairing-precision-v5.md).
+
+| Metric | Recorded before the gate | After the gate |
+|---|---|---|
+| FINAL pairing precision / recall | 0.6585 / 1.0 | 1.0 / 1.0 |
+| FINAL forbidden pairs | 2 | 0 |
+| FINAL redundant proposals | 3 | 3 |
+| STRESS pairing precision / recall | 0.8333 / 1.0 | 1.0 / 1.0 |
+| STRESS redundant proposals | 80 | 59 |
+| False reviewable cases, all splits | 0 | 0 |
+| Automatic confirmations / network attempts | 0 / 0 | 0 / 0 |
+
+FINAL handoff-backfilled object recall fell from 0.9268 to 0.7317 because a
+withheld type no longer names the ranked row. Exported-kind recall stayed 0.9756.
+
 ## Historical refresh after PR #91
 
 The original frozen DEV/FINAL/STRESS corpora were rerun on main `2fb497e`.

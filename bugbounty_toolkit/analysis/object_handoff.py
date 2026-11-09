@@ -13,11 +13,14 @@ import re
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 from urllib.parse import urlsplit
 
+from ..case_generator import inspect_read_pair
+from ..core.http_client import RequestSpec
 from ..core.private_files import atomic_private_write, local_path
 from ..core.records import ProgramPaths
+from .authorization_denial import assess_pair_authorization
 from .evidence_engine import CaptureSource
 from .object_relationships import (
     COLLECTIONS,
@@ -717,6 +720,179 @@ def _materialize_pair(
     return paths
 
 
+def _request_spec(source: CaptureSource) -> RequestSpec:
+    """Build a request spec from a verified capture. Empty bodies stay absent."""
+    method = (source.method or "").upper()
+    if not source.url or not method:
+        raise ValueError("Capture is missing URL or method.")
+    body = source.request_body if source.request_body else None
+    headers = {str(name): str(value) for name, value in (source.request_headers or {}).items()}
+    return RequestSpec(method=method, url=source.url, headers=headers, body=body)
+
+
+def _has_response(source: CaptureSource) -> bool:
+    return source.status_code is not None or bool(source.response_body)
+
+
+def _proposal_sources(
+    proposal: Mapping[str, Any],
+    index: Mapping[tuple[str, str], CaptureSource],
+) -> tuple[CaptureSource | None, CaptureSource | None]:
+    found: list[CaptureSource | None] = []
+    for role in ("owner", "actor"):
+        side = proposal.get(role)
+        if not isinstance(side, Mapping):
+            found.append(None)
+            continue
+        source_ref = side.get("source_ref")
+        locator = side.get("locator")
+        if not isinstance(source_ref, str) or not isinstance(locator, str):
+            found.append(None)
+            continue
+        found.append(index.get((source_ref, locator)))
+    return found[0], found[1]
+
+
+def _requests_compatible(owner: CaptureSource, actor: CaptureSource) -> bool:
+    """Same structural read-case bar as eligibility: one resource diff, GET, both responses."""
+    if not _has_response(owner) or not _has_response(actor):
+        return False
+    try:
+        inspect_read_pair(_request_spec(owner), _request_spec(actor))
+    except ValueError:
+        return False
+    return True
+
+
+def _cross_read_denials(
+    graph: Mapping[str, Any],
+    index: Mapping[tuple[str, str], CaptureSource],
+) -> tuple[set[tuple[str, str, str]], set[tuple[str, str]]]:
+    """Denied cross-reads and the sessions that received them.
+
+    Object keys are ``(endpoint, session, object)`` for a request-side id that was
+    denied. Session keys are ``(endpoint, session)`` for any demonstrated denial on
+    that endpoint. A contradictory 403 that still returns the resource is not a
+    denial. A session pseudonym is not an account; this only records the response class.
+    """
+    objects: set[tuple[str, str, str]] = set()
+    sessions: set[tuple[str, str]] = set()
+    observations = graph.get("observations")
+    if not isinstance(observations, list):
+        return objects, sessions
+    for observation in observations:
+        if not isinstance(observation, Mapping):
+            continue
+        session = observation.get("session_ref")
+        endpoint = observation.get("endpoint_ref")
+        if not isinstance(session, str) or not isinstance(endpoint, str):
+            continue
+        provenance = observation.get("provenance")
+        if not isinstance(provenance, list):
+            continue
+        references = observation.get("references")
+        if not isinstance(references, list):
+            continue
+        for prov in provenance:
+            if not isinstance(prov, Mapping):
+                continue
+            source_ref = prov.get("source_ref")
+            locator = prov.get("locator")
+            if not isinstance(source_ref, str) or not isinstance(locator, str):
+                continue
+            source = index.get((source_ref, locator))
+            if source is None:
+                continue
+            try:
+                _request, response = capture_to_raw_http(source)
+            except ValueError:
+                continue
+            assessment = assess_pair_authorization(response, response).owner
+            if not assessment.denial_demonstrated:
+                continue
+            sessions.add((endpoint, session))
+            for fact in references:
+                if not isinstance(fact, Mapping) or fact.get("location") not in REQUEST_LOCATIONS:
+                    continue
+                object_ref = fact.get("object_ref")
+                if isinstance(object_ref, str):
+                    objects.add((endpoint, session, object_ref))
+    return objects, sessions
+
+
+def _proposal_withhold_reason(
+    proposal: Mapping[str, Any],
+    index: Mapping[tuple[str, str], CaptureSource],
+    denials: set[tuple[str, str, str]],
+    denied_sessions: set[tuple[str, str]],
+) -> str | None:
+    """Return a withhold reason, or None when the pair stays an IDOR/BOLA proposal.
+
+    Denial outranks a request-shape rejection so a 403 cross-read is still available
+    as a negative control. Public visibility and sibling denial are not proposals.
+    A contradictory denial-plus-resource body is not treated as denial.
+    """
+    owner, actor = _proposal_sources(proposal, index)
+    if owner is None or actor is None:
+        return "request_incompatible"
+    try:
+        _owner_request, owner_response = capture_to_raw_http(owner)
+        _actor_request, actor_response = capture_to_raw_http(actor)
+    except ValueError:
+        return "request_incompatible"
+    auth = assess_pair_authorization(owner_response, actor_response)
+    if auth.outcome == "cross_account_denied" or auth.owner.denial_demonstrated or auth.actor.denial_demonstrated:
+        return "authorization_denial"
+    if auth.owner.resource_visibility in {"public", "shared"} or auth.actor.resource_visibility in {
+        "public",
+        "shared",
+    }:
+        return "public_or_shared"
+    endpoint = str(proposal.get("endpoint_ref") or "")
+    owner_raw = proposal.get("owner")
+    actor_raw = proposal.get("actor")
+    owner_side: Mapping[str, Any] = owner_raw if isinstance(owner_raw, Mapping) else {}
+    actor_side: Mapping[str, Any] = actor_raw if isinstance(actor_raw, Mapping) else {}
+    owner_object = str(owner_side.get("object_ref") or "")
+    actor_object = str(actor_side.get("object_ref") or "")
+    owner_session = str(owner_side.get("session_ref") or "")
+    actor_session = str(actor_side.get("session_ref") or "")
+    if (endpoint, actor_session, owner_object) in denials or (endpoint, owner_session, actor_object) in denials:
+        return "sibling_denial"
+    # A session denied on this endpoint does not yield a sibling IDOR pair from its
+    # other successful reads of the same endpoint (own-object controls).
+    if (endpoint, owner_session) in denied_sessions or (endpoint, actor_session) in denied_sessions:
+        return "sibling_denial"
+    if not _requests_compatible(owner, actor):
+        return "request_incompatible"
+    return None
+
+
+def _apply_pairing_precision_gate(
+    graph: Mapping[str, Any],
+    proposals: list[dict[str, Any]],
+    index: Mapping[tuple[str, str], CaptureSource],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], int]:
+    """Drop incompatible pairs. Keep demonstrated denials aside for negative-control recording."""
+    denials, denied_sessions = _cross_read_denials(graph, index)
+    admitted: list[dict[str, Any]] = []
+    denial_rows: list[dict[str, Any]] = []
+    withheld_other = 0
+    for proposal in proposals:
+        reason = _proposal_withhold_reason(proposal, index, denials, denied_sessions)
+        if reason is None:
+            admitted.append(proposal)
+            continue
+        if reason == "authorization_denial":
+            row = dict(proposal)
+            row["withheld_reason"] = reason
+            row["confirmed"] = False
+            denial_rows.append(row)
+        else:
+            withheld_other += 1
+    return admitted, denial_rows, withheld_other
+
+
 def propose_object_handoff(
     graph: dict[str, Any],
     program: str,
@@ -729,11 +905,18 @@ def propose_object_handoff(
     materialize_dir: Path | None = None,
     force: bool = False,
     include_response_identifiers: bool = True,
+    compatibility_gate: bool = False,
 ) -> dict[str, Any]:
     """Build offline capture-pair proposals. network_requests_sent is always 0.
 
     With include_response_identifiers (default), typed identifiers observed only in response JSON may
     form INFERRED asymmetric proposals under ASYMMETRIC_RULE. They never establish ownership.
+
+    ``compatibility_gate`` defaults off so existing callers keep the legacy proposal set. When it is
+    on and verified captures are available, pairs that fail request compatibility, public/shared
+    visibility, demonstrated authorization denial, or a sibling cross-read denial are removed from
+    ``proposals``. Demonstrated denials are returned separately as ``withheld_incompatible`` so a
+    caller can still record a negative control. Nothing is confirmed.
     """
     ProgramPaths(Path("."), program)
     validate_object_graph(graph, program, key)
@@ -747,9 +930,9 @@ def propose_object_handoff(
             raise ValueError("Select between one and sixteen source files to verify.")
         verify_object_sources(graph, inputs, key)
     index: dict[tuple[str, str], CaptureSource] | None = None
-    if materialize_dir is not None:
-        if not inputs:
-            raise ValueError("Materializing capture pairs requires --verify-input for every graph source.")
+    if materialize_dir is not None and not inputs:
+        raise ValueError("Materializing capture pairs requires --verify-input for every graph source.")
+    if inputs and (materialize_dir is not None or compatibility_gate):
         # Re-read sources in the same import mode the graph was built with (legacy graphs: partial
         # is equivalent, because a legacy graph only contains fully valid sources).
         recorded = graph.get("capture_import") or {}
@@ -777,6 +960,11 @@ def propose_object_handoff(
         stats=stats,
         review=review,
     )
+    denial_withheld: list[dict[str, Any]] = []
+    withheld_other = 0
+    gate_applied = bool(compatibility_gate and index is not None)
+    if gate_applied and index is not None:
+        proposals, denial_withheld, withheld_other = _apply_pairing_precision_gate(graph, proposals, index)
     status = "proposals_ready"
     notes: list[str] = []
     if candidate and not proposals:
@@ -788,7 +976,7 @@ def propose_object_handoff(
         )
 
     materialized = 0
-    for proposal in proposals:
+    for proposal in [*proposals, *denial_withheld]:
         owner_hint = f"<export {proposal['owner']['locator']} from verified capture>"
         actor_hint = f"<export {proposal['actor']['locator']} from verified capture>"
         owner_resp = None
@@ -880,6 +1068,15 @@ def propose_object_handoff(
             "complete approve-idor attestations, then approve-idor --approve. Never skip the gate."
         ),
     }
+    if compatibility_gate:
+        # Opt-in only. Legacy documents (gate off) keep their previous keys.
+        document["compatibility_gate"] = {
+            "enabled": gate_applied,
+            "admitted": len(proposals),
+            "withheld_authorization_denials": len(denial_withheld),
+            "withheld_other": withheld_other,
+        }
+        document["withheld_incompatible"] = denial_withheld
     return document
 
 
@@ -897,6 +1094,7 @@ def handoff_to_file(
     base_url: str | None = None,
     limit: int = 20,
     include_response_identifiers: bool = True,
+    compatibility_gate: bool = False,
 ) -> dict[str, Any]:
     """CLI orchestration for object-handoff."""
     key_path = local_path(key_path)
@@ -915,6 +1113,7 @@ def handoff_to_file(
         materialize_dir=write_materialize,
         force=force,
         include_response_identifiers=include_response_identifiers,
+        compatibility_gate=compatibility_gate,
     )
     if dry_run:
         document = dict(document)

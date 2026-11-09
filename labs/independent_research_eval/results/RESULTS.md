@@ -6,19 +6,19 @@
 | metric | overall | A | B | C | D | E |
 |---|---|---|---|---|---|---|
 | scenarios | 45 | 10 | 9 | 11 | 8 | 7 |
-| outcome_accuracy | 0.8444 | 0.9 | 1.0 | 0.7273 | 1.0 | 0.5714 |
-| outcome_accuracy_ci95 | [0.7122, 0.9225] | [0.5958, 0.9821] | [0.7009, 1.0] | [0.4344, 0.9025] | [0.6756, 1.0] | [0.2505, 0.8418] |
-| object_recall | 0.9268 | 1.0 | 1.0 | 0.7273 | 1.0 | 1.0 |
-| precision_at_1 | 0.8537 | 1.0 | 0.875 | 0.7273 | 1.0 | 0.6667 |
-| precision_at_3 | 0.8374 | 1.0 | 0.8333 | 0.6667 | 1.0 | 0.7222 |
-| precision_at_5 | 0.6488 | 0.725 | 0.725 | 0.4909 | 0.8 | 0.5333 |
-| mrr | 0.8821 | 1.0 | 0.9167 | 0.7273 | 1.0 | 0.8056 |
-| ndcg_at_5 | 0.882 | 1.0 | 0.8939 | 0.7273 | 1.0 | 0.8354 |
+| outcome_accuracy | 0.9111 | 1.0 | 1.0 | 0.7273 | 1.0 | 0.8571 |
+| outcome_accuracy_ci95 | [0.7927, 0.9649] | [0.7225, 1.0] | [0.7009, 1.0] | [0.4344, 0.9025] | [0.6756, 1.0] | [0.4869, 0.9743] |
+| object_recall | 0.7317 | 0.375 | 0.75 | 0.6364 | 1.0 | 1.0 |
+| precision_at_1 | 0.6829 | 0.375 | 0.75 | 0.6364 | 1.0 | 0.6667 |
+| precision_at_3 | 0.6585 | 0.375 | 0.6667 | 0.5758 | 1.0 | 0.7222 |
+| precision_at_5 | 0.5073 | 0.275 | 0.525 | 0.4364 | 0.8 | 0.5333 |
+| mrr | 0.7033 | 0.375 | 0.75 | 0.6364 | 1.0 | 0.8056 |
+| ndcg_at_5 | 0.6988 | 0.375 | 0.7046 | 0.6364 | 1.0 | 0.8354 |
 | precision_at_1_strict_resource_type | 0.0976 | 0.0 | 0.125 | 0.1818 | 0.0 | 0.1667 |
-| pairing_precision | 0.6585 | 0.3333 | 0.6667 | 0.625 | 1.0 | 0.7143 |
+| pairing_precision | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 | pairing_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
-| forbidden_pairs_proposed | 2 | 1 | 0 | 0 | 0 | 1 |
-| eligibility_correct | 0.7111 | 0.5 | 1.0 | 0.9091 | 0.25 | 0.8571 |
+| forbidden_pairs_proposed | 0 | 0 | 0 | 0 | 0 | 0 |
+| eligibility_correct | 0.8 | 0.8 | 1.0 | 0.9091 | 0.25 | 1.0 |
 | false_reviewable_cases | 0 | 0 | 0 | 0 | 0 | 0 |
 | false_reviewable_after_planner | 0 | 0 | 0 | 0 | 0 | 0 |
 | missed_eligible_cases | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -27,47 +27,47 @@
 | correct_abstentions | 16 | 7 | 3 | 3 | 1 | 2 |
 | abstention_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 | missing_control_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
-| next_step_precision_at_1 | 0.9333 | 1.0 | 1.0 | 1.0 | 0.75 | 0.8571 |
-| next_step_precision_at_1_ci95 | [0.8214, 0.9771] | [0.7225, 1.0] | [0.7009, 1.0] | [0.7412, 1.0] | [0.4093, 0.9285] | [0.4869, 0.9743] |
+| next_step_precision_at_1 | 0.9556 | 1.0 | 1.0 | 1.0 | 0.75 | 1.0 |
+| next_step_precision_at_1_ci95 | [0.8517, 0.9877] | [0.7225, 1.0] | [0.7009, 1.0] | [0.7412, 1.0] | [0.4093, 0.9285] | [0.6457, 1.0] |
 | redundant_proposals | 3 | 0 | 0 | 2 | 0 | 1 |
-| synthetic_manual_steps | 264 | 38 | 60 | 52 | 60 | 54 |
-| reference_correct_rate | 0.9655 | 1.0 | — | 1.0 | 0.9333 | 1.0 |
+| synthetic_manual_steps | 259 | 37 | 60 | 52 | 60 | 50 |
+| reference_correct_rate | 0.9583 | 1.0 | — | 1.0 | 0.9333 | — |
 | secret_leaks | 0 | 0 | 0 | 0 | 0 | 0 |
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 254.45, "median": 68.97}, "handoff_ms": {"max": 100.32, "median": 17.35}, "import_discovery_ms": {"max": 43.09, "median": 5.35}, "planner_ms": {"max": 13.92, "median": 3.94}, "ranking_ms": {"max": 9.89, "median": 2.13}}`  
-Peak traced memory: 32976.8 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 148.76, "median": 49.17}, "handoff_ms": {"max": 22.86, "median": 10.8}, "import_discovery_ms": {"max": 34.33, "median": 4.29}, "planner_ms": {"max": 10.58, "median": 3.27}, "ranking_ms": {"max": 4.05, "median": 1.56}}`  
+Peak traced memory: 33012.2 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 92054, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
 |---|---|---|---|---|---|---|---|---|---|---|
 | A01 | A | read-idor-proven | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | statement | 2 |  |
-| A02 | A | idor-absent-denied | stop | stop | ✓ | CASE_ELIGIBLE, REJECT_SESSION_ONLY | stop_contradicted_hypothesis | payslip | 4 |  |
-| A03 | A | public-resource-id | abstain | stop | ✗ | CASE_ELIGIBLE | review_legitimate_access | — | 1 |  |
+| A02 | A | idor-absent-denied | stop | stop | ✓ | REJECT_SESSION_ONLY | stop_contradicted_hypothesis | unknown | 0 |  |
+| A03 | A | public-resource-id | abstain | abstain | ✓ |  | none | — | 0 |  |
 | A04 | A | shared-legit | abstain | abstain | ✓ |  | none | — | 0 |  |
-| A05 | A | denied-http-200 | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | contract | 2 |  |
+| A05 | A | denied-http-200 | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | unknown | 0 |  |
 | A06 | A | success-with-403 | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | claim | 3 |  |
-| A07 | A | authorized-admin-role | abstain | abstain | ✓ | REJECT_HEADER_DIFF | none | profile | 3 |  |
-| A08 | A | insufficient-permission | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | ledger | 2 |  |
-| A09 | A | negative-control-correct | stop | stop | ✓ | CASE_ELIGIBLE, REJECT_SESSION_ONLY | stop_contradicted_hypothesis | prescription | 4 |  |
+| A07 | A | authorized-admin-role | abstain | abstain | ✓ |  | none | unknown | 0 |  |
+| A08 | A | insufficient-permission | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | unknown | 0 |  |
+| A09 | A | negative-control-correct | stop | stop | ✓ | REJECT_SESSION_ONLY | stop_contradicted_hypothesis | unknown | 0 |  |
 | A10 | A | ownership-not-shown | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | ticket | 3 |  |
-| B01 | B | cross-reference | reviewable | reviewable | ✓ | CASE_ELIGIBLE, REJECT_MULTI_RESOURCE_DIFF | attest_distinct_accounts | invoice | 2 |  |
+| B01 | B | cross-reference | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | invoice | 1 |  |
 | B02 | B | uuid-ids | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | vault | 3 |  |
 | B03 | B | same-id-diff-namespace | abstain | abstain | ✓ |  | none | — | 0 |  |
 | B04 | B | nested-resource | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | comment | 3 |  |
 | B05 | B | array-members | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | group | 3 |  |
-| B06 | B | duplicate-fields | abstain | abstain | ✓ | REJECT_MULTI_RESOURCE_DIFF | none | wallet | 6 |  |
+| B06 | B | duplicate-fields | abstain | abstain | ✓ |  | none | unknown | 0 |  |
 | B07 | B | shared-object-across | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | report | 12 |  |
-| B08 | B | parent-frequency-trap | abstain | abstain | ✓ | REJECT_MULTI_RESOURCE_DIFF | none | account | 4 |  |
+| B08 | B | parent-frequency-trap | abstain | abstain | ✓ |  | none | account | 0 |  |
 | B09 | B | ownership-looking-field | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | note | 3 |  |
 | C01 | C | burp-xml | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | shipment | 3 |  |
-| C02 | C | raw-http | technical_error | abstain | ✗ | NEEDS_RESPONSE | none | kind-370923e21ed2d0804e880898f849f570 | 1 |  |
+| C02 | C | raw-http | technical_error | abstain | ✗ |  | none | unknown | 0 |  |
 | C03 | C | reordered | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | license | 3 |  |
 | C04 | C | missing-response | technical_error | technical_error | ✓ |  | none | unknown | 0 |  |
-| C05 | C | redirect | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | quote | 2 |  |
+| C05 | C | redirect | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | unknown | 0 |  |
 | C06 | C | mixed-origins | technical_error | abstain | ✗ |  | none | unknown | 0 |  |
-| C07 | C | write-method | stop | abstain | ✗ | REJECT_NON_GET | none | address | 1 |  |
+| C07 | C | write-method | stop | abstain | ✗ |  | none | address | 0 |  |
 | C08 | C | duplicate-captures | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | booking | 3 |  |
 | C09 | C | ambiguous-session | abstain | abstain | ✓ |  | none | cart | 0 |  |
 | C10 | C | deep-json | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | subscription | 3 |  |
@@ -82,9 +82,9 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | D18 | D | missing-negative | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | transfer | 3 |  |
 | E01 | E | heavy-noise | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | estimates2 | 1 |  |
 | E02 | E | frequent-irrelevant | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | unknown | 3 |  |
-| E03 | E | misleading-labels | abstain | stop | ✗ | CASE_ELIGIBLE | review_legitimate_access | — | 3 |  |
-| E04 | E | similar-routes | reviewable | stop | ✗ | CASE_ELIGIBLE | review_legitimate_access | user | 2 |  |
-| E05 | E | unseen-shape-graphql | stop | abstain | ✗ | REJECT_NON_GET | none | kind-75c55565937017fc6e4899ab98f8b87b | 1 |  |
+| E03 | E | misleading-labels | abstain | abstain | ✓ |  | none | — | 0 |  |
+| E04 | E | similar-routes | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | user | 1 |  |
+| E05 | E | unseen-shape-graphql | stop | abstain | ✗ |  | none | unknown | 0 |  |
 | E06 | E | secret-canaries | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | export | 3 |  |
 | E07 | E | prompt-injection | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | message | 3 |  |
 
@@ -102,7 +102,7 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | mrr | 0.825 | 1.0 | 0.125 |
 | ndcg_at_5 | 0.8 | 1.0 | 0.0 |
 | precision_at_1_strict_resource_type | 0.0 | 0.0 | 0.0 |
-| pairing_precision | 0.8333 | 1.0 | 0.5 |
+| pairing_precision | 1.0 | 1.0 | 1.0 |
 | pairing_recall | 1.0 | 1.0 | 1.0 |
 | forbidden_pairs_proposed | 0 | 0 | 0 |
 | eligibility_correct | 1.0 | 1.0 | 1.0 |
@@ -116,20 +116,20 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | missing_control_recall | 1.0 | 1.0 | 1.0 |
 | next_step_precision_at_1 | 1.0 | 1.0 | 1.0 |
 | next_step_precision_at_1_ci95 | [0.6097, 1.0] | [0.5655, 1.0] | [0.2065, 1.0] |
-| redundant_proposals | 80 | 59 | 21 |
+| redundant_proposals | 59 | 59 | 0 |
 | synthetic_manual_steps | 50 | 40 | 10 |
 | reference_correct_rate | — | — | — |
 | secret_leaks | 0 | 0 | 0 |
 | auto_confirmations | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 1754.94, "median": 95.77}, "handoff_ms": {"max": 383.04, "median": 29.52}, "import_discovery_ms": {"max": 1131.22, "median": 20.94}, "planner_ms": {"max": 85.85, "median": 4.12}, "ranking_ms": {"max": 84.37, "median": 2.16}}`  
-Peak traced memory: 33846.4 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 1384.03, "median": 91.94}, "handoff_ms": {"max": 268.98, "median": 29.06}, "import_discovery_ms": {"max": 1021.72, "median": 23.55}, "planner_ms": {"max": 66.0, "median": 3.43}, "ranking_ms": {"max": 67.59, "median": 1.62}}`  
+Peak traced memory: 33950.8 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 309172, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
 |---|---|---|---|---|---|---|---|---|---|---|
-| S01 | E | noise-300 | reviewable | reviewable | ✓ | CASE_ELIGIBLE, REJECT_MULTI_RESOURCE_DIFF | attest_distinct_accounts | kind-7ceb443df73cc7a34f44d1948c6e28f6 | 24 |  |
+| S01 | E | noise-300 | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | unknown | 3 |  |
 | S02 | C | many-objects | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | row | 64 |  |
 | S03 | C | deep-nesting-60 | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | slot | 3 |  |
 | S04 | C | mostly-damaged | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | tokens2 | 1 |  |
@@ -171,8 +171,8 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 79.1, "median": 67.34}, "handoff_ms": {"max": 20.23, "median": 17.74}, "import_discovery_ms": {"max": 7.1, "median": 4.74}, "planner_ms": {"max": 4.38, "median": 4.04}, "ranking_ms": {"max": 2.06, "median": 1.9}}`  
-Peak traced memory: 32989.7 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 66.38, "median": 52.63}, "handoff_ms": {"max": 14.77, "median": 11.86}, "import_discovery_ms": {"max": 6.18, "median": 4.2}, "planner_ms": {"max": 3.49, "median": 3.45}, "ranking_ms": {"max": 1.69, "median": 1.56}}`  
+Peak traced memory: 33017.9 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 6924, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |

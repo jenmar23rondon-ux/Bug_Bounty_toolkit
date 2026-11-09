@@ -333,7 +333,13 @@ def run_e2e_research(
         verify_inputs=list(captures),
         limit=limit,
         materialize_dir=pairs_dir,
+        # Research pairing precision: do not propose incompatible IDOR/BOLA pairs.
+        # Demonstrated denials stay in withheld_incompatible for the negative-control path.
+        compatibility_gate=True,
     )
+    denial_controls = [row for row in (handoff.get("withheld_incompatible") or []) if isinstance(row, dict)]
+    # Scored proposals are the admitted pairs only. Denial controls are ledger evidence, not pairs.
+    ledger_proposals = [*(handoff.get("proposals") or []), *denial_controls]
     stages["object_handoff"] = "ok"
     session.stages_completed.append("object_handoff")
     session.handoff_status = str(handoff.get("status"))
@@ -346,6 +352,7 @@ def run_e2e_research(
         if k
         not in {
             "materialize_dir",
+            "withheld_incompatible",
         }
     }
     _write_json(handoff_path, safe_handoff)
@@ -357,7 +364,7 @@ def run_e2e_research(
     )
     base_url = origins[0] if len(origins) == 1 else None
 
-    for proposal in handoff.get("proposals") or []:
+    for proposal in ledger_proposals:
         pid = str(proposal["id"])
         for role in ("owner", "actor"):
             for suffix in ("", "-response"):
@@ -450,7 +457,7 @@ def run_e2e_research(
         # false "requires_validation" on sibling positive-control pairs.
         prepared: list[dict[str, Any]] = []
         for index, (proposal, clf_row, review) in enumerate(
-            zip(handoff.get("proposals") or [], classifications, review_rows, strict=True)
+            zip(ledger_proposals, classifications, review_rows, strict=True)
         ):
             pid = str(proposal["id"])
             owner_resp_path = pairs_dir / f"{pid}-owner-response.http"
