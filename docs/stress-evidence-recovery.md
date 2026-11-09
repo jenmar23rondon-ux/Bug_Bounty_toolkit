@@ -46,6 +46,9 @@ This does not solve ranking efficiency: STRESS redundant proposals rise
 set of recovered pairs. Request-incompatible noise proposals remain rejected,
 not findings. S01's useful archive is still ranked below telemetry noise.
 These regression datasets are already known and are not a new blinded test.
+A later pairing gate removes those S01 telemetry proposals from the scored
+set (redundant proposals 80→59, pairing precision 1.0) without changing this
+recovery's outcome counts. See `docs/idor-pairing-precision-v5.md`.
 
 Tests include all three original failed cases; default-vs-research behavior;
 512 accepted captures with provenance-preserving handoff; rejection of 513;

@@ -20,14 +20,11 @@ A session pseudonym is not an account. Route aliases apply only through `alias_r
 
 ## Gate for changing the legacy default
 
-Do not filter `propose_object_handoff` proposals by default until a follow-up change shows
-all of the following on a frozen split, with labels untouched:
+`propose_object_handoff(..., compatibility_gate=False)` is still the default, so direct
+handoff callers keep this legacy proposal set. The offline research pipeline
+(`run_e2e_research`) turns the gate on. That behavior, the false-pair classes it
+removes, and the frozen-split measurements are in
+[idor-pairing-precision-v5.md](idor-pairing-precision-v5.md).
 
-- DEV and FINAL `pairing_decision` precision above the IRB reference 0.65
-- any recall change explained in the PR
-- hard negatives in `tests/test_idor_pairing_precision_v4.py` still passing
-- `finding_confirmed` still false and `network_attempts` still 0
-
-That follow-up would add an explicit `compatibility_gate` flag defaulting to off. This
-change does not add the flag and does not alter handoff, eligibility, or Evidence Ledger
-schemas or historical states.
+Hard negatives in `tests/test_idor_pairing_precision_v4.py` still apply to
+`evaluate_compatibility`. `finding_confirmed` stays false.
