@@ -17,15 +17,15 @@
       "missed_eligible_cases": 0,
       "missed_eligible_rate": 0.0,
       "missing_control_recall": 1.0,
-      "mrr": 0.375,
-      "ndcg_at_5": 0.375,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
       "network_attempts": 0,
       "next_step_precision_at_1": 1.0,
       "next_step_precision_at_1_ci95": [
         0.7225,
         1.0
       ],
-      "object_recall": 0.375,
+      "object_recall": 1.0,
       "object_recall_exported_kind": 1.0,
       "object_recall_strict_resource_type": 0.0,
       "outcome_accuracy": 1.0,
@@ -37,15 +37,15 @@
       "pairing_precision": 1.0,
       "pairing_recall": 1.0,
       "pipeline_exceptions": 0,
-      "precision_at_1": 0.375,
+      "precision_at_1": 1.0,
       "precision_at_1_ci95": [
-        0.1368,
-        0.6943
+        0.6756,
+        1.0
       ],
       "precision_at_1_exported_kind": 1.0,
       "precision_at_1_strict_resource_type": 0.0,
-      "precision_at_3": 0.375,
-      "precision_at_5": 0.275,
+      "precision_at_3": 1.0,
+      "precision_at_5": 0.75,
       "ranking_scenarios": 8,
       "redundant_proposals": 0,
       "reference_correct_rate": 1.0,
@@ -72,15 +72,15 @@
       "missed_eligible_cases": 0,
       "missed_eligible_rate": 0.0,
       "missing_control_recall": 1.0,
-      "mrr": 0.75,
-      "ndcg_at_5": 0.7046,
+      "mrr": 0.9167,
+      "ndcg_at_5": 0.8939,
       "network_attempts": 0,
       "next_step_precision_at_1": 1.0,
       "next_step_precision_at_1_ci95": [
         0.7009,
         1.0
       ],
-      "object_recall": 0.75,
+      "object_recall": 1.0,
       "object_recall_exported_kind": 1.0,
       "object_recall_strict_resource_type": 0.125,
       "outcome_accuracy": 1.0,
@@ -92,15 +92,15 @@
       "pairing_precision": 1.0,
       "pairing_recall": 1.0,
       "pipeline_exceptions": 0,
-      "precision_at_1": 0.75,
+      "precision_at_1": 0.875,
       "precision_at_1_ci95": [
-        0.4093,
-        0.9285
+        0.5291,
+        0.9776
       ],
       "precision_at_1_exported_kind": 0.875,
       "precision_at_1_strict_resource_type": 0.125,
-      "precision_at_3": 0.6667,
-      "precision_at_5": 0.525,
+      "precision_at_3": 0.8333,
+      "precision_at_5": 0.725,
       "ranking_scenarios": 8,
       "redundant_proposals": 0,
       "reference_correct_rate": null,
@@ -108,7 +108,7 @@
       "secret_leaks": 0,
       "synthetic_manual_steps": 60,
       "technical_errors_predicted": 0,
-      "wrong_object_top1": 0
+      "wrong_object_top1": 1
     },
     "C": {
       "abstention_recall": 1.0,
@@ -127,16 +127,16 @@
       "missed_eligible_cases": 0,
       "missed_eligible_rate": 0.0,
       "missing_control_recall": 1.0,
-      "mrr": 0.6364,
-      "ndcg_at_5": 0.6364,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
       "network_attempts": 0,
       "next_step_precision_at_1": 1.0,
       "next_step_precision_at_1_ci95": [
         0.7412,
         1.0
       ],
-      "object_recall": 0.6364,
-      "object_recall_exported_kind": 0.9091,
+      "object_recall": 1.0,
+      "object_recall_exported_kind": 1.0,
       "object_recall_strict_resource_type": 0.1818,
       "outcome_accuracy": 0.7273,
       "outcome_accuracy_ci95": [
@@ -147,15 +147,15 @@
       "pairing_precision": 1.0,
       "pairing_recall": 1.0,
       "pipeline_exceptions": 0,
-      "precision_at_1": 0.6364,
+      "precision_at_1": 1.0,
       "precision_at_1_ci95": [
-        0.3538,
-        0.8483
+        0.7412,
+        1.0
       ],
-      "precision_at_1_exported_kind": 0.9091,
+      "precision_at_1_exported_kind": 1.0,
       "precision_at_1_strict_resource_type": 0.1818,
-      "precision_at_3": 0.5758,
-      "precision_at_5": 0.4364,
+      "precision_at_3": 0.8788,
+      "precision_at_5": 0.6364,
       "ranking_scenarios": 11,
       "redundant_proposals": 1,
       "reference_correct_rate": 1.0,
@@ -264,8 +264,8 @@
       ],
       "precision_at_1_exported_kind": 0.6667,
       "precision_at_1_strict_resource_type": 0.1667,
-      "precision_at_3": 0.7222,
-      "precision_at_5": 0.5333,
+      "precision_at_3": 0.7778,
+      "precision_at_5": 0.6,
       "ranking_scenarios": 6,
       "redundant_proposals": 0,
       "reference_correct_rate": null,
@@ -277,7 +277,7 @@
     }
   },
   "corpus_version": "irb-1.0",
-  "evaluator_sha256": "589d00c2ac779c781ac95e76e5f31dc9ca585d5710eaaf971c5624bf3e0e1678",
+  "evaluator_sha256": "f703db7a7780a97a13b593b9085cbed4ee4bdcade66fcb822dd3248005586f4e",
   "historical_overlap": {
     "historical_files_scanned": 216,
     "identical_files": 0,
@@ -285,28 +285,28 @@
     "our_bytes": 92054,
     "overlap_free": true
   },
-  "implementation_sha256": "356948508c0e701ecded44a8ef1a76fe803ae0f812a34f5bdee0e9cfd195f366",
+  "implementation_sha256": "18d2235900c731231e9d7498152d82bc4619a48649ae57ee5332261f2346f4dd",
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
-      "max": 87.83,
-      "median": 41.8
+      "max": 98.32,
+      "median": 42.99
     },
     "handoff_ms": {
-      "max": 22.62,
-      "median": 10.27
+      "max": 24.51,
+      "median": 8.17
     },
     "import_discovery_ms": {
-      "max": 34.78,
-      "median": 4.34
+      "max": 35.11,
+      "median": 4.74
     },
     "planner_ms": {
-      "max": 3.23,
-      "median": 2.56
+      "max": 3.05,
+      "median": 2.59
     },
     "ranking_ms": {
-      "max": 4.25,
-      "median": 1.61
+      "max": 4.3,
+      "median": 1.64
     }
   },
   "manifest_sha256": "097ec726a02c22fa579893d6ff3a19c8999d8b6584b0126a581420daaf9ae3ad",
@@ -328,16 +328,16 @@
     "missed_eligible_cases": 0,
     "missed_eligible_rate": 0.0,
     "missing_control_recall": 1.0,
-    "mrr": 0.7033,
-    "ndcg_at_5": 0.6988,
+    "mrr": 0.9553,
+    "ndcg_at_5": 0.9552,
     "network_attempts": 0,
     "next_step_precision_at_1": 0.9556,
     "next_step_precision_at_1_ci95": [
       0.8517,
       0.9877
     ],
-    "object_recall": 0.7317,
-    "object_recall_exported_kind": 0.9756,
+    "object_recall": 1.0,
+    "object_recall_exported_kind": 1.0,
     "object_recall_strict_resource_type": 0.122,
     "outcome_accuracy": 0.9111,
     "outcome_accuracy_ci95": [
@@ -348,15 +348,15 @@
     "pairing_precision": 1.0,
     "pairing_recall": 1.0,
     "pipeline_exceptions": 0,
-    "precision_at_1": 0.6829,
+    "precision_at_1": 0.9268,
     "precision_at_1_ci95": [
-      0.5302,
-      0.8044
+      0.8057,
+      0.9748
     ],
-    "precision_at_1_exported_kind": 0.9024,
+    "precision_at_1_exported_kind": 0.9268,
     "precision_at_1_strict_resource_type": 0.0976,
-    "precision_at_3": 0.6585,
-    "precision_at_5": 0.5073,
+    "precision_at_3": 0.9024,
+    "precision_at_5": 0.7024,
     "ranking_scenarios": 41,
     "redundant_proposals": 1,
     "reference_correct_rate": 0.9524,
@@ -364,9 +364,9 @@
     "secret_leaks": 0,
     "synthetic_manual_steps": 255,
     "technical_errors_predicted": 1,
-    "wrong_object_top1": 2
+    "wrong_object_top1": 3
   },
-  "peak_mem_kib_max": 33021.3,
+  "peak_mem_kib_max": 33025.7,
   "scenarios": [
     {
       "confirmed": 0,
@@ -404,7 +404,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33021.3,
+      "peak_mem_kib": 33025.7,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -417,7 +417,7 @@
         "ndcg@5": 1.0,
         "p@1": 1.0,
         "p@3": 1.0,
-        "p@5": 0.6,
+        "p@5": 0.8,
         "recall": true,
         "rr": 1.0,
         "strict_p@1": 0.0,
@@ -431,11 +431,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 65.61,
-        "handoff_ms": 14.68,
-        "import_discovery_ms": 7.82,
-        "planner_ms": 2.72,
-        "ranking_ms": 1.73
+        "e2e_total_ms": 59.81,
+        "handoff_ms": 20.05,
+        "import_discovery_ms": 9.13,
+        "planner_ms": 2.76,
+        "ranking_ms": 1.84
       },
       "tag": "read-idor-proven"
     },
@@ -467,7 +467,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32822.0,
+      "peak_mem_kib": 32824.7,
       "predicted_outcome": "stop",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -475,16 +475,16 @@
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "payslip"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -492,11 +492,11 @@
         "valid": 1
       },
       "stage_ms": {
-        "e2e_total_ms": 35.39,
-        "handoff_ms": 19.71,
-        "import_discovery_ms": 5.18,
-        "planner_ms": 1.7,
-        "ranking_ms": 1.68
+        "e2e_total_ms": 32.24,
+        "handoff_ms": 14.57,
+        "import_discovery_ms": 5.66,
+        "planner_ms": 1.74,
+        "ranking_ms": 1.74
       },
       "tag": "idor-absent-denied"
     },
@@ -526,7 +526,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32810.6,
+      "peak_mem_kib": 32814.3,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -538,11 +538,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 21.84,
-        "handoff_ms": 8.13,
-        "import_discovery_ms": 3.97,
-        "planner_ms": 0.94,
-        "ranking_ms": 1.67
+        "e2e_total_ms": 19.18,
+        "handoff_ms": 5.33,
+        "import_discovery_ms": 4.53,
+        "planner_ms": 1.09,
+        "ranking_ms": 1.62
       },
       "tag": "public-resource-id"
     },
@@ -572,7 +572,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32805.7,
+      "peak_mem_kib": 32805.4,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -584,11 +584,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 18.14,
-        "handoff_ms": 2.18,
-        "import_discovery_ms": 3.99,
-        "planner_ms": 0.99,
-        "ranking_ms": 0.7
+        "e2e_total_ms": 21.23,
+        "handoff_ms": 2.09,
+        "import_discovery_ms": 4.2,
+        "planner_ms": 0.96,
+        "ranking_ms": 0.72
       },
       "tag": "shared-legit"
     },
@@ -620,7 +620,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32830.2,
+      "peak_mem_kib": 32834.0,
       "predicted_outcome": "stop",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -628,16 +628,16 @@
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.6,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "contract"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -645,11 +645,11 @@
         "valid": 3
       },
       "stage_ms": {
-        "e2e_total_ms": 41.4,
-        "handoff_ms": 10.33,
-        "import_discovery_ms": 3.67,
-        "planner_ms": 2.65,
-        "ranking_ms": 1.22
+        "e2e_total_ms": 36.94,
+        "handoff_ms": 8.12,
+        "import_discovery_ms": 4.03,
+        "planner_ms": 2.57,
+        "ranking_ms": 1.3
       },
       "tag": "denied-http-200"
     },
@@ -689,7 +689,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32857.6,
+      "peak_mem_kib": 32861.7,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -716,11 +716,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 48.35,
-        "handoff_ms": 11.76,
-        "import_discovery_ms": 4.13,
-        "planner_ms": 2.7,
-        "ranking_ms": 1.56
+        "e2e_total_ms": 41.13,
+        "handoff_ms": 6.39,
+        "import_discovery_ms": 4.74,
+        "planner_ms": 2.63,
+        "ranking_ms": 1.63
       },
       "tag": "success-with-403"
     },
@@ -750,7 +750,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32812.6,
+      "peak_mem_kib": 32815.0,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -758,16 +758,16 @@
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "profile"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -775,11 +775,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 18.09,
-        "handoff_ms": 7.96,
-        "import_discovery_ms": 4.2,
-        "planner_ms": 0.93,
-        "ranking_ms": 1.54
+        "e2e_total_ms": 19.84,
+        "handoff_ms": 6.58,
+        "import_discovery_ms": 4.9,
+        "planner_ms": 1.03,
+        "ranking_ms": 1.64
       },
       "tag": "authorized-admin-role"
     },
@@ -811,7 +811,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32831.9,
+      "peak_mem_kib": 32835.3,
       "predicted_outcome": "stop",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -819,16 +819,16 @@
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.6,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "ledger"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -836,11 +836,11 @@
         "valid": 2
       },
       "stage_ms": {
-        "e2e_total_ms": 43.19,
-        "handoff_ms": 11.94,
-        "import_discovery_ms": 3.85,
-        "planner_ms": 2.45,
-        "ranking_ms": 1.24
+        "e2e_total_ms": 36.88,
+        "handoff_ms": 7.48,
+        "import_discovery_ms": 4.16,
+        "planner_ms": 2.39,
+        "ranking_ms": 1.28
       },
       "tag": "insufficient-permission"
     },
@@ -872,7 +872,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32819.0,
+      "peak_mem_kib": 32823.2,
       "predicted_outcome": "stop",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -880,16 +880,16 @@
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "prescription"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -897,11 +897,11 @@
         "valid": 1
       },
       "stage_ms": {
-        "e2e_total_ms": 38.35,
-        "handoff_ms": 18.47,
-        "import_discovery_ms": 5.15,
-        "planner_ms": 1.69,
-        "ranking_ms": 1.67
+        "e2e_total_ms": 28.66,
+        "handoff_ms": 6.84,
+        "import_discovery_ms": 5.69,
+        "planner_ms": 1.87,
+        "ranking_ms": 1.73
       },
       "tag": "negative-control-correct"
     },
@@ -941,7 +941,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32840.0,
+      "peak_mem_kib": 32844.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -968,11 +968,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 52.58,
-        "handoff_ms": 13.2,
-        "import_discovery_ms": 4.08,
-        "planner_ms": 2.68,
-        "ranking_ms": 1.56
+        "e2e_total_ms": 39.62,
+        "handoff_ms": 6.75,
+        "import_discovery_ms": 4.42,
+        "planner_ms": 2.64,
+        "ranking_ms": 1.63
       },
       "tag": "ownership-not-shown"
     },
@@ -1012,7 +1012,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32846.6,
+      "peak_mem_kib": 32850.7,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -1039,11 +1039,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 40.7,
-        "handoff_ms": 16.43,
-        "import_discovery_ms": 5.81,
-        "planner_ms": 1.97,
-        "ranking_ms": 1.61
+        "e2e_total_ms": 33.48,
+        "handoff_ms": 9.56,
+        "import_discovery_ms": 6.19,
+        "planner_ms": 1.85,
+        "ranking_ms": 1.66
       },
       "tag": "cross-reference"
     },
@@ -1083,7 +1083,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32858.9,
+      "peak_mem_kib": 32862.8,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -1110,11 +1110,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 44.59,
-        "handoff_ms": 15.41,
-        "import_discovery_ms": 4.11,
-        "planner_ms": 2.74,
-        "ranking_ms": 1.57
+        "e2e_total_ms": 44.06,
+        "handoff_ms": 7.32,
+        "import_discovery_ms": 4.68,
+        "planner_ms": 2.63,
+        "ranking_ms": 1.81
       },
       "tag": "uuid-ids"
     },
@@ -1144,7 +1144,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32807.6,
+      "peak_mem_kib": 32808.4,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -1156,11 +1156,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 20.85,
-        "handoff_ms": 2.3,
-        "import_discovery_ms": 3.93,
-        "planner_ms": 0.96,
-        "ranking_ms": 1.0
+        "e2e_total_ms": 17.05,
+        "handoff_ms": 2.18,
+        "import_discovery_ms": 4.39,
+        "planner_ms": 0.92,
+        "ranking_ms": 1.04
       },
       "tag": "same-id-diff-namespace"
     },
@@ -1200,7 +1200,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32851.9,
+      "peak_mem_kib": 32858.2,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -1227,11 +1227,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 47.86,
-        "handoff_ms": 13.54,
-        "import_discovery_ms": 4.88,
-        "planner_ms": 2.89,
-        "ranking_ms": 2.22
+        "e2e_total_ms": 44.4,
+        "handoff_ms": 7.26,
+        "import_discovery_ms": 5.48,
+        "planner_ms": 2.63,
+        "ranking_ms": 2.27
       },
       "tag": "nested-resource"
     },
@@ -1271,7 +1271,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32872.8,
+      "peak_mem_kib": 32880.9,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -1298,11 +1298,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 53.36,
-        "handoff_ms": 11.31,
-        "import_discovery_ms": 8.52,
-        "planner_ms": 2.64,
-        "ranking_ms": 4.25
+        "e2e_total_ms": 51.28,
+        "handoff_ms": 10.02,
+        "import_discovery_ms": 9.16,
+        "planner_ms": 2.81,
+        "ranking_ms": 4.3
       },
       "tag": "array-members"
     },
@@ -1332,7 +1332,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32828.7,
+      "peak_mem_kib": 32833.3,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -1340,16 +1340,16 @@
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 1.0,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "wallet"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -1357,11 +1357,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 30.07,
-        "handoff_ms": 21.89,
-        "import_discovery_ms": 5.8,
-        "planner_ms": 0.97,
-        "ranking_ms": 2.6
+        "e2e_total_ms": 26.16,
+        "handoff_ms": 10.93,
+        "import_discovery_ms": 6.48,
+        "planner_ms": 0.95,
+        "ranking_ms": 2.72
       },
       "tag": "duplicate-fields"
     },
@@ -1401,7 +1401,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32890.8,
+      "peak_mem_kib": 32890.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -1428,11 +1428,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 61.41,
-        "handoff_ms": 17.47,
-        "import_discovery_ms": 9.01,
-        "planner_ms": 2.67,
-        "ranking_ms": 3.85
+        "e2e_total_ms": 66.69,
+        "handoff_ms": 13.47,
+        "import_discovery_ms": 9.78,
+        "planner_ms": 2.64,
+        "ranking_ms": 4.14
       },
       "tag": "shared-object-across"
     },
@@ -1462,7 +1462,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32871.9,
+      "peak_mem_kib": 32877.1,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -1470,12 +1470,12 @@
       "ranking": {
         "kind_p@1": 0.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
+        "ndcg@5": 0.5143,
         "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "p@3": 0.3333,
+        "p@5": 0.6,
+        "recall": true,
+        "rr": 0.3333,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "account",
@@ -1487,11 +1487,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 38.83,
-        "handoff_ms": 19.15,
-        "import_discovery_ms": 14.85,
-        "planner_ms": 0.94,
-        "ranking_ms": 2.96
+        "e2e_total_ms": 39.93,
+        "handoff_ms": 13.49,
+        "import_discovery_ms": 15.8,
+        "planner_ms": 0.99,
+        "ranking_ms": 3.04
       },
       "tag": "parent-frequency-trap"
     },
@@ -1531,7 +1531,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32865.3,
+      "peak_mem_kib": 32869.3,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -1558,11 +1558,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 47.66,
-        "handoff_ms": 11.96,
-        "import_discovery_ms": 5.22,
-        "planner_ms": 2.72,
-        "ranking_ms": 2.11
+        "e2e_total_ms": 45.75,
+        "handoff_ms": 8.1,
+        "import_discovery_ms": 5.54,
+        "planner_ms": 2.66,
+        "ranking_ms": 2.42
       },
       "tag": "ownership-looking-field"
     },
@@ -1602,7 +1602,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32849.0,
+      "peak_mem_kib": 32852.9,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -1629,11 +1629,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 45.97,
-        "handoff_ms": 10.05,
-        "import_discovery_ms": 5.08,
-        "planner_ms": 2.56,
-        "ranking_ms": 1.55
+        "e2e_total_ms": 42.99,
+        "handoff_ms": 14.78,
+        "import_discovery_ms": 5.73,
+        "planner_ms": 2.59,
+        "ranking_ms": 1.61
       },
       "tag": "burp-xml"
     },
@@ -1663,24 +1663,24 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32791.8,
+      "peak_mem_kib": 32793.0,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
       "proposals": 0,
       "ranking": {
-        "kind_p@1": 0.0,
-        "kind_recall": false,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "kind_p@1": 1.0,
+        "kind_recall": true,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 0.6667,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "permit"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -1688,11 +1688,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 16.32,
-        "handoff_ms": 5.03,
-        "import_discovery_ms": 3.28,
-        "planner_ms": 0.95,
-        "ranking_ms": 0.89
+        "e2e_total_ms": 14.8,
+        "handoff_ms": 4.3,
+        "import_discovery_ms": 3.58,
+        "planner_ms": 0.94,
+        "ranking_ms": 0.93
       },
       "tag": "raw-http"
     },
@@ -1732,7 +1732,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32855.8,
+      "peak_mem_kib": 32860.8,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -1759,11 +1759,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 41.01,
-        "handoff_ms": 7.33,
-        "import_discovery_ms": 4.22,
-        "planner_ms": 2.71,
-        "ranking_ms": 1.74
+        "e2e_total_ms": 42.8,
+        "handoff_ms": 8.37,
+        "import_discovery_ms": 4.74,
+        "planner_ms": 2.61,
+        "ranking_ms": 1.66
       },
       "tag": "reordered"
     },
@@ -1793,7 +1793,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32796.9,
+      "peak_mem_kib": 32798.3,
       "predicted_outcome": "technical_error",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -1801,16 +1801,16 @@
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 0.6667,
+        "p@5": 0.4,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "refund"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -1818,11 +1818,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 19.71,
-        "handoff_ms": 1.8,
-        "import_discovery_ms": 2.7,
-        "planner_ms": 1.08,
-        "ranking_ms": 0.92
+        "e2e_total_ms": 15.77,
+        "handoff_ms": 1.76,
+        "import_discovery_ms": 3.12,
+        "planner_ms": 1.06,
+        "ranking_ms": 0.93
       },
       "tag": "missing-response"
     },
@@ -1854,7 +1854,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32828.4,
+      "peak_mem_kib": 32841.1,
       "predicted_outcome": "stop",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -1862,16 +1862,16 @@
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.6,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "quote"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -1879,11 +1879,11 @@
         "valid": 2
       },
       "stage_ms": {
-        "e2e_total_ms": 38.28,
-        "handoff_ms": 12.92,
-        "import_discovery_ms": 3.47,
-        "planner_ms": 2.53,
-        "ranking_ms": 1.23
+        "e2e_total_ms": 33.56,
+        "handoff_ms": 7.25,
+        "import_discovery_ms": 3.87,
+        "planner_ms": 2.57,
+        "ranking_ms": 1.26
       },
       "tag": "redirect"
     },
@@ -1913,7 +1913,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32820.5,
+      "peak_mem_kib": 32815.0,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -1921,16 +1921,16 @@
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
-        "ndcg@5": 0.0,
-        "p@1": 0.0,
-        "p@3": 0.0,
-        "p@5": 0.0,
-        "recall": false,
-        "rr": 0.0,
+        "ndcg@5": 1.0,
+        "p@1": 1.0,
+        "p@3": 1.0,
+        "p@5": 0.8,
+        "recall": true,
+        "rr": 1.0,
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "policy"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -1938,11 +1938,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 18.92,
-        "handoff_ms": 2.39,
-        "import_discovery_ms": 4.11,
-        "planner_ms": 1.14,
-        "ranking_ms": 1.6
+        "e2e_total_ms": 19.41,
+        "handoff_ms": 3.17,
+        "import_discovery_ms": 4.56,
+        "planner_ms": 0.98,
+        "ranking_ms": 1.66
       },
       "tag": "mixed-origins"
     },
@@ -1972,7 +1972,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32814.2,
+      "peak_mem_kib": 32815.7,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -1997,11 +1997,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 17.09,
-        "handoff_ms": 8.3,
-        "import_discovery_ms": 4.3,
-        "planner_ms": 0.91,
-        "ranking_ms": 1.0
+        "e2e_total_ms": 18.74,
+        "handoff_ms": 8.76,
+        "import_discovery_ms": 4.57,
+        "planner_ms": 0.92,
+        "ranking_ms": 1.03
       },
       "tag": "write-method"
     },
@@ -2041,7 +2041,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32882.9,
+      "peak_mem_kib": 32861.5,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -2068,11 +2068,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 54.99,
-        "handoff_ms": 12.04,
-        "import_discovery_ms": 10.31,
-        "planner_ms": 2.67,
-        "ranking_ms": 1.64
+        "e2e_total_ms": 53.85,
+        "handoff_ms": 12.23,
+        "import_discovery_ms": 10.91,
+        "planner_ms": 2.97,
+        "ranking_ms": 1.7
       },
       "tag": "duplicate-captures"
     },
@@ -2102,7 +2102,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32806.3,
+      "peak_mem_kib": 32806.9,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -2127,11 +2127,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 17.77,
-        "handoff_ms": 2.08,
-        "import_discovery_ms": 4.04,
-        "planner_ms": 0.94,
-        "ranking_ms": 0.98
+        "e2e_total_ms": 20.24,
+        "handoff_ms": 2.3,
+        "import_discovery_ms": 4.16,
+        "planner_ms": 0.93,
+        "ranking_ms": 1.01
       },
       "tag": "ambiguous-session"
     },
@@ -2171,7 +2171,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32838.6,
+      "peak_mem_kib": 32844.0,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -2198,11 +2198,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 42.98,
-        "handoff_ms": 7.48,
-        "import_discovery_ms": 4.46,
-        "planner_ms": 2.6,
-        "ranking_ms": 1.63
+        "e2e_total_ms": 45.57,
+        "handoff_ms": 8.18,
+        "import_discovery_ms": 4.82,
+        "planner_ms": 2.62,
+        "ranking_ms": 1.71
       },
       "tag": "deep-json"
     },
@@ -2242,7 +2242,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32856.0,
+      "peak_mem_kib": 32860.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -2269,11 +2269,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 41.68,
-        "handoff_ms": 10.09,
-        "import_discovery_ms": 4.52,
-        "planner_ms": 2.56,
-        "ranking_ms": 1.59
+        "e2e_total_ms": 47.25,
+        "handoff_ms": 12.65,
+        "import_discovery_ms": 4.94,
+        "planner_ms": 2.64,
+        "ranking_ms": 1.64
       },
       "tag": "partially-damaged"
     },
@@ -2305,7 +2305,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32855.4,
+      "peak_mem_kib": 32860.0,
       "predicted_outcome": "integrity_block",
       "predicted_reviewable": false,
       "proposal_types": [
@@ -2332,11 +2332,11 @@
         "valid": 2
       },
       "stage_ms": {
-        "e2e_total_ms": 43.82,
-        "handoff_ms": 10.25,
-        "import_discovery_ms": 4.38,
-        "planner_ms": 2.56,
-        "ranking_ms": 1.53
+        "e2e_total_ms": 44.67,
+        "handoff_ms": 6.65,
+        "import_discovery_ms": 4.71,
+        "planner_ms": 2.69,
+        "ranking_ms": 1.61
       },
       "tag": "evidence-altered"
     },
@@ -2368,7 +2368,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32856.1,
+      "peak_mem_kib": 32860.7,
       "predicted_outcome": "integrity_block",
       "predicted_reviewable": false,
       "proposal_types": [
@@ -2395,11 +2395,11 @@
         "valid": 2
       },
       "stage_ms": {
-        "e2e_total_ms": 43.84,
-        "handoff_ms": 9.72,
-        "import_discovery_ms": 4.12,
-        "planner_ms": 2.42,
-        "ranking_ms": 1.62
+        "e2e_total_ms": 43.28,
+        "handoff_ms": 9.08,
+        "import_discovery_ms": 4.58,
+        "planner_ms": 2.41,
+        "ranking_ms": 1.65
       },
       "tag": "evidence-deleted"
     },
@@ -2431,7 +2431,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32857.0,
+      "peak_mem_kib": 32859.9,
       "predicted_outcome": "integrity_block",
       "predicted_reviewable": false,
       "proposal_types": [
@@ -2458,11 +2458,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 45.28,
-        "handoff_ms": 7.98,
-        "import_discovery_ms": 4.34,
-        "planner_ms": 2.77,
-        "ranking_ms": 1.54
+        "e2e_total_ms": 43.36,
+        "handoff_ms": 7.12,
+        "import_discovery_ms": 4.65,
+        "planner_ms": 2.59,
+        "ranking_ms": 1.62
       },
       "tag": "broken-reference"
     },
@@ -2494,7 +2494,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32856.2,
+      "peak_mem_kib": 32860.4,
       "predicted_outcome": "integrity_block",
       "predicted_reviewable": false,
       "proposal_types": [
@@ -2521,11 +2521,11 @@
         "valid": 2
       },
       "stage_ms": {
-        "e2e_total_ms": 43.34,
-        "handoff_ms": 10.61,
-        "import_discovery_ms": 4.12,
-        "planner_ms": 2.77,
-        "ranking_ms": 1.65
+        "e2e_total_ms": 46.99,
+        "handoff_ms": 8.17,
+        "import_discovery_ms": 4.73,
+        "planner_ms": 2.75,
+        "ranking_ms": 1.64
       },
       "tag": "expired-evidence"
     },
@@ -2557,7 +2557,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32856.8,
+      "peak_mem_kib": 32859.9,
       "predicted_outcome": "stop",
       "predicted_reviewable": false,
       "proposal_types": [
@@ -2584,11 +2584,11 @@
         "valid": 1
       },
       "stage_ms": {
-        "e2e_total_ms": 42.83,
-        "handoff_ms": 9.77,
-        "import_discovery_ms": 4.25,
-        "planner_ms": 2.91,
-        "ranking_ms": 1.6
+        "e2e_total_ms": 44.46,
+        "handoff_ms": 8.37,
+        "import_discovery_ms": 4.64,
+        "planner_ms": 2.88,
+        "ranking_ms": 1.63
       },
       "tag": "contradiction"
     },
@@ -2620,7 +2620,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32856.0,
+      "peak_mem_kib": 32859.7,
       "predicted_outcome": "duplicate",
       "predicted_reviewable": false,
       "proposal_types": [
@@ -2647,11 +2647,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 41.8,
-        "handoff_ms": 11.45,
-        "import_discovery_ms": 4.26,
-        "planner_ms": 2.99,
-        "ranking_ms": 1.71
+        "e2e_total_ms": 53.23,
+        "handoff_ms": 11.11,
+        "import_discovery_ms": 4.58,
+        "planner_ms": 2.93,
+        "ranking_ms": 1.64
       },
       "tag": "repeated-candidate"
     },
@@ -2691,7 +2691,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32855.6,
+      "peak_mem_kib": 32860.1,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -2718,11 +2718,11 @@
         "valid": 4
       },
       "stage_ms": {
-        "e2e_total_ms": 43.34,
-        "handoff_ms": 6.85,
-        "import_discovery_ms": 4.27,
-        "planner_ms": 3.23,
-        "ranking_ms": 1.62
+        "e2e_total_ms": 46.36,
+        "handoff_ms": 6.84,
+        "import_discovery_ms": 4.74,
+        "planner_ms": 3.05,
+        "ranking_ms": 1.63
       },
       "tag": "controls-complete"
     },
@@ -2762,7 +2762,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32855.2,
+      "peak_mem_kib": 32860.9,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -2789,11 +2789,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 41.16,
-        "handoff_ms": 10.27,
-        "import_discovery_ms": 4.24,
-        "planner_ms": 2.74,
-        "ranking_ms": 1.6
+        "e2e_total_ms": 50.72,
+        "handoff_ms": 8.63,
+        "import_discovery_ms": 4.67,
+        "planner_ms": 2.72,
+        "ranking_ms": 1.68
       },
       "tag": "missing-negative"
     },
@@ -2833,7 +2833,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32950.2,
+      "peak_mem_kib": 32954.8,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -2845,8 +2845,8 @@
         "kind_recall": true,
         "ndcg@5": 1.0,
         "p@1": 1.0,
-        "p@3": 0.6667,
-        "p@5": 0.4,
+        "p@3": 1.0,
+        "p@5": 0.8,
         "recall": true,
         "rr": 1.0,
         "strict_p@1": 0.0,
@@ -2860,11 +2860,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 87.83,
-        "handoff_ms": 22.62,
-        "import_discovery_ms": 34.78,
-        "planner_ms": 1.94,
-        "ranking_ms": 3.03
+        "e2e_total_ms": 93.91,
+        "handoff_ms": 24.51,
+        "import_discovery_ms": 35.11,
+        "planner_ms": 1.92,
+        "ranking_ms": 3.06
       },
       "tag": "heavy-noise"
     },
@@ -2904,7 +2904,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32922.6,
+      "peak_mem_kib": 32916.9,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -2923,7 +2923,7 @@
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "locale"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -2931,11 +2931,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 85.83,
-        "handoff_ms": 13.54,
-        "import_discovery_ms": 31.93,
-        "planner_ms": 2.74,
-        "ranking_ms": 4.01
+        "e2e_total_ms": 98.32,
+        "handoff_ms": 20.74,
+        "import_discovery_ms": 33.02,
+        "planner_ms": 2.78,
+        "ranking_ms": 4.12
       },
       "tag": "frequent-irrelevant"
     },
@@ -2965,7 +2965,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32822.3,
+      "peak_mem_kib": 32825.3,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -2977,11 +2977,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 22.34,
-        "handoff_ms": 9.26,
-        "import_discovery_ms": 5.26,
-        "planner_ms": 1.09,
-        "ranking_ms": 2.51
+        "e2e_total_ms": 25.64,
+        "handoff_ms": 16.37,
+        "import_discovery_ms": 5.84,
+        "planner_ms": 1.01,
+        "ranking_ms": 2.62
       },
       "tag": "misleading-labels"
     },
@@ -3021,7 +3021,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32839.4,
+      "peak_mem_kib": 32847.0,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -3048,11 +3048,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 35.89,
-        "handoff_ms": 9.37,
-        "import_discovery_ms": 7.18,
-        "planner_ms": 1.94,
-        "ranking_ms": 2.73
+        "e2e_total_ms": 43.88,
+        "handoff_ms": 13.09,
+        "import_discovery_ms": 7.87,
+        "planner_ms": 1.93,
+        "ranking_ms": 2.7
       },
       "tag": "similar-routes"
     },
@@ -3082,7 +3082,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32820.8,
+      "peak_mem_kib": 32824.8,
       "predicted_outcome": "abstain",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -3099,7 +3099,7 @@
         "strict_p@1": 0.0,
         "strict_recall": true,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "kind-75c55565937017fc6e4899ab98f8b87b"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -3107,11 +3107,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 20.34,
-        "handoff_ms": 6.74,
-        "import_discovery_ms": 4.9,
-        "planner_ms": 0.95,
-        "ranking_ms": 1.56
+        "e2e_total_ms": 20.0,
+        "handoff_ms": 8.47,
+        "import_discovery_ms": 5.15,
+        "planner_ms": 1.1,
+        "ranking_ms": 1.8
       },
       "tag": "unseen-shape-graphql"
     },
@@ -3151,7 +3151,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32840.0,
+      "peak_mem_kib": 32857.5,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -3178,11 +3178,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 43.76,
-        "handoff_ms": 9.13,
-        "import_discovery_ms": 4.4,
-        "planner_ms": 2.64,
-        "ranking_ms": 1.61
+        "e2e_total_ms": 44.26,
+        "handoff_ms": 8.05,
+        "import_discovery_ms": 4.72,
+        "planner_ms": 2.61,
+        "ranking_ms": 1.64
       },
       "tag": "secret-canaries"
     },
@@ -3222,7 +3222,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32868.6,
+      "peak_mem_kib": 32845.6,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -3249,11 +3249,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 47.25,
-        "handoff_ms": 10.38,
-        "import_discovery_ms": 4.36,
-        "planner_ms": 2.58,
-        "ranking_ms": 1.59
+        "e2e_total_ms": 48.37,
+        "handoff_ms": 6.68,
+        "import_discovery_ms": 4.89,
+        "planner_ms": 2.79,
+        "ranking_ms": 1.61
       },
       "tag": "prompt-injection"
     }

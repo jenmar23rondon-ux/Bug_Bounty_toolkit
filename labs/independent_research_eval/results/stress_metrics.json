@@ -44,8 +44,8 @@
       ],
       "precision_at_1_exported_kind": 1.0,
       "precision_at_1_strict_resource_type": 0.0,
-      "precision_at_3": 0.9167,
-      "precision_at_5": 0.75,
+      "precision_at_3": 1.0,
+      "precision_at_5": 0.85,
       "ranking_scenarios": 4,
       "redundant_proposals": 0,
       "reference_correct_rate": null,
@@ -109,7 +109,7 @@
     }
   },
   "corpus_version": "irb-1.0",
-  "evaluator_sha256": "589d00c2ac779c781ac95e76e5f31dc9ca585d5710eaaf971c5624bf3e0e1678",
+  "evaluator_sha256": "f703db7a7780a97a13b593b9085cbed4ee4bdcade66fcb822dd3248005586f4e",
   "historical_overlap": {
     "historical_files_scanned": 216,
     "identical_files": 0,
@@ -117,28 +117,28 @@
     "our_bytes": 309172,
     "overlap_free": true
   },
-  "implementation_sha256": "356948508c0e701ecded44a8ef1a76fe803ae0f812a34f5bdee0e9cfd195f366",
+  "implementation_sha256": "18d2235900c731231e9d7498152d82bc4619a48649ae57ee5332261f2346f4dd",
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
-      "max": 1730.77,
-      "median": 82.31
+      "max": 1697.72,
+      "median": 91.33
     },
     "handoff_ms": {
-      "max": 507.36,
-      "median": 28.0
+      "max": 504.88,
+      "median": 25.96
     },
     "import_discovery_ms": {
-      "max": 1051.53,
-      "median": 26.35
+      "max": 1042.79,
+      "median": 27.69
     },
     "planner_ms": {
-      "max": 3.17,
+      "max": 2.98,
       "median": 2.64
     },
     "ranking_ms": {
-      "max": 67.98,
-      "median": 1.7
+      "max": 70.38,
+      "median": 1.95
     }
   },
   "manifest_sha256": "4dd82cac98084f0a73f7b67d23e8090fee8a48b2497b55bbdb6e25d18dfe1c72",
@@ -187,8 +187,8 @@
     ],
     "precision_at_1_exported_kind": 0.8,
     "precision_at_1_strict_resource_type": 0.0,
-    "precision_at_3": 0.7333,
-    "precision_at_5": 0.6,
+    "precision_at_3": 0.8,
+    "precision_at_5": 0.68,
     "ranking_scenarios": 5,
     "redundant_proposals": 0,
     "reference_correct_rate": null,
@@ -198,7 +198,7 @@
     "technical_errors_predicted": 1,
     "wrong_object_top1": 1
   },
-  "peak_mem_kib_max": 33632.5,
+  "peak_mem_kib_max": 33636.4,
   "scenarios": [
     {
       "confirmed": 0,
@@ -236,7 +236,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33401.0,
+      "peak_mem_kib": 33412.8,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -255,7 +255,7 @@
         "strict_p@1": 0.0,
         "strict_recall": false,
         "top1_strict_type": "unknown",
-        "top1_type": "unknown"
+        "top1_type": "kind-7ceb443df73cc7a34f44d1948c6e28f6"
       },
       "redundant_proposals": 0,
       "refs": {
@@ -263,11 +263,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 1730.77,
-        "handoff_ms": 507.36,
-        "import_discovery_ms": 1051.53,
-        "planner_ms": 3.17,
-        "ranking_ms": 10.81
+        "e2e_total_ms": 1697.72,
+        "handoff_ms": 504.88,
+        "import_discovery_ms": 1042.79,
+        "planner_ms": 2.98,
+        "ranking_ms": 10.78
       },
       "tag": "noise-300"
     },
@@ -307,7 +307,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33458.8,
+      "peak_mem_kib": 33552.4,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -334,11 +334,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 409.89,
-        "handoff_ms": 106.45,
-        "import_discovery_ms": 137.53,
-        "planner_ms": 2.3,
-        "ranking_ms": 67.98
+        "e2e_total_ms": 423.52,
+        "handoff_ms": 110.63,
+        "import_discovery_ms": 149.33,
+        "planner_ms": 2.12,
+        "ranking_ms": 70.38
       },
       "tag": "many-objects"
     },
@@ -378,7 +378,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32869.0,
+      "peak_mem_kib": 32874.0,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -405,11 +405,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 49.85,
-        "handoff_ms": 11.63,
-        "import_discovery_ms": 6.47,
-        "planner_ms": 2.64,
-        "ranking_ms": 1.7
+        "e2e_total_ms": 46.94,
+        "handoff_ms": 8.19,
+        "import_discovery_ms": 7.0,
+        "planner_ms": 2.79,
+        "ranking_ms": 1.71
       },
       "tag": "deep-nesting-60"
     },
@@ -449,7 +449,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32837.7,
+      "peak_mem_kib": 32843.2,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -461,8 +461,8 @@
         "kind_recall": true,
         "ndcg@5": 1.0,
         "p@1": 1.0,
-        "p@3": 0.6667,
-        "p@5": 0.4,
+        "p@3": 1.0,
+        "p@5": 0.8,
         "recall": true,
         "rr": 1.0,
         "strict_p@1": 0.0,
@@ -476,11 +476,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 36.9,
-        "handoff_ms": 10.47,
-        "import_discovery_ms": 6.99,
-        "planner_ms": 1.95,
-        "ranking_ms": 1.58
+        "e2e_total_ms": 34.78,
+        "handoff_ms": 6.03,
+        "import_discovery_ms": 7.23,
+        "planner_ms": 2.02,
+        "ranking_ms": 1.95
       },
       "tag": "mostly-damaged"
     },
@@ -510,7 +510,7 @@
         "fp": 0,
         "tp": 0
       },
-      "peak_mem_kib": 32778.2,
+      "peak_mem_kib": 32778.1,
       "predicted_outcome": "technical_error",
       "predicted_reviewable": false,
       "proposal_types": [],
@@ -562,7 +562,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33632.5,
+      "peak_mem_kib": 33636.4,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -589,11 +589,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 82.31,
-        "handoff_ms": 28.0,
-        "import_discovery_ms": 26.35,
-        "planner_ms": 2.8,
-        "ranking_ms": 1.57
+        "e2e_total_ms": 91.33,
+        "handoff_ms": 25.96,
+        "import_discovery_ms": 27.69,
+        "planner_ms": 2.64,
+        "ranking_ms": 1.75
       },
       "tag": "large-body"
     }

@@ -295,8 +295,16 @@ def label_kind_refs(labels: dict[str, Any]) -> dict[str, str]:
 
     nouns = {*labels["target_types"], *labels["ideal_pair_types"], *labels["forbidden_pair_types"]}
     out: dict[str, str] = {}
+    # Raw HTTP has no scheme. The capture parser stores those requests as https while HAR
+    # captures in this lab are http. Resolve label nouns on both schemes of the frozen hosts
+    # so a route-template kind is comparable. This does not admit a pair.
+    origins = []
+    for url in (ORIGIN, ALT_ORIGIN):
+        origins.append(url)
+        if url.startswith("http://"):
+            origins.append("https://" + url.removeprefix("http://"))
     for noun in nouns:
-        for url in (ORIGIN, ALT_ORIGIN):
+        for url in origins:
             u = urlsplit(url)
             origin = _ref(KEY, "origin", PROGRAM, u.scheme, u.hostname or "", u.port or 80)
             ref = _kind_ref(KEY, PROGRAM, origin, noun)
@@ -344,12 +352,23 @@ def _extract(work: Path, report: dict[str, Any], plan: dict[str, Any], labels: d
     )
     confirmed += sum(1 for s in steps if s.get("finding_confirmed") or s.get("execution_allowed"))
     kinds: dict[str, str] = {}
+    # Admitted proposals keep priority. Recovery only fills object refs the gate no longer names.
     for p in handoff.get("proposals") or []:
         kind = _kind_name(p.get("resource_kind"), krefs) if p.get("resource_kind") else ""
         if not kind:
             continue
         for ref in _proposal_object_refs(p):
             kinds.setdefault(ref, kind)
+    recovered = handoff.get("recovered_objects")
+    recovered_rows = recovered.get("objects") if isinstance(recovered, dict) else recovered
+    if isinstance(recovered_rows, list):
+        for row in recovered_rows:
+            if not isinstance(row, dict):
+                continue
+            recovered_kind = _kind_name(row.get("resource_kind"), krefs) if row.get("resource_kind") else ""
+            object_ref = row.get("object_ref")
+            if recovered_kind and isinstance(object_ref, str) and object_ref:
+                kinds.setdefault(object_ref, recovered_kind)
     ranking = report.get("ranking") or []
     return {
         "ranked_types_resolved": [

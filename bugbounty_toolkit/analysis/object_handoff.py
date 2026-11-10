@@ -26,6 +26,7 @@ from .object_relationships import (
     COLLECTIONS,
     MAX_CAPTURES,
     MAX_FILES,
+    OBJECT_RECOVERY_VERSION,
     SCHEMA_VERSION,
     indexed_capture_sources,
     load_object_key,
@@ -1043,6 +1044,31 @@ def _apply_pairing_precision_gate(
     return admitted, denial_rows, withheld_other
 
 
+def _recovered_objects(graph: Mapping[str, Any]) -> dict[str, Any]:
+    """Copy graph kind-recovery rows into the handoff. Raw identifier values are not present."""
+    recovery = graph.get("object_recovery")
+    objects: list[dict[str, Any]] = []
+    version = OBJECT_RECOVERY_VERSION
+    if isinstance(recovery, Mapping):
+        raw_version = recovery.get("version")
+        if isinstance(raw_version, str) and raw_version:
+            version = raw_version
+        raw_objects = recovery.get("objects")
+        if isinstance(raw_objects, list):
+            objects = [dict(row) for row in raw_objects if isinstance(row, Mapping)]
+    return {
+        "version": version,
+        "rule": (
+            "Name an object from a route template, a typed response identifier, a collection "
+            "container, or one consistent kind for the same origin and value. Do not link "
+            "untyped values, cross-origin values, or a path parent to its nested child. "
+            "Not a pair proposal and not a confirmation."
+        ),
+        "objects": objects,
+        "confirmed": False,
+    }
+
+
 def propose_object_handoff(
     graph: dict[str, Any],
     program: str,
@@ -1213,6 +1239,9 @@ def propose_object_handoff(
             "routed_to": "researcher_review",
             "confirmed": False,
         },
+        # Objects named from capture evidence. This is not a proposal and does not
+        # re-admit a pair the compatibility gate withheld.
+        "recovered_objects": _recovered_objects(graph),
         "total_proposals": len(proposals),
         "proposals": proposals,
         "materialized_pairs": materialized,

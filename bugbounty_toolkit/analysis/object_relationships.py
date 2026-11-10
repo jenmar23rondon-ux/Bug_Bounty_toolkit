@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import hashlib
 import hmac
@@ -121,6 +122,9 @@ GENERIC_KIND_NAMES = frozenset(
 )
 MAX_KIND_CHARS = 48
 KIND_BASES = ("known_vocabulary", "path_collection", "typed_field_name", "collection_container")
+# Bases that may name an object in the handoff without admitting an IDOR pair.
+_RECOVERY_BASES = frozenset({"path_collection", "typed_field_name", "collection_container"})
+OBJECT_RECOVERY_VERSION = "idor-object-recall-recovery/1"
 LIMITATION = "References do not establish ownership, private data, account identity or unauthorized access."
 
 
@@ -470,6 +474,155 @@ def _kind_ref(key: bytes, program: str, origin: str, kind: str | None) -> str | 
     return _ref(key, "kind", program, origin, kind)
 
 
+def _recovery_rule(basis: str, location: str) -> str | None:
+    """Map one observation's kind basis to a handoff recovery rule, or None if it cannot name a kind."""
+    if basis == "path_collection" and location == "path":
+        return "route_template"
+    if basis == "collection_container":
+        return "collection_container"
+    if basis == "typed_field_name" and location == "response_json":
+        return "typed_response_identifier"
+    if basis == "typed_field_name" and location in {"query", "request_json"}:
+        return "typed_identifier"
+    return None
+
+
+def recover_linked_objects(hits: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """Name objects from capture evidence without pairing them and without emitting raw ids.
+
+    A hit may carry ``object_ref``, ``origin_ref``, ``value``, ``kind_ref``, ``basis``,
+    ``location``, ``path_parent`` and ``request_ref``. The value is used only as a transient
+    join key and is never copied into the result.
+
+    Recovery rules:
+    * ``route_template`` — dynamic path segment whose previous static segment names a kind.
+    * ``typed_response_identifier`` — response JSON field such as ``ticket_id``.
+    * ``typed_identifier`` — the same typed field name in a query or request body.
+    * ``collection_container`` — bare ``id`` directly inside a named collection.
+    * ``consistent_kind`` — the same origin and value agree on one kind across captures or
+      across a path id and its response echo. That kind may name an otherwise untyped hit.
+
+    Not linked: a value with no single kind, the same value on two origins, and a path parent
+    with the nested path child from the same request (even when the raw values collide).
+    Nothing is confirmed.
+    """
+    blocked: set[frozenset[str]] = set()
+    by_request: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
+    for hit in hits:
+        request_ref = hit.get("request_ref")
+        if isinstance(request_ref, str) and request_ref:
+            by_request[request_ref].append(hit)
+    for group in by_request.values():
+        parents = {
+            str(hit["object_ref"])
+            for hit in group
+            if hit.get("path_parent") is True
+            and hit.get("location") == "path"
+            and isinstance(hit.get("object_ref"), str)
+        }
+        children = {
+            str(hit["object_ref"])
+            for hit in group
+            if hit.get("path_parent") is not True
+            and hit.get("location") == "path"
+            and isinstance(hit.get("object_ref"), str)
+        }
+        for parent in parents:
+            for child in children:
+                if parent != child:
+                    blocked.add(frozenset((parent, child)))
+
+    grouped: dict[tuple[str, str], list[Mapping[str, Any]]] = defaultdict(list)
+    for hit in hits:
+        origin = hit.get("origin_ref")
+        value = hit.get("value")
+        ref = hit.get("object_ref")
+        if not isinstance(origin, str) or not origin:
+            continue
+        if not isinstance(value, str) or not value or len(value) > 256:
+            continue
+        if not isinstance(ref, str) or not ref:
+            continue
+        grouped[(origin, value)].append(hit)
+
+    rows: list[dict[str, Any]] = []
+    for group in grouped.values():
+        own_kinds: dict[str, set[str]] = defaultdict(set)
+        own_hits: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
+        for hit in group:
+            ref = str(hit["object_ref"])
+            own_hits[ref].append(hit)
+            basis = hit.get("basis")
+            kind = hit.get("kind_ref")
+            if isinstance(kind, str) and kind and isinstance(basis, str) and basis in _RECOVERY_BASES:
+                own_kinds[ref].add(kind)
+        clear = {ref: next(iter(kinds)) for ref, kinds in own_kinds.items() if len(kinds) == 1}
+        ambiguous = {ref for ref, kinds in own_kinds.items() if len(kinds) > 1}
+        unique = set(clear.values())
+        group_kind = next(iter(unique)) if len(unique) == 1 else None
+        resolved: dict[str, str] = {}
+        copied: set[str] = set()
+        for ref in own_hits:
+            if ref in ambiguous:
+                continue
+            if ref in clear:
+                resolved[ref] = clear[ref]
+                continue
+            if group_kind is None:
+                continue
+            sources = [
+                other
+                for other, kind in clear.items()
+                if kind == group_kind and other != ref and frozenset((ref, other)) not in blocked
+            ]
+            if sources:
+                resolved[ref] = group_kind
+                copied.add(ref)
+        for ref, kind in resolved.items():
+            rules: set[str] = set()
+            bases: set[str] = set()
+            if ref in copied:
+                rules.add("consistent_kind")
+                bases.add("consistent_kind")
+            for hit in own_hits[ref]:
+                if hit.get("kind_ref") not in (None, kind):
+                    continue
+                basis = hit.get("basis")
+                location = hit.get("location")
+                if not isinstance(basis, str) or not isinstance(location, str):
+                    continue
+                rule = _recovery_rule(basis, location)
+                if rule is None or (hit.get("kind_ref") != kind and ref in copied):
+                    continue
+                if hit.get("kind_ref") == kind:
+                    rules.add(rule)
+                    bases.add(basis)
+            if len(own_hits[ref]) > 1 and ref not in copied:
+                rules.add("consistent_kind")
+            if not rules:
+                continue
+            peers = sorted(
+                other
+                for other, other_kind in resolved.items()
+                if other != ref and other_kind == kind and frozenset((ref, other)) not in blocked
+            )
+            if peers and "consistent_kind" not in rules:
+                rules.add("consistent_kind")
+            rows.append(
+                {
+                    "object_ref": ref,
+                    "resource_kind": kind,
+                    "rules": sorted(rules),
+                    "bases": sorted(bases),
+                    "linked_object_refs": peers,
+                    "confirmed": False,
+                    "ownership": "not_inferred_from_kind",
+                }
+            )
+    rows.sort(key=lambda row: (str(row["resource_kind"]), str(row["object_ref"])))
+    return rows
+
+
 def _resource_metadata_id(parts: list[str], value: Any) -> bool:
     """Only integer token-resource metadata IDs, never scalar credential values.
 
@@ -608,6 +761,7 @@ def _build(
     for _, capture in loaded:
         credentials.update(_credentials(capture))
     nodes: dict[str, dict[str, Any]] = {}
+    recovery_hits: list[dict[str, Any]] = []
     observations: dict[str, dict[str, Any]] = {}
     relations: dict[tuple[str, str, str], dict[str, object]] = {}
 
@@ -653,7 +807,10 @@ def _build(
         facts: list[dict[str, Any]] = []
         containers: dict[tuple[str, str], set[str]] = defaultdict(set)
         path_refs: list[str] = []
-        for occurrence in occurrences:
+        path_positions = [index for index, occurrence in enumerate(occurrences) if occurrence.location == "path"]
+        parent_positions = set(path_positions[:-1])
+        request_ref = source_id + ":" + capture.locator
+        for index, occurrence in enumerate(occurrences):
             # Resource-kind lineage: equal raw IDs of different inferred kinds never share an object.
             identity = _identity_namespace(occurrence)
             object_id = _ref(key, "object", program, origin, identity, occurrence.value)
@@ -697,6 +854,18 @@ def _build(
                 containers[(occurrence.location, occurrence.container)].add(object_id)
             if occurrence.location == "path":
                 path_refs.append(object_id)
+            recovery_hits.append(
+                {
+                    "object_ref": object_id,
+                    "origin_ref": origin,
+                    "value": occurrence.value,
+                    "kind_ref": kind_ref,
+                    "basis": occurrence.kind_basis if kind_ref else None,
+                    "location": occurrence.location,
+                    "path_parent": index in parent_positions,
+                    "request_ref": request_ref,
+                }
+            )
         facts = sorted({_canonical(fact): fact for fact in facts}.values(), key=_canonical)
         observation_id = _ref(key, "observation", program, endpoint, session, facts)
         provenance = {"source_ref": source_id, "locator": capture.locator}
@@ -789,6 +958,12 @@ def _build(
         "vulnerabilities_confirmed": 0,
         "captures_authorized_attestation": True,
         "limitation": LIMITATION,
+        # Kind names for the handoff. Not a pair, not a proposal, and not an authorization claim.
+        "object_recovery": {
+            "version": OBJECT_RECOVERY_VERSION,
+            "objects": recover_linked_objects(recovery_hits),
+            "confirmed": False,
+        },
     }
     graph["integrity"] = _sign(graph, key)
     if len(_canonical(graph)) > MAX_GRAPH_INPUT_BYTES:
