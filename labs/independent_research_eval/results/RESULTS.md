@@ -36,8 +36,8 @@
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 87.9, "median": 39.46}, "handoff_ms": {"max": 22.86, "median": 8.36}, "import_discovery_ms": {"max": 35.01, "median": 4.4}, "planner_ms": {"max": 3.28, "median": 2.55}, "ranking_ms": {"max": 4.31, "median": 1.67}}`  
-Peak traced memory: 33020.4 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 87.83, "median": 41.8}, "handoff_ms": {"max": 22.62, "median": 10.27}, "import_discovery_ms": {"max": 34.78, "median": 4.34}, "planner_ms": {"max": 3.23, "median": 2.56}, "ranking_ms": {"max": 4.25, "median": 1.61}}`  
+Peak traced memory: 33021.3 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 92054, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
@@ -123,8 +123,8 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | auto_confirmations | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 1687.33, "median": 87.69}, "handoff_ms": {"max": 499.83, "median": 29.93}, "import_discovery_ms": {"max": 1067.29, "median": 25.84}, "planner_ms": {"max": 4.4, "median": 2.86}, "ranking_ms": {"max": 77.09, "median": 1.66}}`  
-Peak traced memory: 33633.3 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 1730.77, "median": 82.31}, "handoff_ms": {"max": 507.36, "median": 28.0}, "import_discovery_ms": {"max": 1051.53, "median": 26.35}, "planner_ms": {"max": 3.17, "median": 2.64}, "ranking_ms": {"max": 67.98, "median": 1.7}}`  
+Peak traced memory: 33632.5 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 309172, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
@@ -171,8 +171,8 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 52.19, "median": 44.83}, "handoff_ms": {"max": 12.85, "median": 8.67}, "import_discovery_ms": {"max": 8.06, "median": 4.37}, "planner_ms": {"max": 3.01, "median": 2.58}, "ranking_ms": {"max": 2.03, "median": 1.57}}`  
-Peak traced memory: 32999.9 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 48.81, "median": 45.94}, "handoff_ms": {"max": 14.9, "median": 10.77}, "import_discovery_ms": {"max": 6.24, "median": 4.12}, "planner_ms": {"max": 2.77, "median": 2.67}, "ranking_ms": {"max": 1.74, "median": 1.55}}`  
+Peak traced memory: 33010.7 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 6924, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |

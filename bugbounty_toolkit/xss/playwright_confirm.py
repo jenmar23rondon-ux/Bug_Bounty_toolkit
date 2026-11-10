@@ -499,8 +499,10 @@ class PlaywrightExecutionChecker:
         self._playwright = None
         if manager is None:
             return
-        # A failed start() has no connection; calling __exit__ then raises AttributeError.
-        if getattr(manager, "_connection", None) is None:
+        # 1.64 records the driver on _connection. 1.65 records it on _client.
+        # A failed start() has neither; calling __exit__ then raises AttributeError.
+        started = getattr(manager, "_connection", None) is not None or getattr(manager, "_client", None) is not None
+        if not started:
             return
         try:
             # Playwright Sync API: ContextManager exposes start()/__exit__, not stop().

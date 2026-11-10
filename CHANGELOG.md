@@ -12,6 +12,9 @@
   (C08 keeps the path pair and the response-body pair). Pairing precision and
   recall stay 1.0, forbidden pairs stay 0, and FINAL handoff-backfilled object
   recall stays 0.7317. Version stays 0.2.2.
+- Headless browser shutdown also stops a Playwright 1.65 driver. That release
+  stores the driver on `_client` instead of `_connection`; leaving it running
+  made the next sync browser start fail in the same process.
 
 ### SQLi second boolean proof
 
