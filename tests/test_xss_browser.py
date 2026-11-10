@@ -43,6 +43,41 @@ class ReflectionLab(BaseHTTPRequestHandler):
         pass
 
 
+class PlaywrightStopTests(unittest.TestCase):
+    def _checker(self) -> PlaywrightExecutionChecker:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        scope = Path(directory.name) / "scope.txt"
+        scope.write_text("127.0.0.1\n", encoding="utf-8")
+        return PlaywrightExecutionChecker(ScopeValidator(scope))
+
+    def test_close_stops_a_playwright_1_65_client(self) -> None:
+        checker = self._checker()
+        exited: list[bool] = []
+
+        class _Manager:
+            _client = object()
+
+            def __exit__(self, *_args: object) -> None:
+                exited.append(True)
+
+        checker._manager = _Manager()
+        checker.close()
+        self.assertEqual(exited, [True])
+        self.assertIsNone(checker._manager)
+
+    def test_close_skips_exit_when_start_failed(self) -> None:
+        checker = self._checker()
+
+        class _Bare:
+            def __exit__(self, *_args: object) -> None:
+                raise AssertionError("failed start must not exit")
+
+        checker._manager = _Bare()
+        checker.close()
+        self.assertIsNone(checker._manager)
+
+
 @unittest.skipUnless(importlib.util.find_spec("playwright"), "optional Playwright dependency is not installed")
 class PlaywrightLocalLabTests(unittest.TestCase):
     @classmethod

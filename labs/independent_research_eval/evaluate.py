@@ -305,6 +305,24 @@ def label_kind_refs(labels: dict[str, Any]) -> dict[str, str]:
     return out
 
 
+def _proposal_object_refs(proposal: dict[str, Any]) -> list[str]:
+    """Object refs named by a proposal, including evidence folded in from equivalent pairs."""
+    refs: list[str] = []
+    for side in ("owner", "actor"):
+        ref = (proposal.get(side) or {}).get("object_ref")
+        if isinstance(ref, str) and ref:
+            refs.append(ref)
+    evidence = proposal.get("supporting_evidence")
+    if isinstance(evidence, list):
+        for row in evidence:
+            if not isinstance(row, dict):
+                continue
+            ref = row.get("object_ref")
+            if isinstance(ref, str) and ref:
+                refs.append(ref)
+    return refs
+
+
 def _kind_name(value: Any, refs: dict[str, str]) -> str:
     text = str(value or "unknown")
     if text in refs:
@@ -328,10 +346,10 @@ def _extract(work: Path, report: dict[str, Any], plan: dict[str, Any], labels: d
     kinds: dict[str, str] = {}
     for p in handoff.get("proposals") or []:
         kind = _kind_name(p.get("resource_kind"), krefs) if p.get("resource_kind") else ""
-        for side in ("owner", "actor"):
-            ref = (p.get(side) or {}).get("object_ref")
-            if ref and kind:
-                kinds.setdefault(str(ref), kind)
+        if not kind:
+            continue
+        for ref in _proposal_object_refs(p):
+            kinds.setdefault(ref, kind)
     ranking = report.get("ranking") or []
     return {
         "ranked_types_resolved": [

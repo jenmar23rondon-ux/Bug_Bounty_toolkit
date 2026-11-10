@@ -254,6 +254,7 @@ files = [
     "labs/idor_pairing_precision_v4/metrics.py",
     "tests/test_idor_pairing_precision_v4.py",
     "tests/test_idor_pairing_precision_v5.py",
+    "tests/test_idor_proposal_dedupe.py",
     "labs/xss_real_browser_eval/__init__.py",
     "labs/xss_real_browser_eval/chromium_gate.py",
     "labs/xss_real_browser_eval/evaluate.py",

@@ -125,12 +125,15 @@ class AdversarialEvaluationTests(unittest.TestCase):
         # Ranking v2.0: shared parents demoted; P@1 becomes positive (was 0.0 on ranking v1.0).
         self.assertGreater(d["precision_at_k"]["1"], 0.0)
         self.assertEqual(d["exported_resource_types"], ["unknown"])
+        # The second response-side direction of one S02 board relationship is the same
+        # proposal. Unique pairs stay 12/12; false negatives stay empty.
         self.assertEqual(
-            (p["proposals"], p["tp_proposals"], p["fp_proposals"], p["ambiguous_proposals"]), (19, 16, 0, 3)
+            (p["proposals"], p["tp_proposals"], p["fp_proposals"], p["ambiguous_proposals"]), (18, 15, 0, 3)
         )
         self.assertEqual(p["false_negatives"], [])
         self.assertEqual(p["manual_review_rate"], 1.0)
-        self.assertEqual((c["tp_pairs"], c["tp_pairs_with_case"]), (16, 8))
+        self.assertEqual(p["pairs_found"], p["expected_pairs"])
+        self.assertEqual((c["tp_pairs"], c["tp_pairs_with_case"]), (15, 8))
         self.assertEqual(c["technical_errors"], 0)
         self.assertEqual(c["corpus_origin"], "http://127.0.0.1:8137")
         self.assertEqual(c["case_yield_on_eligible_tp"], 1.0)

@@ -28,7 +28,7 @@
  "case_discovery": {
   "case_eligible_pairs": 9,
   "case_yield_on_eligible_tp": 1.0,
-  "case_yield_on_tp": 0.5,
+  "case_yield_on_tp": 0.5333,
   "classification_codes": [
    "CASE_ELIGIBLE",
    "REJECT_MULTI_RESOURCE_DIFF",
@@ -37,10 +37,10 @@
   "confirmed_flags": 0,
   "corpus_origin": "http://127.0.0.1:8137",
   "errors": 0,
-  "legitimate_rejections": 10,
+  "legitimate_rejections": 9,
   "non_tp_pairs_with_case": 1,
   "note": "Case proposals are needs_review; accounts_authorized=False here, so nothing is executable. Technical errors (e.g. caller origin override) are counted separately from legitimate read-case rejections (non-GET, multi-diff, session-only, missing responses).",
-  "pairs_evaluated": 19,
+  "pairs_evaluated": 18,
   "rows": [
    {
     "base_url_used": "http://127.0.0.1:8137",
@@ -509,37 +509,11 @@
     "state": "needs_review",
     "unsupported_pairs": 1,
     "verdict": "TP"
-   },
-   {
-    "base_url_used": "http://127.0.0.1:8137",
-    "cases": 0,
-    "classification": {
-     "actor_request_sha256": "3b47c6e3efccbdbd0103e06e57b3320281a69ecb15f6d32d2564652d313672b6",
-     "actor_response_sha256": "65ff05f610e8721c9bb57e791a7d0770b53a865319c45addd972afc4efab1b46",
-     "case_eligible": false,
-     "code": "REJECT_MULTI_RESOURCE_DIFF",
-     "detail": "Captures must differ only in one resource path segment or one query parameter; differences found at: path segment 2, path segment 4.",
-     "has_actor_response": true,
-     "has_owner_response": true,
-     "legitimate_rejection": true,
-     "origin": null,
-     "owner_request_sha256": "eb2565d5e80725ec48ee2374b72c5643f02fb7791a5e0a8fddeeaa75ba20f393",
-     "owner_response_sha256": "bb06e4755702b47716e34f38ca462e4e2912da1690b8bab69f2757aa238e746f",
-     "status": "needs_more_evidence",
-     "technical_error": false
-    },
-    "confirmed": false,
-    "error": null,
-    "rank": 19,
-    "session_only_pairs": 0,
-    "state": "needs_review",
-    "unsupported_pairs": 1,
-    "verdict": "TP"
    }
   ],
   "technical_errors": 0,
   "tp_case_eligible": 8,
-  "tp_pairs": 16,
+  "tp_pairs": 15,
   "tp_pairs_with_case": 8
  },
  "confirmation": {

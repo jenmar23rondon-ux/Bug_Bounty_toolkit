@@ -180,9 +180,17 @@ class AsymmetricPairingTests(unittest.TestCase):
             ]
         )
         rows = _asym(propose_object_handoff(graph, "asym-lab", KEY))
-        self.assertEqual(len(rows), 2)
-        self.assertTrue(all(row["observed_identifiers"][0]["type_basis"] == "collection_container" for row in rows))
-        self.assertTrue(all(row["resource_type"] == "address" for row in rows))
+        # Two address ids on the same route, location, kind, and account pair are one relationship.
+        self.assertEqual(len(rows), 1)
+        self.assertGreaterEqual(rows[0]["equivalent_proposal_count"], 2)
+        owners = {
+            item["object_ref"]
+            for item in rows[0]["supporting_evidence"]
+            if item["role"] == "owner" and item.get("object_ref")
+        }
+        self.assertEqual(len(owners), 2)
+        self.assertEqual(rows[0]["observed_identifiers"][0]["type_basis"], "collection_container")
+        self.assertEqual(rows[0]["resource_type"], "address")
 
     def test_untyped_resource_and_cross_origin_are_not_linked(self) -> None:
         graph, _ = self._graph(

@@ -1,5 +1,21 @@
 ## [Unreleased]
 
+### IDOR/BOLA equivalent proposals
+
+- Admitted IDOR/BOLA proposals that share a method, normalized route template,
+  identifier location and kind, and account pair collapse to one canonical row.
+  Query order, trailing slashes, equivalent id encodings, repeated captures, and
+  other values of that same parameter stay in `supporting_evidence`. A different
+  object parameter, account pair, or method stays separate. The compatibility
+  gate still runs first and nothing is confirmed. On the frozen irb-1.0
+  benchmark, STRESS redundant proposals go from 59 to 0 and FINAL from 3 to 1
+  (C08 keeps the path pair and the response-body pair). Pairing precision and
+  recall stay 1.0, forbidden pairs stay 0, and FINAL handoff-backfilled object
+  recall stays 0.7317. Version stays 0.2.2.
+- Headless browser shutdown also stops a Playwright 1.65 driver. That release
+  stores the driver on `_client` instead of `_connection`; leaving it running
+  made the next sync browser start fail in the same process.
+
 ### SQLi second boolean proof
 
 - `--deep` confirms SQLi only when a boolean true/false delta reproduces with
