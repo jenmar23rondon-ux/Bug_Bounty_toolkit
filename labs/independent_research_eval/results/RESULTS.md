@@ -8,12 +8,12 @@
 | scenarios | 45 | 10 | 9 | 11 | 8 | 7 |
 | outcome_accuracy | 0.9111 | 1.0 | 1.0 | 0.7273 | 1.0 | 0.8571 |
 | outcome_accuracy_ci95 | [0.7927, 0.9649] | [0.7225, 1.0] | [0.7009, 1.0] | [0.4344, 0.9025] | [0.6756, 1.0] | [0.4869, 0.9743] |
-| object_recall | 0.7317 | 0.375 | 0.75 | 0.6364 | 1.0 | 1.0 |
-| precision_at_1 | 0.6829 | 0.375 | 0.75 | 0.6364 | 1.0 | 0.6667 |
-| precision_at_3 | 0.6585 | 0.375 | 0.6667 | 0.5758 | 1.0 | 0.7222 |
-| precision_at_5 | 0.5073 | 0.275 | 0.525 | 0.4364 | 0.8 | 0.5333 |
-| mrr | 0.7033 | 0.375 | 0.75 | 0.6364 | 1.0 | 0.8056 |
-| ndcg_at_5 | 0.6988 | 0.375 | 0.7046 | 0.6364 | 1.0 | 0.8354 |
+| object_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
+| precision_at_1 | 0.9268 | 1.0 | 0.875 | 1.0 | 1.0 | 0.6667 |
+| precision_at_3 | 0.9024 | 1.0 | 0.8333 | 0.8788 | 1.0 | 0.7778 |
+| precision_at_5 | 0.7024 | 0.75 | 0.725 | 0.6364 | 0.8 | 0.6 |
+| mrr | 0.9553 | 1.0 | 0.9167 | 1.0 | 1.0 | 0.8056 |
+| ndcg_at_5 | 0.9552 | 1.0 | 0.8939 | 1.0 | 1.0 | 0.8354 |
 | precision_at_1_strict_resource_type | 0.0976 | 0.0 | 0.125 | 0.1818 | 0.0 | 0.1667 |
 | pairing_precision | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 | pairing_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
@@ -36,37 +36,37 @@
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 87.83, "median": 41.8}, "handoff_ms": {"max": 22.62, "median": 10.27}, "import_discovery_ms": {"max": 34.78, "median": 4.34}, "planner_ms": {"max": 3.23, "median": 2.56}, "ranking_ms": {"max": 4.25, "median": 1.61}}`  
-Peak traced memory: 33021.3 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 98.32, "median": 42.99}, "handoff_ms": {"max": 24.51, "median": 8.17}, "import_discovery_ms": {"max": 35.11, "median": 4.74}, "planner_ms": {"max": 3.05, "median": 2.59}, "ranking_ms": {"max": 4.3, "median": 1.64}}`  
+Peak traced memory: 33025.7 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 92054, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
 |---|---|---|---|---|---|---|---|---|---|---|
 | A01 | A | read-idor-proven | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | statement | 2 |  |
-| A02 | A | idor-absent-denied | stop | stop | ✓ | REJECT_SESSION_ONLY | stop_contradicted_hypothesis | unknown | 0 |  |
+| A02 | A | idor-absent-denied | stop | stop | ✓ | REJECT_SESSION_ONLY | stop_contradicted_hypothesis | payslip | 0 |  |
 | A03 | A | public-resource-id | abstain | abstain | ✓ |  | none | — | 0 |  |
 | A04 | A | shared-legit | abstain | abstain | ✓ |  | none | — | 0 |  |
-| A05 | A | denied-http-200 | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | unknown | 0 |  |
+| A05 | A | denied-http-200 | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | contract | 0 |  |
 | A06 | A | success-with-403 | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | claim | 2 |  |
-| A07 | A | authorized-admin-role | abstain | abstain | ✓ |  | none | unknown | 0 |  |
-| A08 | A | insufficient-permission | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | unknown | 0 |  |
-| A09 | A | negative-control-correct | stop | stop | ✓ | REJECT_SESSION_ONLY | stop_contradicted_hypothesis | unknown | 0 |  |
+| A07 | A | authorized-admin-role | abstain | abstain | ✓ |  | none | profile | 0 |  |
+| A08 | A | insufficient-permission | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | ledger | 0 |  |
+| A09 | A | negative-control-correct | stop | stop | ✓ | REJECT_SESSION_ONLY | stop_contradicted_hypothesis | prescription | 0 |  |
 | A10 | A | ownership-not-shown | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | ticket | 2 |  |
 | B01 | B | cross-reference | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | invoice | 1 |  |
 | B02 | B | uuid-ids | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | vault | 2 |  |
 | B03 | B | same-id-diff-namespace | abstain | abstain | ✓ |  | none | — | 0 |  |
 | B04 | B | nested-resource | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | comment | 2 |  |
 | B05 | B | array-members | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | group | 2 |  |
-| B06 | B | duplicate-fields | abstain | abstain | ✓ |  | none | unknown | 0 |  |
+| B06 | B | duplicate-fields | abstain | abstain | ✓ |  | none | wallet | 0 |  |
 | B07 | B | shared-object-across | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | report | 2 |  |
 | B08 | B | parent-frequency-trap | abstain | abstain | ✓ |  | none | account | 0 |  |
 | B09 | B | ownership-looking-field | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | note | 2 |  |
 | C01 | C | burp-xml | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | shipment | 2 |  |
-| C02 | C | raw-http | technical_error | abstain | ✗ |  | none | unknown | 0 |  |
+| C02 | C | raw-http | technical_error | abstain | ✗ |  | none | permit | 0 |  |
 | C03 | C | reordered | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | license | 2 |  |
-| C04 | C | missing-response | technical_error | technical_error | ✓ |  | none | unknown | 0 |  |
-| C05 | C | redirect | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | unknown | 0 |  |
-| C06 | C | mixed-origins | technical_error | abstain | ✗ |  | none | unknown | 0 |  |
+| C04 | C | missing-response | technical_error | technical_error | ✓ |  | none | refund | 0 |  |
+| C05 | C | redirect | stop | stop | ✓ | CASE_ELIGIBLE | stop_contradicted_hypothesis | quote | 0 |  |
+| C06 | C | mixed-origins | technical_error | abstain | ✗ |  | none | policy | 0 |  |
 | C07 | C | write-method | stop | abstain | ✗ |  | none | address | 0 |  |
 | C08 | C | duplicate-captures | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | booking | 2 |  |
 | C09 | C | ambiguous-session | abstain | abstain | ✓ |  | none | cart | 0 |  |
@@ -81,10 +81,10 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | D17 | D | controls-complete | reviewable | reviewable | ✓ | CASE_ELIGIBLE | reuse_existing_control | deposit | 2 |  |
 | D18 | D | missing-negative | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | transfer | 2 |  |
 | E01 | E | heavy-noise | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | estimates2 | 1 |  |
-| E02 | E | frequent-irrelevant | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | unknown | 2 |  |
+| E02 | E | frequent-irrelevant | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | locale | 2 |  |
 | E03 | E | misleading-labels | abstain | abstain | ✓ |  | none | — | 0 |  |
 | E04 | E | similar-routes | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | user | 1 |  |
-| E05 | E | unseen-shape-graphql | stop | abstain | ✗ |  | none | unknown | 0 |  |
+| E05 | E | unseen-shape-graphql | stop | abstain | ✗ |  | none | kind-75c55565937017fc6e4899ab98f8b87b | 0 |  |
 | E06 | E | secret-canaries | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | export | 2 |  |
 | E07 | E | prompt-injection | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | message | 2 |  |
 
@@ -97,8 +97,8 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | outcome_accuracy_ci95 | [0.6097, 1.0] | [0.5655, 1.0] | [0.2065, 1.0] |
 | object_recall | 1.0 | 1.0 | 1.0 |
 | precision_at_1 | 0.8 | 1.0 | 0.0 |
-| precision_at_3 | 0.7333 | 0.9167 | 0.0 |
-| precision_at_5 | 0.6 | 0.75 | 0.0 |
+| precision_at_3 | 0.8 | 1.0 | 0.0 |
+| precision_at_5 | 0.68 | 0.85 | 0.0 |
 | mrr | 0.825 | 1.0 | 0.125 |
 | ndcg_at_5 | 0.8 | 1.0 | 0.0 |
 | precision_at_1_strict_resource_type | 0.0 | 0.0 | 0.0 |
@@ -123,13 +123,13 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | auto_confirmations | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 1730.77, "median": 82.31}, "handoff_ms": {"max": 507.36, "median": 28.0}, "import_discovery_ms": {"max": 1051.53, "median": 26.35}, "planner_ms": {"max": 3.17, "median": 2.64}, "ranking_ms": {"max": 67.98, "median": 1.7}}`  
-Peak traced memory: 33632.5 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 1697.72, "median": 91.33}, "handoff_ms": {"max": 504.88, "median": 25.96}, "import_discovery_ms": {"max": 1042.79, "median": 27.69}, "planner_ms": {"max": 2.98, "median": 2.64}, "ranking_ms": {"max": 70.38, "median": 1.95}}`  
+Peak traced memory: 33636.4 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 309172, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
 |---|---|---|---|---|---|---|---|---|---|---|
-| S01 | E | noise-300 | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | unknown | 2 |  |
+| S01 | E | noise-300 | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | kind-7ceb443df73cc7a34f44d1948c6e28f6 | 2 |  |
 | S02 | C | many-objects | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | row | 1 |  |
 | S03 | C | deep-nesting-60 | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | slot | 2 |  |
 | S04 | C | mostly-damaged | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | tokens2 | 1 |  |
@@ -143,12 +143,12 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | scenarios | 6 | 2 | 2 | 1 | 1 |
 | outcome_accuracy | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 | outcome_accuracy_ci95 | [0.6097, 1.0] | [0.3424, 1.0] | [0.3424, 1.0] | [0.2065, 1.0] | [0.2065, 1.0] |
-| object_recall | 0.8 | 1.0 | 0.5 | 1.0 | 1.0 |
-| precision_at_1 | 0.8 | 1.0 | 0.5 | 1.0 | 1.0 |
-| precision_at_3 | 0.8 | 1.0 | 0.5 | 1.0 | 1.0 |
-| precision_at_5 | 0.64 | 0.8 | 0.4 | 0.8 | 0.8 |
-| mrr | 0.8 | 1.0 | 0.5 | 1.0 | 1.0 |
-| ndcg_at_5 | 0.8 | 1.0 | 0.5 | 1.0 | 1.0 |
+| object_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
+| precision_at_1 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
+| precision_at_3 | 0.9333 | 1.0 | 0.8334 | 1.0 | 1.0 |
+| precision_at_5 | 0.72 | 0.8 | 0.6 | 0.8 | 0.8 |
+| mrr | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
+| ndcg_at_5 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 | precision_at_1_strict_resource_type | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
 | pairing_precision | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 | pairing_recall | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
@@ -171,15 +171,15 @@ Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "ne
 | auto_confirmations | 0 | 0 | 0 | 0 | 0 |
 | network_attempts | 0 | 0 | 0 | 0 | 0 |
 
-Latency (ms, median/max): `{"e2e_total_ms": {"max": 48.81, "median": 45.94}, "handoff_ms": {"max": 14.9, "median": 10.77}, "import_discovery_ms": {"max": 6.24, "median": 4.12}, "planner_ms": {"max": 2.77, "median": 2.67}, "ranking_ms": {"max": 1.74, "median": 1.55}}`  
-Peak traced memory: 33010.7 KiB  
+Latency (ms, median/max): `{"e2e_total_ms": {"max": 51.73, "median": 43.76}, "handoff_ms": {"max": 11.02, "median": 8.14}, "import_discovery_ms": {"max": 6.81, "median": 4.64}, "planner_ms": {"max": 2.82, "median": 2.6}, "ranking_ms": {"max": 1.73, "median": 1.64}}`  
+Peak traced memory: 33016.1 KiB  
 Historical overlap: `{"historical_files_scanned": 216, "identical_files": 0, "needle_hits": {}, "our_bytes": 6924, "overlap_free": true}`
 
 | id | fam | tag | ideal | predicted | ok | codes | first step | top-1 type | proposals | notes |
 |---|---|---|---|---|---|---|---|---|---|---|
 | D01 | A | read-idor-basic | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | receipt | 2 |  |
 | D02 | A | public-same-url | abstain | abstain | ✓ |  | none | — | 0 |  |
-| D03 | C | missing-response | technical_error | technical_error | ✓ |  | none | unknown | 0 |  |
+| D03 | C | missing-response | technical_error | technical_error | ✓ |  | none | voucher | 0 |  |
 | D04 | D | tampered-evidence | integrity_block | integrity_block | ✓ | CASE_ELIGIBLE | verify_evidence_digest | parcel | 2 |  |
 | D05 | E | canary-header | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | badge | 2 |  |
 | D06 | C | burp-xml-pair | reviewable | reviewable | ✓ | CASE_ELIGIBLE | attest_distinct_accounts | coupon | 2 |  |

@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+### IDOR/BOLA object recall
+
+- The handoff now names objects from capture evidence when a pair is withheld:
+  route templates, typed response identifiers, collection containers, and one
+  consistent kind for the same origin and value. Untyped values, cross-origin
+  values, and a path parent versus its nested child are not linked. The
+  compatibility gate is unchanged and nothing is confirmed. On the frozen
+  irb-1.0 benchmark, FINAL handoff-backfilled object recall goes from 0.7317
+  to 1.0 (41/41). Pairing precision and recall stay 1.0, forbidden pairs stay
+  0, redundant proposals stay 1/0/0 on FINAL/STRESS/DEV, and correct outcomes
+  stay 41/45, 6/6, and 6/6. `implementation_sha256` and `evaluator_sha256`
+  moved because of this recovery; `manifest_sha256` did not. Version stays 0.2.2.
+
 ### IDOR/BOLA equivalent proposals
 
 - Admitted IDOR/BOLA proposals that share a method, normalized route template,

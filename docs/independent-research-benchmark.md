@@ -96,6 +96,32 @@ The remaining FINAL redundant proposal is C08. Its cap is 1, and the path
 parameter and the response-body identifier are different locations, so both stay.
 S02's 64 row proposals on one list route collapsed to 1.
 
+## Object recall after withheld pairs
+
+The compatibility gate still drops incompatible pairs. Those pairs no longer have
+to be the only way a ranked object gets a kind. The handoff records
+`recovered_objects` from route templates, typed response identifiers, collection
+containers, and a single kind that is consistent for the same origin and value.
+Admitted proposals still win when both exist. Untyped values, cross-origin
+values, and a nested path parent/child are not linked. Details and the eleven
+FINAL misses are in [idor-object-recall-recovery.md](idor-object-recall-recovery.md).
+
+| Metric | Before this recovery | After |
+|---|---|---|
+| FINAL handoff-backfilled object recall | 0.7317 | 1.0 |
+| FINAL exported-kind object recall | 0.9756 | 1.0 |
+| FINAL pairing precision / recall | 1.0 / 1.0 | 1.0 / 1.0 |
+| FINAL forbidden pairs | 0 | 0 |
+| FINAL redundant proposals | 1 | 1 |
+| FINAL correct outcomes | 41/45 | 41/45 |
+| STRESS / DEV object recall | 1.0 / 0.8 | 1.0 / 1.0 |
+| STRESS / DEV redundant proposals | 0 / 0 | 0 / 0 |
+| False reviewable cases, all splits | 0 | 0 |
+| Automatic confirmations / network attempts | 0 / 0 | 0 / 0 |
+
+FINAL `wrong_object_top1` moved 2 → 3 because B08 now recalls `card` while the
+shared account parent remains rank 1. The card pair stays withheld.
+
 ## Historical refresh after PR #91
 
 The original frozen DEV/FINAL/STRESS corpora were rerun on main `2fb497e`.
