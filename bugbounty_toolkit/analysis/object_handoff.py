@@ -401,6 +401,147 @@ def _response_object_sides(
     return sides, object_sessions
 
 
+def _normalize_route_template(template: str) -> str:
+    """Route template with trailing slashes removed. ``{id}`` segments stay literal."""
+    stripped = template.strip()
+    parts = [part for part in stripped.split("/") if part]
+    if not parts:
+        return "/"
+    return "/" + "/".join(parts).casefold()
+
+
+def _evidence_row(side: Mapping[str, Any], *, role: str, pair_kind: str) -> dict[str, Any]:
+    locations = side.get("locations") or []
+    return {
+        "role": role,
+        "pair_kind": pair_kind,
+        "object_ref": side.get("object_ref"),
+        "session_ref": side.get("session_ref"),
+        "observation_ref": side.get("observation_ref"),
+        "source_ref": side.get("source_ref"),
+        "locator": side.get("locator"),
+        "locations": sorted(str(item) for item in locations),
+    }
+
+
+def _evidence_identity(row: Mapping[str, Any]) -> tuple[str, ...]:
+    locations = row.get("locations") or []
+    loc = ",".join(str(item) for item in locations) if isinstance(locations, list) else ""
+    return (
+        str(row.get("role") or ""),
+        str(row.get("pair_kind") or ""),
+        str(row.get("object_ref") or ""),
+        str(row.get("session_ref") or ""),
+        str(row.get("locator") or ""),
+        str(row.get("observation_ref") or ""),
+        str(row.get("source_ref") or ""),
+        loc,
+    )
+
+
+def _record_pair_evidence(
+    proposal: dict[str, Any],
+    owner: Mapping[str, Any],
+    actor: Mapping[str, Any],
+    pair_kind: str,
+) -> None:
+    """Attach one observed pair. Repeated captures accumulate; they do not add a proposal."""
+    rows = proposal.get("supporting_evidence")
+    if not isinstance(rows, list):
+        rows = []
+        proposal["supporting_evidence"] = rows
+    rows.append(_evidence_row(owner, role="owner", pair_kind=pair_kind))
+    rows.append(_evidence_row(actor, role="actor", pair_kind=pair_kind))
+    proposal["equivalent_proposal_count"] = int(proposal.get("equivalent_proposal_count") or 0) + 1
+
+
+def _finalize_evidence(proposal: dict[str, Any]) -> None:
+    rows = proposal.get("supporting_evidence")
+    if not isinstance(rows, list):
+        proposal["supporting_evidence"] = []
+        proposal["equivalent_proposal_count"] = int(proposal.get("equivalent_proposal_count") or 1)
+        return
+    unique: dict[tuple[str, ...], dict[str, Any]] = {}
+    for row in rows:
+        if isinstance(row, dict):
+            unique.setdefault(_evidence_identity(row), row)
+    proposal["supporting_evidence"] = [unique[key] for key in sorted(unique)]
+    proposal["equivalent_proposal_count"] = int(proposal.get("equivalent_proposal_count") or 1)
+
+
+def _side_slot(side: Mapping[str, Any]) -> tuple[str, ...]:
+    locations = side.get("locations") or []
+    position = str(side.get("identifier_position") or "")
+    return (*sorted(str(item) for item in locations), position)
+
+
+def _endpoint_nodes(graph: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
+    nodes = graph.get("nodes")
+    if not isinstance(nodes, list):
+        return {}
+    found: dict[str, Mapping[str, Any]] = {}
+    for node in nodes:
+        if isinstance(node, Mapping) and node.get("type") == "Endpoint" and isinstance(node.get("id"), str):
+            found[node["id"]] = node
+    return found
+
+
+def _relationship_key(proposal: Mapping[str, Any], endpoints: Mapping[str, Mapping[str, Any]]) -> tuple[str, ...]:
+    """Identity of one object-parameter-endpoint relationship, ignoring incidental id values."""
+    endpoint_ref = str(proposal.get("endpoint_ref") or "")
+    endpoint = endpoints.get(endpoint_ref)
+    if endpoint is None:
+        method = ""
+        template = endpoint_ref
+    else:
+        method = str(endpoint.get("method") or "").upper()
+        template = _normalize_route_template(str(endpoint.get("path_template") or "")) or endpoint_ref
+    owner_raw = proposal.get("owner")
+    actor_raw = proposal.get("actor")
+    owner: Mapping[str, Any] = owner_raw if isinstance(owner_raw, Mapping) else {}
+    actor: Mapping[str, Any] = actor_raw if isinstance(actor_raw, Mapping) else {}
+    slots = tuple(sorted((_side_slot(owner), _side_slot(actor))))
+    slot_text = "|".join(",".join(slot) for slot in slots)
+    accounts = "|".join(sorted((str(owner.get("session_ref") or ""), str(actor.get("session_ref") or ""))))
+    kind = str(proposal.get("resource_kind") or "")
+    return (method, template, kind, slot_text, accounts)
+
+
+def _collapse_equivalent_proposals(
+    graph: Mapping[str, Any],
+    proposals: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Keep the first ranked proposal for each relationship and union the others' evidence.
+
+    The compatibility gate has already admitted or withheld each pair. Collapsing does not
+    re-admit a withheld pair and does not confirm anything.
+    """
+    endpoints = _endpoint_nodes(graph)
+    grouped: dict[tuple[str, ...], dict[str, Any]] = {}
+    order: list[tuple[str, ...]] = []
+    for proposal in proposals:
+        key = _relationship_key(proposal, endpoints)
+        current = grouped.get(key)
+        if current is None:
+            grouped[key] = proposal
+            order.append(key)
+            continue
+        current["equivalent_proposal_count"] = int(current.get("equivalent_proposal_count") or 1) + int(
+            proposal.get("equivalent_proposal_count") or 1
+        )
+        evidence = current.get("supporting_evidence")
+        extra = proposal.get("supporting_evidence")
+        if not isinstance(evidence, list):
+            evidence = []
+            current["supporting_evidence"] = evidence
+        if isinstance(extra, list):
+            evidence.extend(extra)
+    collapsed = [grouped[key] for key in order]
+    for proposal in collapsed:
+        _finalize_evidence(proposal)
+    return collapsed
+
+
 def _asymmetric_proposals(
     graph: dict[str, Any],
     program: str,
@@ -417,7 +558,7 @@ def _asymmetric_proposals(
         key=lambda row: (row["endpoint_ref"], row["object_ref"], row["session_ref"], row["locator"]),
     )
     proposals: list[dict[str, Any]] = []
-    seen: set[tuple[str, str, str]] = set()
+    seen: dict[tuple[str, str, str], dict[str, Any]] = {}
     shared: set[str] = set()
     for owner in response_sides:
         if len(object_sessions.get(owner["object_ref"], set())) > 1:
@@ -437,8 +578,8 @@ def _asymmetric_proposals(
                 continue
             dedupe = (endpoint, owner["object_ref"], actor["object_ref"])
             if dedupe in seen:
+                _record_pair_evidence(seen[dedupe], owner, actor, "asymmetric_response_request")
                 continue
-            seen.add(dedupe)
             if len(proposals) >= MAX_ASYMMETRIC_PAIRS:
                 stats["truncated_asymmetric_pairs"] += 1
                 return proposals
@@ -450,65 +591,68 @@ def _asymmetric_proposals(
                 _side_score(actor["locations"], actor["typed"], resource_type) + response_points,
                 ASYMMETRIC_SCORE_CEILING,
             )
-            proposals.append(
-                {
-                    "id": _proposal_id(program, endpoint, owner["object_ref"], actor["object_ref"], ASYMMETRIC_RULE),
-                    "endpoint_ref": endpoint,
-                    "resource_type": resource_type,
-                    "resource_kind": owner["kind_ref"],
-                    "score": score,
-                    "pair_kind": "asymmetric_response_request",
-                    "relation": {
-                        "state": "inferred",
-                        "rule": ASYMMETRIC_RULE,
-                        "kind_rule": KIND_RULE,
-                        "basis": "same_resource_kind_distinct_sessions",
-                        "ownership": "unknown",
-                        "note": "Response presence is an observed identifier only; it does not establish ownership.",
-                    },
-                    "observed_identifiers": [
-                        {
-                            "role": "owner",
-                            "object_ref": owner["object_ref"],
-                            "observed_in": "response_json",
-                            "type_basis": owner["type_basis"],
-                            "observation_ref": owner["observation_ref"],
-                            "ownership": "unknown",
-                        },
-                        {
-                            "role": "actor",
-                            "object_ref": actor["object_ref"],
-                            "observed_in": "request",
-                            "locations": sorted(actor["locations"] & REQUEST_LOCATIONS),
-                            "observation_ref": actor["observation_ref"],
-                            "ownership": "unknown",
-                        },
-                    ],
-                    "owner": {
+            proposal = {
+                "id": _proposal_id(program, endpoint, owner["object_ref"], actor["object_ref"], ASYMMETRIC_RULE),
+                "endpoint_ref": endpoint,
+                "resource_type": resource_type,
+                "resource_kind": owner["kind_ref"],
+                "score": score,
+                "pair_kind": "asymmetric_response_request",
+                "relation": {
+                    "state": "inferred",
+                    "rule": ASYMMETRIC_RULE,
+                    "kind_rule": KIND_RULE,
+                    "basis": "same_resource_kind_distinct_sessions",
+                    "ownership": "unknown",
+                    "note": "Response presence is an observed identifier only; it does not establish ownership.",
+                },
+                "observed_identifiers": [
+                    {
+                        "role": "owner",
                         "object_ref": owner["object_ref"],
-                        "session_ref": owner["session_ref"],
+                        "observed_in": "response_json",
+                        "type_basis": owner["type_basis"],
                         "observation_ref": owner["observation_ref"],
-                        "endpoint_ref": owner["endpoint_ref"],
-                        "source_ref": owner["source_ref"],
-                        "locator": owner["locator"],
-                        "locations": ["response_json"],
+                        "ownership": "unknown",
                     },
-                    "actor": {
+                    {
+                        "role": "actor",
                         "object_ref": actor["object_ref"],
-                        "session_ref": actor["session_ref"],
+                        "observed_in": "request",
+                        "locations": sorted(actor["locations"] & REQUEST_LOCATIONS),
                         "observation_ref": actor["observation_ref"],
-                        "endpoint_ref": endpoint,
-                        "source_ref": actor["source_ref"],
-                        "locator": actor["locator"],
-                        "locations": sorted(actor["locations"]),
+                        "ownership": "unknown",
                     },
-                    "confirmed": False,
-                    "case_executable": False,
-                    "researcher_review_required": True,
-                    "human_gate": HUMAN_GATE,
-                    "insufficient_evidence": False,
-                }
-            )
+                ],
+                "owner": {
+                    "object_ref": owner["object_ref"],
+                    "session_ref": owner["session_ref"],
+                    "observation_ref": owner["observation_ref"],
+                    "endpoint_ref": owner["endpoint_ref"],
+                    "source_ref": owner["source_ref"],
+                    "locator": owner["locator"],
+                    "locations": ["response_json"],
+                    "identifier_position": "response_json",
+                },
+                "actor": {
+                    "object_ref": actor["object_ref"],
+                    "session_ref": actor["session_ref"],
+                    "observation_ref": actor["observation_ref"],
+                    "endpoint_ref": endpoint,
+                    "source_ref": actor["source_ref"],
+                    "locator": actor["locator"],
+                    "locations": sorted(actor["locations"]),
+                    "identifier_position": str(actor.get("position") or ""),
+                },
+                "confirmed": False,
+                "case_executable": False,
+                "researcher_review_required": True,
+                "human_gate": HUMAN_GATE,
+                "insufficient_evidence": False,
+            }
+            _record_pair_evidence(proposal, owner, actor, "asymmetric_response_request")
+            seen[dedupe] = proposal
+            proposals.append(proposal)
     return proposals
 
 
@@ -532,7 +676,7 @@ def _build_proposals(
             path_linked.add(relation.get("target", ""))
 
     raw: list[dict[str, Any]] = []
-    seen: set[tuple[str, str, str]] = set()
+    seen: dict[tuple[str, str, str], dict[str, Any]] = {}
     for endpoint, sides in by_endpoint.items():
         # Group by inferred kind AND identifier position, then form cross-session, cross-object pairs.
         by_type: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
@@ -562,8 +706,8 @@ def _build_proposals(
                     )
                     dedupe = (endpoint, left["object_ref"], right["object_ref"])
                     if dedupe in seen:
+                        _record_pair_evidence(seen[dedupe], left, right, "request_request")
                         continue
-                    seen.add(dedupe)
                     score = _side_score(left["locations"], left["typed"], resource_type) + _side_score(
                         right["locations"], right["typed"], resource_type
                     )
@@ -572,46 +716,49 @@ def _build_proposals(
                         score += 2
                     # Soft cap keeps scores readable without fully flattening ties.
                     score = min(score, 120)
-                    raw.append(
-                        {
-                            "id": _proposal_id(program, endpoint, left["object_ref"], right["object_ref"]),
-                            "endpoint_ref": endpoint,
-                            "resource_type": resource_type,
-                            "resource_kind": kind_ref,
-                            "score": score,
-                            "pair_kind": "request_request",
-                            "relation": {
-                                "state": "observed",
-                                "rule": "request-side-identifiers",
-                                "kind_rule": KIND_RULE,
-                                "kind_state": "inferred",
-                                "basis": "same_endpoint_template_distinct_sessions",
-                                "ownership": "unknown",
-                                "note": "Both identifiers were observed in captured requests; ownership is unknown.",
-                            },
-                            "owner": {
-                                "object_ref": left["object_ref"],
-                                "session_ref": left["session_ref"],
-                                "observation_ref": left["observation_ref"],
-                                "source_ref": left["source_ref"],
-                                "locator": left["locator"],
-                                "locations": sorted(left["locations"]),
-                            },
-                            "actor": {
-                                "object_ref": right["object_ref"],
-                                "session_ref": right["session_ref"],
-                                "observation_ref": right["observation_ref"],
-                                "source_ref": right["source_ref"],
-                                "locator": right["locator"],
-                                "locations": sorted(right["locations"]),
-                            },
-                            "confirmed": False,
-                            "case_executable": False,
-                            "researcher_review_required": True,
-                            "human_gate": HUMAN_GATE,
-                            "insufficient_evidence": False,
-                        }
-                    )
+                    proposal = {
+                        "id": _proposal_id(program, endpoint, left["object_ref"], right["object_ref"]),
+                        "endpoint_ref": endpoint,
+                        "resource_type": resource_type,
+                        "resource_kind": kind_ref,
+                        "score": score,
+                        "pair_kind": "request_request",
+                        "relation": {
+                            "state": "observed",
+                            "rule": "request-side-identifiers",
+                            "kind_rule": KIND_RULE,
+                            "kind_state": "inferred",
+                            "basis": "same_endpoint_template_distinct_sessions",
+                            "ownership": "unknown",
+                            "note": "Both identifiers were observed in captured requests; ownership is unknown.",
+                        },
+                        "owner": {
+                            "object_ref": left["object_ref"],
+                            "session_ref": left["session_ref"],
+                            "observation_ref": left["observation_ref"],
+                            "source_ref": left["source_ref"],
+                            "locator": left["locator"],
+                            "locations": sorted(left["locations"]),
+                            "identifier_position": str(left.get("position") or ""),
+                        },
+                        "actor": {
+                            "object_ref": right["object_ref"],
+                            "session_ref": right["session_ref"],
+                            "observation_ref": right["observation_ref"],
+                            "source_ref": right["source_ref"],
+                            "locator": right["locator"],
+                            "locations": sorted(right["locations"]),
+                            "identifier_position": str(right.get("position") or ""),
+                        },
+                        "confirmed": False,
+                        "case_executable": False,
+                        "researcher_review_required": True,
+                        "human_gate": HUMAN_GATE,
+                        "insufficient_evidence": False,
+                    }
+                    _record_pair_evidence(proposal, left, right, "request_request")
+                    seen[dedupe] = proposal
+                    raw.append(proposal)
 
     if include_response_identifiers:
         raw.extend(_asymmetric_proposals(graph, program, by_endpoint, candidate=candidate, stats=stats))
@@ -641,7 +788,10 @@ def _build_proposals(
             selected.append(row)
             if len(selected) >= limit:
                 break
-    return selected[:limit]
+    selected = selected[:limit]
+    for row in selected:
+        _finalize_evidence(row)
+    return selected
 
 
 def _suggested_command(
@@ -917,6 +1067,12 @@ def propose_object_handoff(
     visibility, demonstrated authorization denial, or a sibling cross-read denial are removed from
     ``proposals``. Demonstrated denials are returned separately as ``withheld_incompatible`` so a
     caller can still record a negative control. Nothing is confirmed.
+
+    After that gate, proposals that test the same relationship collapse into one canonical row.
+    The relationship is the HTTP method, normalized route template, identifier location and kind,
+    and account pair. Identifier values, encodings, query order, trailing slashes, and repeated
+    captures stay in ``supporting_evidence``. A different template, location, kind, account pair,
+    or method stays a separate proposal.
     """
     ProgramPaths(Path("."), program)
     validate_object_graph(graph, program, key)
@@ -965,6 +1121,8 @@ def propose_object_handoff(
     gate_applied = bool(compatibility_gate and index is not None)
     if gate_applied and index is not None:
         proposals, denial_withheld, withheld_other = _apply_pairing_precision_gate(graph, proposals, index)
+    # Collapse only pairs the gate already admitted. Withheld denials stay individual negative controls.
+    proposals = _collapse_equivalent_proposals(graph, proposals)
     status = "proposals_ready"
     notes: list[str] = []
     if candidate and not proposals:

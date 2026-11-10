@@ -47,7 +47,7 @@
       "precision_at_3": 0.9167,
       "precision_at_5": 0.75,
       "ranking_scenarios": 4,
-      "redundant_proposals": 59,
+      "redundant_proposals": 0,
       "reference_correct_rate": null,
       "scenarios": 5,
       "secret_leaks": 0,
@@ -109,7 +109,7 @@
     }
   },
   "corpus_version": "irb-1.0",
-  "evaluator_sha256": "5db7ba9ac9bc4a259aff0e60b85c983b6cf157068c9bb4df9e1c6b79e5d70761",
+  "evaluator_sha256": "589d00c2ac779c781ac95e76e5f31dc9ca585d5710eaaf971c5624bf3e0e1678",
   "historical_overlap": {
     "historical_files_scanned": 216,
     "identical_files": 0,
@@ -117,28 +117,28 @@
     "our_bytes": 309172,
     "overlap_free": true
   },
-  "implementation_sha256": "264a38ccff052fb1d2b7890e2d872bbfa44a7ef50aa0afb7fb2b070dc82ae6d8",
+  "implementation_sha256": "2daa227f512318596984ffc77db7c5c0ebe00fb10ec36a86986338505cc230fa",
   "label_source": "behavioural spec (SPEC.md); authored before evaluation; not derived from bbtk output",
   "latency_ms": {
     "e2e_total_ms": {
-      "max": 1384.03,
-      "median": 91.94
+      "max": 1687.33,
+      "median": 87.69
     },
     "handoff_ms": {
-      "max": 268.98,
-      "median": 29.06
+      "max": 499.83,
+      "median": 29.93
     },
     "import_discovery_ms": {
-      "max": 1021.72,
-      "median": 23.55
+      "max": 1067.29,
+      "median": 25.84
     },
     "planner_ms": {
-      "max": 66.0,
-      "median": 3.43
+      "max": 4.4,
+      "median": 2.86
     },
     "ranking_ms": {
-      "max": 67.59,
-      "median": 1.62
+      "max": 77.09,
+      "median": 1.66
     }
   },
   "manifest_sha256": "4dd82cac98084f0a73f7b67d23e8090fee8a48b2497b55bbdb6e25d18dfe1c72",
@@ -190,7 +190,7 @@
     "precision_at_3": 0.7333,
     "precision_at_5": 0.6,
     "ranking_scenarios": 5,
-    "redundant_proposals": 59,
+    "redundant_proposals": 0,
     "reference_correct_rate": null,
     "scenarios": 6,
     "secret_leaks": 0,
@@ -198,7 +198,7 @@
     "technical_errors_predicted": 1,
     "wrong_object_top1": 1
   },
-  "peak_mem_kib_max": 33950.8,
+  "peak_mem_kib_max": 33633.3,
   "scenarios": [
     {
       "confirmed": 0,
@@ -236,13 +236,13 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33423.8,
+      "peak_mem_kib": 33403.3,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
         "archive"
       ],
-      "proposals": 3,
+      "proposals": 2,
       "ranking": {
         "kind_p@1": 0.0,
         "kind_recall": true,
@@ -263,11 +263,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 1384.03,
-        "handoff_ms": 268.98,
-        "import_discovery_ms": 1021.72,
-        "planner_ms": 3.72,
-        "ranking_ms": 10.57
+        "e2e_total_ms": 1687.33,
+        "handoff_ms": 499.83,
+        "import_discovery_ms": 1067.29,
+        "planner_ms": 4.4,
+        "ranking_ms": 10.66
       },
       "tag": "noise-300"
     },
@@ -307,13 +307,13 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33950.8,
+      "peak_mem_kib": 33456.5,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
         "row"
       ],
-      "proposals": 64,
+      "proposals": 1,
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
@@ -328,17 +328,17 @@
         "top1_strict_type": "unknown",
         "top1_type": "row"
       },
-      "redundant_proposals": 59,
+      "redundant_proposals": 0,
       "refs": {
         "total": 0,
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 1023.92,
-        "handoff_ms": 259.55,
-        "import_discovery_ms": 134.75,
-        "planner_ms": 66.0,
-        "ranking_ms": 67.59
+        "e2e_total_ms": 394.69,
+        "handoff_ms": 117.86,
+        "import_discovery_ms": 157.58,
+        "planner_ms": 2.33,
+        "ranking_ms": 77.09
       },
       "tag": "many-objects"
     },
@@ -378,13 +378,13 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32884.1,
+      "peak_mem_kib": 32869.8,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
         "slot"
       ],
-      "proposals": 3,
+      "proposals": 2,
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
@@ -405,10 +405,10 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 58.33,
-        "handoff_ms": 19.56,
-        "import_discovery_ms": 6.45,
-        "planner_ms": 3.35,
+        "e2e_total_ms": 51.77,
+        "handoff_ms": 12.71,
+        "import_discovery_ms": 6.61,
+        "planner_ms": 2.86,
         "ranking_ms": 1.62
       },
       "tag": "deep-nesting-60"
@@ -449,7 +449,7 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 32836.1,
+      "peak_mem_kib": 32837.9,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
@@ -476,11 +476,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 38.99,
-        "handoff_ms": 11.57,
-        "import_discovery_ms": 6.77,
-        "planner_ms": 1.83,
-        "ranking_ms": 1.58
+        "e2e_total_ms": 34.64,
+        "handoff_ms": 8.84,
+        "import_discovery_ms": 7.05,
+        "planner_ms": 1.88,
+        "ranking_ms": 1.66
       },
       "tag": "mostly-damaged"
     },
@@ -562,13 +562,13 @@
         "fp": 0,
         "tp": 1
       },
-      "peak_mem_kib": 33732.7,
+      "peak_mem_kib": 33633.3,
       "predicted_outcome": "reviewable",
       "predicted_reviewable": true,
       "proposal_types": [
         "blob"
       ],
-      "proposals": 3,
+      "proposals": 2,
       "ranking": {
         "kind_p@1": 1.0,
         "kind_recall": true,
@@ -589,11 +589,11 @@
         "valid": 0
       },
       "stage_ms": {
-        "e2e_total_ms": 91.94,
-        "handoff_ms": 29.06,
-        "import_discovery_ms": 23.55,
-        "planner_ms": 3.43,
-        "ranking_ms": 1.56
+        "e2e_total_ms": 87.69,
+        "handoff_ms": 29.93,
+        "import_discovery_ms": 25.84,
+        "planner_ms": 3.22,
+        "ranking_ms": 1.57
       },
       "tag": "large-body"
     }

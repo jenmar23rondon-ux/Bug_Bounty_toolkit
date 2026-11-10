@@ -68,6 +68,34 @@ Details and the false-pair classes are in
 FINAL handoff-backfilled object recall fell from 0.9268 to 0.7317 because a
 withheld type no longer names the ranked row. Exported-kind recall stayed 0.9756.
 
+## Equivalent-proposal dedupe
+
+Admitted proposals that share a relationship now collapse to one canonical row.
+The key is HTTP method, normalized route template, identifier location and kind,
+and account pair. Query order, trailing slashes, equivalent id encodings, repeated
+captures, and distinct values of that same parameter stay in `supporting_evidence`.
+A different object parameter, account pair, or method stays a separate proposal.
+The compatibility gate still runs first; withheld denials are not folded back in.
+Details are in [idor-proposal-dedupe.md](idor-proposal-dedupe.md).
+
+| Metric | Before this dedupe | After |
+|---|---|---|
+| FINAL pairing precision / recall | 1.0 / 1.0 | 1.0 / 1.0 |
+| FINAL forbidden pairs | 0 | 0 |
+| FINAL handoff-backfilled object recall | 0.7317 | 0.7317 |
+| FINAL correct outcomes | 41/45 | 41/45 |
+| FINAL redundant proposals | 3 | 1 |
+| STRESS pairing precision / recall | 1.0 / 1.0 | 1.0 / 1.0 |
+| STRESS forbidden pairs | 0 | 0 |
+| STRESS redundant proposals | 59 | 0 |
+| DEV redundant proposals | 0 | 0 |
+| False reviewable cases, all splits | 0 | 0 |
+| Automatic confirmations / network attempts | 0 / 0 | 0 / 0 |
+
+The remaining FINAL redundant proposal is C08. Its cap is 1, and the path
+parameter and the response-body identifier are different locations, so both stay.
+S02's 64 row proposals on one list route collapsed to 1.
+
 ## Historical refresh after PR #91
 
 The original frozen DEV/FINAL/STRESS corpora were rerun on main `2fb497e`.
