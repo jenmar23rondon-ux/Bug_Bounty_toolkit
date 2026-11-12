@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+### Authorization capture status integrity
+
+- Offline authorization assessment preserves status codes in textual HTTP/2 and
+  HTTP/3 exports, while rejecting malformed/non-ASCII status tokens. Existing
+  ambiguous, public and contradictory evidence remains unconfirmed. Adds 80
+  synthetic regression subcases and an incremental platform audit in
+  `docs/advanced-research-audit.md`; no binary protocol decoding or new requests.
+
 ### IDOR/BOLA object recall
 
 - The handoff now names objects from capture evidence when a pair is withheld:

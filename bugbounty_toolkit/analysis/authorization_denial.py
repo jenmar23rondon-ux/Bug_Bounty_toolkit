@@ -129,7 +129,9 @@ _SHARED_ACL = re.compile(r'(?i)"shared_with"\s*:\s*\[')
 _LOGIN_REDIRECT = re.compile(
     r"(?i)(?:^|[/?#])(?:login|signin|sign-in|auth(?:entication)?|sso|oauth|session)(?:$|[/?#])"
 )
-_STATUS_LINE = re.compile(r"^HTTP/1\.[01]\s+(\d{3})\b", re.I)
+# HTTP/2 and HTTP/3 here are textual capture exports, not wire-frame parsers.
+# Require a complete ASCII status token: e.g. `200.0` must not prove access.
+_STATUS_LINE = re.compile(r"^HTTP/(?:1\.[01]|2|3)[ \t]+([1-5][0-9]{2})(?:[ \t]+[^\r\n]*)?$", re.I)
 
 
 @dataclass(frozen=True)
@@ -174,7 +176,11 @@ class AuthorizationOutcome:
 
 
 def parse_raw_response(raw: str | bytes | None) -> tuple[int | None, dict[str, str], str]:
-    """Best-effort parse of a raw HTTP/1.x response into (status, headers, body)."""
+    """Parse a textual HTTP/1.x, HTTP/2 or HTTP/3 export into status, headers, body.
+
+    Unsupported or malformed status lines leave status unknown. This does not
+    decode HTTP/2 or HTTP/3 binary frames or change request-import support.
+    """
     if raw is None:
         return None, {}, ""
     text = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
@@ -503,7 +509,7 @@ def _assess_response_core(
 
 
 def assess_raw_response(raw: str | bytes | None) -> ResponseAssessment:
-    """Classify a raw HTTP/1.x response capture."""
+    """Classify a textual HTTP response capture without promoting unknown status."""
     status, headers, body = parse_raw_response(raw)
     return assess_response(status, body, headers)
 
