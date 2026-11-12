@@ -206,8 +206,18 @@ def _read_sources(
             }
         # Every per-entry check (URL, method, sizes, bodies) already ran in import_har.
         return data, result.accepted, summary
+    try:
+        parsed_exchanges = parse_captured_exchanges(data, base_url)
+    except ValueError:
+        # Strict HTTP/1.x pairing rejected the file. Recover sibling exchanges
+        # that are still usable and keep the rejection reasons. Wholly unreadable
+        # files still fail closed inside fallback_discovery_sources.
+        from .capture_ingestion import fallback_discovery_sources
+
+        sources, summary = fallback_discovery_sources(data, base_url)
+        return data, sources, summary
     sources = []
-    for index, exchange in enumerate(parse_captured_exchanges(data, base_url)):
+    for index, exchange in enumerate(parsed_exchanges):
         response = captured_response(exchange)
         request = exchange.request
         body = request.body_bytes()

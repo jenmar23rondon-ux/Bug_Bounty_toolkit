@@ -590,13 +590,18 @@ def assess_pair_authorization(
             "actor_access_proof": result.actor.access_proof,
             "owner_control": owner_control_state(result.owner),
         }
-    return AuthorizationOutcome(
+    outcome = AuthorizationOutcome(
         outcome=result.outcome,
         owner=result.owner,
         actor=result.actor,
         annotation=annotation,
         reasons=result.reasons,
     )
+    # Ambiguous framing must not raise a positive-access or redirect conclusion.
+    # Clean captures have an observed confidence cap and keep this outcome.
+    from .capture_ingestion import apply_confidence_cap
+
+    return apply_confidence_cap(outcome, owner_raw_response, actor_raw_response)
 
 
 def owner_control_state(owner: ResponseAssessment) -> str:

@@ -102,3 +102,9 @@ development cases before another production change. Keep the frozen benchmark
 as regression evidence, not a tuning set. Windows private-file portability is a
 separate security design task; do not bypass its fail-closed checks to make tests
 green. A real Ollama comparison remains optional and unexecuted in this increment.
+
+That contract audit is recorded in `docs/capture-ingestion-robustness.md`.
+The ingestion increment keeps clean HTTP/1.1 discovery on the strict parser,
+adds a diagnostic path for incomplete and mixed captures, and does not confirm
+findings. The following PR should map Nuclei, ZAP, FFUF and SQLMap results onto
+one hypothesis schema where an external alert cannot become `confirmed`.
