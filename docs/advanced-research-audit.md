@@ -50,6 +50,34 @@ The five new test methods were run against the audit-base implementation before
 the fix: 43 subcase failures. After the fix: zero failures. The combined run with
 the nine existing contradiction regressions passes all 14 test methods.
 
+### Frozen benchmark regression measurement
+
+[Actions run 43160039562](https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/actions/runs/43160039562)
+executed the actual evaluator on Linux for both the audit base and proposed
+commit `46f6f064328a6bfad076ad2e3c2ba25eb1f6020f`. The overall and per-family
+scores, scenario outcomes, and frozen manifest hashes are identical:
+
+| Split | Scenarios | Pairing precision / recall, before and after | Outcome accuracy, before and after |
+|---|---:|---:|---:|
+| DEV | 6 | 1.0 / 1.0 | 1.0 |
+| FINAL | 45 | 1.0 / 1.0 | 0.9111 |
+| STRESS | 6 | 1.0 / 1.0 | 1.0 |
+
+False-reviewable cases, automatic confirmations, secret leaks and network
+attempts remain zero on all three splits. These are synthetic corpus results,
+not real-world precision estimates. The new capture regressions measure the
+fix; the unchanged frozen corpus measures absence of regressions.
+
+The three result snapshots are copied from the measured proposed artifact,
+not edited scores. Artifact SHA-256 values were verified before reading:
+
+- Base: `6024a1aede8df4a242a41c3ffe73bd0f8ffc363e4d816ab1ad3db3ea7302c596`.
+- Proposed: `6ec20f8077fa0672a79ec2213bb94b94df1198f06505aaa7d7dacb9350bcf6da`.
+
+The artifact commit and production-source digest were checked against the
+checkout. Only timing/memory observations and the source binding change in
+recorded results; frozen inputs and labels remain untouched.
+
 ## Validation and limits
 
 - Baseline Ruff lint and formatting passed (539 files). New regression formatting
