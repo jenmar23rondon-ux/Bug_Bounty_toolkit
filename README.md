@@ -72,6 +72,7 @@ Every active check still enforces scope validation, rate limits, and `--dry-run`
 - [docs/HUNT.md](docs/HUNT.md) — one-page hunt workflow and pre-submit checklist
 - [docs/authorized-testing.md](docs/authorized-testing.md) — authorization expectations
 - [docs/quickstart.md](docs/quickstart.md) — environment setup
+- [Incremental platform audit](docs/advanced-research-audit.md) — existing engines, capture-status regressions, measured benchmark and platform limits
 
 
 ## Business-logic planner
