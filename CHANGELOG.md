@@ -1,5 +1,17 @@
 ## [Unreleased]
 
+### Offline external importers
+
+- Nuclei JSON/JSONL, OWASP ZAP JSON/XML, FFUF JSON/CSV, and SQLMap log/CSV/output
+  directories parse offline into `bbtk.external-finding/1`. Nuclei and FFUF row
+  identity still comes from the evidence-engine readers. Request and response
+  text is normalized with `bbtk.capture-ingestion/1` when the file contains it.
+  Imported rows stay `candidate`, `needs_review`, or `abstain`. `access_confirmed`
+  and `vulnerabilities_confirmed` stay false. Malformed siblings are diagnosed
+  and kept. SQLMap session databases are not deserialized. Frozen DEV/FINAL/STRESS
+  scores are unchanged; only `implementation_sha256` is rebound. `manifest_sha256`
+  is unchanged. Version stays 0.2.2.
+
 ### Authorization capture status integrity
 
 - Offline authorization assessment preserves status codes in textual HTTP/2 and

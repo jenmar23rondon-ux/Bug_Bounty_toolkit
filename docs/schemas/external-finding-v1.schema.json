@@ -1,0 +1,103 @@
+{
+  "$id": "https://github.com/jenmar23rondon-ux/Bug_Bounty_toolkit/docs/schemas/external-finding-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "bbtk.external-finding/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "origin",
+    "evidence",
+    "hypothesis",
+    "status",
+    "traceability",
+    "access_confirmed",
+    "vulnerabilities_confirmed"
+  ],
+  "properties": {
+    "schema": {"const": "bbtk.external-finding/1"},
+    "access_confirmed": {"const": false},
+    "vulnerabilities_confirmed": {"const": 0},
+    "status": {"enum": ["candidate", "needs_review", "abstain"]},
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "version", "source_file", "record_index", "input_sha256"],
+      "properties": {
+        "tool": {"enum": ["nuclei", "zap", "ffuf", "sqlmap"]},
+        "version": {"type": ["string", "null"], "maxLength": 40},
+        "source_file": {"type": "string", "maxLength": 255},
+        "record_index": {"type": "integer", "minimum": 1},
+        "input_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "host",
+        "endpoint",
+        "method",
+        "status_code",
+        "request_present",
+        "response_present",
+        "ingestion_schema",
+        "ingestion_confidence",
+        "ingestion_diagnostics",
+        "response_length",
+        "excerpt",
+        "excerpt_sha256"
+      ],
+      "properties": {
+        "url": {"type": ["string", "null"], "maxLength": 4096},
+        "host": {"type": ["string", "null"], "maxLength": 255},
+        "endpoint": {"type": ["string", "null"], "maxLength": 4096},
+        "method": {"type": ["string", "null"], "maxLength": 16},
+        "status_code": {"type": ["integer", "null"], "minimum": 100, "maximum": 599},
+        "request_present": {"type": "boolean"},
+        "response_present": {"type": "boolean"},
+        "ingestion_schema": {"type": ["string", "null"]},
+        "ingestion_confidence": {"enum": ["observed", "partial", "ambiguous", null]},
+        "ingestion_diagnostics": {"type": "array", "items": {"type": "string", "maxLength": 80}},
+        "response_length": {"type": ["integer", "null"], "minimum": 0},
+        "excerpt": {"type": ["string", "null"], "maxLength": 240},
+        "excerpt_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "hypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vulnerability_class",
+        "vulnerability_claimed",
+        "claim",
+        "severity_claimed",
+        "parameter",
+        "place",
+        "cwe",
+        "template_id"
+      ],
+      "properties": {
+        "vulnerability_class": {"type": ["string", "null"], "maxLength": 80},
+        "vulnerability_claimed": {"type": "boolean"},
+        "claim": {"type": ["string", "null"], "maxLength": 160},
+        "severity_claimed": {"type": ["string", "null"], "maxLength": 40},
+        "parameter": {"type": ["string", "null"], "maxLength": 80},
+        "place": {"type": ["string", "null"], "maxLength": 32},
+        "cwe": {"type": ["string", "null"], "maxLength": 16},
+        "template_id": {"type": ["string", "null"], "maxLength": 200}
+      }
+    },
+    "traceability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw_locator", "raw_sha256", "reader"],
+      "properties": {
+        "raw_locator": {"type": "string", "maxLength": 200},
+        "raw_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "reader": {"type": "string", "maxLength": 80}
+      }
+    }
+  }
+}

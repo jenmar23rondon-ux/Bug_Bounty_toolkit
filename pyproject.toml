@@ -288,6 +288,12 @@ files = [
     "tests/test_capture_ingestion_eval.py",
     "labs/capture_ingestion_eval/__init__.py",
     "labs/capture_ingestion_eval/evaluate.py",
+    "bugbounty_toolkit/analysis/external_importers.py",
+    "tests/test_external_importers.py",
+    "tests/test_external_import_eval.py",
+    "labs/external_import_eval/__init__.py",
+    "labs/external_import_eval/fixtures.py",
+    "labs/external_import_eval/evaluate.py",
 ]
 
 [tool.coverage.run]
