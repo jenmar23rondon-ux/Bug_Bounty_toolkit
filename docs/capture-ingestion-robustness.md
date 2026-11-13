@@ -119,6 +119,6 @@ origin or contradictory evidence should abstain. The prioritization engine
 PR after that, once this schema exists.
 
 That importer landed in `docs/external-importers.md` (`bbtk.external-finding/1`).
-The following PR is the explainable prioritization engine. It should abstain
-when origin, evidence, or a comparable control is missing, and it should not
-promote an imported row to confirmed.
+The explainable prioritizer landed in `docs/prioritization-engine.md`. It
+abstains when origin, evidence, or a comparable control is missing, and it does
+not promote an imported row to confirmed.
