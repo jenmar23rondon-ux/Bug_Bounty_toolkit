@@ -294,6 +294,12 @@ files = [
     "labs/external_import_eval/__init__.py",
     "labs/external_import_eval/fixtures.py",
     "labs/external_import_eval/evaluate.py",
+    "bugbounty_toolkit/analysis/review_prioritization.py",
+    "tests/test_review_prioritization.py",
+    "tests/test_prioritization_eval.py",
+    "labs/prioritization_eval/__init__.py",
+    "labs/prioritization_eval/cases.py",
+    "labs/prioritization_eval/evaluate.py",
 ]
 
 [tool.coverage.run]

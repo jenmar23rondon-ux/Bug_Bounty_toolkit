@@ -145,8 +145,8 @@ Frozen DEV / FINAL / STRESS captures, labels, and `MANIFEST.sha256` are not edit
 - A SQLMap technique name is the tool's label. The importer does not replay, time, or confirm it.
 - ZAP risk and Nuclei severity are stored as the tool's claim. They do not set BBTK severity or confirmation.
 - An unrecognized file is refused with `unknown_format` rather than guessed into a class.
-- Ranking which hypothesis to open first is not this PR. The next PR should explain that order and abstain when origin, evidence, or a comparison point is missing. It should still be unable to mark an imported row confirmed.
+- Ranking which hypothesis to open first is `bbtk evidence prioritize`, documented in `docs/prioritization-engine.md`. An imported row still cannot become confirmed.
 
 ## Proposed next PR
 
-Explainable prioritization over `bbtk.external-finding/1` plus the existing BBTK hypotheses. Rank only rows that have an origin, a location, and enough evidence to say why one comes before another. Abstain when a field needed for the comparison is missing or contradictory. Keep `access_confirmed` and `vulnerabilities_confirmed` false. Do not tune on the frozen FINAL labels.
+The explainable prioritizer landed in `docs/prioritization-engine.md`. It abstains when origin, location, evidence, session, corroboration, or class cannot be compared, and it does not mark an imported row confirmed. Do not tune that order on the frozen FINAL labels.

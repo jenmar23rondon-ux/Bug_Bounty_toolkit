@@ -108,5 +108,5 @@ The ingestion increment keeps clean HTTP/1.1 discovery on the strict parser,
 adds a diagnostic path for incomplete and mixed captures, and does not confirm
 findings. External Nuclei, ZAP, FFUF and SQLMap results now map onto
 `bbtk.external-finding/1` (`docs/external-importers.md`); an imported alert
-cannot become `confirmed`. The following PR should rank those hypotheses and
-abstain when the information needed to compare them is missing.
+cannot become `confirmed`. That ranking is `bbtk evidence prioritize` (`docs/prioritization-engine.md`).
+It abstains when the information needed to compare hypotheses is missing.

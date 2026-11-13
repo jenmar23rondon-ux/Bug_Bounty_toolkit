@@ -2699,6 +2699,35 @@ def cmd_evidence_external(args: argparse.Namespace) -> None:
     print(f"[+] External findings saved: {destination}. No finding was confirmed.")
 
 
+def cmd_evidence_prioritize(args: argparse.Namespace) -> None:
+    from .analysis.review_prioritization import prioritize_review_files
+    from .core.private_files import atomic_private_write
+
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    if not args.scope_file.exists():
+        raise ValueError("Scope file does not exist.")
+    result = prioritize_review_files(
+        args.program,
+        args.scope_file,
+        args.max_tests,
+        external_paths=list(args.external or []),
+        hypotheses_path=args.hypotheses,
+        ledger_path=args.ledger,
+        requests_per_second=args.requests_per_second,
+        dry_run=args.dry_run,
+    )
+    destination = args.output or paths.reports_dir / "review-prioritization.json"
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[i] Advisory review order. No finding was confirmed and no request was sent.")
+    if args.dry_run:
+        print(f"[dry-run] would write: {destination}")
+        print("[dry-run] No target request or file write performed.")
+        return
+    payload = json.dumps(result, indent=2, sort_keys=True) + "\n"
+    atomic_private_write(destination, payload.encode(), force=args.force)
+    print(f"[+] Review order saved: {destination}. No finding was confirmed.")
+
+
 def cmd_evidence_import(args: argparse.Namespace) -> None:
     paths = ProgramPaths(RECORDS_ROOT, args.program)
     bundle = import_evidence(args.input, args.format, getattr(args, "har_mode", "compat"))
@@ -4527,6 +4556,35 @@ def build_parser() -> argparse.ArgumentParser:
         help="Attest these are local files you are authorized to read. This does not authorize active testing.",
     )
     external.set_defaults(func=cmd_evidence_external)
+
+    prioritize = evidence_sub.add_parser(
+        "prioritize",
+        help="Rank local findings, hypotheses, and candidates for human review; never confirms",
+    )
+    prioritize.add_argument("program")
+    prioritize.add_argument(
+        "--scope-file", type=Path, required=True, help="Explicit scope rules. Empty scope abstains."
+    )
+    prioritize.add_argument("--external", type=Path, nargs="*", help="bbtk.external-finding/1 JSON files")
+    prioritize.add_argument("--hypotheses", type=Path, help="JSON output from `bbtk ai hypotheses`")
+    prioritize.add_argument("--ledger", type=Path, help="bbtk-evidence-ledger/1 JSON")
+    prioritize.add_argument("--max-tests", type=positive_int, default=100, help="Review budget; not spent")
+    prioritize.add_argument(
+        "--requests-per-second",
+        type=positive_float,
+        default=1.0,
+        help="Recorded rate limit. This command sends no requests.",
+    )
+    prioritize.add_argument("--output", type=Path, help="Private JSON destination")
+    prioritize.add_argument("--dry-run", action="store_true", help="Print the order without writing a file")
+    prioritize.add_argument("--force", action="store_true", help="Replace an existing output file")
+    prioritize.add_argument(
+        "--attest-local-review",
+        action="store_true",
+        required=True,
+        help="Attest these are local files you are allowed to review. This does not authorize active testing.",
+    )
+    prioritize.set_defaults(func=cmd_evidence_prioritize)
 
     evidence_correlate = evidence_sub.add_parser(
         "correlate", help="Recompute descriptive endpoint/session/resource groups from a local bundle"

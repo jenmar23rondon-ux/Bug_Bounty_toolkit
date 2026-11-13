@@ -1,5 +1,19 @@
 ## [Unreleased]
 
+### Explainable review prioritization
+
+- `bbtk evidence prioritize` ranks local `bbtk.external-finding/1` rows, reviewed
+  hypotheses, and ledger candidates for a human. The order reuses the existing
+  evidence and impact score, explains origin, location, evidence, session,
+  corroboration, class, and contradictions, and abstains when one of those
+  fields is missing, ambiguous, or contradictory. Tool severity is not a score
+  term. `access_confirmed` and `vulnerabilities_confirmed` stay false. The
+  command is offline, requires an explicit scope file and `--attest-local-review`,
+  and records the rate limit and `--max-tests` without sending a request.
+  `--dry-run` does not write. Frozen DEV/FINAL/STRESS scores are unchanged;
+  only `implementation_sha256` is rebound when this source is included.
+  Version stays 0.2.2.
+
 ### Offline external importers
 
 - Nuclei JSON/JSONL, OWASP ZAP JSON/XML, FFUF JSON/CSV, and SQLMap log/CSV/output
