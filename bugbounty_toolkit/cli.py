@@ -2678,6 +2678,27 @@ def cmd_evidence_dossier(args: argparse.Namespace) -> None:
     print("[i] Intake dossier requires human review; no findings confirmed.")
 
 
+def cmd_evidence_external(args: argparse.Namespace) -> None:
+    from .analysis.external_importers import import_external_paths
+    from .core.private_files import atomic_private_write
+
+    paths = ProgramPaths(RECORDS_ROOT, args.program)
+    tool = None if args.tool == "auto" else args.tool
+    document = import_external_paths(list(args.input), tool=tool)
+    destination = args.output or paths.evidence_dir / "imports" / "external-findings.json"
+    summary = document["summary"]
+    rendered = json.dumps(summary, sort_keys=True)
+    if args.dry_run:
+        print(rendered)
+        print(f"[dry-run] would write: {destination}")
+        print("[i] Offline external import. No scanner was executed and no finding was confirmed.")
+        return
+    payload = json.dumps(document, indent=2, sort_keys=True) + "\n"
+    atomic_private_write(destination, payload.encode(), force=args.force)
+    print(rendered)
+    print(f"[+] External findings saved: {destination}. No finding was confirmed.")
+
+
 def cmd_evidence_import(args: argparse.Namespace) -> None:
     paths = ProgramPaths(RECORDS_ROOT, args.program)
     bundle = import_evidence(args.input, args.format, getattr(args, "har_mode", "compat"))
@@ -4482,6 +4503,30 @@ def build_parser() -> argparse.ArgumentParser:
     evidence_import.add_argument("--dry-run", action="store_true", help="Parse and summarize without writing files")
     evidence_import.add_argument("--force", action="store_true", help="Replace an existing output file")
     evidence_import.set_defaults(func=cmd_evidence_import)
+
+    external = evidence_sub.add_parser(
+        "external",
+        help="Import local Nuclei, ZAP, FFUF, or SQLMap results as unconfirmed hypotheses",
+    )
+    external.add_argument("program")
+    external.add_argument(
+        "--input",
+        type=Path,
+        nargs="+",
+        required=True,
+        help="Local result files or a SQLMap output directory",
+    )
+    external.add_argument("--tool", choices=("auto", "nuclei", "zap", "ffuf", "sqlmap"), default="auto")
+    external.add_argument("--output", type=Path, help="Private JSON destination")
+    external.add_argument("--dry-run", action="store_true", help="Parse and summarize without writing files")
+    external.add_argument("--force", action="store_true", help="Replace an existing output file")
+    external.add_argument(
+        "--attest-local-artifacts",
+        action="store_true",
+        required=True,
+        help="Attest these are local files you are authorized to read. This does not authorize active testing.",
+    )
+    external.set_defaults(func=cmd_evidence_external)
 
     evidence_correlate = evidence_sub.add_parser(
         "correlate", help="Recompute descriptive endpoint/session/resource groups from a local bundle"

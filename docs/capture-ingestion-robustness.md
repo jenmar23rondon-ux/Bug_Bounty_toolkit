@@ -117,3 +117,8 @@ status machine should start at `candidate` or `needs_review`, and a missing
 origin or contradictory evidence should abstain. The prioritization engine
 (which hypothesis to open first, with an explanation and an abstain path) is the
 PR after that, once this schema exists.
+
+That importer landed in `docs/external-importers.md` (`bbtk.external-finding/1`).
+The following PR is the explainable prioritization engine. It should abstain
+when origin, evidence, or a comparable control is missing, and it should not
+promote an imported row to confirmed.
