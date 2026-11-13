@@ -170,8 +170,8 @@ def scan_leaks(payload: str) -> int:
 
 
 def run(split: str, *, include_irb: bool) -> dict[str, Any]:
-    if __version__ != "0.2.2":
-        raise RuntimeError(f"version must stay 0.2.2, found {__version__}")
+    if __version__ != "0.3.0":
+        raise RuntimeError(f"version must stay 0.3.0, found {__version__}")
     digest = verify_manifest(split)
     attempts = {"count": 0}
     saved = (socket.socket.connect, socket.socket.connect_ex, socket.create_connection, socket.getaddrinfo)

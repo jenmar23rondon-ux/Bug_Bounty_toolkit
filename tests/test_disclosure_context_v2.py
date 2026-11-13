@@ -26,9 +26,9 @@ from labs.information_disclosure_eval.evaluate import final_is_frozen, load_spli
 
 class DisclosureContextRulesTests(unittest.TestCase):
     def test_version_stays_0_2_2(self) -> None:
-        self.assertEqual(__version__, "0.2.2")
+        self.assertEqual(__version__, "0.3.0")
         text = Path("pyproject.toml").read_text(encoding="utf-8")
-        self.assertIn('version = "0.2.2"', text)
+        self.assertIn('version = "0.3.0"', text)
 
     def test_dev_rubric_cases(self) -> None:
         metrics = evaluate(dev_cases())

@@ -510,7 +510,7 @@ def _gates_passed(report: Mapping[str, object]) -> bool:
     metrics = report.get("metrics")
     if not isinstance(metrics, dict):
         return False
-    if report.get("finding_confirmed") is not False or report.get("version") != "0.2.2":
+    if report.get("finding_confirmed") is not False or report.get("version") != "0.3.0":
         return False
     if report.get("external_requests") != 0 or report.get("secret_leaks") != 0:
         return False

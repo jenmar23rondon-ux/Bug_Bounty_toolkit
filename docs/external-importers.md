@@ -4,7 +4,7 @@ Second increment of the evidence-intelligence program. Local Nuclei, OWASP ZAP,
 FFUF, and SQLMap result files become one versioned hypothesis record. This does
 not run those tools, does not send network traffic, and does not confirm a finding.
 
-Offline only. No new runtime dependency. Version stays `0.2.2`.
+Offline only. No new runtime dependency. Package version is `0.3.0`.
 
 ## Audit
 

@@ -25,7 +25,7 @@ RESULTS = LAB / "results" / "dispositions.json"
 
 class InvestigatorWorkflowEfficacyTests(unittest.TestCase):
     def test_version_and_confirmation_policy(self) -> None:
-        self.assertEqual(__version__, "0.2.2")
+        self.assertEqual(__version__, "0.3.0")
         self.assertFalse(FINDING_CONFIRMED)
 
     def test_frozen_cases_match_corpus_and_manifest(self) -> None:

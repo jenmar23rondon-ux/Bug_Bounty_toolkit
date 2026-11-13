@@ -1,5 +1,87 @@
 ## [Unreleased]
 
+## 0.3.0 - 2026-11-13
+
+Package version moves from 0.2.2 to 0.3.0. This cut records three offline
+evidence-intelligence increments. No tag and no GitHub Release are part of
+this change. Frozen labels, captures, and `MANIFEST.sha256` files are
+unchanged. Recorded independent-research snapshots rebind
+`implementation_sha256` only, because that digest covers every
+`bugbounty_toolkit` Python file. Lab snapshots that already store `0.2.2`
+were left as recorded.
+
+### Robust capture ingestion (PR #112)
+
+- `bbtk.capture-ingestion/1` parses local HAR, Burp XML, and textual HTTP/1.0,
+  HTTP/1.1, HTTP/2, and HTTP/3. Malformed content becomes an enumerated
+  diagnostic. Missing fields stay missing. Disagreeing session, location, and
+  content headers are not collapsed into one confident value. `gzip`,
+  `deflate`, declared `base64`, and a known charset decode only when the bytes
+  match. `br` is reported and not inflated. A Burp status element that
+  disagrees with the status line clears the status.
+- Clean HTTP/1.1 files stay on the existing strict discovery importer. The
+  strict replay parser still refuses HTTP/2, duplicate headers, and a broken
+  content length. `possible_access` is withheld when either capture is not
+  unambiguous, and a login-redirect denial is withheld when `Location` values
+  disagree. `access_confirmed` and `vulnerabilities_confirmed` stay false.
+  This is not a binary HTTP/2 or HTTP/3 decoder.
+- Limitations: `:authority` is not copied into `Host`. `Content-Encoding: br`
+  is diagnosed, not decoded, and no dependency was added. Assessing the
+  original gzip wire bytes does not upgrade them to `possible_access`;
+  `assess_ingested_pair` is the path that sees a successfully decoded body. A
+  wholly unreadable file (bad XML, DTD, empty input, HAR file-fatal codes, or
+  the size limit) is still refused. Entities are not expanded.
+
+### Offline external importers (PR #113)
+
+- Nuclei JSON/JSONL, OWASP ZAP JSON/XML, FFUF JSON/CSV, and SQLMap
+  log/CSV/output directories parse offline into `bbtk.external-finding/1`.
+  The importers do not run those tools and do not send network traffic.
+  Nuclei and FFUF row identity still comes from the evidence-engine readers.
+  Request and response text is normalized with `bbtk.capture-ingestion/1`
+  when the file contains it.
+- Imported rows stay `candidate`, `needs_review`, or `abstain`. An external
+  alert is never confirmed: `access_confirmed` stays false and
+  `vulnerabilities_confirmed` stays 0, including when Nuclei says `critical`
+  or `confirmed` or a SQLMap log says a parameter is vulnerable. Malformed
+  siblings are diagnosed and kept. SQLMap session databases are not
+  deserialized.
+- Limitations: textual HTTP follows the capture-ingestion contract, including
+  its `br` and charset limits. A file over 32 MiB is refused. A JSONL or CSV
+  physical line over 1,000,000 bytes is `record_too_large`. Embedded HTTP over
+  256 KiB is not ingested. XML with a `DOCTYPE` or `ENTITY` declaration is
+  refused and not expanded. SQLMap `session.sqlite` is recognized and not
+  deserialized (`session_pickle_refused`). A `dump/` directory is not imported
+  as findings. FFUF rows are content-discovery observations
+  (`vulnerability_claimed: false`), not vulnerability claims. Nuclei severity
+  and ZAP risk stay the tool's claim and do not set BBTK confirmation. An
+  unrecognized declared tool version is imported only as `needs_review` or
+  weaker.
+
+### Explainable review prioritization (PR #114)
+
+- `bbtk evidence prioritize` ranks local `bbtk.external-finding/1` rows,
+  reviewed hypotheses, and ledger candidates for a human. The order reuses the
+  existing evidence and impact score. Each ranked or abstained row explains
+  origin, location, evidence, session, corroboration, class, and
+  contradictions, and abstains when one of those fields is missing, ambiguous,
+  or contradictory. Tool severity is not a score term. `access_confirmed` and
+  `vulnerabilities_confirmed` stay false. The command is offline, requires an
+  explicit scope file and `--attest-local-review`, and records the rate limit
+  and `--max-tests` without sending a request. `--dry-run` does not write.
+- Limitations: the score is not a probability and not a demonstrated severity.
+  A hypothesis evidence id is a citation; the command does not reopen the
+  capture. One external finding counts as one observation. Duplicate origin
+  identity abstains both rows instead of collapsing them. Two classes on one
+  location abstain both. Unknown session adds nothing. Review order does not
+  apply the execution-cost penalty from `bbtk ai prioritize`. Matching a scope
+  rule does not validate authorization (`scope_validated` stays false).
+  Unmapped classes (RCE, SSRF, path traversal, CSRF, takeover, content
+  discovery) abstain. Explanations name the factors. They are not reproduction
+  steps and they do not include response bodies.
+
+## Notes recorded while the package version stayed 0.2.2
+
 ### Explainable review prioritization
 
 - `bbtk evidence prioritize` ranks local `bbtk.external-finding/1` rows, reviewed
