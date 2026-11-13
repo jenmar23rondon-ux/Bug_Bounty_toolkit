@@ -65,9 +65,9 @@ class LiveExitStatusTests(unittest.TestCase):
 
 class SpecTests(unittest.TestCase):
     def test_version_stays_0_2_2(self) -> None:
-        self.assertEqual(__version__, "0.2.2")
+        self.assertEqual(__version__, "0.3.0")
         text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-        self.assertIn('version = "0.2.2"', text)
+        self.assertIn('version = "0.3.0"', text)
 
     def test_endpoints_a_through_p_and_synthetic_markers(self) -> None:
         for split in ("dev", "final"):

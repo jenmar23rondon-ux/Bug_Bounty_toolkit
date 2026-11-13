@@ -50,7 +50,7 @@ def _case(
 
 class DomObservabilityRulesTests(unittest.TestCase):
     def test_version_stays_0_2_2(self) -> None:
-        self.assertEqual(bugbounty_toolkit.__version__, "0.2.2")
+        self.assertEqual(bugbounty_toolkit.__version__, "0.3.0")
 
     def test_url_presence_is_not_a_source_read(self) -> None:
         case = _case(

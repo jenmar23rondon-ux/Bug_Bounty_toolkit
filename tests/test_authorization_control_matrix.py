@@ -723,7 +723,7 @@ class ControlMatrixTests(unittest.TestCase):
         self.assertNotIn("access_control.comparison", text)
         self.assertNotIn("object_handoff", text)
         self.assertNotIn("prioritization", text)
-        self.assertEqual(bugbounty_toolkit.__version__, "0.2.2")
+        self.assertEqual(bugbounty_toolkit.__version__, "0.3.0")
 
 
 class ControlMatrixLabTests(unittest.TestCase):

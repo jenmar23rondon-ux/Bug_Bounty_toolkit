@@ -67,7 +67,7 @@ def _sha256(path: Path) -> str:
 
 class CorpusTests(unittest.TestCase):
     def test_version_stays_0_2_2(self) -> None:
-        self.assertEqual(__version__, "0.2.2")
+        self.assertEqual(__version__, "0.3.0")
 
     def test_dev_and_final_declare_cases_1_through_17(self) -> None:
         for split in ("dev", "final"):
@@ -184,7 +184,7 @@ class LifecycleTests(unittest.TestCase):
             report = evaluate("dev", runs=3, browser="mock")
         self.assertEqual(spy.call_count, 17 * 3)
         self.assertEqual(report["reused_entrypoint"], REUSED_ENTRYPOINT)
-        self.assertEqual(report["version"], "0.2.2")
+        self.assertEqual(report["version"], "0.3.0")
         self.assertEqual(report["browser_mode"], "mock")
         # Mock mode is forced regardless of the host; availability only reports the environment.
         self.assertEqual(report["chromium_available"], chromium_available())

@@ -4,7 +4,7 @@
 
 # Bug Bounty Toolkit
 
-Authorized testing CLI (`bbtk` / `bugbounty`). You supply targets, routes, and parameters. Version **0.2.2**.
+Authorized testing CLI (`bbtk` / `bugbounty`). You supply targets, routes, and parameters. Version **0.3.0**.
 
 ## Install
 

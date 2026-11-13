@@ -5,7 +5,7 @@ malformed and mixed local captures parse without aborting the whole file and wit
 inventing fields. It does not import Nuclei, ZAP, FFUF or SQLMap into a hypothesis
 schema, and it does not rank which hypothesis to review. Those are later PRs.
 
-Offline only. No third-party traffic, no new runtime dependency, version stays `0.2.2`.
+Offline only. No third-party traffic, no new runtime dependency. Package version is `0.3.0`.
 
 ## Audit
 
