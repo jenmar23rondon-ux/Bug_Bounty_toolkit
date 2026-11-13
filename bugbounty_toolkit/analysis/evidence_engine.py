@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 import csv
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime
 import hashlib
 import hmac
@@ -1015,48 +1015,92 @@ def _load_input(
             raise ValueError(f"{detected} input is not valid UTF-8 JSON.") from exc
         records = _ffuf(path, parsed, salt) if detected == "ffuf-json" else _toolkit_json(path, parsed, salt)
     else:
+        if detected == "http":
+            http_records, http_account = _http_records(path, raw, salt)
+            return detected, http_records, http_account
         try:
             text = raw.decode("utf-8-sig")
         except UnicodeDecodeError as exc:
             raise ValueError("Evidence input must be UTF-8 text or supported JSON/XML.") from exc
-        if detected == "http":
-            target, method, headers, body, status = _parse_http_message(text)
-            if method:
-                records = [
-                    _record(
-                        _Source(
-                            "http-capture",
-                            "message:1",
-                            target,
-                            method,
-                            headers,
-                            body,
-                            technical={"format": "http-request"},
-                        ),
-                        path,
-                        salt,
-                    )
-                ]
-            elif status is not None or text.startswith("HTTP/"):
-                records = [
-                    _record(
-                        _Source(
-                            "http-capture",
-                            "message:1",
-                            response_headers=headers,
-                            response_body=body,
-                            status_code=status,
-                            technical={"format": "http-response"},
-                        ),
-                        path,
-                        salt,
-                    )
-                ]
-            else:
-                raise ValueError("Raw HTTP input is neither a recognized request nor response.")
-        else:
-            records = _csv(path, text, salt) if detected == "csv" else _documents(path, text, detected, salt)
+        records = _csv(path, text, salt) if detected == "csv" else _documents(path, text, detected, salt)
     return detected, records, None
+
+
+def _http_records(path: Path, raw: bytes, salt: bytes) -> tuple[list[EvidenceRecord], dict[str, object] | None]:
+    """Keep the legacy record for an unambiguous textual message.
+
+    Ambiguous, compressed or non-UTF-8 messages go through capture ingestion.
+    A clean request or response keeps the historical evidence record exactly.
+    """
+    from .capture_ingestion import NON_BLOCKING_DIAGNOSTICS, ingest_capture
+
+    report = ingest_capture(raw)
+    blocking = [
+        code for exchange in report.exchanges for code in exchange.diagnostics if code not in NON_BLOCKING_DIAGNOSTICS
+    ]
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = None
+    if text is not None and report.fatal is None and not blocking:
+        target, method, headers, body, status = _parse_http_message(text)
+        if method:
+            return [
+                _record(
+                    _Source(
+                        "http-capture",
+                        "message:1",
+                        target,
+                        method,
+                        headers,
+                        body,
+                        technical={"format": "http-request"},
+                    ),
+                    path,
+                    salt,
+                )
+            ], None
+        if status is not None or text.lstrip().startswith("HTTP/"):
+            return [
+                _record(
+                    _Source(
+                        "http-capture",
+                        "message:1",
+                        response_headers=headers,
+                        response_body=body,
+                        status_code=status,
+                        technical={"format": "http-response"},
+                    ),
+                    path,
+                    salt,
+                )
+            ], None
+    if report.fatal or not report.exchanges:
+        raise ValueError("Raw HTTP input is neither a recognized request nor response.")
+    records: list[EvidenceRecord] = []
+    for exchange in report.exchanges:
+        record = _record(
+            _Source(
+                "http-capture",
+                f"message:{exchange.index + 1}",
+                exchange.url or exchange.target,
+                exchange.method,
+                dict(exchange.confident_request_headers),
+                exchange.request_body or "",
+                dict(exchange.confident_response_headers),
+                "" if exchange.response_body is None else exchange.response_body,
+                exchange.status_code,
+                technical={"format": "http-capture"},
+            ),
+            path,
+            salt,
+        )
+        if exchange.confidence_cap != "observed":
+            record = replace(record, validation_status=exchange.confidence_cap)
+        records.append(record)
+    # The HAR capture_import account has a different shape. Keep diagnostics on
+    # validation_status instead of overloading that account.
+    return records, None
 
 
 def _semantic_key(record: EvidenceRecord) -> tuple[object, ...]:

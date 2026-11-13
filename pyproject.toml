@@ -283,6 +283,11 @@ files = [
     "labs/investigator_workflow_efficacy/server.py",
     "labs/investigator_workflow_efficacy/tutorial.py",
     "tests/test_investigator_workflow_efficacy.py",
+    "bugbounty_toolkit/analysis/capture_ingestion.py",
+    "tests/test_capture_ingestion.py",
+    "tests/test_capture_ingestion_eval.py",
+    "labs/capture_ingestion_eval/__init__.py",
+    "labs/capture_ingestion_eval/evaluate.py",
 ]
 
 [tool.coverage.run]
