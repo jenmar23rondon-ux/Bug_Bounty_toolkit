@@ -3,49 +3,12 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 
-from .redaction import RedactionDestination, redact_data
-
-
-def _shareable(value: object) -> object:
-    return redact_data(value, destination=RedactionDestination.SHAREABLE_REPORT)
-
-
-REPORT_TEMPLATE = """# {id} - {title}
-
-## Summary
-{summary}
-
-> Draft for researcher review. This file is not submitted to HackerOne or any other platform.
-
-## Severity
-{severity}
-
-## Category
-{category}
-
-## Affected Target
-{target}
-
-## Evidence
-{evidence_path}
-
-## Reproduction Notes
-Document only actions permitted by the program policy. Include test accounts, timestamps, request IDs, screenshots, and response differences where relevant.
-
-## Impact
-Explain what an unauthorized user could access or change, the affected data class, and the business risk.
-
-## Remediation
-Describe the expected authorization, validation, configuration, or business-rule control.
-"""
+from ..reporting.submission import render_submission_markdown
 
 
 def render_markdown(finding, destination: Path) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    data = _shareable(dict(finding))
-    if not data.get("evidence_path"):
-        data["evidence_path"] = "Evidence path not attached yet."
-    destination.write_text(REPORT_TEMPLATE.format(**data), encoding="utf-8")
+    destination.write_text(render_submission_markdown(dict(finding)), encoding="utf-8")
     return destination
 
 

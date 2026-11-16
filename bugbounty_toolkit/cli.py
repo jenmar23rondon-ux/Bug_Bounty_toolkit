@@ -8,6 +8,7 @@ import io
 import json
 import math
 from dataclasses import asdict
+import os
 from pathlib import Path
 import re
 import shutil
@@ -19,7 +20,8 @@ from .core.checks import render_checklist
 from .core.execution_budget import ExecutionBudget
 from .core.records import ProgramPaths, RecordStore
 from .core.reporting import render_markdown, render_pdf
-from .core.runner import run_tool
+from .core.runner import run_tool, tool_exists
+from .core.secure_subprocess import CODE_TOOL_NOT_FOUND, PolicyRejected
 from .core.scope import ensure_in_scope, validate_rule
 from .core.scope_validator import ScopeValidator
 from .core.settings import load_settings, ExecutorSettings
@@ -125,6 +127,11 @@ from .reporting.html_report import render_html_report
 from .reporting.json_report import render_json_report
 from .reporting.review_markdown import render_evidence_review
 from .utils.exceptions import ExternalToolError
+from .recon.pipeline import run_recon
+from .recon.reporting import write_recon_reports
+from .recon.sources import PassiveHttpTransport
+from .recon.tools import ToolMissing, nuclei_argv
+from .reporting.submission import validate_cvss, write_submission_html
 from .reporting.finding_report import (
     build_evidence_finding_report,
     render_evidence_report_html,
@@ -424,71 +431,104 @@ def cmd_request(args: argparse.Namespace) -> None:
     print(f"[+] Evidence: {path}")
 
 
-def cmd_recon(args: argparse.Namespace) -> None:
-    store, settings, scope = executor_context(args, automated=True)
-    rate = external_rate(settings)
-    ensure_in_scope(args.target, store.paths.scope_file)
-    budget = getattr(args, "_execution_budget", None)
-    tool_kwargs = {
-        "timeout_seconds": max(60.0, float(settings.timeout) * 20.0),
-        "max_output_bytes": max(settings.max_response_bytes * 20, 1_000_000),
-        "execution_budget": budget,
-        "contact_external": True,
-        "authorization_attested": True,
-        "scope_attested": True,
-    }
-    subfinder = run_tool(store, "subfinder", args.target, ["subfinder", "-silent", "-d", args.target], **tool_kwargs)
-    amass = run_tool(store, "amass", args.target, ["amass", "enum", "-passive", "-d", args.target], **tool_kwargs)
-    merged = store.paths.raw_dir / "subdomains.txt"
-    values = set()
-    for path in [subfinder, amass]:
-        values.update(
-            line.strip() for line in path.read_text(encoding="utf-8", errors="ignore").splitlines() if line.strip()
-        )
-    authorized = []
-    for host in sorted(values):
+def _recon_tool_runner(store: RecordStore, settings: ExecutorSettings, budget: ExecutionBudget | None):
+    def run(name: str, argv: list[str]) -> str:
+        if not tool_exists(name):
+            raise ToolMissing(name)
         try:
-            scope.require(host)
-        except ValueError:
-            continue
-        authorized.append(host)
-    if not authorized:
-        raise ValueError("No discovered hosts are in scope. Add explicit subdomains or a permitted wildcard.")
-    merged.write_text("\n".join(authorized) + "\n", encoding="utf-8")
-    httpx = run_tool(
-        store,
-        "httpx",
+            path = run_tool(
+                store,
+                name,
+                None,
+                argv,
+                timeout_seconds=max(60.0, float(settings.timeout) * 20.0),
+                max_output_bytes=max(settings.max_response_bytes * 20, 1_000_000),
+                execution_budget=budget,
+                contact_external=True,
+                authorization_attested=True,
+                scope_attested=True,
+            )
+        except PolicyRejected as exc:
+            if exc.code == CODE_TOOL_NOT_FOUND:
+                raise ToolMissing(name) from exc
+            raise
+        return path.read_text(encoding="utf-8", errors="replace")
+
+    return run
+
+
+def cmd_recon(args: argparse.Namespace) -> None:
+    store, settings, _scope = executor_context(args, automated=True)
+    if args.active and (
+        settings.requests_per_second < 1 or int(settings.requests_per_second) != settings.requests_per_second
+    ):
+        raise ValueError("Active recon requires a whole-number program rate of at least 1 request/second.")
+    passive_rate = min(float(settings.requests_per_second), 1.0)
+    report = run_recon(
         args.target,
-        ["httpx", "-silent", "-l", str(merged), "-rl", str(rate)],
-        **tool_kwargs,
+        store.paths.scope_file,
+        transport=None if args.dry_run else PassiveHttpTransport(timeout=settings.timeout),
+        rate_limiter=None if args.dry_run else RateLimiter(passive_rate),
+        tool_runner=None if args.dry_run else _recon_tool_runner(store, settings, args._execution_budget),
+        active=bool(args.active),
+        nuclei=bool(args.nuclei),
+        confirm=bool(args.confirm),
+        dry_run=bool(args.dry_run),
+        run_tools=not args.dry_run,
+        api_keys={
+            "securitytrails": os.environ.get("SECURITYTRAILS_API_KEY", ""),
+            "virustotal": os.environ.get("VIRUSTOTAL_API_KEY", ""),
+        },
+        severity=args.severity,
+        rate=max(1, min(int(settings.requests_per_second) if settings.requests_per_second >= 1 else 1, 5)),
+        timeout=max(1, min(int(settings.timeout), 15)),
+        concurrency=min(settings.max_concurrency, 5),
+        hosts_path=store.paths.raw_dir / "subdomains.txt",
     )
-    print(f"[+] Recon complete. Live host output: {httpx}")
+    if args.dry_run:
+        print("[dry-run] No provider requests and no external tools were executed.")
+    for plan in report.plans:
+        state = plan.skipped or ("planned" if args.dry_run else "fetched")
+        print(f"[i] {plan.source}: {state}")
+    for error in report.errors:
+        print(f"[!] {error}")
+    print(
+        f"[+] In-scope assets: {len(report.assets)}. "
+        f"Provider requests sent: {report.requests_sent}. "
+        f"Out-of-scope names dropped: {report.dropped}. Nothing was submitted."
+    )
+    if not args.dry_run:
+        written = write_recon_reports(report, store.paths.reports_dir)
+        print(f"[+] Recon inventory: {written['markdown']}")
+    if report.active and not args.dry_run:
+        print("[i] Active probing ran only because --active --confirm was set.")
 
 
 def cmd_scan_nuclei(args: argparse.Namespace) -> None:
+    if not args.confirm:
+        raise ValueError("Nuclei is active scanning. Re-run with --confirm after reviewing scope and the host list.")
     store, settings, scope = executor_context(args, automated=True)
-    rate = external_rate(settings)
+    rate = min(external_rate(settings), 5)
     hosts = store.paths.raw_dir / "subdomains.txt"
     if not hosts.exists():
         raise SystemExit("Run recon first; missing registros/<program>/raw/subdomains.txt")
-    scope.require_all([line.strip() for line in hosts.read_text(encoding="utf-8").splitlines() if line.strip()])
+    names = [line.strip() for line in hosts.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not names:
+        raise ValueError("The host list is empty.")
+    scope.require_all(names)
     budget = getattr(args, "_execution_budget", None)
+    argv = nuclei_argv(
+        str(hosts),
+        rate,
+        max(1, min(int(settings.timeout), 15)),
+        args.severity,
+        min(settings.max_concurrency, 5),
+    )
     output = run_tool(
         store,
         "nuclei",
         None,
-        [
-            "nuclei",
-            "-l",
-            str(hosts),
-            "-severity",
-            args.severity,
-            "-dr",
-            "-rl",
-            str(rate),
-            "-c",
-            str(settings.max_concurrency),
-        ],
+        argv,
         timeout_seconds=max(60.0, float(settings.timeout) * 20.0),
         max_output_bytes=max(settings.max_response_bytes * 20, 1_000_000),
         execution_budget=budget,
@@ -496,7 +536,7 @@ def cmd_scan_nuclei(args: argparse.Namespace) -> None:
         authorization_attested=True,
         scope_attested=True,
     )
-    print(f"[+] Nuclei scan complete: {output}")
+    print(f"[+] Nuclei scan complete (unconfirmed scanner output): {output}")
 
 
 def cmd_fuzz(args: argparse.Namespace) -> None:
@@ -2493,7 +2533,17 @@ def cmd_add_finding(args: argparse.Namespace) -> None:
     store = store_for(args.program)
     ensure_in_scope(args.target, store.paths.scope_file)
     store.add_finding(
-        args.finding_id, args.title, args.category, args.severity, args.target, args.summary, args.evidence
+        args.finding_id,
+        args.title,
+        args.category,
+        args.severity,
+        args.target,
+        args.summary,
+        args.evidence,
+        steps=args.steps,
+        impact=args.impact,
+        remediation=args.remediation,
+        cvss=validate_cvss(args.cvss),
     )
     print(f"[+] Finding saved: {args.finding_id}")
 
@@ -3618,11 +3668,19 @@ def cmd_report(args: argparse.Namespace) -> None:
         return
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", args.finding_id):
         raise ValueError("Finding ID must use letters, digits, underscores or hyphens.")
-    if args.format not in {None, "markdown", "pdf"}:
-        raise ValueError("Individual finding reports support markdown/pdf.")
+    if args.format not in {None, "markdown", "pdf", "html"}:
+        raise ValueError("Individual finding reports support markdown, html, or pdf.")
     finding = store.finding(args.finding_id)
     if not finding:
         raise SystemExit(f"Finding not found: {args.finding_id}")
+    if args.format == "html":
+        destination = store.paths.reports_dir / f"{args.finding_id}.html"
+        if destination.exists() and not args.force:
+            raise ValueError(f"Report already exists: {destination}. Use --force to replace it.")
+        output = write_submission_html(dict(finding), destination)
+        store.mark_reviewed("report", args.finding_id, str(output))
+        print(f"[+] Report created: {output}. Nothing was submitted.")
+        return
     finding_format = args.format or "pdf"
     markdown_path = store.paths.reports_dir / f"{args.finding_id}.md"
     pdf_path = store.paths.reports_dir / f"{args.finding_id}.pdf"
@@ -3726,16 +3784,28 @@ def build_parser() -> argparse.ArgumentParser:
     add_run_budget_arguments(request)
     request.set_defaults(func=cmd_request)
 
-    recon = sub.add_parser("recon")
+    recon = sub.add_parser("recon", help="Passive asset discovery. Active probing requires --active --confirm.")
     recon.add_argument("program")
     recon.add_argument("--target", required=True)
+    recon.add_argument(
+        "--dry-run", action="store_true", help="Print the provider and tool plan without contacting anyone"
+    )
+    recon.add_argument("--active", action="store_true", help="Opt in to dnsx and httpx against in-scope hosts")
+    recon.add_argument(
+        "--nuclei", action="store_true", help="With --active --confirm, run conservative Nuclei templates"
+    )
+    recon.add_argument("--confirm", action="store_true", help="Required before dnsx, httpx, or nuclei run")
+    recon.add_argument("--severity", default="medium,high,critical")
     recon.set_defaults(func=cmd_recon)
 
     scan = sub.add_parser("scan")
     scan_sub = scan.add_subparsers(required=True)
     nuclei = scan_sub.add_parser("nuclei")
     nuclei.add_argument("program")
-    nuclei.add_argument("--severity", default="low,medium,high,critical")
+    nuclei.add_argument("--severity", default="medium,high,critical")
+    nuclei.add_argument(
+        "--confirm", action="store_true", help="Required. Runs only the host list already checked against scope."
+    )
     nuclei.set_defaults(func=cmd_scan_nuclei)
 
     fuzz = sub.add_parser("fuzz")
@@ -4363,6 +4433,10 @@ def build_parser() -> argparse.ArgumentParser:
     finding.add_argument("--target", required=True)
     finding.add_argument("--summary", required=True)
     finding.add_argument("--evidence")
+    finding.add_argument("--steps", help="Steps to reproduce, for the draft report")
+    finding.add_argument("--impact")
+    finding.add_argument("--remediation")
+    finding.add_argument("--cvss", help="CVSS 3.0/3.1 vector or a score from 0.0 to 10.0")
     finding.set_defaults(func=cmd_add_finding)
 
     report = sub.add_parser("report")

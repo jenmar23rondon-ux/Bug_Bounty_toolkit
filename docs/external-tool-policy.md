@@ -1,6 +1,6 @@
 # External tool policy gate
 
-External binaries (`subfinder`, `amass`, `httpx`, `nuclei`, `paramspider`, `arjun`, `ffuf`)
+External binaries (`subfinder`, `amass`, `dnsx`, `httpx`, `nuclei`, `paramspider`, `arjun`, `ffuf`)
 run only through `bugbounty_toolkit.core.secure_subprocess`.
 
 ## Guarantees

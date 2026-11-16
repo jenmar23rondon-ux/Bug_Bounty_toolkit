@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+- Passive recon collects crt.sh, Cert Spotter, Wayback, AlienVault OTX, HackerTarget, urlscan, and Shodan InternetDB (IPv4), plus SecurityTrails and VirusTotal when those keys are set. Results are deduped, tagged with their source, and kept only when they match scope.
+- `dnsx`, `httpx`, and nuclei are opt-in. Nuclei disables update checks and interactsh and excludes `dos`, `intrusive`, and `fuzz` tags. Missing ProjectDiscovery binaries produce an explicit error and are not launched through a shell.
+- Scope matching folds alternate IP spellings to one address, rejects public-suffix wildcards, and treats path exclusions as case-insensitive. DNS names that resolve to a non-public address are refused unless that address is itself in scope.
+- Finding reports are HackerOne-style Markdown and HTML drafts with severity, CVSS, reproduction, impact, evidence, and remediation. The toolkit still does not submit them.
+- The offline-lab suite loader uses a fresh test loader so a nested discover is not pinned to the outer suite directory.
+
 ## 0.3.0 - 2026-11-13
 
 Package version moves from 0.2.2 to 0.3.0. This cut records three offline

@@ -4,18 +4,73 @@
 
 # Bug Bounty Toolkit
 
-Authorized testing CLI (`bbtk` / `bugbounty`). You supply targets, routes, and parameters. Version **0.3.0**.
+Authorized testing CLI (`bbtk` / `bugbounty`) for asset discovery, evidence collection, and report drafts. Version **0.3.0**.
 
-## Install
+## Ethics and authorization
+
+Use this toolkit only with written permission for every asset you test. You supply the program's in-scope and out-of-scope rules. A target is contacted only when an allow rule matches and no exclusion matches. Exclusions win, including wildcard exclusions such as `!*.admin.example.com`.
+
+The toolkit does not submit reports to HackerOne or any other platform. Active probing is off unless you pass `--active --confirm`. Nuclei also requires `--nuclei`, and its default invocation disables update checks and interactsh and excludes the `dos`, `intrusive`, and `fuzz` tags.
+
+## Quickstart
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-python -m pip install -e .
-bbtk --version
-bbtk doctor   # offline; no HTTP
+python -m venv .venv
+source .venv/bin/activate          # Windows PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+bbtk doctor                        # offline; no HTTP
+bbtk init acme --authorization "HackerOne program, automation permitted" --automation-allowed
+bbtk scope add acme example.com
+bbtk scope add acme '*.example.com'
+bbtk scope add acme --exclude admin.example.com
+bbtk recon acme --target example.com --dry-run
+bbtk recon acme --target example.com
+bbtk add-finding acme --finding-id F-1 --title "Title" --category information-disclosure \
+  --severity low --target https://app.example.com/ --summary "What you observed." \
+  --steps "Authorized requests only." --impact "What an unauthorized user could do." \
+  --remediation "The control that should exist." --cvss 5.3
+bbtk report acme --finding-id F-1 --format markdown
+bbtk report acme --finding-id F-1 --format html
 ```
 
-Optional: `pip install -e ".[dashboard,xss,sqli,csrf,takeover,dev]"`. See [docs/quickstart.md](docs/quickstart.md).
+`--dry-run` prints the recon plan and contacts nobody. A live passive run queries allowlisted providers only: crt.sh, Cert Spotter, the Wayback Machine, AlienVault OTX, HackerTarget, and urlscan. Shodan InternetDB is used when the target is an in-scope IPv4 address. SecurityTrails and VirusTotal are included when `SECURITYTRAILS_API_KEY` or `VIRUSTOTAL_API_KEY` is set; those keys are sent as headers and are not copied into reports.
+
+`subfinder` and `amass` run on a live recon when they are installed. `dnsx` and `httpx` run only with `--active --confirm`. Every external binary is an allowlisted argv executed without a shell. If a binary is missing, recon names it and continues with the sources that are available.
+
+Passive provider traffic is capped at 1 request per second or the program rate, whichever is slower. Set the program rate in the settings file written by `bbtk init` (`requests_per_second`, default 1).
+
+Windows can run scope checks, passive recon planning, and report drafts. Workflows that publish private artifacts use POSIX no-follow file descriptors and fail closed on Windows; use Linux or WSL for those paths. See [docs/quickstart.md](docs/quickstart.md).
+
+## Architecture
+
+```mermaid
+flowchart TD
+  cli[bbtk CLI] --> scope[Scope rules and rate limit]
+  scope --> passive[Allowlisted passive providers]
+  scope --> tools[ProjectDiscovery binaries]
+  passive --> correlate[Dedupe and correlate by host]
+  tools --> correlate
+  correlate --> score[Unconfirmed exposure score]
+  scope --> checks[Opt-in HTTP checks]
+  checks --> evidence[Evidence store]
+  score --> reports[Markdown and HTML drafts]
+  evidence --> reports
+```
+
+Passive providers never use the target as the request host. Tool output is filtered through the same scope rules before it is stored. Scores cap at medium and stay unconfirmed.
+
+## Features
+
+These commands exist and behave as described:
+
+- **Scope.** `scope add` and `scope import` store allow and exclude rules. Exact hosts do not authorize subdomains. `*.example.com` does. A public-suffix wildcard such as `*.com` or `*.co.uk` is rejected. Alternate IP spellings (`2130706433`, `127.1`, `0x7f000001`) collapse to one address. Path exclusions are case-insensitive.
+- **Passive recon.** `recon` collects names and historical URLs, tags each with its source, drops anything out of scope, and writes `reports/recon.md`, `reports/recon.html`, and `reports/recon.json`.
+- **Optional active tools.** `--active --confirm` runs `dnsx` and `httpx` on the in-scope host list. `--nuclei` adds a conservative Nuclei pass. `scan nuclei --confirm` is the standalone scanner and uses the same limits.
+- **HTTP checks.** `request`, `hunt`, `xss`, `sqli`, `cors-check`, `ssrf-check`, `open-redirect`, `csrf-audit`, and `access-check` send traffic only to in-scope URLs, with a rate limit and a response-size cap. Redirects are not followed. A DNS name that resolves to a non-public address is refused unless that address is an explicit scope entry.
+- **Evidence and review.** Burp and HAR import, object and IDOR discovery, an evidence ledger, and offline labs (`bbtk lab idor`, `bbtk lab web-vuln`) operate on local fixtures.
+- **Reports.** `report --finding-id` writes a draft with title, severity, CVSS, affected asset, summary, steps to reproduce, impact, evidence, and remediation. Program HTML and JSON reports summarize recorded runs. Nothing is submitted for you.
+
+`bbtk fuzz` and other active checks stay opt-in behind their own confirmation flags. `tool-plan` prints a command and does not execute it.
 
 ## Confirmation bar (one screen)
 
@@ -42,16 +97,7 @@ What reaches **confirmed** vs stays **candidate**:
 
 `bbtk hunt` runs `cors-check`, `ssrf-check`, `open-redirect`, `xss`, `sqli`, `access-check`. Each preserves its own evidence threshold. Use standalone `csrf-audit` and `takeover-check` outside hunt. See [HTTP proof limits](docs/http-proof-attribution.md).
 
-XSS and SQLi evidence records where the probe was placed (`query`, `body_form`, `body_json`, or `header`). A result with no parameter location is **inconclusive** and is not confirmed. Browser confirmation of a POST body is unsupported, because the browser does not replay that body: the result is **inconclusive** and is not confirmed. Query and header confirmation still require the second independent proof in the table above.
-
-SQLi is confirmed only by that repeated boolean delta. One boolean difference, a SQL error, a timing delay, a UNION-shaped difference, or a MySQL/PostgreSQL/MSSQL/Oracle/SQLite error fingerprint is evidence and stays a candidate. The fingerprint is recorded and never promotes a result. `--bypass` sends at most 15 packaged payloads and is off unless requested; those payloads do not confirm.
-
-## Hunt (authorized)
-
-1. Load **your** program’s written scope into `scope.yaml` / `scope.txt`.
-2. Run `bbtk hunt <program> ... --dry-run` first; then bounded live runs only on authorized assets.
-3. Promote candidate → confirmed only when the bar above is met; otherwise do not report as confirmed.
-4. You close and submit the report yourself. See [docs/HUNT.md](docs/HUNT.md) and [reports/template.md](reports/template.md).
+Recon exposure scores are not part of this bar. They are triage signals and are never confirmed findings.
 
 ## Offline labs
 
@@ -61,21 +107,12 @@ bbtk lab web-vuln --dry-run
 python -m unittest discover -s tests -v
 ```
 
-Labs are synthetic/loopback. No internet required for doctor, unit tests, or dry-run planning.
-
-## Scope, rate limit, dry-run
-
-Every active check still enforces scope validation, rate limits, and `--dry-run`. Evidence keeps `candidate` / `not_observed` / `inconclusive` when confirmation is not met.
+Labs are synthetic or loopback. Doctor, unit tests, and dry-run planning do not need the Internet.
 
 ## More docs
 
-- [docs/HUNT.md](docs/HUNT.md) — one-page hunt workflow and pre-submit checklist
+- [docs/quickstart.md](docs/quickstart.md) — environment setup, including Windows limits
 - [docs/authorized-testing.md](docs/authorized-testing.md) — authorization expectations
-- [docs/quickstart.md](docs/quickstart.md) — environment setup
-- [Incremental platform audit](docs/advanced-research-audit.md) — existing engines, capture-status regressions, measured benchmark and platform limits
+- [docs/HUNT.md](docs/HUNT.md) — hunt workflow and pre-submit checklist
+- [docs/external-tool-policy.md](docs/external-tool-policy.md) — subprocess allowlist, timeouts, and scope attestation
 - [External importers](docs/external-importers.md) — offline Nuclei, ZAP, FFUF, and SQLMap results as unconfirmed hypotheses
-
-
-## Business-logic planner
-
-`bbtk analyze business-logic` builds an offline candidate test plan from HAR/captures. See docs/business-logic-planner.md.
