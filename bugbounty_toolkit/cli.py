@@ -174,10 +174,19 @@ _YAML_ERROR = yaml.YAMLError if yaml is not None else type("_YAML_ERROR", (Excep
 
 
 RECORDS_ROOT = Path("registros")
+_OPEN_STORES: list[RecordStore] = []
 
 
 def store_for(program: str) -> RecordStore:
-    return RecordStore(ProgramPaths(RECORDS_ROOT, program))
+    store = RecordStore(ProgramPaths(RECORDS_ROOT, program))
+    _OPEN_STORES.append(store)
+    return store
+
+
+def close_tracked_stores() -> None:
+    """Close program databases opened by this process before the CLI returns."""
+    while _OPEN_STORES:
+        _OPEN_STORES.pop().close()
 
 
 def executor_context(args: argparse.Namespace, automated: bool = False):
@@ -5200,6 +5209,8 @@ def main() -> None:
             budget.cancel("cancelled_by_user")
         print_execution_summary(args)
         parser.exit(130, "Interrupted.\n")
+    finally:
+        close_tracked_stores()
 
 
 if __name__ == "__main__":

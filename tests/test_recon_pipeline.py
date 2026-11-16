@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import gc
 import json
 from pathlib import Path
+import sqlite3
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -58,6 +60,27 @@ FIXTURES = {
         }
     ),
 }
+
+
+def _sqlite_paths_still_open(database: Path) -> list[str]:
+    """Paths of live SQLite connections still holding this file.
+
+    An unclosed connection keeps the file locked on Windows after the CLI returns.
+    """
+    target = str(database.resolve())
+    open_paths: list[str] = []
+    for obj in gc.get_objects():
+        if not isinstance(obj, sqlite3.Connection):
+            continue
+        try:
+            rows = obj.execute("PRAGMA database_list").fetchall()
+        except sqlite3.ProgrammingError:
+            continue
+        for row in rows:
+            path = row[2]
+            if isinstance(path, str) and path and str(Path(path).resolve()) == target:
+                open_paths.append(path)
+    return open_paths
 
 
 class MapTransport:
@@ -306,6 +329,9 @@ class ReconPipelineTests(unittest.TestCase):
             self.assertIn("No provider requests", output[-1])
             self.assertIn("crtsh", output[-1])
             self.assertFalse((root / "lab" / "reports" / "recon.json").exists())
+            database = root / "lab" / "toolkit.sqlite3"
+            self.assertTrue(database.is_file())
+            self.assertEqual(_sqlite_paths_still_open(database), [])
 
 
 class ScopeHelperTests(unittest.TestCase):

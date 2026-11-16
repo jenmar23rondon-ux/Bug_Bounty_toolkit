@@ -206,7 +206,16 @@ class RecordStore:
         return [dict(row) for row in self.connection.execute("select * from findings order by created_at desc")]
 
     def close(self) -> None:
-        self.connection.close()
+        """Release the database file. A second call is a no-op.
+
+        Windows refuses to delete a SQLite file while a connection holds it, and
+        sqlite3 connections often sit in a reference cycle so garbage collection
+        does not close them before a temporary directory is removed.
+        """
+        try:
+            self.connection.close()
+        except sqlite3.ProgrammingError:
+            return
 
     def counts(self) -> dict[str, int]:
         return {
