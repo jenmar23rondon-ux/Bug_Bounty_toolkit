@@ -236,6 +236,9 @@ def run_recon(
     timeout: int = 10,
     concurrency: int = 2,
     hosts_path: Path | None = None,
+    skip_providers: bool = False,
+    skip_passive_tools: bool = False,
+    seed: list[Observation] | None = None,
 ) -> ReconReport:
     """Collect in-scope names. Active binaries run only when requested and confirmed."""
     if nuclei and not active:
@@ -249,8 +252,8 @@ def run_recon(
     host = authorize_recon_target(target, scope_file)
     plans = provider_plans(host, keys)
     report = ReconReport(target=host, dry_run=dry_run, active=active, nuclei=nuclei, plans=plans)
-    observations: list[Observation] = []
-    if is_domain_name(host) or canonical_ip(host) is not None:
+    observations: list[Observation] = [] if seed is None else list(seed)
+    if seed is None and (is_domain_name(host) or canonical_ip(host) is not None):
         try:
             ensure_in_scope(host, scope_file)
         except ValueError:
@@ -262,31 +265,32 @@ def run_recon(
         report.observations = observations
         report.assets = correlate(observations)
         return report
-    if transport is None or rate_limiter is None:
-        raise ValueError("A passive transport and rate limiter are required unless --dry-run is set.")
-    for plan in plans:
-        if plan.skipped or not plan.url:
-            continue
-        rate_limiter.wait()
-        try:
-            body = transport.get_text(plan.url, dict(plan.headers))
-        except ValueError:
-            report.errors.append(f"{plan.source}: request failed before a usable response was saved.")
-            continue
-        report.requests_sent += 1
-        try:
-            observations.extend(parse_source(plan.source, _redact(body, keys), parent=host))
-        except json.JSONDecodeError:
-            report.errors.append(f"{plan.source}: response was not valid JSON.")
-        except ValueError as exc:
-            report.errors.append(f"{plan.source}: {_redact(str(exc), keys)[:200]}")
+    if not skip_providers:
+        if transport is None or rate_limiter is None:
+            raise ValueError("A passive transport and rate limiter are required unless --dry-run is set.")
+        for plan in plans:
+            if plan.skipped or not plan.url:
+                continue
+            rate_limiter.wait()
+            try:
+                body = transport.get_text(plan.url, dict(plan.headers))
+            except ValueError:
+                report.errors.append(f"{plan.source}: request failed before a usable response was saved.")
+                continue
+            report.requests_sent += 1
+            try:
+                observations.extend(parse_source(plan.source, _redact(body, keys), parent=host))
+            except json.JSONDecodeError:
+                report.errors.append(f"{plan.source}: response was not valid JSON.")
+            except ValueError as exc:
+                report.errors.append(f"{plan.source}: {_redact(str(exc), keys)[:200]}")
     kept, dropped = _filter(observations, scope_file)
     report.dropped += dropped
     observations = kept
     if run_tools:
         if tool_runner is None:
             raise ValueError("A tool runner is required when external binaries are enabled.")
-        if is_domain_name(host):
+        if is_domain_name(host) and not skip_passive_tools:
             for name in ("subfinder", "amass"):
                 argv = passive_tool_argv(name, host)
                 report.tool_argv.append(argv)

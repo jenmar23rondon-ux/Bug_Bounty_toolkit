@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Collection
 from html import escape
 import json
 from pathlib import Path
@@ -12,6 +13,7 @@ _NOTICE = (
     "Asset inventory only. Scores are unconfirmed exposure signals for triage. "
     "Nothing here was submitted to a bug bounty platform, and no vulnerability is confirmed."
 )
+INVENTORY_NOTICE = _NOTICE
 
 
 def render_recon_markdown(report: ReconReport) -> str:
@@ -106,12 +108,22 @@ def render_recon_html(report: ReconReport) -> str:
 """
 
 
-def write_recon_reports(report: ReconReport, directory: Path) -> dict[str, Path]:
+def write_recon_reports(
+    report: ReconReport, directory: Path, *, formats: Collection[str] | None = None
+) -> dict[str, Path]:
     directory.mkdir(parents=True, exist_ok=True)
-    markdown = directory / "recon.md"
-    html = directory / "recon.html"
-    payload = directory / "recon.json"
-    markdown.write_text(render_recon_markdown(report), encoding="utf-8")
-    html.write_text(render_recon_html(report), encoding="utf-8")
-    payload.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return {"markdown": markdown, "html": html, "json": payload}
+    selected = {"markdown", "html", "json"} if formats is None else set(formats)
+    written: dict[str, Path] = {}
+    if "markdown" in selected:
+        markdown = directory / "recon.md"
+        markdown.write_text(render_recon_markdown(report), encoding="utf-8")
+        written["markdown"] = markdown
+    if "html" in selected:
+        html = directory / "recon.html"
+        html.write_text(render_recon_html(report), encoding="utf-8")
+        written["html"] = html
+    if "json" in selected:
+        payload = directory / "recon.json"
+        payload.write_text(json.dumps(report.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        written["json"] = payload
+    return written

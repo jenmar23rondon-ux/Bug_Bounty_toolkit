@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+- `bbtk run` collects passively, optionally runs `dnsx` / `httpx` / nuclei, correlates assets, scores unconfirmed leads, and writes JSON, SARIF, and an HTML dashboard. `--resume` reuses `reports/run-state.json`. `--diff` lists hosts, URLs, and leads that changed since the previous completed run. YAML and TOML config is validated; `confirm` is not accepted from a file.
+- `scope import` reads a local HackerOne JSON, Bugcrowd JSON, or CSV export in addition to toolkit YAML. CIDR ranges and non-host assets are skipped with a reason.
+- Leads group assets by host, observed IP, and technology hint. Admin-looking paths, staging labels, InternetDB ports, and recorded versions stay unconfirmed.
+- The CI test job reports coverage for `bugbounty_toolkit/recon`. A root `Dockerfile` builds an image without active-scanning binaries.
+- Recorded independent-research DEV, FINAL, and STRESS files rebind `implementation_sha256` because that digest covers every `bugbounty_toolkit` Python file. Scenario outcomes are unchanged.
 - Passive recon collects crt.sh, Cert Spotter, Wayback, AlienVault OTX, HackerTarget, urlscan, and Shodan InternetDB (IPv4), plus SecurityTrails and VirusTotal when those keys are set. Results are deduped, tagged with their source, and kept only when they match scope.
 - `dnsx`, `httpx`, and nuclei are opt-in. Nuclei disables update checks and interactsh and excludes `dos`, `intrusive`, and `fuzz` tags. Missing ProjectDiscovery binaries produce an explicit error and are not launched through a shell.
 - Scope matching folds alternate IP spellings to one address, rejects public-suffix wildcards, and treats path exclusions as case-insensitive. DNS names that resolve to a non-public address are refused unless that address is itself in scope.

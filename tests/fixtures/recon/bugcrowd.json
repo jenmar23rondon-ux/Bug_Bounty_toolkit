@@ -1,0 +1,18 @@
+{
+  "target_groups": [
+    {
+      "name": "In scope",
+      "in_scope": true,
+      "targets": [
+        {"name": "Example", "uri": "*.example.com", "category": "website"}
+      ]
+    },
+    {
+      "name": "Out of scope",
+      "in_scope": false,
+      "targets": [
+        {"name": "Admin", "uri": "admin.example.com", "category": "website"}
+      ]
+    }
+  ]
+}

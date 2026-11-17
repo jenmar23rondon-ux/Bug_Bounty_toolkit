@@ -1,0 +1,12 @@
+# Flat settings for `bbtk run`. confirm is intentionally not a setting.
+target: example.com
+active: false
+nuclei: false
+severity: medium,high,critical
+log_level: info
+formats:
+  - markdown
+  - html
+  - json
+  - sarif
+  - dashboard

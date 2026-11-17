@@ -127,7 +127,10 @@ from .reporting.html_report import render_html_report
 from .reporting.json_report import render_json_report
 from .reporting.review_markdown import render_evidence_review
 from .utils.exceptions import ExternalToolError
+from .recon.campaign import execute_run, progress_visible
+from .recon.config import LOG_LEVELS, RunConfig, load_run_config
 from .recon.pipeline import run_recon
+from .recon.program_scope import parse_scope_file
 from .recon.reporting import write_recon_reports
 from .recon.sources import PassiveHttpTransport
 from .recon.tools import ToolMissing, nuclei_argv
@@ -393,23 +396,20 @@ def cmd_scope_add(args: argparse.Namespace) -> None:
 
 
 def cmd_scope_import(args: argparse.Namespace) -> None:
-    if yaml is None:
-        raise RuntimeError("PyYAML is required to import scope YAML. Install the base package dependencies.")
-    data = yaml.safe_load(args.file.read_text(encoding="utf-8"))
-    if not isinstance(data, dict) or set(data) - {"allowed", "excluded"}:
-        raise ValueError("Scope YAML must contain allowed and excluded lists.")
-    rules = []
-    for key in ("allowed", "excluded"):
-        values = data.get(key, [])
-        if not isinstance(values, list) or not all(isinstance(value, str) for value in values):
-            raise ValueError("Scope entries must be lists of strings.")
-        for value in values:
-            validate_rule(value)
-            rules.append(("!" if key == "excluded" else "") + value)
+    imported = parse_scope_file(args.file, args.format)
     store = store_for(args.program)
     current = store.paths.scope_file.read_text(encoding="utf-8").splitlines() if store.paths.scope_file.exists() else []
-    store.paths.scope_file.write_text("\n".join(dict.fromkeys(current + rules)) + "\n", encoding="utf-8")
-    print(f"[+] Imported {len(rules)} scope rules.")
+    rules = [*imported.allowed, *(f"!{value}" for value in imported.excluded)]
+    store.paths.scope_file.write_text("\n".join(dict.fromkeys([*current, *rules])) + "\n", encoding="utf-8")
+    print(
+        f"[+] Imported {len(imported.allowed)} allowed and {len(imported.excluded)} excluded "
+        f"scope rules from {imported.source}."
+    )
+    for reason in imported.skipped[:20]:
+        print(f"[!] Skipped: {reason}")
+    extra = len(imported.skipped) - 20
+    if extra > 0:
+        print(f"[!] {extra} more entries were skipped.")
 
 
 def cmd_request(args: argparse.Namespace) -> None:
@@ -511,6 +511,60 @@ def cmd_recon(args: argparse.Namespace) -> None:
         print(f"[+] Recon inventory: {written['markdown']}")
     if report.active and not args.dry_run:
         print("[i] Active probing ran only because --active --confirm was set.")
+
+
+def cmd_run(args: argparse.Namespace) -> None:
+    store, settings, _scope = executor_context(args, automated=True)
+    config = load_run_config(args.config) if args.config else RunConfig()
+    if args.passive_only and (args.active or args.nuclei):
+        raise ValueError("Choose either --active or --passive-only.")
+    if args.passive_only:
+        active = False
+        nuclei = False
+    else:
+        active = bool(args.active or config.active)
+        nuclei = bool(args.nuclei or config.nuclei)
+    target = args.target or config.target
+    if not target:
+        raise ValueError("Pass --target or set target in the config file.")
+    if active and (
+        settings.requests_per_second < 1 or int(settings.requests_per_second) != settings.requests_per_second
+    ):
+        raise ValueError("Active recon requires a whole-number program rate of at least 1 request/second.")
+    passive_rate = min(float(settings.requests_per_second), 1.0)
+    log_level = args.log_level or config.log_level
+    outcome = execute_run(
+        target,
+        store.paths.scope_file,
+        store.paths.reports_dir,
+        transport=None if args.dry_run else PassiveHttpTransport(timeout=settings.timeout),
+        rate_limiter=None if args.dry_run else RateLimiter(passive_rate),
+        tool_runner=None if args.dry_run else _recon_tool_runner(store, settings, args._execution_budget),
+        hosts_path=store.paths.raw_dir / "subdomains.txt",
+        active=active,
+        nuclei=nuclei,
+        confirm=bool(args.confirm),
+        dry_run=bool(args.dry_run),
+        resume=bool(args.resume),
+        refresh=bool(args.refresh),
+        show_diff=bool(args.diff),
+        severity=args.severity or config.severity,
+        rate=max(1, min(int(settings.requests_per_second) if settings.requests_per_second >= 1 else 1, 5)),
+        timeout=max(1, min(int(settings.timeout), 15)),
+        concurrency=min(settings.max_concurrency, 5),
+        api_keys={
+            "securitytrails": os.environ.get("SECURITYTRAILS_API_KEY", ""),
+            "virustotal": os.environ.get("VIRUSTOTAL_API_KEY", ""),
+        },
+        formats=tuple(args.formats) if args.formats else config.formats,
+        log_level=log_level,
+    )
+    for event in outcome.progress:
+        if progress_visible(event, log_level):
+            print(event.text)
+    if not args.dry_run and outcome.wrote:
+        destination = outcome.wrote.get("run_json") or outcome.wrote.get("dashboard") or outcome.wrote.get("sarif")
+        store.add_run("run", outcome.target, ["run", outcome.target], 0, destination)
 
 
 def cmd_scan_nuclei(args: argparse.Namespace) -> None:
@@ -3774,6 +3828,12 @@ def build_parser() -> argparse.ArgumentParser:
     scope_import = scope_sub.add_parser("import")
     scope_import.add_argument("program")
     scope_import.add_argument("file", type=Path)
+    scope_import.add_argument(
+        "--format",
+        choices=("auto", "yaml", "hackerone", "bugcrowd", "csv"),
+        default="auto",
+        help="Local export shape. auto reads the suffix and JSON keys.",
+    )
     scope_import.set_defaults(func=cmd_scope_import)
 
     request = sub.add_parser("request")
@@ -3806,6 +3866,38 @@ def build_parser() -> argparse.ArgumentParser:
     recon.add_argument("--confirm", action="store_true", help="Required before dnsx, httpx, or nuclei run")
     recon.add_argument("--severity", default="medium,high,critical")
     recon.set_defaults(func=cmd_recon)
+
+    run = sub.add_parser(
+        "run",
+        help="Resumable recon pipeline. Passive by default. Active probing needs --active --confirm.",
+    )
+    run.add_argument("program")
+    run.add_argument("--target", help="In-scope domain or IP. Optional when the config file sets target.")
+    run.add_argument("--config", type=Path, help="YAML or TOML recon settings. confirm is not read from this file.")
+    run.add_argument("--dry-run", action="store_true", help="Print the plan. No provider requests and no tools.")
+    run.add_argument("--active", action="store_true", help="Opt in to dnsx and httpx against in-scope hosts")
+    run.add_argument("--nuclei", action="store_true", help="With --active --confirm, run conservative Nuclei templates")
+    run.add_argument("--confirm", action="store_true", help="Required before dnsx, httpx, or nuclei run")
+    run.add_argument(
+        "--passive-only", action="store_true", help="Ignore active and nuclei settings from the config file"
+    )
+    run.add_argument(
+        "--resume", action="store_true", help="Continue a saved run without repeating completed collection"
+    )
+    run.add_argument("--refresh", action="store_true", help="Collect again instead of reusing saved observations")
+    run.add_argument(
+        "--diff", action="store_true", help="List hosts, URLs, and leads that changed since the previous run"
+    )
+    run.add_argument("--severity", default=None)
+    run.add_argument("--log-level", choices=LOG_LEVELS, default=None)
+    run.add_argument(
+        "--format",
+        action="append",
+        choices=("markdown", "html", "json", "sarif", "dashboard"),
+        dest="formats",
+        help="Report to write. Repeat for more than one. Defaults to all of them.",
+    )
+    run.set_defaults(func=cmd_run)
 
     scan = sub.add_parser("scan")
     scan_sub = scan.add_subparsers(required=True)
