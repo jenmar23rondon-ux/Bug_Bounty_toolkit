@@ -23,6 +23,8 @@ bbtk init acme --authorization "HackerOne program, automation permitted" --autom
 bbtk scope add acme example.com
 bbtk scope add acme '*.example.com'
 bbtk scope add acme --exclude admin.example.com
+bbtk scope import acme program-scope.json
+bbtk run acme --target example.com --dry-run
 bbtk recon acme --target example.com --dry-run
 bbtk recon acme --target example.com
 bbtk add-finding acme --finding-id F-1 --title "Title" --category information-disclosure \
@@ -46,14 +48,15 @@ Windows can run scope checks, passive recon planning, and report drafts. Workflo
 ```mermaid
 flowchart TD
   cli[bbtk CLI] --> scope[Scope rules and rate limit]
-  scope --> passive[Allowlisted passive providers]
+  scope --> run[bbtk run pipeline]
+  run --> passive[Allowlisted passive providers]
   scope --> tools[ProjectDiscovery binaries]
-  passive --> correlate[Dedupe and correlate by host]
+  passive --> correlate[Dedupe and group by host IP and tech]
   tools --> correlate
-  correlate --> score[Unconfirmed exposure score]
+  correlate --> score[Unconfirmed exposure score and leads]
   scope --> checks[Opt-in HTTP checks]
   checks --> evidence[Evidence store]
-  score --> reports[Markdown and HTML drafts]
+  score --> reports[Markdown HTML JSON and SARIF drafts]
   evidence --> reports
 ```
 
@@ -63,9 +66,12 @@ Passive providers never use the target as the request host. Tool output is filte
 
 These commands exist and behave as described:
 
-- **Scope.** `scope add` and `scope import` store allow and exclude rules. Exact hosts do not authorize subdomains. `*.example.com` does. A public-suffix wildcard such as `*.com` or `*.co.uk` is rejected. Alternate IP spellings (`2130706433`, `127.1`, `0x7f000001`) collapse to one address. Path exclusions are case-insensitive.
+- **Scope.** `scope add` and `scope import` store allow and exclude rules. Import accepts the toolkit YAML file or a local HackerOne JSON, Bugcrowd JSON, or CSV export. CIDR ranges and non-host assets are skipped with a reason. Exact hosts do not authorize subdomains. `*.example.com` does. A public-suffix wildcard such as `*.com` or `*.co.uk` is rejected. Alternate IP spellings (`2130706433`, `127.1`, `0x7f000001`) collapse to one address. Path exclusions are case-insensitive.
 - **Passive recon.** `recon` collects names and historical URLs, tags each with its source, drops anything out of scope, and writes `reports/recon.md`, `reports/recon.html`, and `reports/recon.json`.
-- **Optional active tools.** `--active --confirm` runs `dnsx` and `httpx` on the in-scope host list. `--nuclei` adds a conservative Nuclei pass. `scan nuclei --confirm` is the standalone scanner and uses the same limits.
+- **Run pipeline.** `run` collects passively, then optionally runs active tools, then correlates, scores, and writes reports. `--resume` continues a saved `reports/run-state.json` without repeating a completed stage. `--refresh` collects again. `--diff` lists hosts, URLs, and leads that changed since `reports/run-latest.json`. YAML or TOML config can set the target, formats, and log level. `confirm` is rejected in that file; pass `--confirm` on the command line. See [docs/recon-run.md](docs/recon-run.md).
+- **Leads.** Assets are grouped by host, by IP address observed next to a name, and by technology hint. Admin-looking paths, staging or development labels, InternetDB ports, and recorded technology versions become leads. A lead is an unconfirmed triage hint, not a vulnerability finding.
+- **Run reports.** `run` can write the inventory plus `run.json`, `recon.sarif.json`, and `dashboard.html`. SARIF results are `note` / `review` items. The dashboard shows counts and says confirmed vulnerabilities are 0. Nothing is submitted.
+- **Optional active tools.** `--active --confirm` runs `dnsx` and `httpx` on the in-scope host list. `--nuclei` adds a conservative Nuclei pass. `scan nuclei --confirm` is the standalone scanner and uses the same limits. The published Docker image does not install those binaries.
 - **HTTP checks.** `request`, `hunt`, `xss`, `sqli`, `cors-check`, `ssrf-check`, `open-redirect`, `csrf-audit`, and `access-check` send traffic only to in-scope URLs, with a rate limit and a response-size cap. Redirects are not followed. A DNS name that resolves to a non-public address is refused unless that address is an explicit scope entry.
 - **Evidence and review.** Burp and HAR import, object and IDOR discovery, an evidence ledger, and offline labs (`bbtk lab idor`, `bbtk lab web-vuln`) operate on local fixtures.
 - **Reports.** `report --finding-id` writes a draft with title, severity, CVSS, affected asset, summary, steps to reproduce, impact, evidence, and remediation. Program HTML and JSON reports summarize recorded runs. Nothing is submitted for you.
@@ -97,7 +103,19 @@ What reaches **confirmed** vs stays **candidate**:
 
 `bbtk hunt` runs `cors-check`, `ssrf-check`, `open-redirect`, `xss`, `sqli`, `access-check`. Each preserves its own evidence threshold. Use standalone `csrf-audit` and `takeover-check` outside hunt. See [HTTP proof limits](docs/http-proof-attribution.md).
 
-Recon exposure scores are not part of this bar. They are triage signals and are never confirmed findings.
+Recon exposure scores and `run` leads are not part of this bar. They are triage signals and are never confirmed findings.
+
+## Docker
+
+The image installs the toolkit only. It does not include `dnsx`, `httpx`, or `nuclei`, and it does not enable active probing.
+
+```bash
+docker build -t bbtk .
+docker run --rm bbtk doctor
+docker run --rm -v "$PWD:/work" -w /work bbtk run acme --target example.com --dry-run
+```
+
+Program records are written in the working directory (`/work` in the image). Mount a directory there if you want to keep them.
 
 ## Offline labs
 
@@ -112,6 +130,7 @@ Labs are synthetic or loopback. Doctor, unit tests, and dry-run planning do not 
 ## More docs
 
 - [docs/quickstart.md](docs/quickstart.md) — environment setup, including Windows limits
+- [docs/recon-run.md](docs/recon-run.md) — resumable `bbtk run`, scope import, leads, and exports
 - [docs/authorized-testing.md](docs/authorized-testing.md) — authorization expectations
 - [docs/HUNT.md](docs/HUNT.md) — hunt workflow and pre-submit checklist
 - [docs/external-tool-policy.md](docs/external-tool-policy.md) — subprocess allowlist, timeouts, and scope attestation

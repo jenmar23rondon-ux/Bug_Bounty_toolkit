@@ -11,6 +11,7 @@ import unittest
 from unittest.mock import patch
 
 from bugbounty_toolkit.core.scope import ensure_in_scope
+from bugbounty_toolkit.recon.models import Observation
 from bugbounty_toolkit.recon.pipeline import run_recon
 from bugbounty_toolkit.recon.reporting import write_recon_reports
 from bugbounty_toolkit.recon.sources import PassiveHttpTransport, assert_provider_url, provider_plans
@@ -152,6 +153,9 @@ class ReconPipelineTests(unittest.TestCase):
         self.assertGreaterEqual(len(app.sources), 2)
         self.assertIn("crtsh", app.sources)
         self.assertIn("wayback", app.sources)
+        ip_observations = {(item.host, item.value) for item in report.observations if item.kind == "ip"}
+        self.assertIn(("app.example.com", "1.2.3.4"), ip_observations)
+        self.assertNotIn("evil.com", {item.host for item in report.observations if item.kind == "ip"})
         self.assertTrue(any("/admin/login" in url for url in app.urls))
         self.assertNotIn("user:pass", " ".join(app.urls))
         self.assertFalse(app.confirmed)
@@ -238,6 +242,34 @@ class ReconPipelineTests(unittest.TestCase):
         text = (Path(self.temp.name) / "raw" / "subdomains.txt").read_text(encoding="utf-8")
         self.assertNotIn("evil.com", text)
         self.assertNotIn("admin.example.com", text)
+
+    def test_skip_providers_reuses_seed_without_contacting_providers(self) -> None:
+        transport = MapTransport({})
+
+        def runner(name: str, argv: list[str]) -> str:
+            self.assertEqual(argv[0], name)
+            return ""
+
+        report = run_recon(
+            "example.com",
+            self.scope,
+            transport=transport,
+            rate_limiter=CountingLimiter(),
+            tool_runner=runner,
+            active=True,
+            confirm=True,
+            run_tools=True,
+            skip_providers=True,
+            skip_passive_tools=True,
+            seed=[Observation("app.example.com", "saved", "host", "app.example.com")],
+            hosts_path=Path(self.temp.name) / "raw" / "subdomains.txt",
+        )
+        self.assertEqual(transport.urls, [])
+        self.assertEqual(report.requests_sent, 0)
+        self.assertIn("app.example.com", {asset.host for asset in report.assets})
+        hosts = (Path(self.temp.name) / "raw" / "subdomains.txt").read_text(encoding="utf-8")
+        self.assertIn("app.example.com", hosts)
+        self.assertNotIn("evil.com", hosts)
 
     def test_out_of_scope_target_never_builds_requests(self) -> None:
         transport = MapTransport({})

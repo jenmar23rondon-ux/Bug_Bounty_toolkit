@@ -234,8 +234,19 @@ def parse_source(source: str, body: str, parent: str = "") -> list[Observation]:
         lowered = body.lstrip().lower()
         if lowered.startswith(("error", "api ", "invalid")):
             raise ValueError("HackerTarget returned an error page.")
-        names = [line.split(",", 1)[0].strip() for line in body.splitlines() if line.strip()]
-        return _host_observations(source, names)
+        observations: list[Observation] = []
+        for line in body.splitlines():
+            if not line.strip():
+                continue
+            name, separator, address = line.partition(",")
+            hosts = _host_observations(source, [name.strip()])
+            observations.extend(hosts)
+            if not separator or not hosts:
+                continue
+            ip = canonical_ip(address.strip())
+            if ip is not None:
+                observations.append(Observation(hosts[0].host, source, "ip", ip))
+        return observations
     if source == "crtsh":
         payload = _loads(body)
         if not isinstance(payload, list):

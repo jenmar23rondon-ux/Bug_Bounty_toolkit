@@ -1,0 +1,6 @@
+identifier,in_scope,asset_type
+app.example.com,yes,url
+secret.example.com,no,url
+10.1.0.0/16,yes,cidr
+not a host,yes,other
+maybe.example.com,maybe,url

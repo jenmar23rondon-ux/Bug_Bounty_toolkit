@@ -65,7 +65,12 @@ bbtk scope add acme --exclude admin.example.com
 bbtk recon acme --target example.com --dry-run
 bbtk recon acme --target example.com
 bbtk recon acme --target example.com --active --confirm
+bbtk run acme --target example.com --dry-run
+bbtk run acme --config config/recon.example.yml --dry-run
+bbtk scope import acme tests/fixtures/recon/hackerone.json
 ```
+
+`bbtk run` is the resumable pipeline: passive collection, optional active tools, correlation, unconfirmed scoring, and reports. `--resume` skips stages already stored in `reports/run-state.json`. `--diff` compares the new inventory with `reports/run-latest.json`. Active tools still require `--active --confirm`. A config file cannot set `confirm`. See [recon run](recon-run.md).
 
 Set `SECURITYTRAILS_API_KEY` or `VIRUSTOTAL_API_KEY` in the environment to add those two providers. Keys are sent as headers and are not written into reports. Shodan InternetDB is used when the target is an in-scope IPv4 address.
 
