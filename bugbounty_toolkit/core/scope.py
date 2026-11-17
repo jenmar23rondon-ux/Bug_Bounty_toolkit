@@ -5,10 +5,89 @@ import posixpath
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+from .destinations import canonical_ip
+
+# Wildcard bases that would authorize an entire public suffix or a shared hosting zone.
+_PUBLIC_SUFFIXES = frozenset(
+    {
+        "com",
+        "net",
+        "org",
+        "edu",
+        "gov",
+        "mil",
+        "int",
+        "io",
+        "co",
+        "uk",
+        "us",
+        "de",
+        "fr",
+        "nl",
+        "ru",
+        "br",
+        "au",
+        "jp",
+        "cn",
+        "in",
+        "info",
+        "biz",
+        "xyz",
+        "app",
+        "dev",
+        "sh",
+        "me",
+        "ai",
+        "co.uk",
+        "com.au",
+        "com.br",
+        "co.jp",
+        "com.mx",
+        "co.nz",
+        "com.ar",
+        "co.za",
+        "com.tr",
+        "com.cn",
+        "github.io",
+        "blogspot.com",
+        "amazonaws.com",
+        "azurewebsites.net",
+        "cloudapp.net",
+        "herokuapp.com",
+        "pages.dev",
+        "workers.dev",
+        "netlify.app",
+        "vercel.app",
+        "ngrok.io",
+    }
+)
+
 
 def normalize_host(target: str) -> str:
     parsed = urlsplit(target.strip() if "://" in target else f"//{target.strip()}")
-    return (parsed.hostname or "").rstrip(".").lower().encode("idna").decode("ascii")
+    host = (parsed.hostname or "").rstrip(".").lower()
+    if not host:
+        return ""
+    if "%" in host or "\\" in host:
+        raise ValueError("Invalid host.")
+    ip = canonical_ip(host)
+    if ip is not None:
+        return ip
+    try:
+        return host.encode("idna").decode("ascii")
+    except UnicodeError as exc:
+        raise ValueError("Invalid host.") from exc
+
+
+def _reject_broad_wildcard(host: str) -> None:
+    if not host.startswith("*."):
+        return
+    base = host[2:]
+    if base.count(".") < 1 or base in _PUBLIC_SUFFIXES:
+        raise ValueError(
+            "Wildcard scope must name a private registrable domain, for example *.example.com. "
+            "Wildcards of a public suffix are rejected."
+        )
 
 
 def normalized_path(path: str) -> str:
@@ -48,6 +127,10 @@ class ScopeRule:
             return False
         prefix = normalized_path(rule.path).rstrip("/")
         path = normalized_path(destination.path)
+        # Exclusions are case-insensitive so /Admin cannot bypass !/admin.
+        if not self.allowed:
+            prefix = prefix.casefold()
+            path = path.casefold()
         return not prefix or path == prefix or path.startswith(prefix + "/")
 
 
@@ -56,6 +139,7 @@ def validate_rule(value: str) -> None:
     host = normalize_host(value)
     if not host or ("*" in host and not (host.startswith("*.") and "*" not in host[2:])):
         raise ValueError(f"Invalid scope rule: {value}")
+    _reject_broad_wildcard(host)
     if parsed.scheme and parsed.scheme not in {"http", "https"}:
         raise ValueError(f"Invalid scope scheme: {value}")
     if parsed.username or parsed.password or parsed.query or parsed.fragment:

@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urljoin, urlparse, urlsplit, urlunsplit
 
+from .destinations import canonical_ip
+
 
 @dataclass(frozen=True)
 class Target:
@@ -29,7 +31,17 @@ def normalize_url(url: str, default_scheme: str = "https") -> str:
         raise ValueError("Use an Authorization header instead of credentials in a URL.")
     if parsed.port == 0 or any(char.isspace() or ord(char) < 32 for char in clean) or "\\" in clean:
         raise ValueError("URL contains invalid whitespace, a backslash or a port of zero.")
-    host = parsed.hostname.rstrip(".").encode("idna").decode("ascii").lower()
+    host = parsed.hostname.rstrip(".").lower()
+    if "%" in host:
+        raise ValueError("URL host is invalid.")
+    ip = canonical_ip(host)
+    if ip is not None:
+        host = ip
+    else:
+        try:
+            host = host.encode("idna").decode("ascii")
+        except UnicodeError as exc:
+            raise ValueError("URL host is invalid.") from exc
     if ":" in host:
         host = f"[{host}]"
     netloc = f"{host}:{parsed.port}" if parsed.port else host

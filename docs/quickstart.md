@@ -53,6 +53,22 @@ bbtk dashboard my-program
 
 Open `http://127.0.0.1:8765/`. Stop it with Ctrl+C. PowerShell execution policy may require activating the environment with `Set-ExecutionPolicy -Scope Process Bypass` for that terminal, or invoke `.\.venv\Scripts\bbtk.exe` directly.
 
+## Passive recon
+
+Initialize a program and an explicit scope before discovery. `--dry-run` prints the provider plan and does not contact anyone. Live passive recon queries allowlisted third parties only. `dnsx`, `httpx`, and `nuclei` stay off unless you opt in.
+
+```bash
+bbtk init acme --authorization "written program approval" --automation-allowed
+bbtk scope add acme example.com
+bbtk scope add acme '*.example.com'
+bbtk scope add acme --exclude admin.example.com
+bbtk recon acme --target example.com --dry-run
+bbtk recon acme --target example.com
+bbtk recon acme --target example.com --active --confirm
+```
+
+Set `SECURITYTRAILS_API_KEY` or `VIRUSTOTAL_API_KEY` in the environment to add those two providers. Keys are sent as headers and are not written into reports. Shodan InternetDB is used when the target is an in-scope IPv4 address.
+
 ## Optional local Ollama review
 
 Ollama integration is optional. Install and start Ollama separately, then select a model that is already installed locally. For this project, `qwen2.5-coder:7b` is the preferred evaluation model; the toolkit never downloads models. A model response remains a second opinion and cannot confirm a vulnerability.

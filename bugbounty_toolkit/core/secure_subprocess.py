@@ -30,6 +30,7 @@ DEFAULT_ALLOWED_EXECUTABLES: frozenset[str] = frozenset(
     {
         "subfinder",
         "amass",
+        "dnsx",
         "httpx",
         "nuclei",
         "paramspider",

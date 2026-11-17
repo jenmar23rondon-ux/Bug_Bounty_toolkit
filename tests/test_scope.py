@@ -59,6 +59,36 @@ class ScopeTests(unittest.TestCase):
             with self.subTest(rule=rule), self.assertRaises(ValueError):
                 validate_rule(rule)
 
+    def test_wildcard_exclusion_and_case_insensitive_path_denial(self):
+        self.scope.write_text("*.example.com\n!*.secret.example.com\n!https://example.com/admin\nexample.com\n")
+        ensure_in_scope("https://app.example.com/status", self.scope)
+        # A wildcard matches descendants only. Exclude the apex with its own rule.
+        ensure_in_scope("https://secret.example.com", self.scope)
+        for target in (
+            "https://child.secret.example.com",
+            "https://example.com/Admin",
+            "https://example.com/admin/settings",
+        ):
+            with self.subTest(target=target), self.assertRaises(ValueError):
+                ensure_in_scope(target, self.scope)
+        ensure_in_scope("https://example.com/administrator", self.scope)
+
+    def test_alternate_ip_spellings_collapse_to_one_scope_address(self):
+        self.scope.write_text("127.0.0.1\n!10.0.0.1\n")
+        ensure_in_scope("http://2130706433/health", self.scope)
+        ensure_in_scope("http://0x7f000001/health", self.scope)
+        ensure_in_scope("http://127.1/health", self.scope)
+        for target in ("http://167772161/", "http://10.0.0.1/", "http://0xa000001/"):
+            with self.subTest(target=target), self.assertRaises(ValueError):
+                ensure_in_scope(target, self.scope)
+
+    def test_public_suffix_wildcards_are_rejected(self):
+        for rule in ("*.com", "*.co.uk", "*.amazonaws.com", "*.github.io", "*"):
+            with self.subTest(rule=rule), self.assertRaises(ValueError):
+                validate_rule(rule)
+        validate_rule("*.example.com")
+        validate_rule("*.example.co.uk")
+
     def test_normalize_and_load_routes(self):
         self.assertEqual(normalize_url("localhost:8000"), "https://localhost:8000/")
         self.assertEqual(normalize_url("https://EXAMPLE.com/a;b?q=1#frag"), "https://example.com/a;b?q=1")

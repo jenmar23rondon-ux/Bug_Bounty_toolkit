@@ -7,6 +7,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
+from .destinations import refuse_unapproved_resolution
 from .rate_limiter import RateLimiter
 from .execution_budget import ExecutionBudget
 from .redaction import redact_headers, redact_text, redact_url
@@ -100,6 +101,7 @@ class HttpClient:
     def send(self, request: RequestSpec) -> ResponseRecord:
         url = request.prepared_url()
         self.scope.require(url)
+        refuse_unapproved_resolution(url, self.scope)
         headers = dict(request.headers)
         for key, value in list(headers.items()):
             if key.lower() == "host":

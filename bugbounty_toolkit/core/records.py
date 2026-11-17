@@ -99,6 +99,15 @@ class RecordStore:
             );
             """
         )
+        existing = {row[1] for row in self.connection.execute("pragma table_info(findings)")}
+        for column, statement in (
+            ("steps", "alter table findings add column steps text"),
+            ("impact", "alter table findings add column impact text"),
+            ("remediation", "alter table findings add column remediation text"),
+            ("cvss", "alter table findings add column cvss text"),
+        ):
+            if column not in existing:
+                self.connection.execute(statement)
         self.connection.commit()
 
     def set_program_meta(self, **items: str) -> None:
@@ -143,15 +152,37 @@ class RecordStore:
         target: str,
         summary: str,
         evidence_path: str | None = None,
+        steps: str | None = None,
+        impact: str | None = None,
+        remediation: str | None = None,
+        cvss: str | None = None,
     ) -> None:
         self.connection.execute(
             """
-            insert into findings(id, created_at, title, category, severity, status, target, summary, evidence_path)
-            values(?, ?, ?, ?, ?, 'new', ?, ?, ?)
+            insert into findings(
+              id, created_at, title, category, severity, status, target, summary, evidence_path,
+              steps, impact, remediation, cvss
+            )
+            values(?, ?, ?, ?, ?, 'new', ?, ?, ?, ?, ?, ?, ?)
             on conflict(id) do update set title = excluded.title, category = excluded.category,
-              severity = excluded.severity, target = excluded.target, summary = excluded.summary, evidence_path = excluded.evidence_path
+              severity = excluded.severity, target = excluded.target, summary = excluded.summary,
+              evidence_path = excluded.evidence_path, steps = excluded.steps, impact = excluded.impact,
+              remediation = excluded.remediation, cvss = excluded.cvss
             """,
-            (finding_id, utc_now(), title, category, severity, target, summary, evidence_path),
+            (
+                finding_id,
+                utc_now(),
+                title,
+                category,
+                severity,
+                target,
+                summary,
+                evidence_path,
+                steps,
+                impact,
+                remediation,
+                cvss,
+            ),
         )
         self.connection.commit()
 
@@ -175,7 +206,16 @@ class RecordStore:
         return [dict(row) for row in self.connection.execute("select * from findings order by created_at desc")]
 
     def close(self) -> None:
-        self.connection.close()
+        """Release the database file. A second call is a no-op.
+
+        Windows refuses to delete a SQLite file while a connection holds it, and
+        sqlite3 connections often sit in a reference cycle so garbage collection
+        does not close them before a temporary directory is removed.
+        """
+        try:
+            self.connection.close()
+        except sqlite3.ProgrammingError:
+            return
 
     def counts(self) -> dict[str, int]:
         return {

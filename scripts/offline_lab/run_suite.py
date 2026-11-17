@@ -79,7 +79,8 @@ def excluded_reason(test_id: str) -> str | None:
 
 
 def build_suite(start: str = "tests") -> tuple[unittest.TestSuite, dict[str, str]]:
-    discovered = unittest.defaultTestLoader.discover(start)
+    # A fresh loader so a nested discover is not pinned to the outer suite's top-level directory.
+    discovered = unittest.TestLoader().discover(start)
     suite = unittest.TestSuite()
     skipped: dict[str, str] = {}
     for test in flatten(discovered):
